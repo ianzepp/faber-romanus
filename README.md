@@ -2,7 +2,7 @@
 
 **The Roman Craftsman** — A Latin programming language.
 
-Write code in Latin, compile to JavaScript or Zig. The compiler teaches Latin grammar through error messages.
+Write code in Latin, compile to TypeScript, Zig, or WebAssembly. The compiler teaches Latin grammar through error messages.
 
 ## Quick Start
 
@@ -20,6 +20,19 @@ bun run src/cli.ts run examples/salve.fab
 bun run src/cli.ts check examples/salve.fab
 ```
 
+## Compilation Targets
+
+```bash
+# TypeScript (default)
+bun run src/cli.ts compile hello.fab
+
+# Zig
+bun run src/cli.ts compile hello.fab -t zig
+
+# WebAssembly Text Format
+bun run src/cli.ts compile hello.fab -t wasm
+```
+
 ## Example
 
 ```la
@@ -33,14 +46,42 @@ fixum nomen = "Mundus"
 scribe(salve(nomen))
 ```
 
-Compiles to:
+Compiles to TypeScript:
 
-```javascript
+```typescript
 function salve(nomen) {
   return ("Salve, " + nomen + "!");
 }
 const nomen = "Mundus";
 scribe(salve(nomen));
+```
+
+Or Zig:
+
+```zig
+const std = @import("std");
+
+fn salve(nomen: []const u8) []const u8 {
+    // ...
+}
+
+pub fn main() void {
+    const nomen = "Mundus";
+    std.debug.print("{s}\n", .{salve(nomen)});
+}
+```
+
+Or WASM:
+
+```wat
+(module
+  (func (export "salve") (param $nomen i64) (result i64)
+    ;; ...
+  )
+  (func (export "_start")
+    ;; ...
+  )
+)
 ```
 
 ## Language Reference
@@ -174,11 +215,17 @@ bun test
 
 ```
 src/
-├── lexicon/     # Latin vocabulary (nouns, verbs, keywords)
+├── lexicon/     # Latin vocabulary (nouns, verbs, keywords, types)
 ├── tokenizer/   # Source -> Tokens
 ├── parser/      # Tokens -> AST
-├── codegen/     # AST -> JavaScript or Zig
+├── codegen/     # AST -> TypeScript, Zig, or WASM
+│   ├── ts.ts    # TypeScript generator
+│   ├── zig.ts   # Zig generator
+│   └── wasm.ts  # WebAssembly Text Format generator
 └── cli.ts       # Command-line interface
+
+editors/
+└── zed/         # Zed IDE extension (Tree-sitter grammar)
 ```
 
 ## Philosophy
