@@ -62,7 +62,7 @@ const DEFAULT_TARGET: CodegenTarget = "ts"
  * Valid compilation targets.
  * WHY: Defined as array for validation and help text generation.
  */
-const VALID_TARGETS = ["ts", "zig"] as const
+const VALID_TARGETS = ["ts", "zig", "wasm"] as const
 
 // =============================================================================
 // ARGUMENT PARSING
@@ -94,17 +94,17 @@ Commands:
   check <file.fab>       Check for errors without compiling
 
 Options:
-  -t, --target <lang>    Target language: ts (default), zig
+  -t, --target <lang>    Target language: ts (default), zig, wasm
   -o, --output <file>    Output file (default: stdout)
   -h, --help             Show this help
   -v, --version          Show version
 
 Examples:
-  faber compile hello.fab                    # Compile to TS (stdout)
-  faber compile hello.fab -o hello.ts        # Compile to TS file
-  faber compile hello.fab --target zig       # Compile to Zig (stdout)
-  faber compile hello.fab -t zig -o hello.zig
-  faber run hello.fab                        # Compile to TS and execute
+  faber compile hello.fab                     # Compile to TS (stdout)
+  faber compile hello.fab -o hello.ts         # Compile to TS file
+  faber compile hello.fab --target zig        # Compile to Zig
+  faber compile hello.fab -t wasm -o hello.wat  # Compile to WASM text format
+  faber run hello.fab                         # Compile to TS and execute
 `)
 }
 
@@ -278,7 +278,7 @@ for (let i = 2; i < args.length; i++) {
   }
   else if (args[i] === "-t" || args[i] === "--target") {
     const t = args[++i]
-    if (t !== "ts" && t !== "zig") {
+    if (t !== "ts" && t !== "zig" && t !== "wasm") {
       console.error(`Error: Unknown target '${t}'. Valid targets: ${VALID_TARGETS.join(", ")}`)
       process.exit(1)
     }

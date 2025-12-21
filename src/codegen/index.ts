@@ -37,6 +37,7 @@ import type { Program } from "../parser/ast"
 import type { CodegenOptions, CodegenTarget } from "./types"
 import { generateTs } from "./ts"
 import { generateZig } from "./zig"
+import { generateWasm } from "./wasm"
 
 // =============================================================================
 // PUBLIC API
@@ -45,6 +46,7 @@ import { generateZig } from "./zig"
 export type { CodegenOptions, CodegenTarget } from "./types"
 export { generateTs } from "./ts"
 export { generateZig } from "./zig"
+export { generateWasm } from "./wasm"
 
 // =============================================================================
 // TARGET DISPATCHER
@@ -77,6 +79,8 @@ export function generate(program: Program, options: CodegenOptions = {}): string
       return generateTs(program, options)
     case "zig":
       return generateZig(program, options)
+    case "wasm":
+      return generateWasm(program, options)
     default:
       // EDGE: TypeScript types prevent this, but defensive check for runtime
       throw new Error(`Unknown codegen target: ${target}`)

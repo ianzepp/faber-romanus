@@ -28,10 +28,10 @@
 // =============================================================================
 
 /**
- * WHY: Only two targets are supported - TypeScript (default) and Zig
- *      Future targets (C, Rust, WASM) would extend this union
+ * WHY: Three targets are supported - TypeScript (default), Zig, and WASM
+ *      Future targets (C, Rust) would extend this union
  */
-export type CodegenTarget = 'ts' | 'zig'
+export type CodegenTarget = 'ts' | 'zig' | 'wasm'
 
 /**
  * Configuration options for code generation.
