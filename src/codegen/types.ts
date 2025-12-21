@@ -41,22 +41,22 @@ export type CodegenTarget = 'ts' | 'zig' | 'wasm';
  */
 export interface CodegenOptions {
     /**
-   * Target language to generate.
-   * WHY: Defaults to 'ts' in generate() function for web-first development.
-   */
-    target?: CodegenTarget
+     * Target language to generate.
+     * WHY: Defaults to 'ts' in generate() function for web-first development.
+     */
+    target?: CodegenTarget;
 
     /**
-   * Indentation string for generated code.
-   * WHY: TypeScript convention is 2 spaces, Zig convention is 4 spaces.
-   *      Each target sets its own default.
-   */
-    indent?: string
+     * Indentation string for generated code.
+     * WHY: TypeScript convention is 2 spaces, Zig convention is 4 spaces.
+     *      Each target sets its own default.
+     */
+    indent?: string;
 
     /**
-   * Whether to emit semicolons at end of statements.
-   * TARGET: TypeScript only - Zig always requires semicolons.
-   *         This option is ignored for Zig target.
-   */
-    semicolons?: boolean
+     * Whether to emit semicolons at end of statements.
+     * TARGET: TypeScript only - Zig always requires semicolons.
+     *         This option is ignored for Zig target.
+     */
+    semicolons?: boolean;
 }

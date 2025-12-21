@@ -53,12 +53,12 @@
  * - dative: Indirect object ("Send TO THE USER")
  * - ablative: Means/instrument ("Send BY MEANS OF the function")
  */
-export type Case = "nominative" | "accusative" | "genitive" | "dative" | "ablative";
+export type Case = 'nominative' | 'accusative' | 'genitive' | 'dative' | 'ablative';
 
 /**
  * Grammatical number (singular or plural).
  */
-export type Number = "singular" | "plural";
+export type Number = 'singular' | 'plural';
 
 /**
  * Latin grammatical genders.
@@ -66,7 +66,7 @@ export type Number = "singular" | "plural";
  * WHY: Gender is inherent to each noun and affects which endings it takes.
  *      Not semantic (like English) but grammatical (like French/German).
  */
-export type Gender = "masculine" | "feminine" | "neuter";
+export type Gender = 'masculine' | 'feminine' | 'neuter';
 
 /**
  * Latin declensions (1st through 5th).
@@ -93,7 +93,7 @@ export type Conjugation = 1 | 2 | 3 | 4;
  * WHY: Present = synchronous action, Future = asynchronous (returns Promise),
  *      Imperative = command form (used for statements/expressions).
  */
-export type Tense = "present" | "imperative" | "future";
+export type Tense = 'present' | 'imperative' | 'future';
 
 /**
  * Grammatical person (1st, 2nd, 3rd).
@@ -116,10 +116,10 @@ export type Person = 1 | 2 | 3;
  *         Meaning is for documentation/error messages.
  */
 export interface NounEntry {
-    stem: string
-    declension: Declension
-    gender: Gender
-    meaning: string
+    stem: string;
+    declension: Declension;
+    gender: Gender;
+    meaning: string;
 }
 
 /**
@@ -128,9 +128,9 @@ export interface NounEntry {
  * DESIGN: Stores stem (without endings) plus conjugation pattern.
  */
 export interface VerbEntry {
-    stem: string
-    conjugation: Conjugation
-    meaning: string
+    stem: string;
+    conjugation: Conjugation;
+    meaning: string;
 }
 
 // =============================================================================
@@ -144,11 +144,11 @@ export interface VerbEntry {
  *         with the inflectional information extracted from the ending (case, number).
  */
 export interface ParsedNoun {
-    stem: string
-    declension: Declension
-    gender: Gender
-    case: Case
-    number: Number
+    stem: string;
+    declension: Declension;
+    gender: Gender;
+    case: Case;
+    number: Number;
 }
 
 /**
@@ -160,10 +160,10 @@ export interface ParsedNoun {
  * WHY: async field maps Latin future tense to JavaScript async functions.
  */
 export interface ParsedVerb {
-    stem: string
-    conjugation: Conjugation
-    tense: Tense
-    person?: Person
-    number?: Number
-    async: boolean
+    stem: string;
+    conjugation: Conjugation;
+    tense: Tense;
+    person?: Person;
+    number?: Number;
+    async: boolean;
 }

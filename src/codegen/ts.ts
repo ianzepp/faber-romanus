@@ -68,8 +68,8 @@ import type {
     Parameter,
     TypeAnnotation,
     TypeParameter,
-} from "../parser/ast";
-import type { CodegenOptions } from "./types";
+} from '../parser/ast';
+import type { CodegenOptions } from './types';
 
 // =============================================================================
 // TYPE MAPPING
@@ -97,16 +97,16 @@ import type { CodegenOptions } from "./types";
  * | Cursor     | Iterator   |
  */
 const typeMap: Record<string, string> = {
-    Textus: "string",
-    Numerus: "number",
-    Bivalens: "boolean",
-    Nihil: "null",
-    Lista: "Array",
-    Tabula: "Map",
-    Copia: "Set",
-    Promissum: "Promise",
-    Erratum: "Error",
-    Cursor: "Iterator",
+    Textus: 'string',
+    Numerus: 'number',
+    Bivalens: 'boolean',
+    Nihil: 'null',
+    Lista: 'Array',
+    Tabula: 'Map',
+    Copia: 'Set',
+    Promissum: 'Promise',
+    Erratum: 'Error',
+    Cursor: 'Iterator',
 };
 
 // =============================================================================
@@ -125,7 +125,7 @@ const typeMap: Record<string, string> = {
  */
 export function generateTs(program: Program, options: CodegenOptions = {}): string {
     // WHY: 2 spaces is TypeScript convention
-    const indent = options.indent ?? "  ";
+    const indent = options.indent ?? '  ';
     // WHY: Semicolons are recommended in TypeScript style guides
     const semi = options.semicolons ?? true;
 
@@ -133,9 +133,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     let depth = 0;
 
     /**
-   * Generate indentation for current depth.
-   * WHY: Centralized indentation logic ensures consistent formatting.
-   */
+     * Generate indentation for current depth.
+     * WHY: Centralized indentation logic ensures consistent formatting.
+     */
     function ind(): string {
         return indent.repeat(depth);
     }
@@ -145,8 +145,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     // ---------------------------------------------------------------------------
 
     function genProgram(node: Program): string {
-    // WHY: Each top-level statement is separated by newline
-        return node.body.map(genStatement).join("\n");
+        // WHY: Each top-level statement is separated by newline
+        return node.body.map(genStatement).join('\n');
     }
 
     // ---------------------------------------------------------------------------
@@ -154,34 +154,34 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     // ---------------------------------------------------------------------------
 
     /**
-   * Generate code for any statement type.
-   * WHY: Exhaustive switch ensures all statement types are handled.
-   */
+     * Generate code for any statement type.
+     * WHY: Exhaustive switch ensures all statement types are handled.
+     */
     function genStatement(node: Statement): string {
         switch (node.type) {
-            case "ImportDeclaration":
+            case 'ImportDeclaration':
                 return genImportDeclaration(node);
-            case "VariableDeclaration":
+            case 'VariableDeclaration':
                 return genVariableDeclaration(node);
-            case "FunctionDeclaration":
+            case 'FunctionDeclaration':
                 return genFunctionDeclaration(node);
-            case "TypeAliasDeclaration":
+            case 'TypeAliasDeclaration':
                 return genTypeAliasDeclaration(node);
-            case "IfStatement":
+            case 'IfStatement':
                 return genIfStatement(node);
-            case "WhileStatement":
+            case 'WhileStatement':
                 return genWhileStatement(node);
-            case "ForStatement":
+            case 'ForStatement':
                 return genForStatement(node);
-            case "ReturnStatement":
+            case 'ReturnStatement':
                 return genReturnStatement(node);
-            case "ThrowStatement":
+            case 'ThrowStatement':
                 return genThrowStatement(node);
-            case "TryStatement":
+            case 'TryStatement':
                 return genTryStatement(node);
-            case "BlockStatement":
+            case 'BlockStatement':
                 return genBlockStatement(node);
-            case "ExpressionStatement":
+            case 'ExpressionStatement':
                 return genExpressionStatement(node);
             default:
                 throw new Error(`Unknown statement type: ${(node as any).type}`);
@@ -189,80 +189,80 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
-   * Generate import declaration.
-   *
-   * TRANSFORMS:
-   *   ex norma importa * -> import * as norma from "norma"
-   *   ex norma importa scribe, lege -> import { scribe, lege } from "norma"
-   */
+     * Generate import declaration.
+     *
+     * TRANSFORMS:
+     *   ex norma importa * -> import * as norma from "norma"
+     *   ex norma importa scribe, lege -> import { scribe, lege } from "norma"
+     */
     function genImportDeclaration(node: ImportDeclaration): string {
         const source = node.source;
 
         if (node.wildcard) {
-            return `${ind()}import * as ${source} from "${source}"${semi ? ";" : ""}`;
+            return `${ind()}import * as ${source} from "${source}"${semi ? ';' : ''}`;
         }
 
-        const names = node.specifiers.map(s => s.name).join(", ");
+        const names = node.specifiers.map(s => s.name).join(', ');
 
-        return `${ind()}import { ${names} } from "${source}"${semi ? ";" : ""}`;
+        return `${ind()}import { ${names} } from "${source}"${semi ? ';' : ''}`;
     }
 
     /**
-   * Generate variable declaration.
-   *
-   * TRANSFORMS:
-   *   esto x: Numerus = 5 -> let x: number = 5
-   *   fixum y: Textus = "hello" -> const y: string = "hello"
-   */
+     * Generate variable declaration.
+     *
+     * TRANSFORMS:
+     *   esto x: Numerus = 5 -> let x: number = 5
+     *   fixum y: Textus = "hello" -> const y: string = "hello"
+     */
     function genVariableDeclaration(node: VariableDeclaration): string {
-    // WHY: 'esto' (let it be) maps to mutable 'let', 'fixum' (fixed) to immutable 'const'
-        const kind = node.kind === "esto" ? "let" : "const";
+        // WHY: 'esto' (let it be) maps to mutable 'let', 'fixum' (fixed) to immutable 'const'
+        const kind = node.kind === 'esto' ? 'let' : 'const';
         const name = node.name.name;
-        const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : "";
-        const init = node.init ? ` = ${genExpression(node.init)}` : "";
+        const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : '';
+        const init = node.init ? ` = ${genExpression(node.init)}` : '';
 
-        return `${ind()}${kind} ${name}${typeAnno}${init}${semi ? ";" : ""}`;
+        return `${ind()}${kind} ${name}${typeAnno}${init}${semi ? ';' : ''}`;
     }
 
     /**
-   * Generate type alias declaration.
-   *
-   * TRANSFORMS:
-   *   typus ID = Textus -> type ID = string;
-   *   typus UserID = Numerus<32, Naturalis> -> type UserID = number;
-   *
-   * WHY: TypeScript type aliases provide semantic naming without runtime cost.
-   */
+     * Generate type alias declaration.
+     *
+     * TRANSFORMS:
+     *   typus ID = Textus -> type ID = string;
+     *   typus UserID = Numerus<32, Naturalis> -> type UserID = number;
+     *
+     * WHY: TypeScript type aliases provide semantic naming without runtime cost.
+     */
     function genTypeAliasDeclaration(node: TypeAliasDeclaration): string {
         const name = node.name.name;
         const typeAnno = genType(node.typeAnnotation);
 
-        return `${ind()}type ${name} = ${typeAnno}${semi ? ";" : ""}`;
+        return `${ind()}type ${name} = ${typeAnno}${semi ? ';' : ''}`;
     }
 
     /**
-   * Generate type parameter (type, literal, or modifier).
-   *
-   * TRANSFORMS:
-   *   Textus -> string (nested type)
-   *   32 -> ignored (size constraint)
-   *   Naturalis -> ignored (modifier)
-   *
-   * WHY: TypeScript doesn't support numeric size constraints or modifiers.
-   *      These are semantic hints for other targets (Zig, C++) but not TS.
-   */
+     * Generate type parameter (type, literal, or modifier).
+     *
+     * TRANSFORMS:
+     *   Textus -> string (nested type)
+     *   32 -> ignored (size constraint)
+     *   Naturalis -> ignored (modifier)
+     *
+     * WHY: TypeScript doesn't support numeric size constraints or modifiers.
+     *      These are semantic hints for other targets (Zig, C++) but not TS.
+     */
     function genTypeParameter(param: TypeParameter): string | null {
-        if (param.type === "TypeAnnotation") {
+        if (param.type === 'TypeAnnotation') {
             return genType(param);
         }
 
-        if (param.type === "Literal") {
+        if (param.type === 'Literal') {
             // EDGE: Numeric params like Numerus<32> indicate size/width
             // For TypeScript, we ignore size - all numbers are float64
             return null;
         }
 
-        if (param.type === "ModifierParameter") {
+        if (param.type === 'ModifierParameter') {
             // EDGE: Modifiers like Naturalis (unsigned) don't exist in TS
             // TypeScript has no unsigned types or ownership semantics
             return null;
@@ -272,17 +272,17 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
-   * Generate type annotation from Latin type.
-   *
-   * TRANSFORMS:
-   *   Textus -> string
-   *   Lista<Numerus> -> Array<number>
-   *   Textus? -> string | null
-   *   Numerus<32> -> number (size ignored)
-   *   Numerus<Naturalis> -> number (modifier ignored)
-   */
+     * Generate type annotation from Latin type.
+     *
+     * TRANSFORMS:
+     *   Textus -> string
+     *   Lista<Numerus> -> Array<number>
+     *   Textus? -> string | null
+     *   Numerus<32> -> number (size ignored)
+     *   Numerus<Naturalis> -> number (modifier ignored)
+     */
     function genType(node: TypeAnnotation): string {
-    // Map Latin type name to TS type
+        // Map Latin type name to TS type
         const base = typeMap[node.name] ?? node.name;
 
         // Handle generic type parameters: Lista<Textus> -> Array<string>
@@ -296,7 +296,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
             // Only add type params if we have any left after filtering
             if (params.length > 0) {
-                result = `${base}<${params.join(", ")}>`;
+                result = `${base}<${params.join(', ')}>`;
             }
         }
 
@@ -307,54 +307,54 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
         // Handle union types
         if (node.union && node.union.length > 0) {
-            result = node.union.map(genType).join(" | ");
+            result = node.union.map(genType).join(' | ');
         }
 
         return result;
     }
 
     /**
-   * Generate function declaration.
-   *
-   * TRANSFORMS:
-   *   functio salve(nomen: Textus): Nihil -> function salve(nomen: string): null
-   *   futura functio f(): Numerus -> async function f(): number
-   */
+     * Generate function declaration.
+     *
+     * TRANSFORMS:
+     *   functio salve(nomen: Textus): Nihil -> function salve(nomen: string): null
+     *   futura functio f(): Numerus -> async function f(): number
+     */
     function genFunctionDeclaration(node: FunctionDeclaration): string {
-        const async = node.async ? "async " : "";
+        const async = node.async ? 'async ' : '';
         const name = node.name.name;
-        const params = node.params.map(genParameter).join(", ");
-        const returnType = node.returnType ? `: ${genType(node.returnType)}` : "";
+        const params = node.params.map(genParameter).join(', ');
+        const returnType = node.returnType ? `: ${genType(node.returnType)}` : '';
         const body = genBlockStatement(node.body);
 
         return `${ind()}${async}function ${name}(${params})${returnType} ${body}`;
     }
 
     /**
-   * Generate function parameter.
-   *
-   * TRANSFORMS:
-   *   nomen: Textus -> nomen: string
-   */
+     * Generate function parameter.
+     *
+     * TRANSFORMS:
+     *   nomen: Textus -> nomen: string
+     */
     function genParameter(node: Parameter): string {
         const name = node.name.name;
-        const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : "";
+        const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : '';
 
         return `${name}${typeAnno}`;
     }
 
     /**
-   * Generate if statement.
-   *
-   * TRANSFORMS:
-   *   si (conditio) { ... } -> if (conditio) { ... }
-   *   si (conditio) { ... } aliter { ... } -> if (conditio) { ... } else { ... }
-   *
-   * WHY: Latin if-statements can have optional catch clauses for exception handling.
-   *      When present, we wrap the entire if in a try-catch block.
-   */
+     * Generate if statement.
+     *
+     * TRANSFORMS:
+     *   si (conditio) { ... } -> if (conditio) { ... }
+     *   si (conditio) { ... } aliter { ... } -> if (conditio) { ... } else { ... }
+     *
+     * WHY: Latin if-statements can have optional catch clauses for exception handling.
+     *      When present, we wrap the entire if in a try-catch block.
+     */
     function genIfStatement(node: IfStatement): string {
-        let result = "";
+        let result = '';
 
         // WHY: Latin allows 'capta' (catch) clause on if-statements for brevity
         if (node.catchClause) {
@@ -363,16 +363,14 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             result += `${ind()}if (${genExpression(node.test)}) ${genBlockStatement(node.consequent)}`;
             depth--;
             result += `\n${ind()}} catch (${node.catchClause.param.name}) ${genBlockStatement(node.catchClause.body)}`;
-        }
-        else {
+        } else {
             result += `${ind()}if (${genExpression(node.test)}) ${genBlockStatement(node.consequent)}`;
         }
 
         if (node.alternate) {
-            if (node.alternate.type === "IfStatement") {
+            if (node.alternate.type === 'IfStatement') {
                 result += ` else ${genIfStatement(node.alternate).trim()}`;
-            }
-            else {
+            } else {
                 result += ` else ${genBlockStatement(node.alternate)}`;
             }
         }
@@ -401,7 +399,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     function genForStatement(node: ForStatement): string {
         const varName = node.variable.name;
         const iterable = genExpression(node.iterable);
-        const keyword = node.kind === "in" ? "in" : "of";
+        const keyword = node.kind === 'in' ? 'in' : 'of';
         const body = genBlockStatement(node.body);
 
         if (node.catchClause) {
@@ -420,14 +418,14 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
     function genReturnStatement(node: ReturnStatement): string {
         if (node.argument) {
-            return `${ind()}return ${genExpression(node.argument)}${semi ? ";" : ""}`;
+            return `${ind()}return ${genExpression(node.argument)}${semi ? ';' : ''}`;
         }
 
-        return `${ind()}return${semi ? ";" : ""}`;
+        return `${ind()}return${semi ? ';' : ''}`;
     }
 
     function genThrowStatement(node: ThrowStatement): string {
-        return `${ind()}throw ${genExpression(node.argument)}${semi ? ";" : ""}`;
+        return `${ind()}throw ${genExpression(node.argument)}${semi ? ';' : ''}`;
     }
 
     function genTryStatement(node: TryStatement): string {
@@ -446,11 +444,11 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
     function genBlockStatement(node: BlockStatement): string {
         if (node.body.length === 0) {
-            return "{}";
+            return '{}';
         }
 
         depth++;
-        const body = node.body.map(genStatement).join("\n");
+        const body = node.body.map(genStatement).join('\n');
 
         depth--;
 
@@ -458,7 +456,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     function genExpressionStatement(node: ExpressionStatement): string {
-        return `${ind()}${genExpression(node.expression)}${semi ? ";" : ""}`;
+        return `${ind()}${genExpression(node.expression)}${semi ? ';' : ''}`;
     }
 
     // ---------------------------------------------------------------------------
@@ -466,34 +464,34 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     // ---------------------------------------------------------------------------
 
     /**
-   * Generate code for any expression type.
-   * WHY: Exhaustive switch ensures all expression types are handled.
-   */
+     * Generate code for any expression type.
+     * WHY: Exhaustive switch ensures all expression types are handled.
+     */
     function genExpression(node: Expression): string {
         switch (node.type) {
-            case "Identifier":
+            case 'Identifier':
                 return node.name;
-            case "Literal":
+            case 'Literal':
                 return genLiteral(node);
-            case "TemplateLiteral":
+            case 'TemplateLiteral':
                 return `\`${node.raw}\``;
-            case "BinaryExpression":
+            case 'BinaryExpression':
                 return genBinaryExpression(node);
-            case "UnaryExpression":
+            case 'UnaryExpression':
                 return genUnaryExpression(node);
-            case "CallExpression":
+            case 'CallExpression':
                 return genCallExpression(node);
-            case "MemberExpression":
+            case 'MemberExpression':
                 return genMemberExpression(node);
-            case "ArrowFunctionExpression":
+            case 'ArrowFunctionExpression':
                 return genArrowFunction(node);
-            case "AssignmentExpression":
+            case 'AssignmentExpression':
                 return genAssignmentExpression(node);
-            case "AwaitExpression":
+            case 'AwaitExpression':
                 return `await ${genExpression(node.argument)}`;
-            case "NewExpression":
+            case 'NewExpression':
                 return genNewExpression(node);
-            case "ConditionalExpression":
+            case 'ConditionalExpression':
                 return `${genExpression(node.test)} ? ${genExpression(node.consequent)} : ${genExpression(node.alternate)}`;
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
@@ -501,41 +499,41 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
-   * Generate literal value.
-   *
-   * TRANSFORMS:
-   *   "hello" -> "hello" (JSON-escaped)
-   *   42 -> 42
-   *   verum -> true
-   *   nihil -> null
-   *
-   * WHY: JSON.stringify ensures proper escaping of string literals.
-   */
+     * Generate literal value.
+     *
+     * TRANSFORMS:
+     *   "hello" -> "hello" (JSON-escaped)
+     *   42 -> 42
+     *   verum -> true
+     *   nihil -> null
+     *
+     * WHY: JSON.stringify ensures proper escaping of string literals.
+     */
     function genLiteral(node: Literal): string {
         if (node.value === null) {
-            return "null";
+            return 'null';
         }
 
-        if (typeof node.value === "string") {
+        if (typeof node.value === 'string') {
             return JSON.stringify(node.value);
         }
 
-        if (typeof node.value === "boolean") {
-            return node.value ? "true" : "false";
+        if (typeof node.value === 'boolean') {
+            return node.value ? 'true' : 'false';
         }
 
         return String(node.value);
     }
 
     /**
-   * Generate binary expression.
-   *
-   * TRANSFORMS:
-   *   x + y -> (x + y)
-   *   a && b -> (a && b)
-   *
-   * WHY: Parentheses ensure correct precedence in all contexts.
-   */
+     * Generate binary expression.
+     *
+     * TRANSFORMS:
+     *   x + y -> (x + y)
+     *   a && b -> (a && b)
+     *
+     * WHY: Parentheses ensure correct precedence in all contexts.
+     */
     function genBinaryExpression(node: BinaryExpression): string {
         const left = genExpression(node.left);
         const right = genExpression(node.right);
@@ -544,12 +542,12 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
-   * Generate unary expression.
-   *
-   * TRANSFORMS:
-   *   !x -> !x (prefix)
-   *   x++ -> x++ (postfix)
-   */
+     * Generate unary expression.
+     *
+     * TRANSFORMS:
+     *   !x -> !x (prefix)
+     *   x++ -> x++ (postfix)
+     */
     function genUnaryExpression(node: UnaryExpression): string {
         const arg = genExpression(node.argument);
 
@@ -557,33 +555,33 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
-   * Generate function call.
-   *
-   * TRANSFORMS:
-   *   scribe("hello") -> console.log("hello")
-   *   foo(x, y) -> foo(x, y)
-   */
+     * Generate function call.
+     *
+     * TRANSFORMS:
+     *   scribe("hello") -> console.log("hello")
+     *   foo(x, y) -> foo(x, y)
+     */
     function genCallExpression(node: CallExpression): string {
-    // Map Latin built-in functions to JavaScript equivalents
-        if (node.callee.type === "Identifier" && node.callee.name === "scribe") {
-            const args = node.arguments.map(genExpression).join(", ");
+        // Map Latin built-in functions to JavaScript equivalents
+        if (node.callee.type === 'Identifier' && node.callee.name === 'scribe') {
+            const args = node.arguments.map(genExpression).join(', ');
 
             return `console.log(${args})`;
         }
 
         const callee = genExpression(node.callee);
-        const args = node.arguments.map(genExpression).join(", ");
+        const args = node.arguments.map(genExpression).join(', ');
 
         return `${callee}(${args})`;
     }
 
     /**
-   * Generate member access.
-   *
-   * TRANSFORMS:
-   *   obj.prop -> obj.prop
-   *   obj[key] -> obj[key]
-   */
+     * Generate member access.
+     *
+     * TRANSFORMS:
+     *   obj.prop -> obj.prop
+     *   obj[key] -> obj[key]
+     */
     function genMemberExpression(node: MemberExpression): string {
         const obj = genExpression(node.object);
 
@@ -595,16 +593,16 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
-   * Generate arrow function.
-   *
-   * TRANSFORMS:
-   *   (x) => x + 1 -> (x) => x + 1
-   *   (x) => { redde x + 1; } -> (x) => { return x + 1; }
-   */
+     * Generate arrow function.
+     *
+     * TRANSFORMS:
+     *   (x) => x + 1 -> (x) => x + 1
+     *   (x) => { redde x + 1; } -> (x) => { return x + 1; }
+     */
     function genArrowFunction(node: ArrowFunctionExpression): string {
-        const params = node.params.map(genParameter).join(", ");
+        const params = node.params.map(genParameter).join(', ');
 
-        if (node.body.type === "BlockStatement") {
+        if (node.body.type === 'BlockStatement') {
             const body = genBlockStatement(node.body);
 
             return `(${params}) => ${body}`;
@@ -616,16 +614,14 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     function genAssignmentExpression(node: AssignmentExpression): string {
-        const left = node.left.type === "Identifier"
-            ? node.left.name
-            : genExpression(node.left);
+        const left = node.left.type === 'Identifier' ? node.left.name : genExpression(node.left);
 
         return `${left} ${node.operator} ${genExpression(node.right)}`;
     }
 
     function genNewExpression(node: NewExpression): string {
         const callee = node.callee.name;
-        const args = node.arguments.map(genExpression).join(", ");
+        const args = node.arguments.map(genExpression).join(', ');
 
         return `new ${callee}(${args})`;
     }

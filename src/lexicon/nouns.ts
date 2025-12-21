@@ -45,7 +45,7 @@
  * @module lexicon/nouns
  */
 
-import type { NounEntry, Declension, Gender, Case, Number } from "./types";
+import type { NounEntry, Declension, Gender, Case, Number } from './types';
 
 // =============================================================================
 // TYPES
@@ -77,23 +77,23 @@ type EndingMap = Record<string, { case: Case; number: Number }[]>;
  */
 export const declension1Endings: EndingMap = {
     // WHY: -a is homograph (nominative subject OR ablative instrument)
-    "a": [
-        { case: "nominative", number: "singular" },
-        { case: "ablative", number: "singular" },
+    a: [
+        { case: 'nominative', number: 'singular' },
+        { case: 'ablative', number: 'singular' },
     ],
-    "am": [{ case: "accusative", number: "singular" }],
+    am: [{ case: 'accusative', number: 'singular' }],
     // WHY: -ae appears in three different contexts (genitive/dative sing, nominative pl)
-    "ae": [
-        { case: "genitive", number: "singular" },
-        { case: "dative", number: "singular" },
-        { case: "nominative", number: "plural" },
+    ae: [
+        { case: 'genitive', number: 'singular' },
+        { case: 'dative', number: 'singular' },
+        { case: 'nominative', number: 'plural' },
     ],
-    "as": [{ case: "accusative", number: "plural" }],
-    "arum": [{ case: "genitive", number: "plural" }],
+    as: [{ case: 'accusative', number: 'plural' }],
+    arum: [{ case: 'genitive', number: 'plural' }],
     // WHY: -is is shared between dative and ablative plural (syncretism)
-    "is": [
-        { case: "dative", number: "plural" },
-        { case: "ablative", number: "plural" },
+    is: [
+        { case: 'dative', number: 'plural' },
+        { case: 'ablative', number: 'plural' },
     ],
 };
 
@@ -110,23 +110,23 @@ export const declension1Endings: EndingMap = {
  *      Many technical terms use this declension.
  */
 export const declension2MascEndings: EndingMap = {
-    "us": [{ case: "nominative", number: "singular" }],
-    "um": [{ case: "accusative", number: "singular" }],
+    us: [{ case: 'nominative', number: 'singular' }],
+    um: [{ case: 'accusative', number: 'singular' }],
     // WHY: -i is homograph (genitive singular "of the number" OR nominative plural "numbers")
-    "i": [
-        { case: "genitive", number: "singular" },
-        { case: "nominative", number: "plural" },
+    i: [
+        { case: 'genitive', number: 'singular' },
+        { case: 'nominative', number: 'plural' },
     ],
     // WHY: -o serves dual purpose (dative "to X" and ablative "by means of X")
-    "o": [
-        { case: "dative", number: "singular" },
-        { case: "ablative", number: "singular" },
+    o: [
+        { case: 'dative', number: 'singular' },
+        { case: 'ablative', number: 'singular' },
     ],
-    "os": [{ case: "accusative", number: "plural" }],
-    "orum": [{ case: "genitive", number: "plural" }],
-    "is": [
-        { case: "dative", number: "plural" },
-        { case: "ablative", number: "plural" },
+    os: [{ case: 'accusative', number: 'plural' }],
+    orum: [{ case: 'genitive', number: 'plural' }],
+    is: [
+        { case: 'dative', number: 'plural' },
+        { case: 'ablative', number: 'plural' },
     ],
 };
 
@@ -144,24 +144,24 @@ export const declension2MascEndings: EndingMap = {
  */
 export const declension2NeutEndings: EndingMap = {
     // WHY: Neuter rule - nominative and accusative are always identical
-    "um": [
-        { case: "nominative", number: "singular" },
-        { case: "accusative", number: "singular" },
+    um: [
+        { case: 'nominative', number: 'singular' },
+        { case: 'accusative', number: 'singular' },
     ],
-    "i": [{ case: "genitive", number: "singular" }],
-    "o": [
-        { case: "dative", number: "singular" },
-        { case: "ablative", number: "singular" },
+    i: [{ case: 'genitive', number: 'singular' }],
+    o: [
+        { case: 'dative', number: 'singular' },
+        { case: 'ablative', number: 'singular' },
     ],
     // WHY: Plural also follows neuter rule - nominative/accusative identical
-    "a": [
-        { case: "nominative", number: "plural" },
-        { case: "accusative", number: "plural" },
+    a: [
+        { case: 'nominative', number: 'plural' },
+        { case: 'accusative', number: 'plural' },
     ],
-    "orum": [{ case: "genitive", number: "plural" }],
-    "is": [
-        { case: "dative", number: "plural" },
-        { case: "ablative", number: "plural" },
+    orum: [{ case: 'genitive', number: 'plural' }],
+    is: [
+        { case: 'dative', number: 'plural' },
+        { case: 'ablative', number: 'plural' },
     ],
 };
 
@@ -182,19 +182,19 @@ export const declension2NeutEndings: EndingMap = {
  */
 export const declension3Endings: EndingMap = {
     // EDGE: Nominative singular has no standard ending - handled in parsing code
-    "em": [{ case: "accusative", number: "singular" }],
-    "is": [{ case: "genitive", number: "singular" }],
-    "i": [{ case: "dative", number: "singular" }],
-    "e": [{ case: "ablative", number: "singular" }],
+    em: [{ case: 'accusative', number: 'singular' }],
+    is: [{ case: 'genitive', number: 'singular' }],
+    i: [{ case: 'dative', number: 'singular' }],
+    e: [{ case: 'ablative', number: 'singular' }],
     // WHY: Unlike other declensions, 3rd has nominative = accusative for plural
-    "es": [
-        { case: "nominative", number: "plural" },
-        { case: "accusative", number: "plural" },
+    es: [
+        { case: 'nominative', number: 'plural' },
+        { case: 'accusative', number: 'plural' },
     ],
-    "um": [{ case: "genitive", number: "plural" }],
-    "ibus": [
-        { case: "dative", number: "plural" },
-        { case: "ablative", number: "plural" },
+    um: [{ case: 'genitive', number: 'plural' }],
+    ibus: [
+        { case: 'dative', number: 'plural' },
+        { case: 'ablative', number: 'plural' },
     ],
 };
 
@@ -213,17 +213,17 @@ export const declension3Endings: EndingMap = {
  */
 export const declension4Endings: EndingMap = {
     // WHY: 4th declension has nominative = genitive (both -us), unlike other declensions
-    "us": [
-        { case: "nominative", number: "singular" },
-        { case: "genitive", number: "singular" },
+    us: [
+        { case: 'nominative', number: 'singular' },
+        { case: 'genitive', number: 'singular' },
     ],
-    "um": [{ case: "accusative", number: "singular" }],
-    "ui": [{ case: "dative", number: "singular" }],
-    "u": [{ case: "ablative", number: "singular" }],
-    "uum": [{ case: "genitive", number: "plural" }],
-    "ibus": [
-        { case: "dative", number: "plural" },
-        { case: "ablative", number: "plural" },
+    um: [{ case: 'accusative', number: 'singular' }],
+    ui: [{ case: 'dative', number: 'singular' }],
+    u: [{ case: 'ablative', number: 'singular' }],
+    uum: [{ case: 'genitive', number: 'plural' }],
+    ibus: [
+        { case: 'dative', number: 'plural' },
+        { case: 'ablative', number: 'plural' },
     ],
 };
 
@@ -241,20 +241,17 @@ export const declension4Endings: EndingMap = {
  * @param gender - The grammatical gender
  * @returns EndingMap for the declension, or null if unsupported
  */
-export function getEndingsForDeclension(
-    declension: Declension,
-    gender: Gender,
-): EndingMap | null {
+export function getEndingsForDeclension(declension: Declension, gender: Gender): EndingMap | null {
     if (declension === 1) {
         return declension1Endings;
     }
 
     // WHY: 2nd declension splits by gender (masculine -us vs neuter -um)
-    if (declension === 2 && gender === "masculine") {
+    if (declension === 2 && gender === 'masculine') {
         return declension2MascEndings;
     }
 
-    if (declension === 2 && gender === "neuter") {
+    if (declension === 2 && gender === 'neuter') {
         return declension2NeutEndings;
     }
 
@@ -284,8 +281,8 @@ export function getEndingsForDeclension(
  *         the parsing algorithm which strips endings.
  */
 export const nouns: NounEntry[] = [
-    { stem: "nunti", declension: 2, gender: "masculine", meaning: "message" },
-    { stem: "numer", declension: 2, gender: "masculine", meaning: "number" },
-    { stem: "usuar", declension: 2, gender: "masculine", meaning: "user" },
-    { stem: "dat", declension: 2, gender: "neuter", meaning: "data" },
+    { stem: 'nunti', declension: 2, gender: 'masculine', meaning: 'message' },
+    { stem: 'numer', declension: 2, gender: 'masculine', meaning: 'number' },
+    { stem: 'usuar', declension: 2, gender: 'masculine', meaning: 'user' },
+    { stem: 'dat', declension: 2, gender: 'neuter', meaning: 'data' },
 ];

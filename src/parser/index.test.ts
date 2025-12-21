@@ -1,6 +1,6 @@
-import { test, expect, describe } from "bun:test";
-import { tokenize } from "../tokenizer";
-import { parse } from "./index";
+import { test, expect, describe } from 'bun:test';
+import { tokenize } from '../tokenizer';
+import { parse } from './index';
 
 function parseCode(code: string) {
     const { tokens } = tokenize(code);
@@ -8,57 +8,57 @@ function parseCode(code: string) {
     return parse(tokens);
 }
 
-describe("parser", () => {
-    describe("variable declarations", () => {
-        test("esto without type", () => {
+describe('parser', () => {
+    describe('variable declarations', () => {
+        test('esto without type', () => {
             const { program } = parseCode('esto nomen = "Marcus"');
 
             expect(program).not.toBeNull();
-            expect(program!.body[0].type).toBe("VariableDeclaration");
+            expect(program!.body[0].type).toBe('VariableDeclaration');
             const decl = program!.body[0] as any;
 
-            expect(decl.kind).toBe("esto");
-            expect(decl.name.name).toBe("nomen");
-            expect(decl.init.value).toBe("Marcus");
+            expect(decl.kind).toBe('esto');
+            expect(decl.name.name).toBe('nomen');
+            expect(decl.init.value).toBe('Marcus');
         });
 
-        test("fixum with type annotation", () => {
-            const { program } = parseCode("fixum Numerus numerus = 42");
+        test('fixum with type annotation', () => {
+            const { program } = parseCode('fixum Numerus numerus = 42');
             const decl = program!.body[0] as any;
 
-            expect(decl.kind).toBe("fixum");
-            expect(decl.typeAnnotation.name).toBe("Numerus");
+            expect(decl.kind).toBe('fixum');
+            expect(decl.typeAnnotation.name).toBe('Numerus');
             expect(decl.init.value).toBe(42);
         });
 
-        test("generic type annotation", () => {
-            const { program } = parseCode("fixum Lista<Numerus> lista = nihil");
+        test('generic type annotation', () => {
+            const { program } = parseCode('fixum Lista<Numerus> lista = nihil');
             const decl = program!.body[0] as any;
 
-            expect(decl.typeAnnotation.name).toBe("Lista");
-            expect(decl.typeAnnotation.typeParameters[0].name).toBe("Numerus");
+            expect(decl.typeAnnotation.name).toBe('Lista');
+            expect(decl.typeAnnotation.typeParameters[0].name).toBe('Numerus');
         });
     });
 
-    describe("function declarations", () => {
-        test("simple function", () => {
+    describe('function declarations', () => {
+        test('simple function', () => {
             const { program } = parseCode(`
         functio Textus salve(Textus nomen) {
           redde nomen
         }
       `);
 
-            expect(program!.body[0].type).toBe("FunctionDeclaration");
+            expect(program!.body[0].type).toBe('FunctionDeclaration');
             const fn = program!.body[0] as any;
 
-            expect(fn.name.name).toBe("salve");
+            expect(fn.name.name).toBe('salve');
             expect(fn.params).toHaveLength(1);
-            expect(fn.params[0].name.name).toBe("nomen");
-            expect(fn.returnType.name).toBe("Textus");
+            expect(fn.params[0].name.name).toBe('nomen');
+            expect(fn.returnType.name).toBe('Textus');
             expect(fn.async).toBe(false);
         });
 
-        test("async function with futura", () => {
+        test('async function with futura', () => {
             const { program } = parseCode(`
         futura functio Textus fetch(Textus url) {
           redde data
@@ -69,7 +69,7 @@ describe("parser", () => {
             expect(fn.async).toBe(true);
         });
 
-        test("function with preposition parameter", () => {
+        test('function with preposition parameter', () => {
             const { program } = parseCode(`
         functio mitte(Textus nuntium, ad Textus recipientem) {
           scribe(nuntium)
@@ -77,26 +77,26 @@ describe("parser", () => {
       `);
             const fn = program!.body[0] as any;
 
-            expect(fn.params[1].preposition).toBe("ad");
-            expect(fn.params[1].name.name).toBe("recipientem");
+            expect(fn.params[1].preposition).toBe('ad');
+            expect(fn.params[1].name.name).toBe('recipientem');
         });
     });
 
-    describe("if statements", () => {
-        test("simple if", () => {
+    describe('if statements', () => {
+        test('simple if', () => {
             const { program } = parseCode(`
         si verum {
           scribe("yes")
         }
       `);
 
-            expect(program!.body[0].type).toBe("IfStatement");
+            expect(program!.body[0].type).toBe('IfStatement');
             const stmt = program!.body[0] as any;
 
             expect(stmt.test.value).toBe(true);
         });
 
-        test("if with aliter", () => {
+        test('if with aliter', () => {
             const { program } = parseCode(`
         si falsum {
           scribe("yes")
@@ -108,10 +108,10 @@ describe("parser", () => {
             const stmt = program!.body[0] as any;
 
             expect(stmt.alternate).not.toBeUndefined();
-            expect(stmt.alternate.type).toBe("BlockStatement");
+            expect(stmt.alternate.type).toBe('BlockStatement');
         });
 
-        test("if with cape (catch)", () => {
+        test('if with cape (catch)', () => {
             const { program } = parseCode(`
         si riskyCall() {
           process()
@@ -123,22 +123,22 @@ describe("parser", () => {
             const stmt = program!.body[0] as any;
 
             expect(stmt.catchClause).not.toBeUndefined();
-            expect(stmt.catchClause.param.name).toBe("erratum");
+            expect(stmt.catchClause.param.name).toBe('erratum');
         });
     });
 
-    describe("loops", () => {
-        test("while loop", () => {
+    describe('loops', () => {
+        test('while loop', () => {
             const { program } = parseCode(`
         dum verum {
           scribe("loop")
         }
       `);
 
-            expect(program!.body[0].type).toBe("WhileStatement");
+            expect(program!.body[0].type).toBe('WhileStatement');
         });
 
-        test("for...in loop", () => {
+        test('for...in loop', () => {
             const { program } = parseCode(`
         pro item in lista {
           scribe(item)
@@ -146,12 +146,12 @@ describe("parser", () => {
       `);
             const stmt = program!.body[0] as any;
 
-            expect(stmt.type).toBe("ForStatement");
-            expect(stmt.kind).toBe("in");
-            expect(stmt.variable.name).toBe("item");
+            expect(stmt.type).toBe('ForStatement');
+            expect(stmt.kind).toBe('in');
+            expect(stmt.variable.name).toBe('item');
         });
 
-        test("for...ex loop", () => {
+        test('for...ex loop', () => {
             const { program } = parseCode(`
         pro numero ex numeros {
           scribe(numero)
@@ -159,125 +159,125 @@ describe("parser", () => {
       `);
             const stmt = program!.body[0] as any;
 
-            expect(stmt.kind).toBe("ex");
+            expect(stmt.kind).toBe('ex');
         });
     });
 
-    describe("expressions", () => {
-        test("binary operators", () => {
-            const { program } = parseCode("1 + 2 * 3");
+    describe('expressions', () => {
+        test('binary operators', () => {
+            const { program } = parseCode('1 + 2 * 3');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("BinaryExpression");
-            expect(expr.operator).toBe("+");
-            expect(expr.right.operator).toBe("*");
+            expect(expr.type).toBe('BinaryExpression');
+            expect(expr.operator).toBe('+');
+            expect(expr.right.operator).toBe('*');
         });
 
-        test("comparison operators", () => {
-            const { program } = parseCode("a > b");
+        test('comparison operators', () => {
+            const { program } = parseCode('a > b');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.operator).toBe(">");
+            expect(expr.operator).toBe('>');
         });
 
-        test("logical operators with Latin keywords", () => {
-            const { program } = parseCode("a et b");
+        test('logical operators with Latin keywords', () => {
+            const { program } = parseCode('a et b');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.operator).toBe("&&");
+            expect(expr.operator).toBe('&&');
         });
 
-        test("aut operator", () => {
-            const { program } = parseCode("a aut b");
+        test('aut operator', () => {
+            const { program } = parseCode('a aut b');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.operator).toBe("||");
+            expect(expr.operator).toBe('||');
         });
 
-        test("negation with !", () => {
-            const { program } = parseCode("!active");
+        test('negation with !', () => {
+            const { program } = parseCode('!active');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("UnaryExpression");
-            expect(expr.operator).toBe("!");
+            expect(expr.type).toBe('UnaryExpression');
+            expect(expr.operator).toBe('!');
         });
 
-        test("function call", () => {
-            const { program } = parseCode("salve(nomen)");
+        test('function call', () => {
+            const { program } = parseCode('salve(nomen)');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("CallExpression");
-            expect(expr.callee.name).toBe("salve");
+            expect(expr.type).toBe('CallExpression');
+            expect(expr.callee.name).toBe('salve');
             expect(expr.arguments).toHaveLength(1);
         });
 
-        test("member access", () => {
-            const { program } = parseCode("usuario.nomen");
+        test('member access', () => {
+            const { program } = parseCode('usuario.nomen');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("MemberExpression");
-            expect(expr.object.name).toBe("usuario");
-            expect(expr.property.name).toBe("nomen");
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.object.name).toBe('usuario');
+            expect(expr.property.name).toBe('nomen');
         });
 
-        test("chained member access", () => {
-            const { program } = parseCode("a.b.c");
+        test('chained member access', () => {
+            const { program } = parseCode('a.b.c');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("MemberExpression");
-            expect(expr.object.type).toBe("MemberExpression");
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.object.type).toBe('MemberExpression');
         });
 
-        test("method call", () => {
-            const { program } = parseCode("lista.filter(f)");
+        test('method call', () => {
+            const { program } = parseCode('lista.filter(f)');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("CallExpression");
-            expect(expr.callee.type).toBe("MemberExpression");
+            expect(expr.type).toBe('CallExpression');
+            expect(expr.callee.type).toBe('MemberExpression');
         });
     });
 
-    describe("arrow functions", () => {
-        test("simple arrow function", () => {
-            const { program } = parseCode("(x) => x");
+    describe('arrow functions', () => {
+        test('simple arrow function', () => {
+            const { program } = parseCode('(x) => x');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("ArrowFunctionExpression");
+            expect(expr.type).toBe('ArrowFunctionExpression');
             expect(expr.params).toHaveLength(1);
-            expect(expr.body.name).toBe("x");
+            expect(expr.body.name).toBe('x');
         });
 
-        test("arrow function with block", () => {
-            const { program } = parseCode("(x) => { redde x }");
+        test('arrow function with block', () => {
+            const { program } = parseCode('(x) => { redde x }');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("ArrowFunctionExpression");
-            expect(expr.body.type).toBe("BlockStatement");
+            expect(expr.type).toBe('ArrowFunctionExpression');
+            expect(expr.body.type).toBe('BlockStatement');
         });
     });
 
-    describe("await expression", () => {
-        test("exspecta", () => {
-            const { program } = parseCode("exspecta fetch(url)");
+    describe('await expression', () => {
+        test('exspecta', () => {
+            const { program } = parseCode('exspecta fetch(url)');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("AwaitExpression");
-            expect(expr.argument.type).toBe("CallExpression");
+            expect(expr.type).toBe('AwaitExpression');
+            expect(expr.argument.type).toBe('CallExpression');
         });
     });
 
-    describe("new expression", () => {
-        test("novum", () => {
-            const { program } = parseCode("novum Erratum(message)");
+    describe('new expression', () => {
+        test('novum', () => {
+            const { program } = parseCode('novum Erratum(message)');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe("NewExpression");
-            expect(expr.callee.name).toBe("Erratum");
+            expect(expr.type).toBe('NewExpression');
+            expect(expr.callee.name).toBe('Erratum');
         });
     });
 
-    describe("try/catch/finally", () => {
-        test("tempta/cape", () => {
+    describe('try/catch/finally', () => {
+        test('tempta/cape', () => {
             const { program } = parseCode(`
         tempta {
           riskyCode()
@@ -288,11 +288,11 @@ describe("parser", () => {
       `);
             const stmt = program!.body[0] as any;
 
-            expect(stmt.type).toBe("TryStatement");
-            expect(stmt.handler.param.name).toBe("error");
+            expect(stmt.type).toBe('TryStatement');
+            expect(stmt.handler.param.name).toBe('error');
         });
 
-        test("tempta/cape/demum", () => {
+        test('tempta/cape/demum', () => {
             const { program } = parseCode(`
         tempta {
           riskyCode()
@@ -310,19 +310,19 @@ describe("parser", () => {
         });
     });
 
-    describe("type annotations", () => {
-        test("nullable type", () => {
-            const { program } = parseCode("fixum Textus? x = nihil");
+    describe('type annotations', () => {
+        test('nullable type', () => {
+            const { program } = parseCode('fixum Textus? x = nihil');
             const decl = program!.body[0] as any;
 
             expect(decl.typeAnnotation.nullable).toBe(true);
         });
 
-        test("union type", () => {
-            const { program } = parseCode("fixum Textus | Nihil x = nihil");
+        test('union type', () => {
+            const { program } = parseCode('fixum Textus | Nihil x = nihil');
             const decl = program!.body[0] as any;
 
-            expect(decl.typeAnnotation.name).toBe("union");
+            expect(decl.typeAnnotation.name).toBe('union');
             expect(decl.typeAnnotation.union).toHaveLength(2);
         });
     });

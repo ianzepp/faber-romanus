@@ -37,10 +37,10 @@
  * @module cli
  */
 
-import { tokenize } from "./tokenizer";
-import { parse } from "./parser";
-import { analyze } from "./semantic";
-import { generate, type CodegenTarget } from "./codegen";
+import { tokenize } from './tokenizer';
+import { parse } from './parser';
+import { analyze } from './semantic';
+import { generate, type CodegenTarget } from './codegen';
 
 // =============================================================================
 // CONSTANTS
@@ -50,20 +50,20 @@ import { generate, type CodegenTarget } from "./codegen";
  * Version string for Faber Romanus compiler.
  * WHY: Hardcoded until we integrate with package.json or build system.
  */
-const VERSION = "0.2.0";
+const VERSION = '0.2.0';
 
 /**
  * Default compilation target.
  * WHY: TypeScript is the primary target as it's most accessible and runs
  *      directly via Bun without additional toolchain setup.
  */
-const DEFAULT_TARGET: CodegenTarget = "ts";
+const DEFAULT_TARGET: CodegenTarget = 'ts';
 
 /**
  * Valid compilation targets.
  * WHY: Defined as array for validation and help text generation.
  */
-const VALID_TARGETS = ["ts", "zig", "wasm"] as const;
+const VALID_TARGETS = ['ts', 'zig', 'wasm'] as const;
 
 // =============================================================================
 // ARGUMENT PARSING
@@ -134,7 +134,12 @@ Examples:
  * @param silent - If true, don't print to stdout (for use by run command)
  * @returns Generated source code as string
  */
-async function compile(inputFile: string, target: CodegenTarget, outputFile?: string, silent = false): Promise<string> {
+async function compile(
+    inputFile: string,
+    target: CodegenTarget,
+    outputFile?: string,
+    silent = false,
+): Promise<string> {
     const source = await Bun.file(inputFile).text();
 
     // ---------------------------------------------------------------------------
@@ -144,9 +149,11 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     const { tokens, errors: tokenErrors } = tokenize(source);
 
     if (tokenErrors.length > 0) {
-        console.error("Tokenizer errors:");
+        console.error('Tokenizer errors:');
         for (const err of tokenErrors) {
-            console.error(`  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`);
+            console.error(
+                `  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`,
+            );
         }
 
         process.exit(1);
@@ -159,9 +166,11 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     const { program, errors: parseErrors } = parse(tokens);
 
     if (parseErrors.length > 0) {
-        console.error("Parser errors:");
+        console.error('Parser errors:');
         for (const err of parseErrors) {
-            console.error(`  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`);
+            console.error(
+                `  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`,
+            );
         }
 
         process.exit(1);
@@ -169,7 +178,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
 
     // EDGE: Parser can return null program on catastrophic failure
     if (!program) {
-        console.error("Failed to parse program");
+        console.error('Failed to parse program');
         process.exit(1);
     }
 
@@ -180,9 +189,11 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     const { errors: semanticErrors } = analyze(program);
 
     if (semanticErrors.length > 0) {
-        console.error("Semantic errors:");
+        console.error('Semantic errors:');
         for (const err of semanticErrors) {
-            console.error(`  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`);
+            console.error(
+                `  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`,
+            );
         }
 
         process.exit(1);
@@ -197,9 +208,8 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     if (outputFile) {
         await Bun.write(outputFile, output);
         console.log(`Compiled: ${inputFile} -> ${outputFile} (${target})`);
-    }
-    else if (!silent) {
-    // WHY: Write to stdout for Unix pipeline compatibility
+    } else if (!silent) {
+        // WHY: Write to stdout for Unix pipeline compatibility
         console.log(output);
     }
 
@@ -220,30 +230,28 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
  * @param inputFile - Path to .fab source file
  */
 async function run(inputFile: string): Promise<void> {
-    const ts = await compile(inputFile, "ts", undefined, true);
+    const ts = await compile(inputFile, 'ts', undefined, true);
 
     // WHY: Bun can execute TypeScript directly - write to temp file and run
     const tempFile = `/tmp/faber-${Date.now()}.ts`;
 
     try {
         await Bun.write(tempFile, ts);
-        const proc = Bun.spawn(["bun", tempFile], {
-            stdout: "inherit",
-            stderr: "inherit",
+        const proc = Bun.spawn(['bun', tempFile], {
+            stdout: 'inherit',
+            stderr: 'inherit',
         });
         const exitCode = await proc.exited;
 
         if (exitCode !== 0) {
             process.exit(exitCode);
         }
-    }
-    catch (err) {
-        console.error("Runtime error:", err);
+    } catch (err) {
+        console.error('Runtime error:', err);
         process.exit(1);
-    }
-    finally {
-    // Clean up temp file
-        await Bun.file(tempFile).exists() && await Bun.write(tempFile, "");
+    } finally {
+        // Clean up temp file
+        (await Bun.file(tempFile).exists()) && (await Bun.write(tempFile, ''));
     }
 }
 
@@ -276,8 +284,7 @@ async function check(inputFile: string): Promise<void> {
 
     if (allErrors.length === 0) {
         console.log(`${inputFile}: No errors`);
-    }
-    else {
+    } else {
         console.log(`${inputFile}: ${allErrors.length} error(s)`);
         for (const err of allErrors) {
             console.log(`  ${err.position.line}:${err.position.column} - ${err.message}`);
@@ -297,12 +304,12 @@ const command = args[0];
 // Help and Version
 // ---------------------------------------------------------------------------
 
-if (!command || command === "-h" || command === "--help") {
+if (!command || command === '-h' || command === '--help') {
     printUsage();
     process.exit(0);
 }
 
-if (command === "-v" || command === "--version") {
+if (command === '-v' || command === '--version') {
     console.log(`Faber Romanus v${VERSION}`);
     process.exit(0);
 }
@@ -317,14 +324,15 @@ let target: CodegenTarget = DEFAULT_TARGET;
 
 // WHY: Simple linear scan is sufficient for small option set
 for (let i = 2; i < args.length; i++) {
-    if (args[i] === "-o" || args[i] === "--output") {
+    if (args[i] === '-o' || args[i] === '--output') {
         outputFile = args[++i];
-    }
-    else if (args[i] === "-t" || args[i] === "--target") {
+    } else if (args[i] === '-t' || args[i] === '--target') {
         const t = args[++i];
 
-        if (t !== "ts" && t !== "zig" && t !== "wasm") {
-            console.error(`Error: Unknown target '${t}'. Valid targets: ${VALID_TARGETS.join(", ")}`);
+        if (t !== 'ts' && t !== 'zig' && t !== 'wasm') {
+            console.error(
+                `Error: Unknown target '${t}'. Valid targets: ${VALID_TARGETS.join(', ')}`,
+            );
             process.exit(1);
         }
 
@@ -333,7 +341,7 @@ for (let i = 2; i < args.length; i++) {
 }
 
 if (!inputFile) {
-    console.error("Error: No input file specified");
+    console.error('Error: No input file specified');
     printUsage();
     process.exit(1);
 }
@@ -343,18 +351,18 @@ if (!inputFile) {
 // ---------------------------------------------------------------------------
 
 switch (command) {
-    case "compile":
+    case 'compile':
         await compile(inputFile, target, outputFile);
         break;
-    case "run":
-        if (target !== "ts") {
+    case 'run':
+        if (target !== 'ts') {
             console.error("Error: 'run' command only works with TS target");
             process.exit(1);
         }
 
         await run(inputFile);
         break;
-    case "check":
+    case 'check':
         await check(inputFile);
         break;
     default:

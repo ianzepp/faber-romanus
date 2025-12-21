@@ -27,8 +27,8 @@
  * @module semantic/scope
  */
 
-import type { SemanticType } from "./types";
-import type { Position } from "../tokenizer/types";
+import type { SemanticType } from './types';
+import type { Position } from '../tokenizer/types';
 
 // =============================================================================
 // SYMBOL DEFINITIONS
@@ -40,20 +40,20 @@ import type { Position } from "../tokenizer/types";
  * WHY: Extended to support type aliases (typus declarations).
  */
 export interface Symbol {
-    name: string
-    type: SemanticType
-    kind: "variable" | "function" | "parameter" | "type"
-    mutable: boolean
-    position: Position
+    name: string;
+    type: SemanticType;
+    kind: 'variable' | 'function' | 'parameter' | 'type';
+    mutable: boolean;
+    position: Position;
 }
 
 /**
  * A lexical scope containing symbol bindings.
  */
 export interface Scope {
-    symbols: Map<string, Symbol>
-    parent: Scope | null
-    kind: "global" | "function" | "block"
+    symbols: Map<string, Symbol>;
+    parent: Scope | null;
+    kind: 'global' | 'function' | 'block';
 }
 
 // =============================================================================
@@ -67,14 +67,14 @@ export function createGlobalScope(): Scope {
     return {
         symbols: new Map(),
         parent: null,
-        kind: "global",
+        kind: 'global',
     };
 }
 
 /**
  * Create a child scope.
  */
-export function createScope(parent: Scope, kind: Scope["kind"] = "block"): Scope {
+export function createScope(parent: Scope, kind: Scope['kind'] = 'block'): Scope {
     return {
         symbols: new Map(),
         parent,
@@ -133,7 +133,7 @@ export function lookupSymbolLocal(scope: Scope, name: string): Symbol | null {
  * WHY: Needed for return type checking.
  */
 export function findFunctionScope(scope: Scope): Scope | null {
-    if (scope.kind === "function") {
+    if (scope.kind === 'function') {
         return scope;
     }
 

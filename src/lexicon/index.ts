@@ -39,10 +39,10 @@
  * @module lexicon
  */
 
-import type { ParsedNoun, ParsedVerb, Number, Tense } from "./types";
-import { nouns, getEndingsForDeclension } from "./nouns";
-import { verbs, conjugation1Endings, conjugation3Endings } from "./verbs";
-import { builtinTypes } from "./types-builtin";
+import type { ParsedNoun, ParsedVerb, Number, Tense } from './types';
+import { nouns, getEndingsForDeclension } from './nouns';
+import { verbs, conjugation1Endings, conjugation3Endings } from './verbs';
+import { builtinTypes } from './types-builtin';
 
 // =============================================================================
 // TYPES
@@ -55,9 +55,9 @@ import { builtinTypes } from "./types-builtin";
  *         patterns. jsType maps to target language primitives.
  */
 export interface ParsedType extends ParsedNoun {
-    jsType: string
-    category: "primitive" | "collection" | "structural" | "iteration"
-    generic?: boolean
+    jsType: string;
+    category: 'primitive' | 'collection' | 'structural' | 'iteration';
+    generic?: boolean;
 }
 
 // =============================================================================
@@ -157,17 +157,19 @@ export function parseType(word: string): ParsedType[] | null {
 
         // EDGE: 3rd declension nominative singular has no ending
         //       Example: "Cursor" (not "Cursorus"), "Functio" (as-is)
-        if (ending === "" && typeEntry.declension === 3) {
-            return [{
-                stem: typeEntry.stem,
-                declension: typeEntry.declension,
-                gender: typeEntry.gender,
-                case: "nominative",
-                number: "singular",
-                jsType: typeEntry.jsType,
-                category: typeEntry.category,
-                generic: typeEntry.generic,
-            }];
+        if (ending === '' && typeEntry.declension === 3) {
+            return [
+                {
+                    stem: typeEntry.stem,
+                    declension: typeEntry.declension,
+                    gender: typeEntry.gender,
+                    case: 'nominative',
+                    number: 'singular',
+                    jsType: typeEntry.jsType,
+                    category: typeEntry.category,
+                    generic: typeEntry.generic,
+                },
+            ];
         }
 
         const matches = endingsTable[ending];
@@ -265,7 +267,13 @@ export function parseVerb(word: string): ParsedVerb[] | null {
 // RE-EXPORTS
 // =============================================================================
 
-export * from "./types";
-export { isKeyword, getKeyword, keywords } from "./keywords";
-export { isBuiltinType, getBuiltinType, builtinTypes, typeModifiers, isTypeModifier } from "./types-builtin";
-export type { TypeEntry, TypeModifier } from "./types-builtin";
+export * from './types';
+export { isKeyword, getKeyword, keywords } from './keywords';
+export {
+    isBuiltinType,
+    getBuiltinType,
+    builtinTypes,
+    typeModifiers,
+    isTypeModifier,
+} from './types-builtin';
+export type { TypeEntry, TypeModifier } from './types-builtin';
