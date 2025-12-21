@@ -1,0 +1,26 @@
+// Advanced type features - type-first syntax
+
+// Type alias declarations
+typus ID = Textus
+typus UserID = Numerus
+typus UserName = Textus
+
+// Using type aliases
+fixum userId: UserID = 123
+fixum userName: UserName = "Marcus"
+
+// Generic type with type parameter
+fixum nombres: Lista<Textus> = ["Marcus", "Julia"]
+
+// Type with numeric parameter (size constraint)
+fixum smallNumber: Numerus<32> = 42
+
+// Type with modifier parameter (unsigned)
+fixum naturalNumber: Numerus<Naturalis> = 100
+
+// Type with both numeric and modifier parameters
+fixum precisNumber: Numerus<32, Naturalis> = 255
+
+// Complex type alias with generics
+typus StringList = Lista<Textus>
+fixum names: StringList = ["Gaius", "Titus"]
