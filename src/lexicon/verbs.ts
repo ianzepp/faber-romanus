@@ -21,9 +21,9 @@
  * - Number: Singular or plural
  *
  * CONJUGATION PATTERNS:
- * - 1st: -are verbs (creare, portare) - most regular
- * - 2nd: -ēre verbs (not yet implemented)
- * - 3rd: -ere verbs (mittere, legere) - common but irregular
+ * - 1st: -are verbs (creare, portare) - transformations
+ * - 2nd: -ēre verbs (videre, habere) - stateful operations
+ * - 3rd: -ere verbs (mittere, legere) - transformations
  * - 4th: -ire verbs (not yet implemented)
  *
  * MAPPING TO ASYNC/AWAIT:
@@ -35,7 +35,7 @@
  * =====================
  * INPUT:  Conjugation number
  * OUTPUT: EndingMap mapping endings to tense/person/number/async
- * ERRORS: Returns null for unsupported conjugations (2nd, 4th not implemented)
+ * ERRORS: Returns null for unsupported conjugations (4th not implemented)
  *
  * INVARIANTS
  * ==========
@@ -63,11 +63,22 @@ import type { VerbEntry } from './types';
  *         the parsing algorithm which strips endings.
  */
 export const verbs: VerbEntry[] = [
+    // 1st conjugation (-are)
+    { stem: 'cre', conjugation: 1, meaning: 'create' },
+    { stem: 'port', conjugation: 1, meaning: 'carry' },
+
+    // 2nd conjugation (-ēre)
+    // WHY: Stateful operations (checking, holding, yielding)
+    { stem: 'vid', conjugation: 2, meaning: 'see/debug' },
+    { stem: 'hab', conjugation: 2, meaning: 'have/contain' },
+    { stem: 'ten', conjugation: 2, meaning: 'hold/bind' },
+    { stem: 'mon', conjugation: 2, meaning: 'warn' },
+    { stem: 'respond', conjugation: 2, meaning: 'respond/yield' },
+
+    // 3rd conjugation (-ere)
     { stem: 'mitt', conjugation: 3, meaning: 'send' },
     { stem: 'leg', conjugation: 3, meaning: 'read' },
     { stem: 'scrib', conjugation: 3, meaning: 'write' },
-    { stem: 'cre', conjugation: 1, meaning: 'create' },
-    { stem: 'port', conjugation: 1, meaning: 'carry' },
 ];
 
 // =============================================================================
@@ -149,4 +160,49 @@ export const conjugation1Endings: Record<
     abimus: [{ tense: 'future', person: 1, number: 'plural', async: true }],
     abitis: [{ tense: 'future', person: 2, number: 'plural', async: true }],
     abunt: [{ tense: 'future', person: 3, number: 'plural', async: true }],
+};
+
+// ---------------------------------------------------------------------------
+// 2nd Conjugation
+// ---------------------------------------------------------------------------
+
+/**
+ * 2nd conjugation endings (present/imperative/future).
+ *
+ * EXAMPLES: videre (to see), habere (to have), tenere (to hold)
+ *
+ * WHY: Second conjugation has a long -ē- theme vowel. Used for stateful
+ *      operations: checking (.has), holding (loop variables), yielding.
+ *
+ * SEMANTIC MAPPING:
+ * - videre: console.debug (developer output)
+ * - habere: .has() / .includes() (containment checks)
+ * - tenere: loop variable binding
+ * - monere: console.warn
+ * - respondere: yield (generators/async iterators)
+ */
+export const conjugation2Endings: Record<
+    string,
+    { tense: string; person?: number; number?: string; async: boolean }[]
+> = {
+    // WHY: Imperative uses -e (like 3rd conj) but from -ē- stem
+    e: [{ tense: 'imperative', person: 2, number: 'singular', async: false }],
+    ete: [{ tense: 'imperative', person: 2, number: 'plural', async: false }],
+
+    // WHY: Present tense uses -e- theme vowel characteristic of 2nd conjugation
+    eo: [{ tense: 'present', person: 1, number: 'singular', async: false }],
+    es: [{ tense: 'present', person: 2, number: 'singular', async: false }],
+    et: [{ tense: 'present', person: 3, number: 'singular', async: false }],
+    emus: [{ tense: 'present', person: 1, number: 'plural', async: false }],
+    etis: [{ tense: 'present', person: 2, number: 'plural', async: false }],
+    ent: [{ tense: 'present', person: 3, number: 'plural', async: false }],
+
+    // WHY: Future tense in 2nd conjugation uses -eb- + personal endings
+    //      Same pattern as 1st conjugation but with -e- instead of -a-
+    ebo: [{ tense: 'future', person: 1, number: 'singular', async: true }],
+    ebis: [{ tense: 'future', person: 2, number: 'singular', async: true }],
+    ebit: [{ tense: 'future', person: 3, number: 'singular', async: true }],
+    ebimus: [{ tense: 'future', person: 1, number: 'plural', async: true }],
+    ebitis: [{ tense: 'future', person: 2, number: 'plural', async: true }],
+    ebunt: [{ tense: 'future', person: 3, number: 'plural', async: true }],
 };
