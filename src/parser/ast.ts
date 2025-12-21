@@ -82,6 +82,7 @@ export type Statement =
   | ImportDeclaration
   | VariableDeclaration
   | FunctionDeclaration
+  | TypeAliasDeclaration
   | ExpressionStatement
   | IfStatement
   | WhileStatement
@@ -184,6 +185,27 @@ export interface Parameter extends BaseNode {
   typeAnnotation?: TypeAnnotation
   case?: Case
   preposition?: string
+}
+
+/**
+ * Type alias declaration statement.
+ *
+ * GRAMMAR (in EBNF):
+ *   typeAliasDecl := 'typus' IDENTIFIER '=' typeAnnotation
+ *
+ * INVARIANT: name is the alias identifier.
+ * INVARIANT: typeAnnotation is the type being aliased.
+ *
+ * WHY: Enables creating named type aliases for complex types.
+ *
+ * Examples:
+ *   typus ID = Textus
+ *   typus UserID = Numerus<32, Naturalis>
+ */
+export interface TypeAliasDeclaration extends BaseNode {
+  type: "TypeAliasDeclaration"
+  name: Identifier
+  typeAnnotation: TypeAnnotation
 }
 
 // ---------------------------------------------------------------------------
@@ -614,27 +636,65 @@ export interface NewExpression extends BaseNode {
 // =============================================================================
 
 /**
+ * Type parameter for parameterized types.
+ *
+ * DESIGN: Union type allows different parameter kinds:
+ *         - TypeAnnotation: Generic type params (Lista<Textus>)
+ *         - Literal: Numeric params (Numerus<32>) or size specs
+ *         - ModifierParameter: Type modifiers (Numerus<Naturalis>)
+ *
+ * WHY: Type parameters aren't always types - they can be size constraints
+ *      or ownership/mutability modifiers.
+ */
+export type TypeParameter = TypeAnnotation | Literal | ModifierParameter
+
+/**
+ * Modifier parameter for type annotations.
+ *
+ * GRAMMAR (in EBNF):
+ *   modifierParam := 'Naturalis' | 'Proprius' | 'Alienus' | 'Mutabilis'
+ *
+ * INVARIANT: name is one of the four supported modifiers.
+ *
+ * WHY: Type modifiers control numeric signedness, ownership semantics, etc.
+ *      - Naturalis: unsigned/natural numbers
+ *      - Proprius: owned (move semantics)
+ *      - Alienus: borrowed (reference semantics)
+ *      - Mutabilis: mutable
+ *
+ * Examples:
+ *   Numerus<Naturalis> -> unsigned integer
+ *   Textus<Alienus> -> borrowed string reference
+ */
+export interface ModifierParameter extends BaseNode {
+  type: "ModifierParameter"
+  name: "Naturalis" | "Proprius" | "Alienus" | "Mutabilis"
+}
+
+/**
  * Type annotation for variables, parameters, and return types.
  *
  * GRAMMAR (in EBNF):
  *   typeAnnotation := IDENTIFIER typeParams? '?'? ('|' typeAnnotation)*
- *   typeParams := '<' typeAnnotation (',' typeAnnotation)* '>'
+ *   typeParams := '<' typeParameter (',' typeParameter)* '>'
  *
  * INVARIANT: name is the base type name (Textus, Numerus, etc.).
  * INVARIANT: nullable indicates optional type with '?'.
  * INVARIANT: union contains multiple types for union types (A | B).
- * INVARIANT: typeParameters contains generic type arguments (Array<T>).
+ * INVARIANT: typeParameters can contain types, literals, or modifiers.
  *
  * Examples:
  *   Textus -> name="Textus"
  *   Numerus? -> name="Numerus", nullable=true
- *   Array<Textus> -> name="Array", typeParameters=[{name="Textus"}]
+ *   Lista<Textus> -> name="Lista", typeParameters=[TypeAnnotation]
+ *   Numerus<32> -> name="Numerus", typeParameters=[Literal{value=32}]
+ *   Numerus<Naturalis> -> name="Numerus", typeParameters=[ModifierParameter]
  *   Textus | Numerus -> name="union", union=[{name="Textus"}, {name="Numerus"}]
  */
 export interface TypeAnnotation extends BaseNode {
   type: "TypeAnnotation"
   name: string
-  typeParameters?: TypeAnnotation[]
+  typeParameters?: TypeParameter[]
   nullable?: boolean
   union?: TypeAnnotation[]
 }

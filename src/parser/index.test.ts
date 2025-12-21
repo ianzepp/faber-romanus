@@ -23,7 +23,7 @@ describe("parser", () => {
     })
 
     test("fixum with type annotation", () => {
-      const { program } = parseCode("fixum numerus: Numerus = 42")
+      const { program } = parseCode("fixum Numerus numerus = 42")
       const decl = program!.body[0] as any
 
       expect(decl.kind).toBe("fixum")
@@ -32,7 +32,7 @@ describe("parser", () => {
     })
 
     test("generic type annotation", () => {
-      const { program } = parseCode("fixum lista: Lista<Numerus> = nihil")
+      const { program } = parseCode("fixum Lista<Numerus> lista = nihil")
       const decl = program!.body[0] as any
 
       expect(decl.typeAnnotation.name).toBe("Lista")
@@ -43,7 +43,7 @@ describe("parser", () => {
   describe("function declarations", () => {
     test("simple function", () => {
       const { program } = parseCode(`
-        functio salve(nomen: Textus) -> Textus {
+        functio Textus salve(Textus nomen) {
           redde nomen
         }
       `)
@@ -60,7 +60,7 @@ describe("parser", () => {
 
     test("async function with futura", () => {
       const { program } = parseCode(`
-        futura functio fetch(url: Textus) -> Textus {
+        futura functio Textus fetch(Textus url) {
           redde data
         }
       `)
@@ -71,7 +71,7 @@ describe("parser", () => {
 
     test("function with preposition parameter", () => {
       const { program } = parseCode(`
-        functio mitte(nuntium: Textus, ad recipientem: Textus) {
+        functio mitte(Textus nuntium, ad Textus recipientem) {
           scribe(nuntium)
         }
       `)
@@ -312,14 +312,14 @@ describe("parser", () => {
 
   describe("type annotations", () => {
     test("nullable type", () => {
-      const { program } = parseCode("fixum x: Textus? = nihil")
+      const { program } = parseCode("fixum Textus? x = nihil")
       const decl = program!.body[0] as any
 
       expect(decl.typeAnnotation.nullable).toBe(true)
     })
 
     test("union type", () => {
-      const { program } = parseCode("fixum x: Textus | Nihil = nihil")
+      const { program } = parseCode("fixum Textus | Nihil x = nihil")
       const decl = program!.body[0] as any
 
       expect(decl.typeAnnotation.name).toBe("union")

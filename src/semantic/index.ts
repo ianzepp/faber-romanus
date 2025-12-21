@@ -45,6 +45,7 @@ import type {
   Expression,
   VariableDeclaration,
   FunctionDeclaration,
+  TypeAliasDeclaration,
   IfStatement,
   WhileStatement,
   ForStatement,
@@ -197,6 +198,11 @@ export function analyze(program: Program): SemanticResult {
 
   /**
    * Resolve a TypeAnnotation AST node to a SemanticType.
+   *
+   * WHY: Type parameters can now be types, literals, or modifiers.
+   *      - TypeAnnotation: Generic type params (Lista<Textus>)
+   *      - Literal: Numeric size params (Numerus<32>)
+   *      - ModifierParameter: Type modifiers (Numerus<Naturalis>)
    */
   function resolveTypeAnnotation(node: TypeAnnotation): SemanticType {
     // Handle union types
@@ -210,8 +216,22 @@ export function analyze(program: Program): SemanticResult {
     const primitive = LATIN_TYPE_MAP[node.name]
 
     if (primitive) {
-      if (node.nullable) {
-        return { ...primitive, nullable: true }
+      // Extract modifiers and size from type parameters
+      const modifiers = extractTypeModifiers(node.typeParameters)
+
+      // Check if any modifiers or nullable flag is set
+      const hasModifiers = node.nullable ||
+        modifiers.size !== undefined ||
+        modifiers.unsigned !== undefined ||
+        modifiers.ownership !== undefined ||
+        modifiers.mutable !== undefined
+
+      if (hasModifiers) {
+        return {
+          ...primitive,
+          nullable: node.nullable,
+          ...modifiers,
+        }
       }
 
       return primitive
@@ -219,13 +239,83 @@ export function analyze(program: Program): SemanticResult {
 
     // Check for generic type
     if (GENERIC_TYPES.has(node.name)) {
-      const typeParams = (node.typeParameters ?? []).map(resolveTypeAnnotation)
+      // Filter only TypeAnnotation params for generic type parameters
+      const typeParams = (node.typeParameters ?? [])
+        .filter(p => p.type === "TypeAnnotation")
+        .map(p => resolveTypeAnnotation(p as TypeAnnotation))
 
       return genericType(node.name, typeParams, node.nullable)
     }
 
-    // User-defined type
+    // Check if it's a type alias in the symbol table
+    const typeAlias = lookupSymbol(currentScope, node.name)
+
+    if (typeAlias && typeAlias.kind === "type") {
+      // Resolve the aliased type with any additional modifiers
+      if (node.nullable && !typeAlias.type.nullable) {
+        return { ...typeAlias.type, nullable: true }
+      }
+
+      return typeAlias.type
+    }
+
+    // User-defined type (not yet defined)
     return userType(node.name, node.nullable)
+  }
+
+  /**
+   * Extract type modifiers from type parameters.
+   *
+   * WHY: Type parameters can include size constraints and modifiers:
+   *      - Naturalis: unsigned/natural numbers
+   *      - Proprius: owned (move semantics)
+   *      - Alienus: borrowed (reference semantics)
+   *      - Mutabilis: mutable
+   *      - Literal numbers: size constraints (Numerus<32>)
+   */
+  function extractTypeModifiers(typeParams?: Array<TypeAnnotation | Literal | any>): {
+    size?: number
+    unsigned?: boolean
+    ownership?: "owned" | "borrowed"
+    mutable?: boolean
+  } {
+    const modifiers: {
+      size?: number
+      unsigned?: boolean
+      ownership?: "owned" | "borrowed"
+      mutable?: boolean
+    } = {}
+
+    if (!typeParams) {
+      return modifiers
+    }
+
+    for (const param of typeParams) {
+      // Handle numeric size parameters
+      if (param.type === "Literal" && typeof param.value === "number") {
+        modifiers.size = param.value
+      }
+
+      // Handle modifier parameters
+      if (param.type === "ModifierParameter") {
+        switch (param.name) {
+          case "Naturalis":
+            modifiers.unsigned = true
+            break
+          case "Proprius":
+            modifiers.ownership = "owned"
+            break
+          case "Alienus":
+            modifiers.ownership = "borrowed"
+            break
+          case "Mutabilis":
+            modifiers.mutable = true
+            break
+        }
+      }
+    }
+
+    return modifiers
   }
 
   /**
@@ -576,6 +666,9 @@ export function analyze(program: Program): SemanticResult {
       case "FunctionDeclaration":
         analyzeFunctionDeclaration(node)
         break
+      case "TypeAliasDeclaration":
+        analyzeTypeAliasDeclaration(node)
+        break
       case "IfStatement":
         analyzeIfStatement(node)
         break
@@ -689,6 +782,24 @@ export function analyze(program: Program): SemanticResult {
     exitScope()
 
     node.resolvedType = fnType
+  }
+
+  function analyzeTypeAliasDeclaration(node: TypeAliasDeclaration): void {
+    // Resolve the aliased type
+    const type = resolveTypeAnnotation(node.typeAnnotation)
+
+    // Define type alias in symbol table
+    // WHY: Type aliases are stored as "type" symbols to distinguish from variables
+    define({
+      name: node.name.name,
+      type,
+      kind: "type",
+      mutable: false,
+      position: node.position,
+    })
+
+    node.resolvedType = type
+    node.name.resolvedType = type
   }
 
   function analyzeIfStatement(node: IfStatement): void {

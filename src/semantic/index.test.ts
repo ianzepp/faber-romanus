@@ -38,21 +38,21 @@ function analyzeSource(source: string): { errors: SemanticError[]; types: Map<st
 describe("Semantic Analyzer", () => {
   describe("Variable Type Resolution", () => {
     it("resolves type from explicit annotation", () => {
-      const { errors, types } = analyzeSource(`esto x: Numerus = 5`)
+      const { errors, types } = analyzeSource(`esto Numerus x = 5`)
 
       expect(errors).toHaveLength(0)
       expect(types.get("x")).toEqual({ kind: "primitive", name: "Numerus" })
     })
 
     it("resolves type from string annotation", () => {
-      const { errors, types } = analyzeSource(`esto s: Textus = "hello"`)
+      const { errors, types } = analyzeSource(`esto Textus s = "hello"`)
 
       expect(errors).toHaveLength(0)
       expect(types.get("s")).toEqual({ kind: "primitive", name: "Textus" })
     })
 
     it("resolves type from boolean annotation", () => {
-      const { errors, types } = analyzeSource(`esto b: Bivalens = verum`)
+      const { errors, types } = analyzeSource(`esto Bivalens b = verum`)
 
       expect(errors).toHaveLength(0)
       expect(types.get("b")).toEqual({ kind: "primitive", name: "Bivalens" })
@@ -80,7 +80,7 @@ describe("Semantic Analyzer", () => {
     })
 
     it("handles nullable types", () => {
-      const { errors, types } = analyzeSource(`esto x: Numerus? = nihil`)
+      const { errors, types } = analyzeSource(`esto Numerus? x = nihil`)
 
       expect(errors).toHaveLength(0)
       expect(types.get("x")).toEqual({ kind: "primitive", name: "Numerus", nullable: true })
@@ -134,7 +134,7 @@ describe("Semantic Analyzer", () => {
   describe("Function Type Resolution", () => {
     it("records function in symbol table", () => {
       const source = `
-        functio add(a: Numerus, b: Numerus) -> Numerus {
+        functio Numerus add(Numerus a, Numerus b) {
           redde a + b
         }
       `
@@ -145,7 +145,7 @@ describe("Semantic Analyzer", () => {
 
     it("type checks return statements", () => {
       const source = `
-        functio greet() -> Textus {
+        functio Textus greet() {
           redde "hello"
         }
       `
@@ -156,7 +156,7 @@ describe("Semantic Analyzer", () => {
 
     it("reports error for wrong return type", () => {
       const source = `
-        functio greet() -> Textus {
+        functio Textus greet() {
           redde 42
         }
       `
@@ -213,7 +213,7 @@ describe("Semantic Analyzer", () => {
 
     it("reports type mismatch in assignment", () => {
       const source = `
-        esto x: Numerus = 5
+        esto Numerus x = 5
         x = "hello"
       `
       const { errors } = analyzeSource(source)
@@ -269,7 +269,7 @@ describe("Semantic Analyzer", () => {
 
   describe("Generic Types", () => {
     it("resolves generic type annotation", () => {
-      const { errors, types } = analyzeSource(`esto items: Lista<Numerus>? = nihil`)
+      const { errors, types } = analyzeSource(`esto Lista<Numerus>? items = nihil`)
 
       expect(errors).toHaveLength(0)
       const itemsType = types.get("items")
@@ -280,7 +280,7 @@ describe("Semantic Analyzer", () => {
 
   describe("Arrow Functions", () => {
     it("resolves arrow function type", () => {
-      const source = `esto add = (a: Numerus, b: Numerus) => a + b`
+      const source = `esto add = (Numerus a, Numerus b) => a + b`
       const { errors } = analyzeSource(source)
 
       expect(errors).toHaveLength(0)

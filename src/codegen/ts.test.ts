@@ -243,6 +243,38 @@ describe("codegen", () => {
     })
   })
 
+  describe("type declarations", () => {
+    test("type alias declaration", () => {
+      const js = compile("typus ID = Textus")
+
+      expect(js).toBe("type ID = string;")
+    })
+
+    test("type alias with generic", () => {
+      const js = compile("typus StringList = Lista<Textus>")
+
+      expect(js).toBe("type StringList = Array<string>;")
+    })
+
+    test("type with numeric parameter is ignored in TS", () => {
+      const js = compile("typus SmallNum = Numerus<32>")
+
+      expect(js).toBe("type SmallNum = number;")
+    })
+
+    test("type with modifier parameter is ignored in TS", () => {
+      const js = compile("typus Natural = Numerus<Naturalis>")
+
+      expect(js).toBe("type Natural = number;")
+    })
+
+    test("type with both numeric and modifier parameters", () => {
+      const js = compile("typus UInt32 = Numerus<32, Naturalis>")
+
+      expect(js).toBe("type UInt32 = number;")
+    })
+  })
+
   describe("complete programs", () => {
     test("hello world", () => {
       const js = compile(`

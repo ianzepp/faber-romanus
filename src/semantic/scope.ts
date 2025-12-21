@@ -36,11 +36,13 @@ import type { Position } from "../tokenizer/types"
 
 /**
  * A symbol binding in the symbol table.
+ *
+ * WHY: Extended to support type aliases (typus declarations).
  */
 export interface Symbol {
   name: string
   type: SemanticType
-  kind: "variable" | "function" | "parameter"
+  kind: "variable" | "function" | "parameter" | "type"
   mutable: boolean
   position: Position
 }

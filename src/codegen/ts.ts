@@ -48,6 +48,7 @@ import type {
   ImportDeclaration,
   VariableDeclaration,
   FunctionDeclaration,
+  TypeAliasDeclaration,
   IfStatement,
   WhileStatement,
   ForStatement,
@@ -66,6 +67,7 @@ import type {
   Literal,
   Parameter,
   TypeAnnotation,
+  TypeParameter,
 } from "../parser/ast"
 import type { CodegenOptions } from "./types"
 
@@ -163,6 +165,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         return genVariableDeclaration(node)
       case "FunctionDeclaration":
         return genFunctionDeclaration(node)
+      case "TypeAliasDeclaration":
+        return genTypeAliasDeclaration(node)
       case "IfStatement":
         return genIfStatement(node)
       case "WhileStatement":
@@ -221,12 +225,61 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
   }
 
   /**
+   * Generate type alias declaration.
+   *
+   * TRANSFORMS:
+   *   typus ID = Textus -> type ID = string;
+   *   typus UserID = Numerus<32, Naturalis> -> type UserID = number;
+   *
+   * WHY: TypeScript type aliases provide semantic naming without runtime cost.
+   */
+  function genTypeAliasDeclaration(node: TypeAliasDeclaration): string {
+    const name = node.name.name
+    const typeAnno = genType(node.typeAnnotation)
+
+    return `${ind()}type ${name} = ${typeAnno}${semi ? ";" : ""}`
+  }
+
+  /**
+   * Generate type parameter (type, literal, or modifier).
+   *
+   * TRANSFORMS:
+   *   Textus -> string (nested type)
+   *   32 -> ignored (size constraint)
+   *   Naturalis -> ignored (modifier)
+   *
+   * WHY: TypeScript doesn't support numeric size constraints or modifiers.
+   *      These are semantic hints for other targets (Zig, C++) but not TS.
+   */
+  function genTypeParameter(param: TypeParameter): string | null {
+    if (param.type === "TypeAnnotation") {
+      return genType(param)
+    }
+
+    if (param.type === "Literal") {
+      // EDGE: Numeric params like Numerus<32> indicate size/width
+      // For TypeScript, we ignore size - all numbers are float64
+      return null
+    }
+
+    if (param.type === "ModifierParameter") {
+      // EDGE: Modifiers like Naturalis (unsigned) don't exist in TS
+      // TypeScript has no unsigned types or ownership semantics
+      return null
+    }
+
+    return null
+  }
+
+  /**
    * Generate type annotation from Latin type.
    *
    * TRANSFORMS:
    *   Textus -> string
    *   Lista<Numerus> -> Array<number>
    *   Textus? -> string | null
+   *   Numerus<32> -> number (size ignored)
+   *   Numerus<Naturalis> -> number (modifier ignored)
    */
   function genType(node: TypeAnnotation): string {
     // Map Latin type name to TS type
@@ -236,9 +289,15 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     let result = base
 
     if (node.typeParameters && node.typeParameters.length > 0) {
-      const params = node.typeParameters.map(genType).join(", ")
+      // Filter out null params (literals and modifiers that TS doesn't support)
+      const params = node.typeParameters
+        .map(genTypeParameter)
+        .filter((p): p is string => p !== null)
 
-      result = `${base}<${params}>`
+      // Only add type params if we have any left after filtering
+      if (params.length > 0) {
+        result = `${base}<${params.join(", ")}>`
+      }
     }
 
     // Handle nullable: Textus? -> string | null

@@ -98,6 +98,7 @@ export const keywords: KeywordEntry[] = [
   { latin: "functio", meaning: "function", category: "declaration" },
   { latin: "novum", meaning: "new", category: "declaration" },
   { latin: "importa", meaning: "import", category: "declaration" },
+  { latin: "typus", meaning: "type", category: "declaration" },
 
   // ---------------------------------------------------------------------------
   // Modifiers

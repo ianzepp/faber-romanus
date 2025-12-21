@@ -94,9 +94,14 @@ import type {
   ArrowFunctionExpression,
   Parameter,
   TypeAnnotation,
+  TypeParameter,
+  ModifierParameter,
   CatchClause,
   NewExpression,
+  TypeAliasDeclaration,
+  Literal,
 } from "./ast"
+import { builtinTypes, typeModifiers } from "../lexicon/types-builtin"
 
 // =============================================================================
 // TYPES
@@ -123,6 +128,46 @@ export interface ParserResult {
   program: Program | null
   errors: ParserError[]
 }
+
+// =============================================================================
+// TYPE NAME LOOKUP
+// =============================================================================
+
+/**
+ * Set of all builtin type names for quick lookup.
+ *
+ * PERF: Pre-computed Set enables O(1) type name checking.
+ *
+ * WHY: Used by isTypeName() to distinguish type names from regular identifiers
+ *      in type-first syntax parsing (e.g., "fixum Textus nomen" vs "fixum nomen").
+ */
+const BUILTIN_TYPE_NAMES = new Set([
+  // Primitives
+  "Textus", "Numerus", "Bivalens", "Fractus", "Decimus",
+  "Signum", "Incertum", "Nihil",
+  // Collections
+  "Lista", "Tabula", "Copia",
+  // Structural
+  "Res", "Functio", "Promissum", "Forsitan", "Fors",
+  "Tempus", "Erratum", "Vacuum", "Quodlibet", "Ignotum",
+  // Iteration
+  "Cursor", "Fluxus", "FuturaCursor", "FuturusFluxus",
+  // Systems
+  "Indicium", "Refera",
+  // Utility (TypeScript only)
+  "Pars", "Totum", "Lectum", "Registrum",
+  "Selectum", "Omissum", "Extractum", "Exclusum",
+  "NonNihil", "Reditus", "Parametra",
+])
+
+/**
+ * Set of all type modifier names for quick lookup.
+ *
+ * WHY: Used to distinguish modifiers from regular type parameters.
+ */
+const TYPE_MODIFIER_NAMES = new Set([
+  "Naturalis", "Proprius", "Alienus", "Mutabilis",
+])
 
 // =============================================================================
 // MAIN PARSER FUNCTION
@@ -273,6 +318,44 @@ export function parse(tokens: Token[]): ParserResult {
     throw new Error(message)
   }
 
+  // ---------------------------------------------------------------------------
+  // Type Name Helpers
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Check if token is a builtin type name.
+   *
+   * WHY: Type-first syntax requires distinguishing type names from identifiers.
+   *      "fixum Textus nomen" (type-first) vs "fixum nomen" (type inference).
+   *
+   * @returns true if token is an identifier and a known builtin type
+   */
+  function isTypeName(token: Token): boolean {
+    return token.type === "IDENTIFIER" && BUILTIN_TYPE_NAMES.has(token.value)
+  }
+
+  /**
+   * Check if token is a type modifier name.
+   *
+   * WHY: Used to distinguish modifier parameters from regular type parameters.
+   *
+   * @returns true if token is an identifier and a known type modifier
+   */
+  function isModifier(token: Token): boolean {
+    return token.type === "IDENTIFIER" && TYPE_MODIFIER_NAMES.has(token.value)
+  }
+
+  /**
+   * Check if token is a preposition used in parameters.
+   *
+   * WHY: Prepositions indicate semantic roles (ad, cum, in, ex).
+   *
+   * @returns true if token is a preposition keyword
+   */
+  function isPreposition(token: Token): boolean {
+    return token.type === "KEYWORD" && ["ad", "cum", "in", "ex"].includes(token.keyword ?? "")
+  }
+
   // =============================================================================
   // STATEMENT PARSING
   // =============================================================================
@@ -314,8 +397,8 @@ export function parse(tokens: Token[]): ParserResult {
     advance()
     while (!isAtEnd()) {
       if (checkKeyword("functio") || checkKeyword("esto") || checkKeyword("fixum") ||
-          checkKeyword("si") || checkKeyword("dum") || checkKeyword("pro") ||
-          checkKeyword("redde") || checkKeyword("tempta")) {
+          checkKeyword("typus") || checkKeyword("si") || checkKeyword("dum") ||
+          checkKeyword("pro") || checkKeyword("redde") || checkKeyword("tempta")) {
         return
       }
 
@@ -327,7 +410,7 @@ export function parse(tokens: Token[]): ParserResult {
    * Parse any statement by dispatching to specific parser.
    *
    * GRAMMAR:
-   *   statement := importDecl | varDecl | funcDecl | ifStmt | whileStmt | forStmt
+   *   statement := importDecl | varDecl | funcDecl | typeAliasDecl | ifStmt | whileStmt | forStmt
    *              | returnStmt | throwStmt | tryStmt | blockStmt | exprStmt
    *
    * WHY: Uses lookahead to determine statement type via keyword inspection.
@@ -343,6 +426,10 @@ export function parse(tokens: Token[]): ParserResult {
 
     if (checkKeyword("functio") || checkKeyword("futura")) {
       return parseFunctionDeclaration()
+    }
+
+    if (checkKeyword("typus")) {
+      return parseTypeAliasDeclaration()
     }
 
     if (checkKeyword("si")) {
@@ -418,9 +505,13 @@ export function parse(tokens: Token[]): ParserResult {
    * Parse variable declaration.
    *
    * GRAMMAR:
-   *   varDecl := ('esto' | 'fixum') IDENTIFIER (':' typeAnnotation)? ('=' expression)?
+   *   varDecl := ('esto' | 'fixum') (typeAnnotation IDENTIFIER | IDENTIFIER) ('=' expression)?
    *
-   * WHY: Latin 'esto' (let it be) for mutable, 'fixum' (fixed) for immutable.
+   * WHY: Type-first syntax: "fixum Textus nomen = value" or "fixum nomen = value"
+   *      Latin 'esto' (let it be) for mutable, 'fixum' (fixed) for immutable.
+   *
+   * EDGE: If next token after esto/fixum is a type name, parse type first.
+   *       Otherwise, parse identifier (type inference case).
    */
   function parseVariableDeclaration(): VariableDeclaration {
     const position = peek().position
@@ -428,12 +519,15 @@ export function parse(tokens: Token[]): ParserResult {
 
     advance() // esto or fixum
 
-    const name = parseIdentifier()
-
     let typeAnnotation: TypeAnnotation | undefined
+    let name: Identifier
 
-    if (match("COLON")) {
+    if (isTypeName(peek())) {
       typeAnnotation = parseTypeAnnotation()
+      name = parseIdentifier()
+    }
+    else {
+      name = parseIdentifier()
     }
 
     let init: Expression | undefined
@@ -449,10 +543,13 @@ export function parse(tokens: Token[]): ParserResult {
    * Parse function declaration.
    *
    * GRAMMAR:
-   *   funcDecl := 'futura'? 'functio' IDENTIFIER '(' paramList ')' ('->' typeAnnotation)? blockStmt
+   *   funcDecl := 'futura'? 'functio' typeAnnotation? IDENTIFIER '(' paramList ')' blockStmt
    *
-   * WHY: 'futura' prefix marks async functions (future/promise-based).
-   *      '->' arrow indicates return type annotation.
+   * WHY: Type-first syntax: "functio Textus greet(Textus name)"
+   *      'futura' prefix marks async functions (future/promise-based).
+   *      Return type comes before function name (optional).
+   *
+   * EDGE: If token after functio is a type name, parse return type first.
    */
   function parseFunctionDeclaration(): FunctionDeclaration {
     const position = peek().position
@@ -464,18 +561,18 @@ export function parse(tokens: Token[]): ParserResult {
 
     expectKeyword("functio", "Expected 'functio'")
 
+    let returnType: TypeAnnotation | undefined
+
+    if (isTypeName(peek())) {
+      returnType = parseTypeAnnotation()
+    }
+
     const name = parseIdentifier()
 
     expect("LPAREN", "Expected '(' after function name")
     const params = parseParameterList()
 
     expect("RPAREN", "Expected ')' after parameters")
-
-    let returnType: TypeAnnotation | undefined
-
-    if (match("THIN_ARROW")) {
-      returnType = parseTypeAnnotation()
-    }
 
     const body = parseBlockStatement()
 
@@ -506,31 +603,58 @@ export function parse(tokens: Token[]): ParserResult {
    * Parse single function parameter.
    *
    * GRAMMAR:
-   *   parameter := ('ad' | 'cum' | 'in' | 'ex')? IDENTIFIER (':' typeAnnotation)?
+   *   parameter := ('ad' | 'cum' | 'in' | 'ex')? (typeAnnotation IDENTIFIER | IDENTIFIER)
    *
-   * WHY: Prepositional prefixes indicate semantic roles:
+   * WHY: Type-first syntax: "Textus name" or "ad Textus recipientem"
+   *      Prepositional prefixes indicate semantic roles:
    *      ad = toward/to, cum = with, in = in/into, ex = from/out of
+   *
+   * EDGE: Preposition comes first (if present), then type (if present), then identifier.
    */
   function parseParameter(): Parameter {
     const position = peek().position
 
-    // Check for preposition (ad, cum, in, ex)
     let preposition: string | undefined
 
-    if (peek().type === "KEYWORD" &&
-        ["ad", "cum", "in", "ex"].includes(peek().keyword ?? "")) {
+    if (isPreposition(peek())) {
       preposition = advance().keyword
+    }
+
+    let typeAnnotation: TypeAnnotation | undefined
+
+    if (isTypeName(peek())) {
+      typeAnnotation = parseTypeAnnotation()
     }
 
     const name = parseIdentifier()
 
-    let typeAnnotation: TypeAnnotation | undefined
-
-    if (match("COLON")) {
-      typeAnnotation = parseTypeAnnotation()
-    }
-
     return { type: "Parameter", name, typeAnnotation, preposition, position }
+  }
+
+  /**
+   * Parse type alias declaration.
+   *
+   * GRAMMAR:
+   *   typeAliasDecl := 'typus' IDENTIFIER '=' typeAnnotation
+   *
+   * WHY: Enables creating named type aliases for complex types.
+   *
+   * Examples:
+   *   typus ID = Textus
+   *   typus UserID = Numerus<32, Naturalis>
+   */
+  function parseTypeAliasDeclaration(): TypeAliasDeclaration {
+    const position = peek().position
+
+    expectKeyword("typus", "Expected 'typus'")
+
+    const name = parseIdentifier()
+
+    expect("EQUAL", "Expected '=' after type alias name")
+
+    const typeAnnotation = parseTypeAnnotation()
+
+    return { type: "TypeAliasDeclaration", name, typeAnnotation, position }
   }
 
   // ---------------------------------------------------------------------------
@@ -1208,36 +1332,60 @@ export function parse(tokens: Token[]): ParserResult {
    * Parse type annotation.
    *
    * GRAMMAR:
-   *   typeAnnotation := IDENTIFIER ('<' typeAnnotation (',' typeAnnotation)* '>')? '?'? ('|' typeAnnotation)*
+   *   typeAnnotation := IDENTIFIER typeParams? '?'? ('|' typeAnnotation)*
+   *   typeParams := '<' typeParameter (',' typeParameter)* '>'
+   *   typeParameter := typeAnnotation | NUMBER | MODIFIER
    *
-   * WHY: Supports generics (Array<T>), nullable (?), and union types (A | B).
-   *      Union types create special 'union' type node containing all alternatives.
+   * WHY: Supports generics (Lista<Textus>), nullable (?), and union types (A | B).
+   *      Type parameters can be types, numeric literals, or modifiers.
+   *
+   * EDGE: Numeric parameters for sized types (Numerus<32>).
+   *       Modifier parameters for ownership/signedness (Numerus<Naturalis>).
    */
   function parseTypeAnnotation(): TypeAnnotation {
     const position = peek().position
     const token = expect("IDENTIFIER", "Expected type name")
     const name = token.value
 
-    // Check for nullable (?)
+    let typeParameters: TypeParameter[] | undefined
+
+    if (match("LESS")) {
+      typeParameters = []
+      do {
+        if (check("NUMBER")) {
+          const numToken = advance()
+          const value = numToken.value.includes(".") ? parseFloat(numToken.value) : parseInt(numToken.value, 10)
+
+          typeParameters.push({
+            type: "Literal",
+            value,
+            raw: numToken.value,
+            position: numToken.position,
+          })
+        }
+        else if (isModifier(peek())) {
+          const modToken = advance()
+
+          typeParameters.push({
+            type: "ModifierParameter",
+            name: modToken.value as "Naturalis" | "Proprius" | "Alienus" | "Mutabilis",
+            position: modToken.position,
+          })
+        }
+        else {
+          typeParameters.push(parseTypeAnnotation())
+        }
+      } while (match("COMMA"))
+
+      expect("GREATER", "Expected '>' after type parameters")
+    }
+
     let nullable = false
 
     if (match("QUESTION")) {
       nullable = true
     }
 
-    // Check for generic parameters (<T>)
-    let typeParameters: TypeAnnotation[] | undefined
-
-    if (match("LESS")) {
-      typeParameters = []
-      do {
-        typeParameters.push(parseTypeAnnotation())
-      } while (match("COMMA"))
-
-      expect("GREATER", "Expected '>' after type parameters")
-    }
-
-    // Check for union types (|)
     let union: TypeAnnotation[] | undefined
 
     if (check("PIPE")) {

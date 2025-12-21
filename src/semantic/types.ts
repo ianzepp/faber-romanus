@@ -39,10 +39,20 @@
  */
 interface BaseType {
   nullable?: boolean
+  size?: number
+  unsigned?: boolean
+  ownership?: "owned" | "borrowed"
+  mutable?: boolean
 }
 
 /**
  * Primitive type (Textus, Numerus, Bivalens, Nihil, Vacuum).
+ *
+ * WHY: Extended with modifiers to support type-first syntax:
+ *      - size: numeric bit width (Numerus<32>)
+ *      - unsigned: natural numbers (Numerus<Naturalis>)
+ *      - ownership: owned/borrowed semantics (Textus<Proprius>)
+ *      - mutable: mutability modifier (Textus<Mutabilis>)
  */
 export interface PrimitiveType extends BaseType {
   kind: "primitive"
@@ -267,11 +277,44 @@ export function isAssignableTo(source: SemanticType, target: SemanticType): bool
 
 /**
  * Format a type for error messages.
+ *
+ * WHY: Updated to display type modifiers (size, unsigned, ownership, mutable)
+ *      in error messages for better debugging.
  */
 export function formatType(type: SemanticType): string {
   switch (type.kind) {
-    case "primitive":
-      return type.name + (type.nullable ? "?" : "")
+    case "primitive": {
+      let result = type.name
+
+      // Add type parameters if present
+      const params: string[] = []
+
+      if (type.size !== undefined) {
+        params.push(type.size.toString())
+      }
+
+      if (type.unsigned) {
+        params.push("Naturalis")
+      }
+
+      if (type.ownership === "owned") {
+        params.push("Proprius")
+      }
+      else if (type.ownership === "borrowed") {
+        params.push("Alienus")
+      }
+
+      if (type.mutable) {
+        params.push("Mutabilis")
+      }
+
+      if (params.length > 0) {
+        result += `<${params.join(", ")}>`
+      }
+
+      return result + (type.nullable ? "?" : "")
+    }
+
     case "generic": {
       const params = type.typeParameters.map(formatType).join(", ")
 
