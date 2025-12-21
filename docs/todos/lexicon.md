@@ -41,10 +41,58 @@ Complete conjugation semantic model:
 
 | Conjugation | Theme | Examples |
 |-------------|-------|----------|
-| 1st (-are) | Creation | creare, portare |
-| 2nd (-ēre) | State checks | habere, tenere, videre |
-| 3rd (-ere) | Transformations | mittere, legere, scribere |
-| 4th (-ire) | IO / Side effects | aperire, finire, audire |
+| 1st (-are) | Creation | creare |
+| 2nd (-ēre) | Output/observation | videre, monere, respondere |
+| 3rd (-ere) | Data transformation | mittere, legere, scribere |
+| 4th (-ire) | IO / Side effects | aperire, dormire, exire |
+
+### Verb vs Method Philosophy (2024-12-21)
+
+**Benchmark:** If it feels like a Unix command, it's a verb. Otherwise, it's a type method.
+
+Verbs are top-level statements (like shell commands):
+```
+scribe x              // echo x
+inveni x in lista     // grep x file
+dormi 5               // sleep 5
+aperi "/file"         // open file
+```
+
+Methods are operations on objects (dot syntax):
+```
+lista.habet(x)        // list.includes(x)
+lista.pelle(x)        // list.push(x)
+textus.frange(":")    // text.split(":")
+```
+
+**Removed from verbs (now type methods):**
+- habere → `obj.habet(x)` - state query
+- tenere → redundant with `pro` loop keyword
+- portare → unclear use case
+
+**Added to verbs (very Unix):**
+- dormire → `dormi 5` like `sleep 5`
+- exire → `exi 0` like `exit 0`
+
+**Current verb inventory:**
+
+| Conj | Verb | Example | Unix Analog |
+|------|------|---------|-------------|
+| 1st | creare | `crea Rem` | touch, mkdir |
+| 2nd | videre | `vide x` | debug output |
+| 2nd | monere | `mone x` | warn (stderr) |
+| 2nd | respondere | `responde x` | yield, pipe output |
+| 3rd | mittere | `mitte x ad y` | curl POST, nc |
+| 3rd | legere | `lege "/file"` | cat, read |
+| 3rd | scribere | `scribe x` | echo |
+| 4th | aperire | `aperi "/file"` | open |
+| 4th | finire | `fini x` | close, kill |
+| 4th | audire | `audi portum` | nc -l, listen |
+| 4th | venire | `veni ex "url"` | curl, wget |
+| 4th | invenire | `inveni x in y` | grep, find |
+| 4th | scire | `si scit Typum` | test -f |
+| 4th | dormire | `dormi 5` | sleep |
+| 4th | exire | `exi 0` | exit |
 
 ## High Priority (Blocking Features)
 

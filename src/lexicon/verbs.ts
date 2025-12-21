@@ -64,30 +64,31 @@ import type { VerbEntry } from './types';
  */
 export const verbs: VerbEntry[] = [
     // 1st conjugation (-are)
+    // WHY: Creation operations
     { stem: 'cre', conjugation: 1, meaning: 'create' },
-    { stem: 'port', conjugation: 1, meaning: 'carry' },
 
     // 2nd conjugation (-ēre)
-    // WHY: Stateful operations (checking, holding, yielding)
+    // WHY: Output and observation (like Unix echo/debug)
     { stem: 'vid', conjugation: 2, meaning: 'see/debug' },
-    { stem: 'hab', conjugation: 2, meaning: 'have/contain' },
-    { stem: 'ten', conjugation: 2, meaning: 'hold/bind' },
     { stem: 'mon', conjugation: 2, meaning: 'warn' },
     { stem: 'respond', conjugation: 2, meaning: 'respond/yield' },
 
     // 3rd conjugation (-ere)
+    // WHY: Data transformation (like Unix cat/send)
     { stem: 'mitt', conjugation: 3, meaning: 'send' },
     { stem: 'leg', conjugation: 3, meaning: 'read' },
     { stem: 'scrib', conjugation: 3, meaning: 'write' },
 
     // 4th conjugation (-ire)
-    // WHY: IO and side-effect operations
+    // WHY: IO and side-effects (like Unix open/close/sleep)
     { stem: 'aper', conjugation: 4, meaning: 'open' },
     { stem: 'fin', conjugation: 4, meaning: 'finish/close' },
     { stem: 'aud', conjugation: 4, meaning: 'hear/listen' },
-    { stem: 'ven', conjugation: 4, meaning: 'come/arrive' },
-    { stem: 'inven', conjugation: 4, meaning: 'find' },
-    { stem: 'sc', conjugation: 4, meaning: 'know/check type' },
+    { stem: 'ven', conjugation: 4, meaning: 'come/fetch' },
+    { stem: 'inven', conjugation: 4, meaning: 'find/grep' },
+    { stem: 'sc', conjugation: 4, meaning: 'know/type-check' },
+    { stem: 'dorm', conjugation: 4, meaning: 'sleep' },
+    { stem: 'ex', conjugation: 4, meaning: 'exit' },
 ];
 
 // =============================================================================
