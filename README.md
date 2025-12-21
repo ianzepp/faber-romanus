@@ -10,20 +10,20 @@ Write code in Latin, compile to JavaScript or Zig. The compiler teaches Latin gr
 # Install
 bun install
 
-# Compile a .la file
-bun run src/cli.ts compile examples/salve.la
+# Compile a .fab file
+bun run src/cli.ts compile examples/salve.fab
 
 # Run directly
-bun run src/cli.ts run examples/salve.la
+bun run src/cli.ts run examples/salve.fab
 
 # Check for errors
-bun run src/cli.ts check examples/salve.la
+bun run src/cli.ts check examples/salve.fab
 ```
 
 ## Example
 
 ```la
-// salve.la - Hello World
+// salve.fab - Hello World
 
 functio salve(nomen) {
   redde "Salve, " + nomen + "!"

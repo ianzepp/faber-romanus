@@ -14,7 +14,7 @@
  * and code generator in sequence, collecting errors at each phase.
  *
  * The CLI provides three primary commands:
- * - compile: Full compilation pipeline from .la source to target language
+ * - compile: Full compilation pipeline from .fab source to target language
  * - run: Compile to TypeScript and execute immediately (TS target only)
  * - check: Validate source for errors without generating code
  *
@@ -24,7 +24,7 @@
  *
  * INPUT/OUTPUT CONTRACT
  * =====================
- * INPUT:  Command-line arguments (argv), .la source files from filesystem
+ * INPUT:  Command-line arguments (argv), .fab source files from filesystem
  * OUTPUT: Generated target language source (stdout or file), error messages (stderr)
  * ERRORS: Tokenizer errors, parser errors, file I/O errors, invalid arguments
  *
@@ -89,9 +89,9 @@ Usage:
   faber <command> [options] <file>
 
 Commands:
-  compile <file.la>     Compile .la file to target language
-  run <file.la>         Compile and execute (TS target only)
-  check <file.la>       Check for errors without compiling
+  compile <file.fab>     Compile .fab file to target language
+  run <file.fab>         Compile and execute (TS target only)
+  check <file.fab>       Check for errors without compiling
 
 Options:
   -t, --target <lang>    Target language: ts (default), zig
@@ -100,11 +100,11 @@ Options:
   -v, --version          Show version
 
 Examples:
-  faber compile hello.la                    # Compile to TS (stdout)
-  faber compile hello.la -o hello.ts        # Compile to TS file
-  faber compile hello.la --target zig       # Compile to Zig (stdout)
-  faber compile hello.la -t zig -o hello.zig
-  faber run hello.la                        # Compile to TS and execute
+  faber compile hello.fab                    # Compile to TS (stdout)
+  faber compile hello.fab -o hello.ts        # Compile to TS file
+  faber compile hello.fab --target zig       # Compile to Zig (stdout)
+  faber compile hello.fab -t zig -o hello.zig
+  faber run hello.fab                        # Compile to TS and execute
 `)
 }
 
@@ -127,7 +127,7 @@ Examples:
  * - TS: Generates TypeScript with type annotations
  * - Zig: Generates Zig with explicit return types and error handling
  *
- * @param inputFile - Path to .la source file
+ * @param inputFile - Path to .fab source file
  * @param target - Compilation target language
  * @param outputFile - Optional output file path (defaults to stdout)
  * @returns Generated source code as string
@@ -196,7 +196,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
  * TARGET RESTRICTION: Only works with TypeScript target since Zig requires
  *                     separate compilation and linking.
  *
- * @param inputFile - Path to .la source file
+ * @param inputFile - Path to .fab source file
  */
 async function run(inputFile: string): Promise<void> {
   const ts = await compile(inputFile, "ts")
@@ -221,7 +221,7 @@ async function run(inputFile: string): Promise<void> {
  *
  * OUTPUT: Reports error count and positions, exits 0 if no errors
  *
- * @param inputFile - Path to .la source file
+ * @param inputFile - Path to .fab source file
  */
 async function check(inputFile: string): Promise<void> {
   const source = await Bun.file(inputFile).text()

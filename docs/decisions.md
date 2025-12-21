@@ -8,13 +8,13 @@ These need resolution before or during implementation:
 2. ~~**AST design**~~ → ADR-005
 3. ~~**Latin grammar depth**~~ → ADR-003
 4. ~~**Error message system**~~ → ADR-002
-5. ~~**File extension**: `.la`~~ → ADR-001
+5. ~~**File extension**: `.fab`~~ → ADR-001
 
 ---
 
 ## Decisions
 
-### ADR-001: File extension `.la` (2024-12-20, updated 2024-12-21)
+### ADR-001: File extension `.fab` (2024-12-20, updated 2024-12-21)
 
 **Status**: Accepted (supersedes original `.fab` decision)
 
@@ -23,16 +23,16 @@ These need resolution before or during implementation:
 **Considered**:
 - `.fr` — Too strongly associated with French
 - `.ls` — Already used by LiveScript
-- `.lat` — Three characters, prefer two
+- `.fabt` — Three characters, prefer two
 - `.fab` — Short for "Faber", but three characters
-- `.la` — ISO 639-1 code for Latin, two characters
+- `.fab` — ISO 639-1 code for Latin, two characters
 
-**Decision**: Use `.la` for source files.
+**Decision**: Use `.fab` for source files.
 
 **Consequences**:
 - Conflicts with GNU Libtool archive files (niche, acceptable)
 - ISO standard language code provides immediate recognition
-- CLI will look for `*.la` by default
+- CLI will look for `*.fab` by default
 
 ### ADR-002: Error messages as correction hints (2024-12-20)
 
@@ -103,7 +103,7 @@ These need resolution before or during implementation:
 
 **Pipeline**:
 ```
-Source (.la)
+Source (.fab)
     ↓
 Parser + Morphology
     ↓

@@ -17,8 +17,8 @@ A Latin programming language compiler. "The Roman Craftsman."
 ## Commands
 
 ```bash
-bun run src/cli.ts compile <file.la>          # Compile to TypeScript
-bun run src/cli.ts compile <file.la> -t zig   # Compile to Zig
+bun run src/cli.ts compile <file.fab>          # Compile to TypeScript
+bun run src/cli.ts compile <file.fab> -t zig   # Compile to Zig
 bun test                                       # Run tests
 ```
 
