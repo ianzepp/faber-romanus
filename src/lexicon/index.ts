@@ -41,7 +41,13 @@
 
 import type { ParsedNoun, ParsedVerb, Number, Tense } from './types';
 import { nouns, getEndingsForDeclension } from './nouns';
-import { verbs, conjugation1Endings, conjugation2Endings, conjugation3Endings } from './verbs';
+import {
+    verbs,
+    conjugation1Endings,
+    conjugation2Endings,
+    conjugation3Endings,
+    conjugation4Endings,
+} from './verbs';
 import { builtinTypes } from './types-builtin';
 
 // =============================================================================
@@ -229,7 +235,6 @@ export function parseVerb(word: string): ParsedVerb[] | null {
 
         const ending = lowerWord.slice(verb.stem.length);
 
-        // WHY: 4th conjugation not yet implemented
         let endingsTable: typeof conjugation1Endings | null = null;
 
         if (verb.conjugation === 1) {
@@ -238,6 +243,8 @@ export function parseVerb(word: string): ParsedVerb[] | null {
             endingsTable = conjugation2Endings;
         } else if (verb.conjugation === 3) {
             endingsTable = conjugation3Endings;
+        } else if (verb.conjugation === 4) {
+            endingsTable = conjugation4Endings;
         }
 
         if (!endingsTable) {

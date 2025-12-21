@@ -24,7 +24,7 @@
  * - 1st: -are verbs (creare, portare) - transformations
  * - 2nd: -ēre verbs (videre, habere) - stateful operations
  * - 3rd: -ere verbs (mittere, legere) - transformations
- * - 4th: -ire verbs (not yet implemented)
+ * - 4th: -ire verbs (aperire, audire) - IO/side effects
  *
  * MAPPING TO ASYNC/AWAIT:
  * Latin's future tense naturally expresses asynchronous operations. A future
@@ -35,7 +35,7 @@
  * =====================
  * INPUT:  Conjugation number
  * OUTPUT: EndingMap mapping endings to tense/person/number/async
- * ERRORS: Returns null for unsupported conjugations (4th not implemented)
+ * ERRORS: Returns null for unrecognized verbs
  *
  * INVARIANTS
  * ==========
@@ -79,6 +79,15 @@ export const verbs: VerbEntry[] = [
     { stem: 'mitt', conjugation: 3, meaning: 'send' },
     { stem: 'leg', conjugation: 3, meaning: 'read' },
     { stem: 'scrib', conjugation: 3, meaning: 'write' },
+
+    // 4th conjugation (-ire)
+    // WHY: IO and side-effect operations
+    { stem: 'aper', conjugation: 4, meaning: 'open' },
+    { stem: 'fin', conjugation: 4, meaning: 'finish/close' },
+    { stem: 'aud', conjugation: 4, meaning: 'hear/listen' },
+    { stem: 'ven', conjugation: 4, meaning: 'come/arrive' },
+    { stem: 'inven', conjugation: 4, meaning: 'find' },
+    { stem: 'sc', conjugation: 4, meaning: 'know/check type' },
 ];
 
 // =============================================================================
@@ -205,4 +214,49 @@ export const conjugation2Endings: Record<
     ebimus: [{ tense: 'future', person: 1, number: 'plural', async: true }],
     ebitis: [{ tense: 'future', person: 2, number: 'plural', async: true }],
     ebunt: [{ tense: 'future', person: 3, number: 'plural', async: true }],
+};
+
+// ---------------------------------------------------------------------------
+// 4th Conjugation
+// ---------------------------------------------------------------------------
+
+/**
+ * 4th conjugation endings (present/imperative/future).
+ *
+ * EXAMPLES: aperire (to open), finire (to finish), audire (to hear)
+ *
+ * WHY: Fourth conjugation has a long -ī- theme vowel. Used for IO and
+ *      side-effect operations: opening/closing, listening, finding.
+ *
+ * SEMANTIC MAPPING:
+ * - aperire: open file/stream/connection
+ * - finire: close/dispose resources
+ * - audire: listen for events, receive input
+ * - venire: incoming data, fetch arrival
+ * - invenire: .find() / search operations
+ * - scire: type guards, instanceof checks
+ */
+export const conjugation4Endings: Record<
+    string,
+    { tense: string; person?: number; number?: string; async: boolean }[]
+> = {
+    // WHY: Imperative uses -i (singular), -ite (plural)
+    i: [{ tense: 'imperative', person: 2, number: 'singular', async: false }],
+    ite: [{ tense: 'imperative', person: 2, number: 'plural', async: false }],
+
+    // WHY: Present tense uses -i- theme vowel, but 1st person has -io
+    io: [{ tense: 'present', person: 1, number: 'singular', async: false }],
+    is: [{ tense: 'present', person: 2, number: 'singular', async: false }],
+    it: [{ tense: 'present', person: 3, number: 'singular', async: false }],
+    imus: [{ tense: 'present', person: 1, number: 'plural', async: false }],
+    itis: [{ tense: 'present', person: 2, number: 'plural', async: false }],
+    iunt: [{ tense: 'present', person: 3, number: 'plural', async: false }],
+
+    // WHY: Future tense in 4th conjugation uses -ie- + personal endings
+    iam: [{ tense: 'future', person: 1, number: 'singular', async: true }],
+    ies: [{ tense: 'future', person: 2, number: 'singular', async: true }],
+    iet: [{ tense: 'future', person: 3, number: 'singular', async: true }],
+    iemus: [{ tense: 'future', person: 1, number: 'plural', async: true }],
+    ietis: [{ tense: 'future', person: 2, number: 'plural', async: true }],
+    ient: [{ tense: 'future', person: 3, number: 'plural', async: true }],
 };

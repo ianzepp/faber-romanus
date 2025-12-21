@@ -24,11 +24,33 @@ Rationale:
 - `tene` for iterator binding in loops
 - `responde` for generator yields, `respondet` for pipeline yields
 
+### 4th Conjugation Semantic Mapping (2024-12-21)
+
+4th conjugation (-ire verbs) reserved for **IO and side-effect operations**:
+
+| Verb | Imperative | Present 3sg | Future 3sg | Maps To |
+|------|------------|-------------|------------|---------|
+| aperire | aperi | aperit | aperiet | open file/stream/connection |
+| finire | fini | finit | finiet | close/dispose resources |
+| audire | audi | audit | audiet | listen for events |
+| venire | veni | venit | veniet | incoming data/fetch |
+| invenire | inveni | invenit | inveniet | .find() / search |
+| scire | sci | scit | sciet | type guard / instanceof |
+
+Complete conjugation semantic model:
+
+| Conjugation | Theme | Examples |
+|-------------|-------|----------|
+| 1st (-are) | Creation | creare, portare |
+| 2nd (-ēre) | State checks | habere, tenere, videre |
+| 3rd (-ere) | Transformations | mittere, legere, scribere |
+| 4th (-ire) | IO / Side effects | aperire, finire, audire |
+
 ## High Priority (Blocking Features)
 
 ### Verb Conjugations
 - [x] Add 2nd conjugation (-ēre verbs: videre, habere, tenere)
-- [ ] Add 4th conjugation (-ire verbs: audire, venire, scire)
+- [x] Add 4th conjugation (-ire verbs: audire, venire, scire)
 
 ### Keywords for OOP/Modules
 - [ ] `classis` or `genus` → class
