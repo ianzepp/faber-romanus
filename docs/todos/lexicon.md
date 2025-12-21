@@ -94,6 +94,26 @@ textus.frange(":")    // text.split(":")
 | 4th | dormire | `dormi 5` | sleep |
 | 4th | exire | `exi 0` | exit |
 
+### OOP/Module Keywords (2024-12-21)
+
+Designed for cross-target portability (TS, Zig, Rust, C, WASM):
+
+| Keyword | Meaning | Compiles To |
+|---------|---------|-------------|
+| genus | kind/struct | TS class, Zig/Rust/C struct |
+| pactum | agreement/contract | TS interface, Rust trait |
+| publicus | public | pub/public/export |
+| (default) | private | private/not exported |
+| exporta | export | export/pub |
+| importa...ex | import from | import/use/@import |
+
+**Skipped (TS-only or unnecessary):**
+- `extends`/`extendit` → use composition instead of inheritance
+- `implements`/`implet` → structural typing handles this
+- `protected`/`protectus` → only TS supports it
+- `static`/`stabilis` → defer for later
+- `default`/`praefinitum` → part of export syntax, not separate keyword
+
 ## High Priority (Blocking Features)
 
 ### Verb Conjugations
@@ -101,19 +121,13 @@ textus.frange(":")    // text.split(":")
 - [x] Add 4th conjugation (-ire verbs: audire, venire, scire)
 
 ### Keywords for OOP/Modules
-- [ ] `classis` or `genus` → class
-- [ ] `forma` → interface
-- [ ] `extendit` → extends
-- [ ] `implet` → implements
-- [ ] `exporta` → export
-- [ ] `praefinitum` → default
-- [ ] `ab` → from (imports)
+- [x] `genus` → struct/class
+- [x] `pactum` → interface/trait
+- [x] `exporta` → export
+- [x] `publicus` → public visibility
 
 ### Access Modifiers
-- [ ] `privatus` → private
-- [ ] `publicus` → public
-- [ ] `protectus` → protected
-- [ ] `stabilis` → static
+- [x] `publicus` → public (default is private)
 
 ### Error Diagnostics
 - [ ] Return structured errors instead of `null`

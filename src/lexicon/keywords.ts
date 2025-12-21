@@ -98,7 +98,12 @@ export const keywords: KeywordEntry[] = [
     { latin: 'functio', meaning: 'function', category: 'declaration' },
     { latin: 'novum', meaning: 'new', category: 'declaration' },
     { latin: 'importa', meaning: 'import', category: 'declaration' },
+    { latin: 'exporta', meaning: 'export', category: 'declaration' },
     { latin: 'typus', meaning: 'type', category: 'declaration' },
+    // WHY: "genus" (kind) for data structures - compiles to class/struct
+    { latin: 'genus', meaning: 'struct/class', category: 'declaration' },
+    // WHY: "pactum" (agreement) for contracts - compiles to interface/trait
+    { latin: 'pactum', meaning: 'interface/trait', category: 'declaration' },
 
     // ---------------------------------------------------------------------------
     // Modifiers
@@ -106,6 +111,8 @@ export const keywords: KeywordEntry[] = [
 
     // WHY: "futura" (future/about to be) naturally expresses async operations
     { latin: 'futura', meaning: 'async', category: 'modifier' },
+    // WHY: "publicus" for visibility - default is private
+    { latin: 'publicus', meaning: 'public', category: 'modifier' },
 
     // ---------------------------------------------------------------------------
     // Operators
