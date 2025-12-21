@@ -131,9 +131,10 @@ Examples:
  * @param inputFile - Path to .fab source file
  * @param target - Compilation target language
  * @param outputFile - Optional output file path (defaults to stdout)
+ * @param silent - If true, don't print to stdout (for use by run command)
  * @returns Generated source code as string
  */
-async function compile(inputFile: string, target: CodegenTarget, outputFile?: string): Promise<string> {
+async function compile(inputFile: string, target: CodegenTarget, outputFile?: string, silent = false): Promise<string> {
   const source = await Bun.file(inputFile).text()
 
   // ---------------------------------------------------------------------------
@@ -197,7 +198,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     await Bun.write(outputFile, output)
     console.log(`Compiled: ${inputFile} -> ${outputFile} (${target})`)
   }
-  else {
+  else if (!silent) {
     // WHY: Write to stdout for Unix pipeline compatibility
     console.log(output)
   }
@@ -219,17 +220,30 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
  * @param inputFile - Path to .fab source file
  */
 async function run(inputFile: string): Promise<void> {
-  const ts = await compile(inputFile, "ts")
+  const ts = await compile(inputFile, "ts", undefined, true)
 
-  // WHY: Bun can execute TypeScript directly without transpilation step
+  // WHY: Bun can execute TypeScript directly - write to temp file and run
+  const tempFile = `/tmp/faber-${Date.now()}.ts`
+
   try {
-    const fn = new Function(ts)
+    await Bun.write(tempFile, ts)
+    const proc = Bun.spawn(["bun", tempFile], {
+      stdout: "inherit",
+      stderr: "inherit",
+    })
+    const exitCode = await proc.exited
 
-    fn()
+    if (exitCode !== 0) {
+      process.exit(exitCode)
+    }
   }
   catch (err) {
     console.error("Runtime error:", err)
     process.exit(1)
+  }
+  finally {
+    // Clean up temp file
+    await Bun.file(tempFile).exists() && await Bun.write(tempFile, "")
   }
 }
 

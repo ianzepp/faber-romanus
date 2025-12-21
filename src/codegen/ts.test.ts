@@ -61,7 +61,7 @@ describe("codegen", () => {
       `)
 
       expect(js).toContain("if (true)")
-      expect(js).toContain('scribe("yes")')
+      expect(js).toContain('console.log("yes")')
     })
 
     test("if with else", () => {
@@ -254,7 +254,7 @@ describe("codegen", () => {
 
       expect(js).toContain('function salve(nomen)')
       expect(js).toContain('return ("Salve, " + nomen);')
-      expect(js).toContain('scribe(salve("Mundus"))')
+      expect(js).toContain('console.log(salve("Mundus"))')
     })
   })
 })

@@ -501,9 +501,17 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
    * Generate function call.
    *
    * TRANSFORMS:
-   *   scribe("hello") -> scribe("hello")
+   *   scribe("hello") -> console.log("hello")
+   *   foo(x, y) -> foo(x, y)
    */
   function genCallExpression(node: CallExpression): string {
+    // Map Latin built-in functions to JavaScript equivalents
+    if (node.callee.type === "Identifier" && node.callee.name === "scribe") {
+      const args = node.arguments.map(genExpression).join(", ")
+
+      return `console.log(${args})`
+    }
+
     const callee = genExpression(node.callee)
     const args = node.arguments.map(genExpression).join(", ")
 
