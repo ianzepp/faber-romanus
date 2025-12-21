@@ -79,22 +79,174 @@ esto nomen = usuarii.nomen    // usuarii = genitive = "of the user"
 
 ### Control flow
 
+**Conditionals:**
 ```fab
 si conditio {
   // if
 }
+aliter si alia {
+  // else if
+}
 aliter {
   // else
 }
+```
 
+**Loops:**
+```fab
 dum conditio {
   // while
 }
 
-pro usuario in usuarii {
+fac {
+  // do...while
+} dum conditio
+
+pro usuario in usuarios {
   // for...in
 }
+
+pro numero ex numeris {
+  // for...of
+}
+
+pro (esto i = 0; i < 10; i++) {
+  // traditional for (available but rare)
+}
 ```
+
+**Loop control:**
+```fab
+rumpe       // break
+perge       // continue
+```
+
+**Switch / Pattern matching:**
+```fab
+elige valor {
+  quando 1 => scribe("unum")
+  quando 2 => scribe("duo")
+  aliter => scribe("ignotum")
+}
+```
+
+**Error handling — `cape` blocks:**
+
+Any `{ }` block can have an optional `cape` clause. No special `tempta` required.
+
+```fab
+// If with catch
+si fetch(url) {
+  process()
+} cape erratum {
+  handleError(erratum)
+}
+
+// With binding
+si fixum data = fetch(url) {
+  process(data)
+} cape erratum {
+  fallback()
+}
+
+// Full chain
+si conditio {
+  doThing()
+} cape erratum {
+  handleError()
+} aliter {
+  // condition was falsy (no error)
+  useFallback()
+}
+
+// While with catch
+dum stream.legit() {
+  process(stream.data)
+} cape erratum {
+  closeStream()
+}
+
+// For with catch
+pro item in items {
+  process(item)
+} cape erratum {
+  logFailure(erratum)
+}
+
+// Bare block with catch
+{
+  riskyOperation()
+} cape erratum {
+  recover()
+}
+```
+
+**Explicit try (optional, for emphasis or `demum`):**
+```fab
+tempta {
+  veryDangerousStuff()
+} cape erratum {
+  panic()
+} demum {
+  cleanup()  // finally — always runs
+}
+```
+
+**Throw:**
+```fab
+iace novum Erratum("Something went wrong")
+```
+
+**Await:**
+```fab
+fixum data = exspecta fetch(url)
+```
+
+**Keywords summary:**
+
+| JS | Latin | Meaning |
+|----|-------|---------|
+| `if` | `si` | "if" |
+| `else` | `aliter` | "otherwise" |
+| `switch` | `elige` | "choose" |
+| `case` | `quando` | "when" |
+| `default` | `aliter` | "otherwise" |
+| `while` | `dum` | "while" |
+| `do` | `fac` | "do" |
+| `for...in` | `pro...in` | "for...in" |
+| `for...of` | `pro...ex` | "for...from" |
+| `break` | `rumpe` | "break" |
+| `continue` | `perge` | "proceed" |
+| `try` | `tempta` | "try" (optional) |
+| `catch` | `cape` | "catch" |
+| `finally` | `demum` | "finally" |
+| `throw` | `iace` | "throw" |
+| `await` | `exspecta` | "await" |
+| `new` | `novum` | "new" |
+
+---
+
+### Closures / Arrow functions
+
+```fab
+// Arrow syntax (familiar)
+fixum duplex = (x) => x * 2
+
+// Block form
+fixum processare = (x) => {
+  fixum result = x * 2
+  redde result
+}
+
+// With types
+fixum saluta = (nomen: Textus) => `Salve, ${nomen}!`
+
+// As callback
+usuarios.filter((u) => u.activa)
+numeros.map((n) => n * 2)
+```
+
+Arrow syntax unchanged from JS — `=>` is universal enough.
 
 ---
 
