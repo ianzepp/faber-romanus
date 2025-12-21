@@ -57,8 +57,56 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
       lines.push("")
     }
 
-    lines.push(...node.body.map(genStatement))
+    // Separate top-level declarations from runtime statements
+    const topLevel: Statement[] = []
+    const runtime: Statement[] = []
+
+    for (const stmt of node.body) {
+      if (isTopLevelDeclaration(stmt)) {
+        topLevel.push(stmt)
+      }
+      else {
+        runtime.push(stmt)
+      }
+    }
+
+    // Emit top-level declarations
+    lines.push(...topLevel.map(genStatement))
+
+    // Wrap runtime statements in main()
+    if (runtime.length > 0) {
+      if (topLevel.length > 0) lines.push("")
+      lines.push("pub fn main() void {")
+      depth++
+      lines.push(...runtime.map(genStatement))
+      depth--
+      lines.push("}")
+    }
+
     return lines.join("\n")
+  }
+
+  function isTopLevelDeclaration(node: Statement): boolean {
+    // Functions are always top-level
+    if (node.type === "FunctionDeclaration") return true
+    // Imports are always top-level
+    if (node.type === "ImportDeclaration") return true
+    // Const declarations with literal values are comptime
+    if (node.type === "VariableDeclaration" && node.kind === "fixum") {
+      if (node.init && isComptimeValue(node.init)) return true
+    }
+    return false
+  }
+
+  function isComptimeValue(node: Expression): boolean {
+    // Literals are comptime
+    if (node.type === "Literal") return true
+    if (node.type === "TemplateLiteral") return true
+    // Identifiers that are verum/falsum/nihil are comptime
+    if (node.type === "Identifier") {
+      return ["verum", "falsum", "nihil"].includes(node.name)
+    }
+    return false
   }
 
   function programUsesScribe(node: Program): boolean {
@@ -116,9 +164,33 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
   function genVariableDeclaration(node: VariableDeclaration): string {
     const kind = node.kind === "esto" ? "var" : "const"
     const name = node.name.name
-    const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : ""
+
+    // Zig needs explicit types for var declarations with literals
+    let typeAnno = ""
+    if (node.typeAnnotation) {
+      typeAnno = `: ${genType(node.typeAnnotation)}`
+    }
+    else if (kind === "var" && node.init) {
+      typeAnno = `: ${inferZigType(node.init)}`
+    }
+
     const init = node.init ? ` = ${genExpression(node.init)}` : " = undefined"
     return `${ind()}${kind} ${name}${typeAnno}${init};`
+  }
+
+  function inferZigType(node: Expression): string {
+    if (node.type === "Literal") {
+      if (typeof node.value === "number") {
+        return Number.isInteger(node.value) ? "i64" : "f64"
+      }
+      if (typeof node.value === "string") return "[]const u8"
+      if (typeof node.value === "boolean") return "bool"
+    }
+    if (node.type === "Identifier") {
+      if (node.name === "verum" || node.name === "falsum") return "bool"
+      if (node.name === "nihil") return "?void"
+    }
+    return "anytype"
   }
 
   function genType(node: TypeAnnotation): string {
@@ -224,9 +296,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
   function genExpressionStatement(node: ExpressionStatement): string {
     const expr = genExpression(node.expression)
-    // In Zig, we need to handle unused results with _ =
-    // But for calls like print, we don't
-    if (node.expression.type === "CallExpression") {
+    // In Zig, assignment is a statement, not an expression
+    // Calls also don't need _ = prefix
+    if (node.expression.type === "CallExpression" || node.expression.type === "AssignmentExpression") {
       return `${ind()}${expr};`
     }
     return `${ind()}_ = ${expr};`
@@ -293,6 +365,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
     switch (op) {
       case "&&": return "and"
       case "||": return "or"
+      // NOTE: String concat in Zig needs ++ but we can't distinguish from numeric +
+      // without type information. This is a known limitation.
       default: return op
     }
   }
@@ -306,10 +380,14 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
     // Special case: scribe() -> std.debug.print()
     if (node.callee.type === "Identifier" && node.callee.name === "scribe") {
       const args = node.arguments.map(genExpression)
-      if (args.length === 1) {
-        return `std.debug.print("{any}\\n", .{${args[0]}})`
-      }
-      return `std.debug.print("{any}\\n", .{${args.join(", ")}})`
+      // Use {s} for string literals, {any} for others
+      const formatSpecs = node.arguments.map(arg => {
+        if (arg.type === "Literal" && typeof arg.value === "string") return "{s}"
+        if (arg.type === "Identifier") return "{any}"  // Could be string or number
+        return "{any}"
+      })
+      const format = formatSpecs.join(" ") + "\\n"
+      return `std.debug.print("${format}", .{${args.join(", ")}})`
     }
 
     const callee = genExpression(node.callee)
