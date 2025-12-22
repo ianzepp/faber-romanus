@@ -1024,9 +1024,24 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * TRANSFORMS:
      *   !x -> !x (prefix)
      *   x++ -> x++ (postfix)
+     *   nulla x -> x.len == 0
+     *   nonnulla x -> x.len > 0
+     *
+     * TARGET: Zig is statically typed, so we emit .len checks for slices.
+     *         For optionals, would need != null pattern.
      */
     function genUnaryExpression(node: UnaryExpression): string {
         const arg = genExpression(node.argument);
+
+        // nulla: check if empty (for slices/arrays)
+        if (node.operator === 'nulla') {
+            return `(${arg}.len == 0)`;
+        }
+
+        // nonnulla: check if non-empty (for slices/arrays)
+        if (node.operator === 'nonnulla') {
+            return `(${arg}.len > 0)`;
+        }
 
         return node.prefix ? `${node.operator}${arg}` : `${arg}${node.operator}`;
     }

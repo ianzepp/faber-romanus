@@ -1422,11 +1422,12 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse unary expression.
      *
      * GRAMMAR:
-     *   unary := ('!' | '-' | 'non' | 'exspecta' | 'novum') unary | call
+     *   unary := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'exspecta' | 'novum') unary | call
      *
      * PRECEDENCE: Higher than binary operators, lower than call/member access.
      *
-     * WHY: Latin 'non' (not), 'exspecta' (await), 'novum' (new).
+     * WHY: Latin 'non' (not), 'nulla' (none/empty), 'nonnulla' (some/non-empty),
+     *      'exspecta' (await), 'novum' (new).
      */
     function parseUnary(): Expression {
         if (match('BANG') || matchKeyword('non')) {
@@ -1441,6 +1442,20 @@ export function parse(tokens: Token[]): ParserResult {
             const argument = parseUnary();
 
             return { type: 'UnaryExpression', operator: '-', argument, prefix: true, position };
+        }
+
+        if (matchKeyword('nulla')) {
+            const position = tokens[current - 1].position;
+            const argument = parseUnary();
+
+            return { type: 'UnaryExpression', operator: 'nulla', argument, prefix: true, position };
+        }
+
+        if (matchKeyword('nonnulla')) {
+            const position = tokens[current - 1].position;
+            const argument = parseUnary();
+
+            return { type: 'UnaryExpression', operator: 'nonnulla', argument, prefix: true, position };
         }
 
         if (matchKeyword('exspecta')) {

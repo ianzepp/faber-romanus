@@ -79,6 +79,8 @@ export const keywords: KeywordEntry[] = [
     { latin: 'pro', meaning: 'for', category: 'control' },
     { latin: 'elige', meaning: 'switch', category: 'control' },
     { latin: 'ergo', meaning: 'then', category: 'control' },
+    { latin: 'nulla', meaning: 'none/empty', category: 'operator' },
+    { latin: 'nonnulla', meaning: 'some/non-empty', category: 'operator' },
     { latin: 'quando', meaning: 'case', category: 'control' },
     { latin: 'rumpe', meaning: 'break', category: 'control' },
     { latin: 'perge', meaning: 'continue', category: 'control' },

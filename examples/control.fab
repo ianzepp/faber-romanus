@@ -8,6 +8,7 @@
 // - custodi (guard)
 // - adfirma (assert)
 // - et/aut (and/or)
+// - nulla/nonnulla (empty / non-empty checks)
 
 // Conditionals with si (if)
 fixum x = 10
@@ -57,6 +58,23 @@ si a et b {
 
 si a aut b {
   scribe("alterum verum")
+}
+
+// Empty/non-empty checks with nulla/nonnulla
+fixum items = [1, 2, 3]
+fixum empty = []
+
+si nonnulla items {
+  scribe("has items")
+}
+
+si nulla empty {
+  scribe("empty array")
+}
+
+fixum data = { name: "Marcus" }
+si nonnulla data {
+  scribe("has data")
 }
 
 // For-each loop (ex ... pro) - iterate values

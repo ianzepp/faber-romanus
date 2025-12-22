@@ -841,9 +841,21 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * TRANSFORMS:
      *   !x -> !x (prefix)
      *   x++ -> x++ (postfix)
+     *   nulla x -> inline empty check
+     *   nonnulla x -> inline non-empty check
      */
     function genUnaryExpression(node: UnaryExpression): string {
         const arg = genExpression(node.argument);
+
+        // nulla: check if null/empty
+        if (node.operator === 'nulla') {
+            return `(${arg} == null || (Array.isArray(${arg}) || typeof ${arg} === 'string' ? ${arg}.length === 0 : typeof ${arg} === 'object' ? Object.keys(${arg}).length === 0 : !${arg}))`;
+        }
+
+        // nonnulla: check if non-null and has content
+        if (node.operator === 'nonnulla') {
+            return `(${arg} != null && (Array.isArray(${arg}) || typeof ${arg} === 'string' ? ${arg}.length > 0 : typeof ${arg} === 'object' ? Object.keys(${arg}).length > 0 : Boolean(${arg})))`;
+        }
 
         return node.prefix ? `${node.operator}${arg}` : `${arg}${node.operator}`;
     }
