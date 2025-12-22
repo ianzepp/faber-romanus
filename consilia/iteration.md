@@ -161,30 +161,32 @@ ex tabula.paria() pro (clavis, valor) {
 
 **Syntax:** `start..end [per step]`
 
-Creates a numeric sequence.
+Creates a numeric sequence. **Both endpoints are inclusive.**
 
 ```
 ex 0..5 pro n {
-    scribe n  // 0, 1, 2, 3, 4
+    scribe n  // 0, 1, 2, 3, 4, 5
 }
 
 ex 0..10 per 2 pro n {
-    scribe n  // 0, 2, 4, 6, 8
+    scribe n  // 0, 2, 4, 6, 8, 10
 }
 
-ex 10..0 per -1 pro n {
+ex 10..1 per -1 pro n {
     scribe n  // 10, 9, 8, ... 1
 }
 ```
 
-### Inclusive vs Exclusive
+### Why Inclusive?
 
-Current: `0..5` is exclusive of end (0, 1, 2, 3, 4)
+"From 0 to 10" in natural language includes both endpoints. The exclusive convention in other languages exists because of `i < 10` in C-style loops — but Faber doesn't expose `<` or `++` in range syntax, so exclusion would be arbitrary and unintuitive.
 
-Open question: Add inclusive syntax?
-- `0..=5` for inclusive (Rust-style)
-- `0...5` for inclusive (Swift-style)
-- Keep exclusive only, use `0..6` for inclusive 0-5
+```
+ex 0..9 pro n { ... }   // ten digits: 0 through 9
+ex 1..10 pro n { ... }  // ten numbers: 1 through 10
+```
+
+No mental gymnastics. Say what you mean.
 
 ---
 
