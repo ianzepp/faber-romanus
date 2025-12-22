@@ -89,8 +89,8 @@ functio salve(nomen) -> Textus {
   redde "Salve, " + nomen
 }
 
-// With typed parameters
-functio adde(a: Numerus, b: Numerus) -> Numerus {
+// With typed parameters (type-first syntax)
+functio adde(Numerus a, Numerus b) -> Numerus {
   redde a + b
 }
 
@@ -279,12 +279,12 @@ Copia<T>        // Set<T>
 Promissum<T>    // Promise<T>
 ```
 
-Type annotations are optional:
+Type annotations use type-first syntax:
 
 ```
-fixum x: Numerus = 42
-fixum name: Textus = "Marcus"
-fixum items: Lista<Numerus> = [1, 2, 3]
+fixum Numerus x = 42
+fixum Textus name = "Marcus"
+fixum Lista<Numerus> items = [1, 2, 3]
 ```
 
 ### Keywords Reference

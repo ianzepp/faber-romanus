@@ -1,22 +1,155 @@
-// Type Annotations in Faber Romanus
+// Type System in Faber Romanus
 //
-// Types are optional but recommended. Latin type names:
-// - Textus (string)
-// - Numerus (number)
-// - Bivalens (boolean)
-// - Vacuum (void)
+// Type-first syntax: the type precedes the identifier
+//   fixum Textus nomen = "Marcus"
+//   functio saluta(Textus nomen) -> Textus { ... }
 //
 // Types are case-insensitive: Textus, textus, TEXTUS all work.
+// Return types use arrow syntax: -> Type
 
-// Type-first syntax: Type name
-fixum Textus nomen = "Marcus"
-fixum Numerus aetas = 25
+// =============================================================================
+// PRIMITIVE TYPES
+// =============================================================================
+
+// Textus (string)
+fixum Textus nomen = "Marcus Aurelius"
+
+// Numerus (number - integer)
+fixum Numerus aetas = 30
+fixum Numerus<32> smallInt = 42        // 32-bit integer
+fixum Numerus<Naturalis> unsigned = 100 // unsigned (no negatives)
+
+// Fractus (floating point)
+fixum Fractus pi = 3.14159
+fixum Fractus<32> float32 = 2.718
+
+// Bivalens (boolean)
 fixum Bivalens activus = verum
+fixum Bivalens completus = falsum
 
-// Nullable type with ?
-esto Textus? error = nihil
+// Nihil (null)
+fixum nihilum = nihil
 
-// Functions with typed parameters and return type
-functio saluta(Textus nomen, Numerus aetas) -> Textus {
-  redde "Salve, " + nomen
+// Vacuum (void) - used for functions that return nothing
+
+// =============================================================================
+// COLLECTION TYPES
+// =============================================================================
+
+// Lista<T> - array/list
+fixum Lista<Textus> nomina = ["Gaius", "Marcus", "Julia"]
+fixum Lista<Numerus> numeri = [1, 2, 3, 4, 5]
+
+// Tabula<K, V> - map/dictionary
+fixum Tabula<Textus, Numerus> aetates = {
+  marcus: 30,
+  julia: 25,
+  gaius: 45
 }
+
+// Copia<T> - set (unique values)
+// fixum Copia<Textus> uniques = ...
+
+// =============================================================================
+// NULLABLE TYPES
+// =============================================================================
+
+// Use ? suffix for optional/nullable types
+fixum Textus? cognomen = nihil
+esto Numerus? result = nihil
+
+// Forsitan<T> is the explicit optional type
+// fixum Forsitan<Textus> maybe = nihil
+
+// =============================================================================
+// FUNCTION TYPES
+// =============================================================================
+
+// Parameters: type-first (Type name)
+// Return: arrow syntax (-> Type)
+functio adde(Numerus a, Numerus b) -> Numerus {
+  redde a + b
+}
+
+// No return type means Vacuum (void)
+functio saluta(Textus nomen) {
+  scribe "Salve, " + nomen
+}
+
+// Multiple parameters
+functio describe(Textus nomen, Numerus aetas, Bivalens activus) -> Textus {
+  redde nomen + " (" + aetas + ")"
+}
+
+// =============================================================================
+// TYPE ALIASES
+// =============================================================================
+
+// typus creates a type alias
+typus ID = Textus
+typus UserID = Numerus
+typus Handler = Functio<Res, Vacuum>
+
+// Using type aliases
+fixum ID oderId = "ORD-12345"
+fixum UserID currentUser = 42
+
+// =============================================================================
+// ASYNC TYPES
+// =============================================================================
+
+// Promissum<T> - Promise
+// futura functio fetchUser(Numerus id) -> Promissum<Textus> {
+//   redde exspecta fetch("/users/" + id)
+// }
+
+// =============================================================================
+// STRUCTURAL TYPES
+// =============================================================================
+
+// Tempus - Date/time
+// fixum Tempus now = novum Tempus
+
+// Erratum - Error
+// iace novum Erratum("Something went wrong")
+
+// Res - generic object
+fixum Res config = {
+  host: "localhost",
+  port: 8080
+}
+
+// =============================================================================
+// ESCAPE HATCHES
+// =============================================================================
+
+// Quodlibet - "whatever pleases" (any) - opt out of type checking
+// fixum Quodlibet anything = "could be anything"
+
+// Ignotum - "unknown" - must narrow before use
+// fixum Ignotum mystery = getData()
+
+// =============================================================================
+// SYSTEMS TYPES (Zig/Rust targets)
+// =============================================================================
+
+// Type modifiers for systems programming:
+//   Naturalis - unsigned (natural numbers)
+//   Proprius  - owned (move semantics)
+//   Alienus   - borrowed (reference semantics)
+//   Mutabilis - mutable
+
+// fixum Textus<Proprius> ownedString = "I own this"
+// fixum Textus<Alienus> borrowedRef = someString
+
+// Pointer types (ignored in TypeScript target)
+// fixum Indicium<Numerus> ptr = ...
+// fixum Refera<Textus> ref = ...
+
+// =============================================================================
+// EXAMPLES
+// =============================================================================
+
+scribe adde(10, 20)
+saluta(nomen)
+scribe describe(nomen, aetas, activus)

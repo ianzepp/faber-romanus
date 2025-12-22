@@ -149,8 +149,8 @@ function parsePrimary(): Expression {
  * Generate code for a function declaration.
  *
  * TRANSFORMS:
- *   functio salve(nomen: Textus) → function salve(nomen: string)
- *   futura functio f()           → async function f()
+ *   functio salve(Textus nomen) → function salve(nomen: string)
+ *   futura functio f()          → async function f()
  *
  * TARGET DIFFERENCES:
  *   TypeScript: Emits type annotations
