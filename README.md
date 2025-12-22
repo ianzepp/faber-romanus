@@ -2,7 +2,7 @@
 
 **The Roman Craftsman** — A Latin programming language.
 
-Write code in Latin, compile to TypeScript, Zig, or WebAssembly. The compiler teaches Latin grammar through error messages.
+Write code in Latin, compile to TypeScript or Zig. The compiler teaches Latin grammar through error messages.
 
 ## Quick Start
 
@@ -28,14 +28,11 @@ bun run src/cli.ts compile hello.fab
 
 # Zig
 bun run src/cli.ts compile hello.fab -t zig
-
-# WebAssembly Text Format
-bun run src/cli.ts compile hello.fab -t wasm
 ```
 
 ## Example
 
-```la
+```
 // salve.fab - Hello World
 
 functio salve(nomen) -> Textus {
@@ -43,7 +40,7 @@ functio salve(nomen) -> Textus {
 }
 
 fixum nomen = "Mundus"
-scribe(salve(nomen))
+scribe salve(nomen)
 ```
 
 Compiles to TypeScript:
@@ -71,72 +68,152 @@ pub fn main() void {
 }
 ```
 
-Or WASM:
-
-```wat
-(module
-  (func (export "salve") (param $nomen i64) (result i64)
-    ;; ...
-  )
-  (func (export "_start")
-    ;; ...
-  )
-)
-```
-
 ## Language Reference
 
 ### Variables
 
-```la
+```
 esto nomen = "Marcus"      // let (mutable)
 fixum PI = 3.14159         // const (immutable)
+
+// Boolean and null literals
+fixum active = verum       // true
+fixum done = falsum        // false
+fixum empty = nihil        // null
 ```
 
 ### Functions
 
-```la
-functio salve(Textus nomen) -> Textus {
+```
+functio salve(nomen) -> Textus {
   redde "Salve, " + nomen
 }
 
-futura functio fetch(Textus url) -> Textus {
-  // async function
+// With typed parameters
+functio adde(a: Numerus, b: Numerus) -> Numerus {
+  redde a + b
+}
+
+// Async function
+futura functio fetch(url) -> Textus {
   redde exspecta getData(url)
 }
 ```
 
+### Output
+
+`scribe` is a statement keyword (like `iace` for throw):
+
+```
+scribe "Hello"
+scribe "Name:", name, "Age:", age
+scribe result
+```
+
 ### Control Flow
 
-```la
-si conditio {
-  // if
-}
-aliter si alia {
-  // else if
+```
+// If statement
+si x > 5 {
+  scribe "big"
 }
 aliter {
-  // else
+  scribe "small"
 }
 
-dum conditio {
-  // while
+// One-liner with ergo (then)
+si x > 5 ergo scribe "big" aliter scribe "small"
+
+// While loop
+dum x > 0 {
+  x = x - 1
 }
 
-in lista pro item {
-  // for...in (iterate keys)
+// While one-liner
+dum x > 0 ergo x = x - 1
+
+// For-each (source-first: ex collection pro item)
+ex items pro item {
+  scribe item
 }
 
-ex numeros pro numero {
-  // for...of (iterate values)
+// For-each one-liner
+ex items pro item ergo scribe item
+
+// Range expression
+ex 0..10 pro i {
+  scribe i
+}
+
+// Range with step
+ex 0..10 per 2 pro i {
+  scribe i
+}
+```
+
+### Switch Statement
+
+```
+elige status {
+  si "pending" ergo scribe "waiting"
+  si "active" ergo scribe "running"
+  si "done" {
+    scribe "finished"
+    cleanup()
+  }
+  aliter scribe "unknown"
+}
+```
+
+### Guard Clauses
+
+```
+functio validate(x) -> Numerus {
+  custodi {
+    si x < 0 { redde -1 }
+    si x > 100 { redde -1 }
+  }
+  redde x
+}
+```
+
+### Assert Statement
+
+```
+adfirma x > 0, "x must be positive"
+adfirma valid
+```
+
+### Objects
+
+```
+// Object literal
+fixum persona = {
+  nomen: "Marcus",
+  aetas: 30
+}
+
+scribe persona.nomen
+
+// Destructuring
+fixum { nomen, aetas } = persona
+
+// Destructuring with rename
+fixum { nomen: userName } = persona
+
+// With block - set properties in context
+esto config = { host: "", port: 0 }
+cum config {
+  host = "localhost"
+  port = 8080
 }
 ```
 
 ### Error Handling
 
-Any block can have a `cape` (catch) clause:
+Any control block can have a `cape` (catch) clause:
 
-```la
+```
 si riskyCall() {
   process()
 }
@@ -147,7 +224,7 @@ cape erratum {
 
 Explicit try/catch/finally:
 
-```la
+```
 tempta {
   dangerousCode()
 }
@@ -159,48 +236,91 @@ demum {
 }
 ```
 
+Throw errors:
+
+```
+iace "Something went wrong"
+iace novum Error("message")
+```
+
 ### Operators
 
 | Latin | JavaScript | Meaning |
 |-------|------------|---------|
-| `et`  | `&&`       | and     |
-| `aut` | `\|\|`     | or      |
-| `!`   | `!`        | not     |
+| `et`  | `&&`       | and |
+| `aut` | `\|\|`     | or |
+| `non` | `!`        | not |
+| `nulla` | — | is null/empty |
+| `nonnulla` | — | is non-null/non-empty |
+
+Empty/non-empty checks:
+
+```
+si nonnulla items {
+  scribe "has items"
+}
+
+si nulla data {
+  scribe "no data"
+}
+```
 
 ### Types
 
-```la
-Textus          // String
-Numerus         // Number
-Bivalens        // Boolean (verum/falsum)
-Lista<T>        // Array
-Tabula<K, V>    // Map
-Copia<T>        // Set
-Promissum<T>    // Promise
+```
+Textus          // string
+Numerus         // number
+Bivalens        // boolean (verum/falsum)
+Nihil           // null
+Vacuum          // void
+Lista<T>        // Array<T>
+Tabula<K, V>    // Map<K, V>
+Copia<T>        // Set<T>
+Promissum<T>    // Promise<T>
+```
+
+Type annotations are optional:
+
+```
+fixum x: Numerus = 42
+fixum name: Textus = "Marcus"
+fixum items: Lista<Numerus> = [1, 2, 3]
 ```
 
 ### Keywords Reference
 
-| Latin | JavaScript |
-|-------|------------|
-| `esto` | `let` |
-| `fixum` | `const` |
-| `functio` | `function` |
-| `futura` | `async` |
-| `redde` | `return` |
-| `si` | `if` |
-| `aliter` | `else` |
-| `dum` | `while` |
-| `pro` | `for` |
-| `tempta` | `try` |
-| `cape` | `catch` |
-| `demum` | `finally` |
-| `iace` | `throw` |
-| `exspecta` | `await` |
-| `novum` | `new` |
-| `verum` | `true` |
-| `falsum` | `false` |
-| `nihil` | `null` |
+| Latin | JavaScript | Category |
+|-------|------------|----------|
+| `esto` | `let` | declaration |
+| `fixum` | `const` | declaration |
+| `functio` | `function` | declaration |
+| `futura` | `async` | modifier |
+| `redde` | `return` | control |
+| `si` | `if` | control |
+| `aliter` | `else` | control |
+| `ergo` | (then) | control |
+| `dum` | `while` | control |
+| `ex...pro` | `for...of` | control |
+| `in...pro` | `for...in` | control |
+| `elige` | `switch` | control |
+| `custodi` | (guard) | control |
+| `adfirma` | (assert) | control |
+| `tempta` | `try` | control |
+| `cape` | `catch` | control |
+| `demum` | `finally` | control |
+| `iace` | `throw` | control |
+| `scribe` | `console.log` | I/O |
+| `exspecta` | `await` | async |
+| `novum` | `new` | expression |
+| `cum` | (with) | block |
+| `verum` | `true` | value |
+| `falsum` | `false` | value |
+| `nihil` | `null` | value |
+| `et` | `&&` | operator |
+| `aut` | `\|\|` | operator |
+| `non` | `!` | operator |
+| `nulla` | — | operator |
+| `nonnulla` | — | operator |
 
 ## Development
 
@@ -208,31 +328,30 @@ Promissum<T>    // Promise
 # Run tests
 bun test
 
-# 119 tests covering lexicon, tokenizer, parser, and codegen
+# 210 tests covering lexicon, tokenizer, parser, semantic analyzer, and codegen
 ```
 
 ## Architecture
 
 ```
 src/
-├── lexicon/     # Latin vocabulary (nouns, verbs, keywords, types)
+├── lexicon/     # Latin vocabulary (keywords, types)
 ├── tokenizer/   # Source -> Tokens
 ├── parser/      # Tokens -> AST
-├── codegen/     # AST -> TypeScript, Zig, or WASM
+├── semantic/    # Type checking and validation
+├── codegen/     # AST -> Target language
 │   ├── ts.ts    # TypeScript generator
-│   ├── zig.ts   # Zig generator
-│   └── wasm.ts  # WebAssembly Text Format generator
+│   └── zig.ts   # Zig generator
 └── cli.ts       # Command-line interface
 
-editors/
-└── zed/         # Zed IDE extension (Tree-sitter grammar)
+examples/        # Example .fab programs
 ```
 
 ## Philosophy
 
 - **Compiler as tutor**: Error messages teach Latin grammar
 - **Accessibility over purity**: Lower barriers, no gatekeeping
-- **Case endings matter**: Latin morphology carries semantic meaning
+- **Source-first syntax**: `ex items pro item` reads naturally in Latin
 
 ## License
 
