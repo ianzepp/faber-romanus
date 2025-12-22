@@ -31,7 +31,7 @@ esto { activus: isActive } = persona
 isActive = falsum
 
 // With block (cum) - set properties in context
-esto config = { host: "", port: 0 }
+fixum config = { host: "", port: 0 }
 cum config {
   host = "localhost"
   port = 8080

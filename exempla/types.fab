@@ -38,7 +38,7 @@ fixum Lista<Numerus> numeri = [1, 2, 3, 4, 5]
 
 // Use ? suffix for optional/nullable types
 fixum Textus? cognomen = nihil
-esto Numerus? result = nihil
+fixum Numerus? result = nihil
 
 // =============================================================================
 // FUNCTION TYPES
