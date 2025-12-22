@@ -1,4 +1,5 @@
 ; Faber Romanus syntax highlighting queries for Tree-sitter
+; Aligned with grammar.js
 
 ; ==============================================================================
 ; Comments
@@ -12,9 +13,15 @@
 
 "si" @keyword.control.conditional
 "aliter" @keyword.control.conditional
+"ergo" @keyword.control.conditional
 
 "dum" @keyword.control.repeat
+"ex" @keyword.control.repeat
+"in" @keyword.control.repeat
 "pro" @keyword.control.repeat
+
+"elige" @keyword.control.conditional
+"custodi" @keyword.control.conditional
 
 "tempta" @keyword.control.exception
 "cape" @keyword.control.exception
@@ -34,14 +41,13 @@
 "functio" @keyword.function
 "futura" @keyword.modifier
 "novum" @keyword.operator
+"typus" @keyword.storage
 
 ; ==============================================================================
 ; Keywords - Imports
 ; ==============================================================================
 
-"ex" @keyword.import
 "importa" @keyword.import
-"cum" @keyword.import
 
 ; ==============================================================================
 ; Keywords - Operators (Latin)
@@ -50,13 +56,25 @@
 "et" @keyword.operator
 "aut" @keyword.operator
 "non" @keyword.operator
-"in" @keyword
+"nulla" @keyword.operator
+"nonnulla" @keyword.operator
+"per" @keyword.operator
 
 ; ==============================================================================
-; Keywords - Async
+; Keywords - Other
 ; ==============================================================================
 
+"cum" @keyword
+"adfirma" @keyword
+"scribe" @keyword.function
 "exspecta" @keyword.control
+
+; ==============================================================================
+; Keywords - Prepositions (in parameters)
+; ==============================================================================
+
+(formal_parameter
+  preposition: _ @keyword)
 
 ; ==============================================================================
 ; Literals
@@ -73,14 +91,16 @@
 (true) @constant.builtin.boolean
 (false) @constant.builtin.boolean
 
-; Null
+; Null and self
 (null) @constant.builtin
+(self) @variable.builtin
 
 ; ==============================================================================
 ; Types
 ; ==============================================================================
 
 (type_identifier) @type
+(type_modifier) @type.builtin
 
 ; ==============================================================================
 ; Functions
@@ -92,12 +112,16 @@
 
 ; Function calls
 (call_expression
-  function: (primary_expression (identifier) @function.call))
+  function: (identifier) @function.call)
 
 ; Method calls
 (call_expression
   function: (member_expression
     property: (identifier) @function.method.call))
+
+; Constructor calls
+(new_expression
+  callee: (identifier) @type)
 
 ; ==============================================================================
 ; Variables and Parameters
@@ -122,6 +146,10 @@
 (pair
   key: (identifier) @property)
 
+; Object pattern properties
+(object_pattern_property
+  key: (identifier) @property)
+
 ; ==============================================================================
 ; Operators
 ; ==============================================================================
@@ -142,6 +170,8 @@
 "&&" @operator
 "||" @operator
 "=>" @operator
+"->" @operator
+".." @operator
 "?" @operator
 
 ; ==============================================================================
@@ -151,7 +181,6 @@
 "." @punctuation.delimiter
 "," @punctuation.delimiter
 ":" @punctuation.delimiter
-";" @punctuation.delimiter
 
 "(" @punctuation.bracket
 ")" @punctuation.bracket
