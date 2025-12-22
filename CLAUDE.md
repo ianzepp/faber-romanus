@@ -17,14 +17,14 @@ A Latin programming language compiler. "The Roman Craftsman."
 ## Commands
 
 ```bash
-bun run src/cli.ts compile <file.fab>          # Compile to TypeScript
-bun run src/cli.ts compile <file.fab> -t zig   # Compile to Zig
-bun test                                       # Run tests
+bun run fons/cli.ts compile <file.fab>          # Compile to TypeScript
+bun run fons/cli.ts compile <file.fab> -t zig   # Compile to Zig
+bun test                                        # Run tests
 ```
 
 ## Code Standards
 
-See `docs/code-standards.md` for comprehensive guidelines. Key points:
+See `DEVELOPER.md` for comprehensive guidelines. Key points:
 
 **Module Headers**: Every file needs a header block documenting:
 - Compiler phase (lexical, syntactic, semantic, codegen)
@@ -46,6 +46,8 @@ See `docs/code-standards.md` for comprehensive guidelines. Key points:
 - Test each compiler phase independently
 - Include error recovery tests
 
-## Architecture Decisions
+## Directory Structure
 
-Tracked in `docs/decisions.md`. Each decision is numbered and dated.
+- `fons/` — compiler source ("source, spring")
+- `exempla/` — example .fab programs ("examples")
+- `opus/` — build output ("the work") - future

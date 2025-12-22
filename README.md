@@ -11,23 +11,23 @@ Write code in Latin, compile to TypeScript or Zig. The compiler teaches Latin gr
 bun install
 
 # Compile a .fab file
-bun run src/cli.ts compile examples/salve.fab
+bun run fons/cli.ts compile exempla/salve.fab
 
 # Run directly
-bun run src/cli.ts run examples/salve.fab
+bun run fons/cli.ts run exempla/salve.fab
 
 # Check for errors
-bun run src/cli.ts check examples/salve.fab
+bun run fons/cli.ts check exempla/salve.fab
 ```
 
 ## Compilation Targets
 
 ```bash
 # TypeScript (default)
-bun run src/cli.ts compile hello.fab
+bun run fons/cli.ts compile hello.fab
 
 # Zig
-bun run src/cli.ts compile hello.fab -t zig
+bun run fons/cli.ts compile hello.fab -t zig
 ```
 
 ## Example
@@ -334,7 +334,7 @@ bun test
 ## Architecture
 
 ```
-src/
+fons/            # "source" - compiler source code
 ├── lexicon/     # Latin vocabulary (keywords, types)
 ├── tokenizer/   # Source -> Tokens
 ├── parser/      # Tokens -> AST
@@ -344,7 +344,8 @@ src/
 │   └── zig.ts   # Zig generator
 └── cli.ts       # Command-line interface
 
-examples/        # Example .fab programs
+exempla/         # "examples" - example .fab programs
+opus/            # "work" - build output (future)
 ```
 
 ## Philosophy

@@ -5,16 +5,16 @@
   "module": "index.ts",
   "type": "module",
   "bin": {
-    "faber": "./src/cli.ts"
+    "faber": "./fons/cli.ts"
   },
   "scripts": {
-    "build": "bun build ./src/cli.ts --outfile=dist/faber.js --target=node",
+    "build": "bun build ./fons/cli.ts --outfile=opus/faber.js --target=node",
     "test": "bun test",
-    "check": "bun run src/cli.ts check",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "format": "prettier --write src",
-    "format:check": "prettier --check src"
+    "check": "bun run fons/cli.ts check",
+    "lint": "eslint fons",
+    "lint:fix": "eslint fons --fix",
+    "format": "prettier --write fons",
+    "format:check": "prettier --check fons"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
