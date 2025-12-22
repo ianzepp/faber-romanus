@@ -1,7 +1,7 @@
 // Control Flow in Faber Romanus
 //
 // Latin keywords for control structures:
-// - si/aliter (if/else)
+// - si/aliter/ergo (if/else/then for one-liners)
 // - dum (while)
 // - ex/in ... pro (for-each)
 // - elige/si (switch/case)
@@ -17,6 +17,9 @@ si x > 5 {
   scribe("x est magnus")
 }
 
+// One-liner with ergo
+si x > 5 ergo scribe("x magnus est")
+
 // If-else (si-aliter)
 si x > 20 {
   scribe("x est maximus")
@@ -24,6 +27,9 @@ si x > 20 {
 aliter {
   scribe("x non est maximus")
 }
+
+// One-liner if-else (aliter doesn't need ergo)
+si x > 20 ergo scribe("maximus") aliter scribe("non maximus")
 
 // If-else if-else chain
 fixum nota = 85

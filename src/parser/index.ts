@@ -784,10 +784,15 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse if statement.
      *
      * GRAMMAR:
-     *   ifStmt := 'si' expression blockStmt ('cape' IDENTIFIER blockStmt)? ('aliter' (ifStmt | blockStmt))?
+     *   ifStmt := 'si' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)? ('aliter' (ifStmt | blockStmt | statement))?
      *
      * WHY: 'cape' (catch/seize) clause allows error handling within conditionals.
      *      'aliter' (otherwise) for else clause.
+     *      'ergo' (therefore) for one-liner consequents.
+     *
+     * Examples:
+     *   si x > 5 ergo scribe("big")
+     *   si x > 5 { scribe("big") } aliter scribe("small")
      */
     function parseIfStatement(): IfStatement {
         const position = peek().position;
@@ -795,7 +800,17 @@ export function parse(tokens: Token[]): ParserResult {
         expectKeyword('si', "Expected 'si'");
 
         const test = parseExpression();
-        const consequent = parseBlockStatement();
+
+        // Parse consequent: block or ergo one-liner
+        let consequent: BlockStatement;
+        if (matchKeyword('ergo')) {
+            const stmtPos = peek().position;
+            const stmt = parseStatement();
+            consequent = { type: 'BlockStatement', body: [stmt], position: stmtPos };
+        }
+        else {
+            consequent = parseBlockStatement();
+        }
 
         // Check for cape (catch) clause
         let catchClause: CatchClause | undefined;
@@ -810,8 +825,15 @@ export function parse(tokens: Token[]): ParserResult {
         if (matchKeyword('aliter')) {
             if (checkKeyword('si')) {
                 alternate = parseIfStatement();
-            } else {
+            }
+            else if (check('LBRACE')) {
                 alternate = parseBlockStatement();
+            }
+            else {
+                // One-liner: aliter statement (no ergo needed)
+                const stmtPos = peek().position;
+                const stmt = parseStatement();
+                alternate = { type: 'BlockStatement', body: [stmt], position: stmtPos };
             }
         }
 
