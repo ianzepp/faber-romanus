@@ -68,6 +68,7 @@ import type {
     NewExpression,
     TypeAnnotation,
     ThrowStatement,
+    ScribeStatement,
     TryStatement,
 } from '../parser/ast';
 import type { Position } from '../tokenizer/types';
@@ -213,7 +214,6 @@ export function analyze(program: Program): SemanticResult {
 
         // _scribe - print/log (variadic, returns void)
         defFn('_scribe', [], VACUUM);
-        defFn('scribe', [], VACUUM); // Global alias for convenience
 
         // _vide - debug output
         defFn('_vide', [], VACUUM);
@@ -870,9 +870,18 @@ export function analyze(program: Program): SemanticResult {
             case 'ThrowStatement':
                 analyzeThrowStatement(node);
                 break;
+            case 'ScribeStatement':
+                analyzeScribeStatement(node);
+                break;
             case 'TryStatement':
                 analyzeTryStatement(node);
                 break;
+        }
+    }
+
+    function analyzeScribeStatement(node: ScribeStatement): void {
+        for (const arg of node.arguments) {
+            resolveExpression(arg);
         }
     }
 

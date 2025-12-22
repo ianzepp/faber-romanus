@@ -94,7 +94,8 @@ export type Statement =
     | ReturnStatement
     | BlockStatement
     | ThrowStatement
-    | TryStatement;
+    | TryStatement
+    | ScribeStatement;
 
 // ---------------------------------------------------------------------------
 // Import/Export Declarations
@@ -474,6 +475,24 @@ export interface BlockStatement extends BaseNode {
 export interface ThrowStatement extends BaseNode {
     type: 'ThrowStatement';
     argument: Expression;
+}
+
+/**
+ * Scribe (print) statement.
+ *
+ * GRAMMAR (in EBNF):
+ *   scribeStmt := 'scribe' expression (',' expression)*
+ *
+ * WHY: Latin 'scribe' (write!) as a statement keyword, not a function call.
+ *      Supports printf-style format strings passed directly to target runtime.
+ *
+ * Examples:
+ *   scribe "hello"
+ *   scribe "%s: %d", name, count
+ */
+export interface ScribeStatement extends BaseNode {
+    type: 'ScribeStatement';
+    arguments: Expression[];
 }
 
 /**

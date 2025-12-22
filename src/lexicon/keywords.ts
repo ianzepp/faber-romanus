@@ -91,6 +91,7 @@ export const keywords: KeywordEntry[] = [
     { latin: 'cape', meaning: 'catch', category: 'control' },
     { latin: 'demum', meaning: 'finally', category: 'control' },
     { latin: 'iace', meaning: 'throw', category: 'control' },
+    { latin: 'scribe', meaning: 'print', category: 'control' },
     { latin: 'exspecta', meaning: 'await', category: 'control' },
 
     // ---------------------------------------------------------------------------

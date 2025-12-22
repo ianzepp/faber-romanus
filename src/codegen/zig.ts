@@ -65,6 +65,7 @@ import type {
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
+    ScribeStatement,
     TryStatement,
     ExpressionStatement,
     ArrayExpression,
@@ -296,6 +297,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
                 return genReturnStatement(node);
             case 'ThrowStatement':
                 return genThrowStatement(node);
+            case 'ScribeStatement':
+                return genScribeStatement(node);
             case 'TryStatement':
                 return genTryStatement(node);
             case 'BlockStatement':
@@ -755,6 +758,23 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         return `${ind()}return error.${genExpression(node.argument)};`;
     }
 
+    function genScribeStatement(node: ScribeStatement): string {
+        // First arg is format string, rest are values
+        if (node.arguments.length === 0) {
+            return `${ind()}std.debug.print("\\n", .{});`;
+        }
+
+        const format = genExpression(node.arguments[0]);
+        const args = node.arguments.slice(1).map(genExpression);
+
+        if (args.length === 0) {
+            // Single argument - add newline and pass as tuple
+            return `${ind()}std.debug.print(${format} ++ "\\n", .{});`;
+        }
+
+        return `${ind()}std.debug.print(${format} ++ "\\n", .{${args.join(', ')}});`;
+    }
+
     function genTryStatement(node: TryStatement): string {
         // Zig handles errors differently — this is a simplified mapping
         // Real Zig would use catch |err| { } syntax on expressions
@@ -1058,8 +1078,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      *         Zig print uses format strings and anonymous tuple syntax (.{...}).
      */
     function genCallExpression(node: CallExpression): string {
-        // TARGET: scribe/_scribe maps to Zig's std.debug.print()
-        if (node.callee.type === 'Identifier' && (node.callee.name === 'scribe' || node.callee.name === '_scribe')) {
+        // TARGET: _scribe intrinsic maps to Zig's std.debug.print()
+        if (node.callee.type === 'Identifier' && node.callee.name === '_scribe') {
             const args = node.arguments.map(genExpression);
             const formatSpecs = node.arguments.map(arg => getFormatSpecifier(arg));
             const format = formatSpecs.join(' ') + '\\n';

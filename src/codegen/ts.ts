@@ -59,6 +59,7 @@ import type {
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
+    ScribeStatement,
     TryStatement,
     ExpressionStatement,
     ArrayExpression,
@@ -196,6 +197,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genReturnStatement(node);
             case 'ThrowStatement':
                 return genThrowStatement(node);
+            case 'ScribeStatement':
+                return genScribeStatement(node);
             case 'TryStatement':
                 return genTryStatement(node);
             case 'BlockStatement':
@@ -652,6 +655,11 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         return `${ind()}throw ${genExpression(node.argument)}${semi ? ';' : ''}`;
     }
 
+    function genScribeStatement(node: ScribeStatement): string {
+        const args = node.arguments.map(genExpression).join(', ');
+        return `${ind()}console.log(${args})${semi ? ';' : ''}`;
+    }
+
     function genTryStatement(node: TryStatement): string {
         let result = `${ind()}try ${genBlockStatement(node.block)}`;
 
@@ -899,9 +907,6 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         _vide: (args) => `console.debug(${args})`,
         _mone: (args) => `console.warn(${args})`,
         _lege: () => `prompt() ?? ""`,
-
-        // Global convenience aliases
-        scribe: (args) => `console.log(${args})`,
 
         // Math (internal intrinsics used by norma.fab)
         _fortuitus: () => `Math.random()`,

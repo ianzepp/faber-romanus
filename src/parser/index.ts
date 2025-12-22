@@ -95,6 +95,7 @@ import type {
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
+    ScribeStatement,
     ExpressionStatement,
     Identifier,
     ArrowFunctionExpression,
@@ -521,6 +522,10 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('iace')) {
             return parseThrowStatement();
+        }
+
+        if (checkKeyword('scribe')) {
+            return parseScribeStatement();
         }
 
         if (checkKeyword('tempta')) {
@@ -993,12 +998,12 @@ export function parse(tokens: Token[]): ParserResult {
         // Helper: parse 'si' case body (requires ergo or block)
         function parseSiBody(): BlockStatement {
             if (matchKeyword('ergo')) {
-                const exprPos = peek().position;
-                const expr = parseExpression();
+                const stmtPos = peek().position;
+                const stmt = parseStatement();
                 return {
                     type: 'BlockStatement',
-                    body: [{ type: 'ExpressionStatement', expression: expr, position: exprPos }],
-                    position: exprPos,
+                    body: [stmt],
+                    position: stmtPos,
                 };
             }
             return parseBlockStatement();
@@ -1161,6 +1166,38 @@ export function parse(tokens: Token[]): ParserResult {
         const argument = parseExpression();
 
         return { type: 'ThrowStatement', argument, position };
+    }
+
+    /**
+     * Parse scribe (print) statement.
+     *
+     * GRAMMAR:
+     *   scribeStmt := 'scribe' expression (',' expression)*
+     *
+     * WHY: 'scribe' (write!) as a statement keyword for output.
+     *      Supports printf-style format strings.
+     *
+     * Examples:
+     *   scribe "hello"
+     *   scribe n
+     *   scribe "%s: %d", name, count
+     */
+    function parseScribeStatement(): ScribeStatement {
+        const position = peek().position;
+
+        expectKeyword('scribe', "Expected 'scribe'");
+
+        const args: Expression[] = [];
+
+        // Parse first argument
+        args.push(parseExpression());
+
+        // Parse additional comma-separated arguments
+        while (match('COMMA')) {
+            args.push(parseExpression());
+        }
+
+        return { type: 'ScribeStatement', arguments: args, position };
     }
 
     /**
