@@ -66,6 +66,46 @@ for (const user of users.filter(u => u.activus).sort((a,b) => a.nomen.localeComp
 }
 ```
 
+### Custom Functions in Pipeline
+
+Any function that transforms an iterable works in `per`:
+
+```
+// Custom filter with complex logic
+functio soloActivi(lista<user> users) -> lista<user> {
+    redde users.filtrata({
+        .activus et .verificatus et .aetas >= 18
+    })
+}
+
+ex users per soloActivi pro user {
+    scribe user.nomen
+}
+```
+
+Generators work too — useful for stateful transformations:
+
+```
+cursor functio dedupe(lista<T> items) -> T {
+    fixum seen = copia.nova()
+    ex items pro item {
+        si non seen.habet(item) {
+            seen.adde(item)
+            cede item
+        }
+    }
+}
+
+ex users per dedupe pro user {
+    scribe user.nomen
+}
+```
+
+The `per` clause accepts:
+- Built-in methods (`filtra`, `ordina`, `mappa`)
+- Custom functions returning iterables
+- Generators (`cursor functio`, `fluxus functio`)
+
 ### One-liner Form
 
 ```
