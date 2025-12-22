@@ -142,6 +142,7 @@ export const keywords: KeywordEntry[] = [
     { latin: 'ex', meaning: 'of', category: 'preposition' },
     { latin: 'cum', meaning: 'with', category: 'preposition' },
     { latin: 'ad', meaning: 'to', category: 'preposition' },
+    { latin: 'per', meaning: 'by/through', category: 'preposition' },
 ];
 
 // =============================================================================

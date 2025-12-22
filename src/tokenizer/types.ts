@@ -86,6 +86,7 @@ export type TokenType =
     | 'ARROW' // => (fat arrow for lambdas)
     | 'THIN_ARROW' // -> (type annotations, Zig-style returns)
     | 'DOT' // .
+    | 'DOT_DOT' // .. (range operator)
     | 'QUESTION' // ?
     | 'COLON' // :
     | 'PIPE' // | (single pipe for union types)

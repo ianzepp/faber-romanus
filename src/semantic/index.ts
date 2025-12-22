@@ -510,9 +510,27 @@ export function analyze(program: Program): SemanticResult {
                 return resolveNew(node);
             case 'ConditionalExpression':
                 return resolveConditional(node);
+            case 'RangeExpression':
+                return resolveRange(node);
             default:
                 return UNKNOWN;
         }
+    }
+
+    function resolveRange(node: Expression & { type: 'RangeExpression' }): SemanticType {
+        resolveExpression(node.start);
+        resolveExpression(node.end);
+
+        if (node.step) {
+            resolveExpression(node.step);
+        }
+
+        // Range produces an iterable of numbers
+        const rangeType = genericType('Lista', [NUMERUS]);
+
+        node.resolvedType = rangeType;
+
+        return rangeType;
     }
 
     function resolveIdentifier(node: Identifier): SemanticType {

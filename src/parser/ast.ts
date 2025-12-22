@@ -493,6 +493,7 @@ export type Expression =
     | Identifier
     | Literal
     | ArrayExpression
+    | RangeExpression
     | BinaryExpression
     | UnaryExpression
     | CallExpression
@@ -583,6 +584,28 @@ export interface TemplateLiteral extends BaseNode {
 export interface ArrayExpression extends BaseNode {
     type: 'ArrayExpression';
     elements: Expression[];
+}
+
+/**
+ * Range expression for iteration bounds.
+ *
+ * GRAMMAR (in EBNF):
+ *   rangeExpr := expression '..' expression ('per' expression)?
+ *
+ * WHY: Provides concise syntax for numeric iteration ranges.
+ *      End is inclusive (0..10 includes 10).
+ *      Optional step via 'per' keyword.
+ *
+ * Examples:
+ *   0..10           -> start=0, end=10, step=undefined (default 1)
+ *   0..10 per 2     -> start=0, end=10, step=2
+ *   10..0 per -1    -> start=10, end=0, step=-1 (countdown)
+ */
+export interface RangeExpression extends BaseNode {
+    type: 'RangeExpression';
+    start: Expression;
+    end: Expression;
+    step?: Expression;
 }
 
 // ---------------------------------------------------------------------------

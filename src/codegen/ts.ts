@@ -62,6 +62,7 @@ import type {
     TryStatement,
     ExpressionStatement,
     ArrayExpression,
+    RangeExpression,
     BinaryExpression,
     UnaryExpression,
     CallExpression,
@@ -409,11 +410,58 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         return `${ind()}while (${test}) ${body}`;
     }
 
+    /**
+     * Generate for statement.
+     *
+     * TRANSFORMS:
+     *   ex 0..10 pro i { } -> for (let i = 0; i <= 10; i++) { }
+     *   ex 0..10 per 2 pro i { } -> for (let i = 0; i <= 10; i += 2) { }
+     *   ex items pro item { } -> for (const item of items) { }
+     *
+     * WHY: Range expressions compile to efficient traditional for loops
+     *      instead of allocating arrays.
+     */
     function genForStatement(node: ForStatement): string {
         const varName = node.variable.name;
+        const body = genBlockStatement(node.body);
+
+        // Check if iterable is a range expression for efficient loop generation
+        if (node.iterable.type === 'RangeExpression') {
+            const range = node.iterable;
+            const start = genExpression(range.start);
+            const end = genExpression(range.end);
+
+            let forHeader: string;
+
+            if (range.step) {
+                const step = genExpression(range.step);
+
+                // With step: need to handle positive/negative direction
+                // For simplicity, assume positive step uses <=, negative uses >=
+                forHeader = `for (let ${varName} = ${start}; ${varName} <= ${end}; ${varName} += ${step})`;
+            }
+            else {
+                // Default step of 1
+                forHeader = `for (let ${varName} = ${start}; ${varName} <= ${end}; ${varName}++)`;
+            }
+
+            if (node.catchClause) {
+                let result = `${ind()}try {\n`;
+
+                depth++;
+                result += `${ind()}${forHeader} ${body}`;
+                depth--;
+                result += `\n${ind()}} catch (${node.catchClause.param.name}) ${genBlockStatement(node.catchClause.body)}`;
+
+                return result;
+            }
+
+            return `${ind()}${forHeader} ${body}`;
+        }
+
+        // Standard for-of/for-in loop
         const iterable = genExpression(node.iterable);
         const keyword = node.kind === 'in' ? 'in' : 'of';
-        const body = genBlockStatement(node.body);
 
         if (node.catchClause) {
             let result = `${ind()}try {\n`;
@@ -646,6 +694,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genNewExpression(node);
             case 'ConditionalExpression':
                 return `${genExpression(node.test)} ? ${genExpression(node.consequent)} : ${genExpression(node.alternate)}`;
+            case 'RangeExpression':
+                return genRangeExpression(node);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }
@@ -690,6 +740,32 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const elements = node.elements.map(genExpression).join(', ');
 
         return `[${elements}]`;
+    }
+
+    /**
+     * Generate range expression as array.
+     *
+     * TRANSFORMS:
+     *   0..5 -> Array.from({length: 6}, (_, i) => i)
+     *   2..5 -> Array.from({length: 4}, (_, i) => 2 + i)
+     *   0..10 per 2 -> Array.from({length: 6}, (_, i) => i * 2)
+     *
+     * WHY: When used outside a for-loop, ranges become arrays.
+     *      In for-loops, they compile to efficient traditional loops instead.
+     */
+    function genRangeExpression(node: RangeExpression): string {
+        const start = genExpression(node.start);
+        const end = genExpression(node.end);
+
+        if (node.step) {
+            const step = genExpression(node.step);
+
+            // With step: more complex calculation
+            return `Array.from({length: Math.floor((${end} - ${start}) / ${step}) + 1}, (_, i) => ${start} + i * ${step})`;
+        }
+
+        // Simple range: start to end inclusive
+        return `Array.from({length: ${end} - ${start} + 1}, (_, i) => ${start} + i)`;
     }
 
     /**

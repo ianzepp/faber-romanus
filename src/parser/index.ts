@@ -106,6 +106,7 @@ import type {
     NewExpression,
     TypeAliasDeclaration,
     Literal,
+    RangeExpression,
 } from './ast';
 import { builtinTypes, typeModifiers } from '../lexicon/types-builtin';
 
@@ -1231,17 +1232,17 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse comparison expression.
      *
      * GRAMMAR:
-     *   comparison := additive (('<' | '>' | '<=' | '>=') additive)*
+     *   comparison := range (('<' | '>' | '<=' | '>=') range)*
      *
-     * PRECEDENCE: Lower than additive, higher than equality.
+     * PRECEDENCE: Lower than range, higher than equality.
      */
     function parseComparison(): Expression {
-        let left = parseAdditive();
+        let left = parseRange();
 
         while (match('LESS', 'LESS_EQUAL', 'GREATER', 'GREATER_EQUAL')) {
             const operator = tokens[current - 1].value;
             const position = tokens[current - 1].position;
-            const right = parseAdditive();
+            const right = parseRange();
 
             left = { type: 'BinaryExpression', operator, left, right, position };
         }
@@ -1250,12 +1251,48 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
+     * Parse range expression.
+     *
+     * GRAMMAR:
+     *   range := additive ('..' additive ('per' additive)?)?
+     *
+     * PRECEDENCE: Lower than additive, higher than comparison.
+     *
+     * WHY: Range expressions provide concise numeric iteration.
+     *      End is inclusive: 0..10 includes 10.
+     *      Optional step via 'per' keyword.
+     *
+     * Examples:
+     *   0..10           -> RangeExpression(0, 10)
+     *   0..10 per 2     -> RangeExpression(0, 10, 2)
+     *   start..end      -> RangeExpression(start, end)
+     */
+    function parseRange(): Expression {
+        const start = parseAdditive();
+
+        if (!match('DOT_DOT')) {
+            return start;
+        }
+
+        const position = tokens[current - 1].position;
+        const end = parseAdditive();
+
+        let step: Expression | undefined;
+
+        if (matchKeyword('per')) {
+            step = parseAdditive();
+        }
+
+        return { type: 'RangeExpression', start, end, step, position } as RangeExpression;
+    }
+
+    /**
      * Parse additive expression.
      *
      * GRAMMAR:
      *   additive := multiplicative (('+' | '-') multiplicative)*
      *
-     * PRECEDENCE: Lower than multiplicative, higher than comparison.
+     * PRECEDENCE: Lower than multiplicative, higher than range.
      */
     function parseAdditive(): Expression {
         let left = parseMultiplicative();

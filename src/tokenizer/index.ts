@@ -548,8 +548,15 @@ export function tokenize(source: string): TokenizerResult {
             case ';':
                 addToken('SEMICOLON', char, pos);
                 break;
+            // WHY: . can be .. (range) or . (member access)
             case '.':
-                addToken('DOT', char, pos);
+                if (peek() === '.') {
+                    advance();
+                    addToken('DOT_DOT', '..', pos);
+                } else {
+                    addToken('DOT', char, pos);
+                }
+
                 break;
             case ':':
                 addToken('COLON', char, pos);
