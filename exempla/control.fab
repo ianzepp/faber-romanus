@@ -83,16 +83,16 @@ si a || b {
 fixum items = [1, 2, 3]
 fixum empty = []
 
-si nonnullaitems {
+si nonnulla items {
     scribe "has items"
 }
 
-si nullaempty {
+si nulla empty {
     scribe "empty array"
 }
 
 fixum data = { name: "Marcus" }
-si nonnulladata {
+si nonnulla data {
     scribe "has data"
 }
 

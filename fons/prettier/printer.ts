@@ -696,9 +696,9 @@ function printUnaryExpression(
     const node = path.getValue() as any;
 
     if (node.prefix) {
-        // Handle 'non' keyword with space
-        if (node.operator === 'non') {
-            return ['non ', path.call(print, 'argument')];
+        // Handle Latin keyword operators that need a space before the operand
+        if (node.operator === 'non' || node.operator === 'nulla' || node.operator === 'nonnulla') {
+            return [node.operator, ' ', path.call(print, 'argument')];
         }
         return [node.operator, path.call(print, 'argument')];
     }
