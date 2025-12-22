@@ -83,6 +83,8 @@ import type {
     ImportDeclaration,
     VariableDeclaration,
     FunctionDeclaration,
+    GenusDeclaration,
+    FieldDeclaration,
     IfStatement,
     WhileStatement,
     ForStatement,
@@ -151,7 +153,7 @@ export interface ParserResult {
  * PERF: Pre-computed Set enables O(1) type name checking.
  *
  * WHY: Used by isTypeName() to distinguish type names from regular identifiers
- *      in type-first syntax parsing (e.g., "fixum Textus nomen" vs "fixum nomen").
+ *      in type-first syntax parsing (e.g., "fixum textus nomen" vs "fixum nomen").
  */
 const BUILTIN_TYPE_NAMES = new Set([
     // Primitives (lowercase - matching is case-insensitive)
@@ -366,12 +368,12 @@ export function parse(tokens: Token[]): ParserResult {
      * Check if token is a builtin type name.
      *
      * WHY: Type-first syntax requires distinguishing type names from identifiers.
-     *      "fixum Textus nomen" (type-first) vs "fixum nomen" (type inference).
+     *      "fixum textus nomen" (type-first) vs "fixum nomen" (type inference).
      *
      * @returns true if token is an identifier and a known builtin type
      */
     function isTypeName(token: Token): boolean {
-        // Case-insensitive lookup (textus, Textus, TEXTUS all match)
+        // Case-insensitive lookup (textus, textus, TEXTUS all match)
         return token.type === 'IDENTIFIER' && BUILTIN_TYPE_NAMES.has(token.value.toLowerCase());
     }
 
@@ -492,6 +494,10 @@ export function parse(tokens: Token[]): ParserResult {
             return parseTypeAliasDeclaration();
         }
 
+        if (checkKeyword('genus')) {
+            return parseGenusDeclaration();
+        }
+
         if (checkKeyword('si')) {
             return parseIfStatement();
         }
@@ -583,7 +589,7 @@ export function parse(tokens: Token[]): ParserResult {
      * GRAMMAR:
      *   varDecl := ('varia' | 'fixum') (typeAnnotation IDENTIFIER | IDENTIFIER) ('=' expression)?
      *
-     * WHY: Type-first syntax: "fixum Textus nomen = value" or "fixum nomen = value"
+     * WHY: Type-first syntax: "fixum textus nomen = value" or "fixum nomen = value"
      *      Latin 'varia' (let it be) for mutable, 'fixum' (fixed) for immutable.
      *
      * EDGE: If next token after varia/fixum is a type name, parse type first.
@@ -669,7 +675,7 @@ export function parse(tokens: Token[]): ParserResult {
      * GRAMMAR:
      *   funcDecl := 'futura'? 'functio' IDENTIFIER '(' paramList ')' ('->' typeAnnotation)? blockStmt
      *
-     * WHY: Arrow syntax for return types: "functio greet(Textus name) -> Textus"
+     * WHY: Arrow syntax for return types: "functio greet(textus name) -> textus"
      *      'futura' prefix marks async functions (future/promise-based).
      *      Return type comes after parameters with arrow (optional).
      */
@@ -727,7 +733,7 @@ export function parse(tokens: Token[]): ParserResult {
      * GRAMMAR:
      *   parameter := ('ad' | 'cum' | 'in' | 'ex')? (typeAnnotation IDENTIFIER | IDENTIFIER)
      *
-     * WHY: Type-first syntax: "Textus name" or "ad Textus recipientem"
+     * WHY: Type-first syntax: "textus name" or "ad textus recipientem"
      *      Prepositional prefixes indicate semantic roles:
      *      ad = toward/to, cum = with, in = in/into, ex = from/out of
      *
@@ -762,8 +768,8 @@ export function parse(tokens: Token[]): ParserResult {
      * WHY: Enables creating named type aliases for complex types.
      *
      * Examples:
-     *   typus ID = Textus
-     *   typus UserID = Numerus<32, Naturalis>
+     *   typus ID = textus
+     *   typus UserID = numerus<32, Naturalis>
      */
     function parseTypeAliasDeclaration(): TypeAliasDeclaration {
         const position = peek().position;
@@ -777,6 +783,160 @@ export function parse(tokens: Token[]): ParserResult {
         const typeAnnotation = parseTypeAnnotation();
 
         return { type: 'TypeAliasDeclaration', name, typeAnnotation, position };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Genus (Struct) Declarations
+    // ---------------------------------------------------------------------------
+
+    /**
+     * Parse genus (struct) declaration.
+     *
+     * GRAMMAR:
+     *   genusDecl := 'genus' IDENTIFIER typeParams? ('implet' IDENTIFIER (',' IDENTIFIER)*)? '{' genusMember* '}'
+     *   typeParams := '<' IDENTIFIER (',' IDENTIFIER)* '>'
+     *   genusMember := fieldDecl | methodDecl
+     *
+     * WHY: Latin 'genus' (kind/type) for data structures.
+     *      'implet' (fulfills) for implementing pactum interfaces.
+     */
+    function parseGenusDeclaration(): GenusDeclaration {
+        const position = peek().position;
+
+        expectKeyword('genus', "Expected 'genus'");
+
+        const name = parseIdentifier();
+
+        // Parse optional type parameters <T, U>
+        let typeParameters: Identifier[] | undefined;
+
+        if (match('LESS')) {
+            typeParameters = [];
+            do {
+                typeParameters.push(parseIdentifier());
+            } while (match('COMMA'));
+            expect('GREATER', "Expected '>' after type parameters");
+        }
+
+        // Parse optional 'implet' clause
+        let implementsList: Identifier[] | undefined;
+
+        if (matchKeyword('implet')) {
+            implementsList = [];
+            do {
+                implementsList.push(parseIdentifier());
+            } while (match('COMMA'));
+        }
+
+        expect('LBRACE', "Expected '{' to begin genus body");
+
+        const fields: FieldDeclaration[] = [];
+        const methods: FunctionDeclaration[] = [];
+
+        while (!check('RBRACE') && !isAtEnd()) {
+            const member = parseGenusMember();
+
+            if (member.type === 'FieldDeclaration') {
+                fields.push(member);
+            }
+            else {
+                methods.push(member);
+            }
+        }
+
+        expect('RBRACE', "Expected '}' to end genus body");
+
+        return {
+            type: 'GenusDeclaration',
+            name,
+            typeParameters,
+            implements: implementsList,
+            fields,
+            methods,
+            position,
+        };
+    }
+
+    /**
+     * Parse a member of a genus (field or method).
+     *
+     * GRAMMAR:
+     *   genusMember := fieldDecl | methodDecl
+     *   fieldDecl := 'publicus'? 'generis'? typeAnnotation IDENTIFIER ('=' expression)?
+     *   methodDecl := 'publicus'? 'generis'? 'futura'? 'functio' ...
+     *
+     * WHY: Distinguishes between fields and methods by looking for 'functio' keyword.
+     */
+    function parseGenusMember(): FieldDeclaration | FunctionDeclaration {
+        const position = peek().position;
+
+        // Parse modifiers
+        let isPublic = false;
+        let isStatic = false;
+        let isAsync = false;
+
+        if (matchKeyword('publicus')) {
+            isPublic = true;
+        }
+
+        if (matchKeyword('generis')) {
+            isStatic = true;
+        }
+
+        if (matchKeyword('futura')) {
+            isAsync = true;
+        }
+
+        // If we see 'functio', it's a method
+        if (checkKeyword('functio')) {
+            expectKeyword('functio', "Expected 'functio'");
+            const methodName = parseIdentifier();
+
+            expect('LPAREN', "Expected '(' after method name");
+            const params = parseParameterList();
+            expect('RPAREN', "Expected ')' after parameters");
+
+            let returnType: TypeAnnotation | undefined;
+
+            if (match('THIN_ARROW')) {
+                returnType = parseTypeAnnotation();
+            }
+
+            const body = parseBlockStatement();
+
+            // WHY: Methods in genus reuse FunctionDeclaration but carry modifiers implicitly
+            // The isPublic and isStatic are not yet part of FunctionDeclaration AST
+            // For now, we store methods as regular function declarations
+            return {
+                type: 'FunctionDeclaration',
+                name: methodName,
+                params,
+                returnType,
+                body,
+                async: isAsync,
+                position,
+            };
+        }
+
+        // Otherwise it's a field: type name (= init)?
+        const fieldType = parseTypeAnnotation();
+        const fieldName = parseIdentifier();
+
+        let init: Expression | undefined;
+
+        if (match('EQUAL')) {
+            init = parseExpression();
+        }
+
+        return {
+            type: 'FieldDeclaration',
+            name: fieldName,
+            fieldType,
+            init,
+            isPublic,
+            isStatic,
+            position,
+        };
     }
 
     // ---------------------------------------------------------------------------
@@ -1845,11 +2005,11 @@ export function parse(tokens: Token[]): ParserResult {
      *   typeParameter := typeAnnotation | NUMBER | MODIFIER
      *   arrayBrackets := '[]' '?'?
      *
-     * WHY: Supports generics (Lista<Textus>), nullable (?), union types (A | B),
-     *      and array shorthand (Numerus[] desugars to Lista<Numerus>).
+     * WHY: Supports generics (lista<textus>), nullable (?), union types (A | B),
+     *      and array shorthand (numerus[] desugars to lista<numerus>).
      *
-     * EDGE: Numeric parameters for sized types (Numerus<32>).
-     *       Modifier parameters for ownership/signedness (Numerus<Naturalis>).
+     * EDGE: Numeric parameters for sized types (numerus<32>).
+     *       Modifier parameters for ownership/signedness (numerus<Naturalis>).
      *       Array shorthand preserves source form via arrayShorthand flag.
      */
     function parseTypeAnnotation(): TypeAnnotation {
@@ -1899,8 +2059,8 @@ export function parse(tokens: Token[]): ParserResult {
         // Build the base type
         let result: TypeAnnotation = { type: 'TypeAnnotation', name, typeParameters, nullable, position };
 
-        // Handle array shorthand: Numerus[] -> Lista<Numerus>
-        // Each [] wraps in Lista with arrayShorthand flag for round-trip fidelity
+        // Handle array shorthand: numerus[] -> lista<numerus>
+        // Each [] wraps in lista with arrayShorthand flag for round-trip fidelity
         while (check('LBRACKET') && peek(1).type === 'RBRACKET') {
             advance(); // [
             advance(); // ]
@@ -1912,7 +2072,7 @@ export function parse(tokens: Token[]): ParserResult {
 
             result = {
                 type: 'TypeAnnotation',
-                name: 'Lista',
+                name: 'lista',
                 typeParameters: [result],
                 nullable: arrayNullable,
                 arrayShorthand: true,

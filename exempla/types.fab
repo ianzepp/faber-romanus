@@ -4,7 +4,7 @@
 // fixum textus nomen = "Marcus"
 // functio saluta(textus nomen) -> textus { ... }
 //
-// Types are case-insensitive: textus, Textus, TEXTUS all work.
+// Types are case-insensitive: textus, textus, TEXTUS all work.
 // Convention: lowercase for types (Latin had no case distinction).
 // Return types use arrow syntax: -> type
 

@@ -11,8 +11,8 @@
  * resolved from Latin type annotations and inferred from expressions. The type
  * system supports:
  *
- * - Primitive types (Textus, Numerus, Bivalens, Nihil)
- * - Generic types (Lista<T>, Tabula<K,V>, Promissum<T>)
+ * - Primitive types (textus, numerus, bivalens, nihil)
+ * - Generic types (lista<T>, tabula<K,V>, promissum<T>)
  * - Function types (parameters and return type)
  * - Union types (A | B)
  * - Optional types (T?)
@@ -46,21 +46,21 @@ interface BaseType {
 }
 
 /**
- * Primitive type (Textus, Numerus, Bivalens, Nihil, Vacuum).
+ * Primitive type (textus, numerus, bivalens, nihil, vacuum).
  *
  * WHY: Extended with modifiers to support type-first syntax:
- *      - size: numeric bit width (Numerus<32>)
- *      - unsigned: natural numbers (Numerus<Naturalis>)
- *      - ownership: owned/borrowed semantics (Textus<Proprius>)
- *      - mutable: mutability modifier (Textus<Mutabilis>)
+ *      - size: numeric bit width (numerus<32>)
+ *      - unsigned: natural numbers (numerus<Naturalis>)
+ *      - ownership: owned/borrowed semantics (textus<Proprius>)
+ *      - mutable: mutability modifier (textus<Mutabilis>)
  */
 export interface PrimitiveType extends BaseType {
     kind: 'primitive';
-    name: 'Textus' | 'Numerus' | 'Bivalens' | 'Nihil' | 'Vacuum';
+    name: 'textus' | 'numerus' | 'bivalens' | 'nihil' | 'vacuum';
 }
 
 /**
- * Generic type with type parameters (Lista<T>, Tabula<K,V>, Promissum<T>).
+ * Generic type with type parameters (lista<T>, tabula<K,V>, promissum<T>).
  */
 export interface GenericType extends BaseType {
     kind: 'generic';
@@ -176,11 +176,11 @@ export function userType(name: string, nullable?: boolean): UserType {
 // COMMON TYPE CONSTANTS
 // =============================================================================
 
-export const TEXTUS: PrimitiveType = primitiveType('Textus');
-export const NUMERUS: PrimitiveType = primitiveType('Numerus');
-export const BIVALENS: PrimitiveType = primitiveType('Bivalens');
-export const NIHIL: PrimitiveType = primitiveType('Nihil');
-export const VACUUM: PrimitiveType = primitiveType('Vacuum');
+export const TEXTUS: PrimitiveType = primitiveType('textus');
+export const NUMERUS: PrimitiveType = primitiveType('numerus');
+export const BIVALENS: PrimitiveType = primitiveType('bivalens');
+export const NIHIL: PrimitiveType = primitiveType('nihil');
+export const VACUUM: PrimitiveType = primitiveType('vacuum');
 export const UNKNOWN: UnknownType = unknownType();
 
 // =============================================================================
@@ -199,7 +199,7 @@ export function typesEqual(a: SemanticType, b: SemanticType): boolean {
 
     switch (a.kind) {
         case 'primitive':
-            // Case-insensitive comparison (textus == Textus == TEXTUS)
+            // Case-insensitive comparison (textus == textus == TEXTUS)
             return a.name.toLowerCase() === (b as PrimitiveType).name.toLowerCase();
         case 'generic': {
             const bg = b as GenericType;
@@ -266,7 +266,7 @@ export function isAssignableTo(source: SemanticType, target: SemanticType): bool
         return true;
     }
 
-    // Nihil is assignable to nullable types (case-insensitive)
+    // nihil is assignable to nullable types (case-insensitive)
     if (source.kind === 'primitive' && source.name.toLowerCase() === 'nihil') {
         return target.nullable === true;
     }

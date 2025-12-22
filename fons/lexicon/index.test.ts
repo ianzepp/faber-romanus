@@ -271,8 +271,8 @@ describe('keywords', () => {
 
 describe('parseType', () => {
     describe('primitives', () => {
-        test('Textus (4th declension)', () => {
-            const results = parseType('Textus');
+        test('textus (4th declension)', () => {
+            const results = parseType('textus');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
@@ -281,8 +281,8 @@ describe('parseType', () => {
             }
         });
 
-        test('Numerus (2nd declension masculine)', () => {
-            const results = parseType('Numerus');
+        test('numerus (2nd declension masculine)', () => {
+            const results = parseType('numerus');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
@@ -302,8 +302,8 @@ describe('parseType', () => {
     });
 
     describe('collections', () => {
-        test('Lista (1st declension feminine)', () => {
-            const results = parseType('Lista');
+        test('lista (1st declension feminine)', () => {
+            const results = parseType('lista');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
@@ -322,8 +322,8 @@ describe('parseType', () => {
             }
         });
 
-        test('Tabula (Map)', () => {
-            const results = parseType('Tabula');
+        test('tabula (Map)', () => {
+            const results = parseType('tabula');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
@@ -331,8 +331,8 @@ describe('parseType', () => {
             }
         });
 
-        test('Copia (Set)', () => {
-            const results = parseType('Copia');
+        test('copia (Set)', () => {
+            const results = parseType('copia');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
@@ -342,8 +342,8 @@ describe('parseType', () => {
     });
 
     describe('structural', () => {
-        test('Promissum (2nd declension neuter)', () => {
-            const results = parseType('Promissum');
+        test('promissum (2nd declension neuter)', () => {
+            const results = parseType('promissum');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
@@ -352,8 +352,8 @@ describe('parseType', () => {
             }
         });
 
-        test('Erratum (Error)', () => {
-            const results = parseType('Erratum');
+        test('erratum (Error)', () => {
+            const results = parseType('erratum');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
@@ -361,8 +361,8 @@ describe('parseType', () => {
             }
         });
 
-        test('Cursor (3rd declension, no ending)', () => {
-            const results = parseType('Cursor');
+        test('cursor (3rd declension, no ending)', () => {
+            const results = parseType('cursor');
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {

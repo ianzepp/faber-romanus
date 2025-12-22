@@ -121,6 +121,10 @@ export const keywords: KeywordEntry[] = [
     { latin: 'futura', meaning: 'async', category: 'modifier' },
     // WHY: "publicus" for visibility - default is private
     { latin: 'publicus', meaning: 'public', category: 'modifier' },
+    // WHY: "generis" (of the genus) for type-level/static members
+    { latin: 'generis', meaning: 'static', category: 'modifier' },
+    // WHY: "implet" (fulfills) for implementing interfaces
+    { latin: 'implet', meaning: 'implements', category: 'modifier' },
 
     // ---------------------------------------------------------------------------
     // Operators
@@ -151,6 +155,10 @@ export const keywords: KeywordEntry[] = [
     { latin: 'cum', meaning: 'with', category: 'preposition' },
     { latin: 'ad', meaning: 'to', category: 'preposition' },
     { latin: 'per', meaning: 'by/through', category: 'preposition' },
+    // WHY: "ut" (as) for renaming in destructuring
+    { latin: 'ut', meaning: 'as', category: 'preposition' },
+    // WHY: "vel" (or) for default values in destructuring
+    { latin: 'vel', meaning: 'or', category: 'operator' },
 ];
 
 // =============================================================================

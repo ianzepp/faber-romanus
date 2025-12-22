@@ -70,7 +70,7 @@ fixum textus nomen = "Marcus"
 functio salve(textus nomen) -> textus { ... }
 ```
 
-The parser is case-insensitive—`textus`, `Textus`, and `TEXTUS` all work. But the canonical style is lowercase.
+The parser is case-insensitive—`textus`, `textus`, and `TEXTUS` all work. But the canonical style is lowercase.
 
 Exceptions:
 - **Constants:** `PI`, `MAX_VALUE` (universal convention)

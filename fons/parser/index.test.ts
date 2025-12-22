@@ -23,27 +23,27 @@ describe('parser', () => {
         });
 
         test('fixum with type annotation', () => {
-            const { program } = parseCode('fixum Numerus numerus = 42');
+            const { program } = parseCode('fixum numerus numerus = 42');
             const decl = program!.body[0] as any;
 
             expect(decl.kind).toBe('fixum');
-            expect(decl.typeAnnotation.name).toBe('Numerus');
+            expect(decl.typeAnnotation.name).toBe('numerus');
             expect(decl.init.value).toBe(42);
         });
 
         test('generic type annotation', () => {
-            const { program } = parseCode('fixum Lista<Numerus> lista = nihil');
+            const { program } = parseCode('fixum lista<numerus> lista = nihil');
             const decl = program!.body[0] as any;
 
-            expect(decl.typeAnnotation.name).toBe('Lista');
-            expect(decl.typeAnnotation.typeParameters[0].name).toBe('Numerus');
+            expect(decl.typeAnnotation.name).toBe('lista');
+            expect(decl.typeAnnotation.typeParameters[0].name).toBe('numerus');
         });
     });
 
     describe('function declarations', () => {
         test('simple function with arrow return type', () => {
             const { program } = parseCode(`
-        functio salve(Textus nomen) -> Textus {
+        functio salve(textus nomen) -> textus {
           redde nomen
         }
       `);
@@ -54,25 +54,25 @@ describe('parser', () => {
             expect(fn.name.name).toBe('salve');
             expect(fn.params).toHaveLength(1);
             expect(fn.params[0].name.name).toBe('nomen');
-            expect(fn.returnType.name).toBe('Textus');
+            expect(fn.returnType.name).toBe('textus');
             expect(fn.async).toBe(false);
         });
 
         test('async function with futura', () => {
             const { program } = parseCode(`
-        futura functio fetch(Textus url) -> Textus {
+        futura functio fetch(textus url) -> textus {
           redde data
         }
       `);
             const fn = program!.body[0] as any;
 
             expect(fn.async).toBe(true);
-            expect(fn.returnType.name).toBe('Textus');
+            expect(fn.returnType.name).toBe('textus');
         });
 
         test('function with preposition parameter', () => {
             const { program } = parseCode(`
-        functio mitte(Textus nuntium, ad Textus recipientem) {
+        functio mitte(textus nuntium, ad textus recipientem) {
           scribe(nuntium)
         }
       `);
@@ -309,11 +309,11 @@ describe('parser', () => {
 
     describe('new expression', () => {
         test('novum', () => {
-            const { program } = parseCode('novum Erratum(message)');
+            const { program } = parseCode('novum erratum(message)');
             const expr = (program!.body[0] as any).expression;
 
             expect(expr.type).toBe('NewExpression');
-            expect(expr.callee.name).toBe('Erratum');
+            expect(expr.callee.name).toBe('erratum');
         });
     });
 
@@ -353,18 +353,85 @@ describe('parser', () => {
 
     describe('type annotations', () => {
         test('nullable type', () => {
-            const { program } = parseCode('fixum Textus? x = nihil');
+            const { program } = parseCode('fixum textus? x = nihil');
             const decl = program!.body[0] as any;
 
             expect(decl.typeAnnotation.nullable).toBe(true);
         });
 
         test('union type', () => {
-            const { program } = parseCode('fixum Textus | Nihil x = nihil');
+            const { program } = parseCode('fixum textus | nihil x = nihil');
             const decl = program!.body[0] as any;
 
             expect(decl.typeAnnotation.name).toBe('union');
             expect(decl.typeAnnotation.union).toHaveLength(2);
+        });
+    });
+
+    describe('genus declarations', () => {
+        test('simple genus with one field', () => {
+            const { program } = parseCode('genus persona { textus nomen }');
+
+            expect(program!.body[0].type).toBe('GenusDeclaration');
+            const genus = program!.body[0] as any;
+
+            expect(genus.name.name).toBe('persona');
+            expect(genus.fields).toHaveLength(1);
+            expect(genus.fields[0].name.name).toBe('nomen');
+            expect(genus.fields[0].fieldType.name).toBe('textus');
+        });
+
+        test('genus with two fields', () => {
+            const { program } = parseCode('genus persona { textus nomen numerus aetas }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields).toHaveLength(2);
+            expect(genus.fields[1].name.name).toBe('aetas');
+        });
+
+        test('genus with default field value', () => {
+            const { program } = parseCode('genus persona { numerus aetas = 0 }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields[0].init.value).toBe(0);
+        });
+
+        test('genus with public field', () => {
+            const { program } = parseCode('genus persona { publicus textus nomen }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields[0].isPublic).toBe(true);
+        });
+
+        test('genus with static field', () => {
+            const { program } = parseCode('genus math { generis numerus PI = 3 }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields[0].isStatic).toBe(true);
+        });
+
+        test('genus with type parameter', () => {
+            const { program } = parseCode('genus capsa<T> { T valor }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.typeParameters).toHaveLength(1);
+            expect(genus.typeParameters[0].name).toBe('T');
+        });
+
+        test('genus with implet', () => {
+            const { program } = parseCode('genus cursor implet iterabilis { numerus index }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.implements).toHaveLength(1);
+            expect(genus.implements[0].name).toBe('iterabilis');
+        });
+
+        test('genus with method', () => {
+            const { program } = parseCode('genus persona { functio saluta() { redde nihil } }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.methods).toHaveLength(1);
+            expect(genus.methods[0].name.name).toBe('saluta');
         });
     });
 });

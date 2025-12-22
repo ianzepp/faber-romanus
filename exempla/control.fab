@@ -143,7 +143,7 @@ elige mode {
 }
 
 // Guard clauses (custodi) - early exit patterns
-functio validateAge(aetas) -> Numerus {
+functio validateAge(aetas) -> numerus {
     custodi {
         si aetas < 0 {
             redde -1

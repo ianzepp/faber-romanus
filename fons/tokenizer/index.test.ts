@@ -89,10 +89,10 @@ describe('tokenizer', () => {
         });
 
         test('TitleCase identifier', () => {
-            const { tokens } = tokenize('Textus');
+            const { tokens } = tokenize('textus');
 
             expect(tokens[0].type).toBe('IDENTIFIER');
-            expect(tokens[0].value).toBe('Textus');
+            expect(tokens[0].value).toBe('textus');
         });
     });
 
@@ -176,7 +176,7 @@ describe('tokenizer', () => {
         });
 
         test('pipe for union types', () => {
-            const { tokens } = tokenize('Textus | Nihil');
+            const { tokens } = tokenize('textus | nihil');
 
             expect(tokens[1].type).toBe('PIPE');
         });
@@ -219,11 +219,11 @@ describe('tokenizer', () => {
         });
 
         test('function declaration', () => {
-            const { tokens } = tokenize('functio salve(nomen: Textus) -> Textus {');
+            const { tokens } = tokenize('functio salve(nomen: textus) -> textus {');
             const types = tokens.map(t => t.type);
 
             expect(types).toContain('KEYWORD'); // functio
-            expect(types).toContain('IDENTIFIER'); // salve, nomen, Textus
+            expect(types).toContain('IDENTIFIER'); // salve, nomen, textus
             expect(types).toContain('LPAREN');
             expect(types).toContain('COLON');
             expect(types).toContain('THIN_ARROW');

@@ -149,7 +149,7 @@ function parsePrimary(): Expression {
  * Generate code for a function declaration.
  *
  * TRANSFORMS:
- *   functio salve(Textus nomen) → function salve(nomen: string)
+ *   functio salve(textus nomen) → function salve(nomen: string)
  *   futura functio f()          → async function f()
  *
  * TARGET DIFFERENCES:
@@ -275,7 +275,7 @@ function visit(node: Expression) {
 interface VariableDeclaration {
   kind: "varia" | "fixum";  // Latin keywords
   name: Identifier;
-  typeAnnotation?: TypeAnnotation;  // Textus, Numerus, etc.
+  typeAnnotation?: TypeAnnotation;  // textus, numerus, etc.
 }
 
 // Semantics (after analysis): resolved to target language
@@ -339,10 +339,10 @@ When code differs by target, document clearly:
  * TARGET MAPPING:
  * | Latin     | TypeScript | Zig        |
  * |-----------|------------|------------|
- * | Textus    | string     | []const u8 |
- * | Numerus   | number     | i64        |
- * | Bivalens  | boolean    | bool       |
- * | Nihil     | null       | null       |
+ * | textus    | string     | []const u8 |
+ * | numerus   | number     | i64        |
+ * | bivalens  | boolean    | bool       |
+ * | nihil     | null       | null       |
  */
 function mapType(latinType: string, target: Target): string {
 ```

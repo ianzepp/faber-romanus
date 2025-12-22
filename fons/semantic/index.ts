@@ -150,9 +150,9 @@ const NORMA_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'va
     lege: { type: functionType([], TEXTUS), kind: 'function' },
 
     // Iteration
-    series: { type: functionType([NUMERUS], genericType('Lista', [NUMERUS])), kind: 'function' },
+    series: { type: functionType([NUMERUS], genericType('lista', [NUMERUS])), kind: 'function' },
     seriesAb: {
-        type: functionType([NUMERUS, NUMERUS, NUMERUS], genericType('Lista', [NUMERUS])),
+        type: functionType([NUMERUS, NUMERUS, NUMERUS], genericType('lista', [NUMERUS])),
         kind: 'function',
     },
 
@@ -337,9 +337,9 @@ export function analyze(program: Program): SemanticResult {
      * Resolve a TypeAnnotation AST node to a SemanticType.
      *
      * WHY: Type parameters can now be types, literals, or modifiers.
-     *      - TypeAnnotation: Generic type params (Lista<Textus>)
-     *      - Literal: Numeric size params (Numerus<32>)
-     *      - ModifierParameter: Type modifiers (Numerus<Naturalis>)
+     *      - TypeAnnotation: Generic type params (lista<textus>)
+     *      - Literal: Numeric size params (numerus<32>)
+     *      - ModifierParameter: Type modifiers (numerus<Naturalis>)
      */
     function resolveTypeAnnotation(node: TypeAnnotation): SemanticType {
         // Handle union types
@@ -409,7 +409,7 @@ export function analyze(program: Program): SemanticResult {
      *      - Proprius: owned (move semantics)
      *      - Alienus: borrowed (reference semantics)
      *      - Mutabilis: mutable
-     *      - Literal numbers: size constraints (Numerus<32>)
+     *      - Literal numbers: size constraints (numerus<32>)
      */
     function extractTypeModifiers(typeParams?: Array<TypeAnnotation | Literal | any>): {
         size?: number;
@@ -548,7 +548,7 @@ export function analyze(program: Program): SemanticResult {
         }
 
         // Range produces an iterable of numbers
-        const rangeType = genericType('Lista', [NUMERUS]);
+        const rangeType = genericType('lista', [NUMERUS]);
 
         node.resolvedType = rangeType;
 
@@ -602,7 +602,7 @@ export function analyze(program: Program): SemanticResult {
             if (
                 node.operator === '+' &&
                 leftType.kind === 'primitive' &&
-                leftType.name === 'Textus'
+                leftType.name === 'textus'
             ) {
                 node.resolvedType = TEXTUS;
 
@@ -612,9 +612,9 @@ export function analyze(program: Program): SemanticResult {
             // Numeric arithmetic
             if (
                 leftType.kind === 'primitive' &&
-                leftType.name === 'Numerus' &&
+                leftType.name === 'numerus' &&
                 rightType.kind === 'primitive' &&
-                rightType.name === 'Numerus'
+                rightType.name === 'numerus'
             ) {
                 node.resolvedType = NUMERUS;
 
@@ -770,7 +770,7 @@ export function analyze(program: Program): SemanticResult {
         const argType = resolveExpression(node.argument);
 
         // If awaiting a Promise, unwrap it
-        if (argType.kind === 'generic' && argType.name === 'Promissum') {
+        if (argType.kind === 'generic' && argType.name === 'promissum') {
             const unwrapped = argType.typeParameters[0] ?? UNKNOWN;
 
             node.resolvedType = unwrapped;
@@ -1016,7 +1016,7 @@ export function analyze(program: Program): SemanticResult {
     function analyzeIfStatement(node: IfStatement): void {
         const testType = resolveExpression(node.test);
 
-        if (testType.kind === 'primitive' && testType.name !== 'Bivalens') {
+        if (testType.kind === 'primitive' && testType.name !== 'bivalens') {
             // Warn but don't error - truthy/falsy is valid
         }
 

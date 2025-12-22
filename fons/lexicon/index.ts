@@ -250,14 +250,14 @@ export function parseNoun(word: string): ParsedNoun[] | LexiconError {
  *   5. Lookup ending in appropriate declension table
  *   6. Return all matching interpretations
  *
- * WHY: Types use TitleCase (Textus, Numerus) to distinguish from user nouns.
+ * WHY: Types use TitleCase (textus, numerus) to distinguish from user nouns.
  *      This follows TypeScript convention where types start with uppercase.
  *
  * EDGE: 3rd declension types have special nominative handling:
- *       - Regular: stem equals nominative (Cursor)
+ *       - Regular: stem equals nominative (cursor)
  *       - Neuter: nominative differs from stem (Tempus vs Tempor-)
  *
- * @param word - The inflected type name (e.g., "Textus", "Cursorem", "Tempus")
+ * @param word - The inflected type name (e.g., "textus", "Cursorem", "Tempus")
  * @returns Array of possible interpretations with target type info, or LexiconError
  */
 export function parseType(word: string): ParsedType[] | LexiconError {
@@ -265,7 +265,7 @@ export function parseType(word: string): ParsedType[] | LexiconError {
     let bestMatch: { stem: string; ending: string } | null = null;
 
     // WHY: Normalize to lowercase for case-insensitive matching
-    //      (Latin had no case distinction, so textus/Textus/TEXTUS all work)
+    //      (Latin had no case distinction, so textus/textus/TEXTUS all work)
     const lowerWord = word.toLowerCase();
 
     for (const typeEntry of builtinTypes) {
@@ -302,7 +302,7 @@ export function parseType(word: string): ParsedType[] | LexiconError {
         bestMatch = { stem: typeEntry.stem, ending };
 
         // EDGE: 3rd declension nominative singular has no ending
-        //       Example: "Cursor" (not "Cursorus")
+        //       Example: "cursor" (not "Cursorus")
         if (ending === '' && typeEntry.declension === 3) {
             return [
                 {

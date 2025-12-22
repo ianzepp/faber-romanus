@@ -35,7 +35,7 @@ bun run fons/cli.ts compile hello.fab -t zig
 ```
 // salve.fab - Hello World
 
-functio salve(nomen) -> Textus {
+functio salve(nomen) -> textus {
   redde "Salve, " + nomen + "!"
 }
 
@@ -85,17 +85,17 @@ fixum empty = nihil        // null
 ### Functions
 
 ```
-functio salve(nomen) -> Textus {
+functio salve(nomen) -> textus {
   redde "Salve, " + nomen
 }
 
 // With typed parameters (type-first syntax)
-functio adde(Numerus a, Numerus b) -> Numerus {
+functio adde(numerus a, numerus b) -> numerus {
   redde a + b
 }
 
 // Async function
-futura functio fetch(url) -> Textus {
+futura functio fetch(url) -> textus {
   redde cede getData(url)
 }
 ```
@@ -168,7 +168,7 @@ elige status {
 ### Guard Clauses
 
 ```
-functio validate(x) -> Numerus {
+functio validate(x) -> numerus {
   custodi {
     si x < 0 { redde -1 }
     si x > 100 { redde -1 }
@@ -268,23 +268,23 @@ si nulla data {
 ### Types
 
 ```
-Textus          // string
-Numerus         // number
-Bivalens        // boolean (verum/falsum)
-Nihil           // null
-Vacuum          // void
-Lista<T>        // Array<T>
-Tabula<K, V>    // Map<K, V>
-Copia<T>        // Set<T>
-Promissum<T>    // Promise<T>
+textus          // string
+numerus         // number
+bivalens        // boolean (verum/falsum)
+nihil           // null
+vacuum          // void
+lista<T>        // Array<T>
+tabula<K, V>    // Map<K, V>
+copia<T>        // Set<T>
+promissum<T>    // Promise<T>
 ```
 
 Type annotations use type-first syntax:
 
 ```
-fixum Numerus x = 42
-fixum Textus name = "Marcus"
-fixum Lista<Numerus> items = [1, 2, 3]
+fixum numerus x = 42
+fixum textus name = "Marcus"
+fixum lista<numerus> items = [1, 2, 3]
 ```
 
 ### Keywords Reference

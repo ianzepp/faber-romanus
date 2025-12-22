@@ -31,7 +31,7 @@ describe('zig codegen', () => {
         });
 
         test('type annotation', () => {
-            const zig = compile('varia Numerus x = 5');
+            const zig = compile('varia numerus x = 5');
 
             expect(zig).toContain('var x: i64 = 5');
         });
@@ -40,7 +40,7 @@ describe('zig codegen', () => {
     describe('function declarations', () => {
         test('simple function', () => {
             const zig = compile(`
-        functio salve(Textus nomen) -> Nihil {
+        functio salve(textus nomen) -> nihil {
           redde
         }
       `);
@@ -51,7 +51,7 @@ describe('zig codegen', () => {
 
         test('async function becomes error union', () => {
             const zig = compile(`
-        futura functio fetch(Textus url) -> Numerus {
+        futura functio fetch(textus url) -> numerus {
           redde 0
         }
       `);
@@ -183,9 +183,9 @@ describe('zig codegen', () => {
         });
 
         test('novum -> Type.init()', () => {
-            const zig = compile('novum Erratum(message)');
+            const zig = compile('novum erratum(message)');
 
-            expect(zig).toContain('Erratum.init(message)');
+            expect(zig).toContain('erratum.init(message)');
         });
     });
 
@@ -299,7 +299,7 @@ describe('zig codegen', () => {
 
     describe('type declarations', () => {
         test('type alias', () => {
-            const zig = compile('typus ID = Textus');
+            const zig = compile('typus ID = textus');
 
             expect(zig).toContain('const ID = []const u8');
         });

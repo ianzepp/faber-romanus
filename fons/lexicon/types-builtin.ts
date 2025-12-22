@@ -13,16 +13,16 @@
  * identifiers.
  *
  * TYPE CATEGORIES:
- * - primitive: Basic scalar types (Textus, Numerus, Bivalens)
- * - collection: Container types (Lista, Tabula, Copia)
- * - structural: Complex types (Functio, Promissum, Erratum)
- * - iteration: Iterator/stream types (Cursor, Fluxus)
+ * - primitive: Basic scalar types (textus, numerus, bivalens)
+ * - collection: Container types (lista, tabula, copia)
+ * - structural: Complex types (functio, promissum, erratum)
+ * - iteration: Iterator/stream types (cursor, fluxus)
  *
  * LINGUISTIC DESIGN:
  * Latin noun genders and declensions are chosen for semantic clarity:
- * - Masculine: Active entities (Numerus, Cursor, Fluxus)
- * - Feminine: Collections (Lista, Tabula, Copia)
- * - Neuter: Abstract concepts (Datum, Erratum, Signum)
+ * - Masculine: Active entities (numerus, cursor, fluxus)
+ * - Feminine: Collections (lista, tabula, copia)
+ * - Neuter: Abstract concepts (datum, erratum, signum)
  *
  * TARGET MAPPING:
  * Each type maps to a JavaScript/TypeScript type for code generation.
@@ -36,7 +36,7 @@
  *
  * INVARIANTS
  * ==========
- * INV-1: Type stems are TitleCase (Textus not textus)
+ * INV-1: Type stems are TitleCase (textus not textus)
  * INV-2: All types follow valid Latin declension patterns
  * INV-3: Generic types are marked with generic flag
  * INV-4: Each type has a unique stem
@@ -76,7 +76,7 @@ export interface TypeEntry extends NounEntry {
  *      Each type's gender and declension chosen for linguistic appropriateness.
  *
  * CASE: Stems are lowercase (canonical form). Lookup is case-insensitive,
- *       so "textus", "Textus", and "TEXTUS" all resolve to the same type.
+ *       so "textus", "textus", and "TEXTUS" all resolve to the same type.
  */
 export const builtinTypes: TypeEntry[] = [
     // ---------------------------------------------------------------------------

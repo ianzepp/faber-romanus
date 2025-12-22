@@ -343,8 +343,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate variable declaration.
      *
      * TRANSFORMS:
-     *   varia x: Numerus = 5 -> var x: i64 = 5;
-     *   fixum y: Textus = "hello" -> const y: []const u8 = "hello";
+     *   varia x: numerus = 5 -> var x: i64 = 5;
+     *   fixum y: textus = "hello" -> const y: []const u8 = "hello";
      *   fixum { a, b } = obj -> const a = obj.a; const b = obj.b;
      *
      * TARGET: Zig requires explicit types for var (mutable) declarations.
@@ -439,15 +439,15 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         switch (type.kind) {
             case 'primitive':
                 switch (type.name) {
-                    case 'Textus':
+                    case 'textus':
                         return `${nullable}[]const u8`;
-                    case 'Numerus':
+                    case 'numerus':
                         return `${nullable}i64`;
-                    case 'Bivalens':
+                    case 'bivalens':
                         return `${nullable}bool`;
-                    case 'Nihil':
+                    case 'nihil':
                         return 'void';
-                    case 'Vacuum':
+                    case 'vacuum':
                         return 'void';
                 }
 
@@ -472,7 +472,7 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Check if an expression has a string type.
      */
     function isStringType(node: Expression): boolean {
-        if (node.resolvedType?.kind === 'primitive' && node.resolvedType.name === 'Textus') {
+        if (node.resolvedType?.kind === 'primitive' && node.resolvedType.name === 'textus') {
             return true;
         }
 
@@ -491,9 +491,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate type annotation from Latin type.
      *
      * TRANSFORMS:
-     *   Textus -> []const u8
-     *   Numerus -> i64
-     *   Textus? -> ?[]const u8
+     *   textus -> []const u8
+     *   numerus -> i64
+     *   textus? -> ?[]const u8
      *
      * TARGET: Zig uses ? prefix for optional types, not | null suffix.
      */
@@ -512,8 +512,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate function declaration.
      *
      * TRANSFORMS:
-     *   functio salve(nomen: Textus): Nihil -> fn salve(nomen: []const u8) void
-     *   futura functio f(): Numerus -> fn f() !i64
+     *   functio salve(nomen: textus): nihil -> fn salve(nomen: []const u8) void
+     *   futura functio f(): numerus -> fn f() !i64
      *
      * TARGET: Zig uses fn not function. Async becomes error union (!T).
      */
@@ -534,7 +534,7 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate function parameter.
      *
      * TRANSFORMS:
-     *   nomen: Textus -> nomen: []const u8
+     *   nomen: textus -> nomen: []const u8
      *
      * TARGET: Zig requires type after parameter name (name: type).
      */
@@ -784,7 +784,7 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate type alias declaration.
      *
      * TRANSFORMS:
-     *   typus ID = Textus -> const ID = []const u8;
+     *   typus ID = textus -> const ID = []const u8;
      *
      * TARGET: Zig uses const for type aliases.
      */
@@ -1183,11 +1183,11 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         // Use resolved type if available
         if (expr.resolvedType?.kind === 'primitive') {
             switch (expr.resolvedType.name) {
-                case 'Textus':
+                case 'textus':
                     return '{s}';
-                case 'Numerus':
+                case 'numerus':
                     return '{d}';
-                case 'Bivalens':
+                case 'bivalens':
                     return '{}';
                 default:
                     return '{any}';

@@ -70,7 +70,7 @@ type EndingMap = Record<string, { case: Case; number: Number }[]>;
 /**
  * 1st declension endings (feminine, -a stems).
  *
- * EXAMPLES: Lista (list), Tabula (table), Copia (set/collection)
+ * EXAMPLES: lista (list), tabula (table), copia (set/collection)
  *
  * WHY: First declension is typically feminine and follows the -a pattern.
  *      Used for many collection types in Faber Romanus.
@@ -104,7 +104,7 @@ export const declension1Endings: EndingMap = {
 /**
  * 2nd declension masculine endings (-us stems).
  *
- * EXAMPLES: Numerus (number), Usuarius (user)
+ * EXAMPLES: numerus (number), Usuarius (user)
  *
  * WHY: Second declension masculine is the most common pattern for Latin nouns.
  *      Many technical terms use this declension.
@@ -137,7 +137,7 @@ export const declension2MascEndings: EndingMap = {
 /**
  * 2nd declension neuter endings (-um stems).
  *
- * EXAMPLES: Promissum (promise), Erratum (error), Datum (data)
+ * EXAMPLES: promissum (promise), erratum (error), datum (data)
  *
  * WHY: Neuter nouns follow the rule "nominative equals accusative" - the subject
  *      and direct object forms are identical. This is a key feature of Latin neuters.
@@ -172,7 +172,7 @@ export const declension2NeutEndings: EndingMap = {
 /**
  * 3rd declension endings (consonant stems, masculine/feminine).
  *
- * EXAMPLES: Cursor (cursor/iterator)
+ * EXAMPLES: cursor (cursor/iterator)
  *
  * WHY: Third declension is the most irregular and complex. Nominative singular
  *      varies greatly (no predictable ending), but other cases follow patterns.
@@ -234,7 +234,7 @@ export const declension3NeutEndings: EndingMap = {
 /**
  * 4th declension masculine endings (-us stems, but different from 2nd declension).
  *
- * EXAMPLES: Textus (text/string), Fluxus (flow/stream)
+ * EXAMPLES: textus (text/string), fluxus (flow/stream)
  *
  * WHY: Fourth declension also ends in -us (like 2nd masculine), but with different
  *      case endings. Genitive singular is -us (not -i like 2nd declension).

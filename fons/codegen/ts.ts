@@ -48,6 +48,8 @@ import type {
     ImportDeclaration,
     VariableDeclaration,
     FunctionDeclaration,
+    GenusDeclaration,
+    FieldDeclaration,
     TypeAliasDeclaration,
     IfStatement,
     WhileStatement,
@@ -86,18 +88,18 @@ import type { CodegenOptions } from './types';
 /**
  * Map Latin type names to TypeScript types.
  *
- * WHY: Latin uses descriptive names (Textus = text), TypeScript uses
+ * WHY: Latin uses descriptive names (textus = text), TypeScript uses
  *      JavaScript primitive names (string). This mapping preserves semantics
  *      while emitting idiomatic TypeScript.
  *
  * TARGET MAPPING:
  * | Latin      | TypeScript |
  * |------------|------------|
- * | Textus     | string     |
- * | Numerus    | number     |
- * | Bivalens   | boolean    |
- * | Nihil      | null       |
- * | Lista      | Array      |
+ * | textus     | string     |
+ * | numerus    | number     |
+ * | bivalens   | boolean    |
+ * | nihil      | null       |
+ * | lista      | Array      |
  * | tabula     | Map        |
  * | copia      | Set        |
  * | promissum  | Promise    |
@@ -105,7 +107,7 @@ import type { CodegenOptions } from './types';
  * | cursor     | Iterator   |
  *
  * CASE: Keys are lowercase. Lookup normalizes input to lowercase for
- *       case-insensitive matching (textus, Textus, TEXTUS all work).
+ *       case-insensitive matching (textus, textus, TEXTUS all work).
  */
 const typeMap: Record<string, string> = {
     textus: 'string',
@@ -177,6 +179,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genVariableDeclaration(node);
             case 'FunctionDeclaration':
                 return genFunctionDeclaration(node);
+            case 'GenusDeclaration':
+                return genGenusDeclaration(node);
             case 'TypeAliasDeclaration':
                 return genTypeAliasDeclaration(node);
             case 'IfStatement':
@@ -233,8 +237,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate variable declaration.
      *
      * TRANSFORMS:
-     *   varia x: Numerus = 5 -> let x: number = 5
-     *   fixum y: Textus = "hello" -> const y: string = "hello"
+     *   varia x: numerus = 5 -> let x: number = 5
+     *   fixum y: textus = "hello" -> const y: string = "hello"
      *   fixum { nomen, aetas } = persona -> const { nomen, aetas } = persona
      *   fixum { nomen: localName } = persona -> const { nomen: localName } = persona
      */
@@ -266,11 +270,84 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
+     * Generate genus (struct) declaration as TypeScript class.
+     *
+     * TRANSFORMS:
+     *   genus persona { textus nomen numerus aetas }
+     *   ->
+     *   class persona {
+     *       nomen: string;
+     *       aetas: number;
+     *   }
+     *
+     * WHY: TypeScript classes provide the closest analog to Latin genus -
+     *      encapsulated data with methods.
+     */
+    function genGenusDeclaration(node: GenusDeclaration): string {
+        const name = node.name.name;
+        const typeParams = node.typeParameters
+            ? `<${node.typeParameters.map(p => p.name).join(', ')}>`
+            : '';
+        const impl = node.implements
+            ? ` implements ${node.implements.map(i => i.name).join(', ')}`
+            : '';
+
+        const lines: string[] = [];
+        lines.push(`${ind()}class ${name}${typeParams}${impl} {`);
+
+        depth++;
+
+        // Generate fields
+        for (const field of node.fields) {
+            lines.push(genFieldDeclaration(field));
+        }
+
+        // Generate methods
+        for (const method of node.methods) {
+            if (node.fields.length > 0 || node.methods.indexOf(method) > 0) {
+                lines.push(''); // blank line before methods
+            }
+            lines.push(genMethodDeclaration(method));
+        }
+
+        depth--;
+        lines.push(`${ind()}}`);
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Generate field declaration within a class.
+     */
+    function genFieldDeclaration(node: FieldDeclaration): string {
+        const visibility = node.isPublic ? '' : 'private ';
+        const staticMod = node.isStatic ? 'static ' : '';
+        const name = node.name.name;
+        const type = genType(node.fieldType);
+        const init = node.init ? ` = ${genExpression(node.init)}` : '';
+
+        return `${ind()}${visibility}${staticMod}${name}: ${type}${init}${semi ? ';' : ''}`;
+    }
+
+    /**
+     * Generate method declaration within a class.
+     */
+    function genMethodDeclaration(node: FunctionDeclaration): string {
+        const asyncMod = node.async ? 'async ' : '';
+        const name = node.name.name;
+        const params = node.params.map(genParameter).join(', ');
+        const returnType = node.returnType ? `: ${genType(node.returnType)}` : '';
+        const body = genBlockStatement(node.body);
+
+        return `${ind()}${asyncMod}${name}(${params})${returnType} ${body}`;
+    }
+
+    /**
      * Generate type alias declaration.
      *
      * TRANSFORMS:
-     *   typus ID = Textus -> type ID = string;
-     *   typus UserID = Numerus<32, Naturalis> -> type UserID = number;
+     *   typus ID = textus -> type ID = string;
+     *   typus UserID = numerus<32, Naturalis> -> type UserID = number;
      *
      * WHY: TypeScript type aliases provide semantic naming without runtime cost.
      */
@@ -285,7 +362,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate type parameter (type, literal, or modifier).
      *
      * TRANSFORMS:
-     *   Textus -> string (nested type)
+     *   textus -> string (nested type)
      *   32 -> ignored (size constraint)
      *   Naturalis -> ignored (modifier)
      *
@@ -298,7 +375,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         if (param.type === 'Literal') {
-            // EDGE: Numeric params like Numerus<32> indicate size/width
+            // EDGE: Numeric params like numerus<32> indicate size/width
             // For TypeScript, we ignore size - all numbers are float64
             return null;
         }
@@ -316,17 +393,17 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate type annotation from Latin type.
      *
      * TRANSFORMS:
-     *   Textus -> string
-     *   Lista<Numerus> -> Array<number>
-     *   Textus? -> string | null
-     *   Numerus<32> -> number (size ignored)
-     *   Numerus<Naturalis> -> number (modifier ignored)
+     *   textus -> string
+     *   lista<numerus> -> Array<number>
+     *   textus? -> string | null
+     *   numerus<32> -> number (size ignored)
+     *   numerus<Naturalis> -> number (modifier ignored)
      */
     function genType(node: TypeAnnotation): string {
         // Map Latin type name to TS type (case-insensitive lookup)
         const base = typeMap[node.name.toLowerCase()] ?? node.name;
 
-        // Handle generic type parameters: Lista<Textus> -> Array<string>
+        // Handle generic type parameters: lista<textus> -> Array<string>
         let result = base;
 
         if (node.typeParameters && node.typeParameters.length > 0) {
@@ -341,7 +418,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             }
         }
 
-        // Handle nullable: Textus? -> string | null
+        // Handle nullable: textus? -> string | null
         if (node.nullable) {
             result = `${result} | null`;
         }
@@ -358,8 +435,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate function declaration.
      *
      * TRANSFORMS:
-     *   functio salve(nomen: Textus): Nihil -> function salve(nomen: string): null
-     *   futura functio f(): Numerus -> async function f(): number
+     *   functio salve(nomen: textus): nihil -> function salve(nomen: string): null
+     *   futura functio f(): numerus -> async function f(): number
      */
     function genFunctionDeclaration(node: FunctionDeclaration): string {
         const async = node.async ? 'async ' : '';
@@ -375,7 +452,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate function parameter.
      *
      * TRANSFORMS:
-     *   nomen: Textus -> nomen: string
+     *   nomen: textus -> nomen: string
      */
     function genParameter(node: Parameter): string {
         const name = node.name.name;

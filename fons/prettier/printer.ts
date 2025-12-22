@@ -845,8 +845,8 @@ function printTypeAnnotation(
         return join(' | ', unionParts);
     }
 
-    // Array shorthand: Lista<T> with arrayShorthand flag -> T[]
-    if (node.arrayShorthand && node.name === 'Lista' && node.typeParameters?.length === 1) {
+    // Array shorthand: lista<T> with arrayShorthand flag -> T[]
+    if (node.arrayShorthand && node.name === 'lista' && node.typeParameters?.length === 1) {
         const innerType = path.call(print, 'typeParameters', 0);
         const parts: Doc[] = [innerType, '[]'];
         if (node.nullable) {

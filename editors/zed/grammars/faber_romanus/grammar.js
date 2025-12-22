@@ -342,7 +342,7 @@ module.exports = grammar({
       optional("?"),
     ),
 
-    // Type names: case-insensitive (textus, Textus, TEXTUS all work)
+    // Type names: case-insensitive (textus, textus, TEXTUS all work)
     // Convention: lowercase preferred (Latin had no case distinction)
     type_identifier: $ => /[A-Za-z][a-zA-Z0-9_]*/,
 

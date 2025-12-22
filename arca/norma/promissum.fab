@@ -1,7 +1,7 @@
 // promissum<T> - Async promise type
 //
 // Core async type wrapping native Promise with Latin interface.
-// "Promissum" = promise, guarantee.
+// "promissum" = promise, guarantee.
 // Provides consistent API across all compilation targets.
 
 // TODO: Requires struct syntax support

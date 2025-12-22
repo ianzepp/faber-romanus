@@ -41,103 +41,103 @@ function analyzeSource(source: string): {
 describe('Semantic Analyzer', () => {
     describe('Variable Type Resolution', () => {
         it('resolves type from explicit annotation', () => {
-            const { errors, types } = analyzeSource(`varia Numerus x = 5`);
+            const { errors, types } = analyzeSource(`varia numerus x = 5`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('x')).toEqual({ kind: 'primitive', name: 'Numerus' });
+            expect(types.get('x')).toEqual({ kind: 'primitive', name: 'numerus' });
         });
 
         it('resolves type from string annotation', () => {
-            const { errors, types } = analyzeSource(`varia Textus s = "hello"`);
+            const { errors, types } = analyzeSource(`varia textus s = "hello"`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('s')).toEqual({ kind: 'primitive', name: 'Textus' });
+            expect(types.get('s')).toEqual({ kind: 'primitive', name: 'textus' });
         });
 
         it('resolves type from boolean annotation', () => {
-            const { errors, types } = analyzeSource(`varia Bivalens b = verum`);
+            const { errors, types } = analyzeSource(`varia bivalens b = verum`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'Bivalens' });
+            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
         it('infers type from number literal', () => {
             const { errors, types } = analyzeSource(`varia x = 42`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('x')).toEqual({ kind: 'primitive', name: 'Numerus' });
+            expect(types.get('x')).toEqual({ kind: 'primitive', name: 'numerus' });
         });
 
         it('infers type from string literal', () => {
             const { errors, types } = analyzeSource(`varia s = "hello"`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('s')).toEqual({ kind: 'primitive', name: 'Textus' });
+            expect(types.get('s')).toEqual({ kind: 'primitive', name: 'textus' });
         });
 
         it('infers type from boolean literal', () => {
             const { errors, types } = analyzeSource(`varia b = verum`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'Bivalens' });
+            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
         it('handles nullable types', () => {
-            const { errors, types } = analyzeSource(`varia Numerus? x = nihil`);
+            const { errors, types } = analyzeSource(`varia numerus? x = nihil`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('x')).toEqual({ kind: 'primitive', name: 'Numerus', nullable: true });
+            expect(types.get('x')).toEqual({ kind: 'primitive', name: 'numerus', nullable: true });
         });
     });
 
     describe('Expression Type Resolution', () => {
-        it('resolves arithmetic expression to Numerus', () => {
+        it('resolves arithmetic expression to numerus', () => {
             const { errors } = analyzeSource(`varia x = 1 + 2`);
 
             expect(errors).toHaveLength(0);
         });
 
-        it('resolves string concatenation to Textus', () => {
+        it('resolves string concatenation to textus', () => {
             const { errors, types } = analyzeSource(`varia s = "a" + "b"`);
 
             expect(errors).toHaveLength(0);
-            // The + operator on strings resolves to Textus
-            expect(types.get('s')).toEqual({ kind: 'primitive', name: 'Textus' });
+            // The + operator on strings resolves to textus
+            expect(types.get('s')).toEqual({ kind: 'primitive', name: 'textus' });
         });
 
-        it('resolves comparison to Bivalens', () => {
+        it('resolves comparison to bivalens', () => {
             const { errors, types } = analyzeSource(`varia b = 1 < 2`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'Bivalens' });
+            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
-        it('resolves equality to Bivalens', () => {
+        it('resolves equality to bivalens', () => {
             const { errors, types } = analyzeSource(`varia b = 1 == 2`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'Bivalens' });
+            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
-        it('resolves logical operators to Bivalens', () => {
+        it('resolves logical operators to bivalens', () => {
             const { errors, types } = analyzeSource(`varia b = verum && falsum`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'Bivalens' });
+            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
-        it('resolves negation to Bivalens', () => {
+        it('resolves negation to bivalens', () => {
             const { errors, types } = analyzeSource(`varia b = !verum`);
 
             expect(errors).toHaveLength(0);
-            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'Bivalens' });
+            expect(types.get('b')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
     });
 
     describe('Function Type Resolution', () => {
         it('records function in symbol table', () => {
             const source = `
-        functio add(Numerus a, Numerus b) -> Numerus {
+        functio add(numerus a, numerus b) -> numerus {
           redde a + b
         }
       `;
@@ -148,7 +148,7 @@ describe('Semantic Analyzer', () => {
 
         it('type checks return statements', () => {
             const source = `
-        functio greet() -> Textus {
+        functio greet() -> textus {
           redde "hello"
         }
       `;
@@ -159,7 +159,7 @@ describe('Semantic Analyzer', () => {
 
         it('reports error for wrong return type', () => {
             const source = `
-        functio greet() -> Textus {
+        functio greet() -> textus {
           redde 42
         }
       `;
@@ -216,7 +216,7 @@ describe('Semantic Analyzer', () => {
 
         it('reports type mismatch in assignment', () => {
             const source = `
-        varia Numerus x = 5
+        varia numerus x = 5
         x = "hello"
       `;
             const { errors } = analyzeSource(source);
@@ -274,7 +274,7 @@ describe('Semantic Analyzer', () => {
 
     describe('Generic Types', () => {
         it('resolves generic type annotation', () => {
-            const { errors, types } = analyzeSource(`varia Lista<Numerus>? items = nihil`);
+            const { errors, types } = analyzeSource(`varia lista<numerus>? items = nihil`);
 
             expect(errors).toHaveLength(0);
             const itemsType = types.get('items');
@@ -285,7 +285,7 @@ describe('Semantic Analyzer', () => {
 
     describe('Arrow Functions', () => {
         it('resolves arrow function type', () => {
-            const source = `varia add = (Numerus a, Numerus b) => a + b`;
+            const source = `varia add = (numerus a, numerus b) => a + b`;
             const { errors } = analyzeSource(source);
 
             expect(errors).toHaveLength(0);

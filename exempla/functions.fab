@@ -17,7 +17,7 @@ functio adde(a, b) -> numerus {
     redde summa
 }
 
-// Function without return (implicit Vacuum)
+// Function without return (implicit vacuum)
 functio salutaOmnes() {
     scribe salve("Marcus")
     scribe salve("Claudia")
@@ -25,7 +25,7 @@ functio salutaOmnes() {
 }
 
 // Async functions use futura keyword
-// futura functio fetchData(url) -> Textus {
+// futura functio fetchData(url) -> textus {
 // fixum data = cede fetch(url)
 // redde data
 // }

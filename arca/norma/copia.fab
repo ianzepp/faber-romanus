@@ -1,7 +1,7 @@
 // copia<T> - Unique value set type
 //
 // Core collection type wrapping native Set with Latin interface.
-// "Copia" = abundance, supply (collection of unique items).
+// "copia" = abundance, supply (collection of unique items).
 // Provides consistent API across all compilation targets.
 
 // TODO: Requires struct syntax support

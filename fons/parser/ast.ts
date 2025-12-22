@@ -82,6 +82,7 @@ export type Statement =
     | ImportDeclaration
     | VariableDeclaration
     | FunctionDeclaration
+    | GenusDeclaration
     | TypeAliasDeclaration
     | ExpressionStatement
     | IfStatement
@@ -168,7 +169,7 @@ export interface ObjectPatternProperty extends BaseNode {
  * WHY: Preserves Latin keywords for semantic phase to map to target semantics.
  *
  * Examples:
- *   varia x: Numerus = 5
+ *   varia x: numerus = 5
  *   fixum SALVE = "ave"
  *   fixum { nomen, aetas } = persona
  *   fixum { nomen: localName } = persona
@@ -192,7 +193,7 @@ export interface VariableDeclaration extends BaseNode {
  * INVARIANT: params is always an array (empty if no parameters).
  *
  * Examples:
- *   functio salve(nomen: Textus) -> Textus { ... }
+ *   functio salve(nomen: textus) -> textus { ... }
  *   futura functio cede() { ... }
  */
 export interface FunctionDeclaration extends BaseNode {
@@ -236,13 +237,80 @@ export interface Parameter extends BaseNode {
  * WHY: Enables creating named type aliases for complex types.
  *
  * Examples:
- *   typus ID = Textus
- *   typus UserID = Numerus<32, Naturalis>
+ *   typus ID = textus
+ *   typus UserID = numerus<32, Naturalis>
  */
 export interface TypeAliasDeclaration extends BaseNode {
     type: 'TypeAliasDeclaration';
     name: Identifier;
     typeAnnotation: TypeAnnotation;
+}
+
+// ---------------------------------------------------------------------------
+// Genus (Struct) Declarations
+// ---------------------------------------------------------------------------
+
+/**
+ * Field declaration within a genus.
+ *
+ * GRAMMAR (in EBNF):
+ *   fieldDecl := 'publicus'? 'generis'? typeAnnotation IDENTIFIER ('=' expression)?
+ *
+ * INVARIANT: typeAnnotation uses Latin word order (type before name).
+ * INVARIANT: isPublic defaults to false (private by default).
+ * INVARIANT: isStatic is true when 'generis' modifier present.
+ *
+ * WHY: Latin word order places type before name (e.g., "textus nomen" not "nomen: textus").
+ *
+ * Examples:
+ *   textus nomen                    -> private field
+ *   publicus textus nomen           -> public field
+ *   numerus aetas = 0               -> field with default
+ *   generis fixum PI = 3.14159      -> static constant
+ */
+export interface FieldDeclaration extends BaseNode {
+    type: 'FieldDeclaration';
+    name: Identifier;
+    fieldType: TypeAnnotation;
+    init?: Expression;
+    isPublic: boolean;
+    isStatic: boolean;
+}
+
+/**
+ * Genus (struct/class) declaration.
+ *
+ * GRAMMAR (in EBNF):
+ *   genusDecl := 'genus' IDENTIFIER typeParams? ('implet' IDENTIFIER (',' IDENTIFIER)*)? '{' genusMember* '}'
+ *   genusMember := fieldDecl | methodDecl
+ *   typeParams := '<' IDENTIFIER (',' IDENTIFIER)* '>'
+ *
+ * INVARIANT: name is the type name (lowercase by convention).
+ * INVARIANT: fields contains all field declarations.
+ * INVARIANT: methods contains all method declarations (FunctionDeclaration with implicit ego).
+ * INVARIANT: implements lists pactum names this genus fulfills.
+ *
+ * WHY: Latin 'genus' (kind/type) for data structures with fields and methods.
+ *      No inheritance - composition and pactum (interfaces) only.
+ *
+ * Examples:
+ *   genus persona {
+ *       textus nomen
+ *       numerus aetas
+ *   }
+ *
+ *   genus persona implet iterabilis {
+ *       textus nomen
+ *       functio sequens() -> textus? { ... }
+ *   }
+ */
+export interface GenusDeclaration extends BaseNode {
+    type: 'GenusDeclaration';
+    name: Identifier;
+    typeParameters?: Identifier[];
+    implements?: Identifier[];
+    fields: FieldDeclaration[];
+    methods: FunctionDeclaration[];
 }
 
 // ---------------------------------------------------------------------------
@@ -876,9 +944,9 @@ export interface NewExpression extends BaseNode {
  * Type parameter for parameterized types.
  *
  * DESIGN: Union type allows different parameter kinds:
- *         - TypeAnnotation: Generic type params (Lista<Textus>)
- *         - Literal: Numeric params (Numerus<32>) or size specs
- *         - ModifierParameter: Type modifiers (Numerus<Naturalis>)
+ *         - TypeAnnotation: Generic type params (lista<textus>)
+ *         - Literal: Numeric params (numerus<32>) or size specs
+ *         - ModifierParameter: Type modifiers (numerus<Naturalis>)
  *
  * WHY: Type parameters aren't always types - they can be size constraints
  *      or ownership/mutability modifiers.
@@ -900,8 +968,8 @@ export type TypeParameter = TypeAnnotation | Literal | ModifierParameter;
  *      - Mutabilis: mutable
  *
  * Examples:
- *   Numerus<Naturalis> -> unsigned integer
- *   Textus<Alienus> -> borrowed string reference
+ *   numerus<Naturalis> -> unsigned integer
+ *   textus<Alienus> -> borrowed string reference
  */
 export interface ModifierParameter extends BaseNode {
     type: 'ModifierParameter';
@@ -915,18 +983,18 @@ export interface ModifierParameter extends BaseNode {
  *   typeAnnotation := IDENTIFIER typeParams? '?'? ('|' typeAnnotation)*
  *   typeParams := '<' typeParameter (',' typeParameter)* '>'
  *
- * INVARIANT: name is the base type name (Textus, Numerus, etc.).
+ * INVARIANT: name is the base type name (textus, numerus, etc.).
  * INVARIANT: nullable indicates optional type with '?'.
  * INVARIANT: union contains multiple types for union types (A | B).
  * INVARIANT: typeParameters can contain types, literals, or modifiers.
  *
  * Examples:
- *   Textus -> name="Textus"
- *   Numerus? -> name="Numerus", nullable=true
- *   Lista<Textus> -> name="Lista", typeParameters=[TypeAnnotation]
- *   Numerus<32> -> name="Numerus", typeParameters=[Literal{value=32}]
- *   Numerus<Naturalis> -> name="Numerus", typeParameters=[ModifierParameter]
- *   Textus | Numerus -> name="union", union=[{name="Textus"}, {name="Numerus"}]
+ *   textus -> name="textus"
+ *   numerus? -> name="numerus", nullable=true
+ *   lista<textus> -> name="lista", typeParameters=[TypeAnnotation]
+ *   numerus<32> -> name="numerus", typeParameters=[Literal{value=32}]
+ *   numerus<Naturalis> -> name="numerus", typeParameters=[ModifierParameter]
+ *   textus | numerus -> name="union", union=[{name="textus"}, {name="numerus"}]
  */
 export interface TypeAnnotation extends BaseNode {
     type: 'TypeAnnotation';
@@ -934,5 +1002,5 @@ export interface TypeAnnotation extends BaseNode {
     typeParameters?: TypeParameter[];
     nullable?: boolean;
     union?: TypeAnnotation[];
-    arrayShorthand?: boolean; // true if parsed from [] syntax (e.g., Numerus[] vs Lista<Numerus>)
+    arrayShorthand?: boolean; // true if parsed from [] syntax (e.g., numerus[] vs lista<numerus>)
 }

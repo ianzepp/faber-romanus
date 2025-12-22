@@ -186,9 +186,9 @@ describe('codegen', () => {
         });
 
         test('novum -> new', () => {
-            const js = compile('novum Erratum(message)');
+            const js = compile('novum erratum(message)');
 
-            expect(js).toBe('new Erratum(message);');
+            expect(js).toBe('new erratum(message);');
         });
 
         test('verum -> true', () => {
@@ -245,31 +245,31 @@ describe('codegen', () => {
 
     describe('type declarations', () => {
         test('type alias declaration', () => {
-            const js = compile('typus ID = Textus');
+            const js = compile('typus ID = textus');
 
             expect(js).toBe('type ID = string;');
         });
 
         test('type alias with generic', () => {
-            const js = compile('typus StringList = Lista<Textus>');
+            const js = compile('typus StringList = lista<textus>');
 
             expect(js).toBe('type StringList = Array<string>;');
         });
 
         test('type with numeric parameter is ignored in TS', () => {
-            const js = compile('typus SmallNum = Numerus<32>');
+            const js = compile('typus SmallNum = numerus<32>');
 
             expect(js).toBe('type SmallNum = number;');
         });
 
         test('type with modifier parameter is ignored in TS', () => {
-            const js = compile('typus Natural = Numerus<Naturalis>');
+            const js = compile('typus Natural = numerus<Naturalis>');
 
             expect(js).toBe('type Natural = number;');
         });
 
         test('type with both numeric and modifier parameters', () => {
-            const js = compile('typus UInt32 = Numerus<32, Naturalis>');
+            const js = compile('typus UInt32 = numerus<32, Naturalis>');
 
             expect(js).toBe('type UInt32 = number;');
         });

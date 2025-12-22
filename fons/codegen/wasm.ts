@@ -109,18 +109,18 @@ interface LocalVar {
  * TARGET MAPPING:
  * | Latin     | WASM  | Notes                    |
  * |-----------|-------|--------------------------|
- * | Numerus   | i64   | 64-bit signed integer    |
- * | Bivalens  | i32   | 0 = false, 1 = true      |
- * | Textus    | i32   | Pointer to memory offset |
- * | Nihil     | (none)| No return value          |
+ * | numerus   | i64   | 64-bit signed integer    |
+ * | bivalens  | i32   | 0 = false, 1 = true      |
+ * | textus    | i32   | Pointer to memory offset |
+ * | nihil     | (none)| No return value          |
  */
 function mapType(latinType: string): WasmType {
     switch (latinType) {
-        case 'Numerus':
+        case 'numerus':
             return 'i64';
-        case 'Bivalens':
+        case 'bivalens':
             return 'i32';
-        case 'Textus':
+        case 'textus':
             return 'i32'; // Pointer to string in memory
         default:
             return 'i64'; // Default to i64
@@ -355,7 +355,7 @@ export function generateWasm(program: Program, options: CodegenOptions = {}): st
         // Determine return type
         let returnType = '';
 
-        if (node.returnType && node.returnType.name !== 'Nihil') {
+        if (node.returnType && node.returnType.name !== 'nihil') {
             returnType = ` (result ${mapType(node.returnType.name)})`;
         }
 
