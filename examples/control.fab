@@ -54,6 +54,10 @@ dum i < 3 {
   i = i + 1
 }
 
+// While one-liner
+esto j = 3
+dum j > 0 ergo j = j - 1
+
 // Logical operators
 fixum a = verum
 fixum b = falsum
@@ -88,6 +92,10 @@ fixum numeri = [1, 2, 3]
 ex numeri pro n {
   scribe(n)
 }
+
+// For-each one-liner
+fixum vals = [4, 5, 6]
+ex vals pro v ergo scribe(v)
 
 // Range expression with step
 ex 0..5 per 2 pro n {

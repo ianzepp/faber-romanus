@@ -844,9 +844,13 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse while loop statement.
      *
      * GRAMMAR:
-     *   whileStmt := 'dum' expression blockStmt ('cape' IDENTIFIER blockStmt)?
+     *   whileStmt := 'dum' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)?
      *
      * WHY: 'dum' (while/until) for while loops.
+     *
+     * Examples:
+     *   dum x > 0 { x = x - 1 }
+     *   dum x > 0 ergo x = x - 1
      */
     function parseWhileStatement(): WhileStatement {
         const position = peek().position;
@@ -854,7 +858,17 @@ export function parse(tokens: Token[]): ParserResult {
         expectKeyword('dum', "Expected 'dum'");
 
         const test = parseExpression();
-        const body = parseBlockStatement();
+
+        // Parse body: block or ergo one-liner
+        let body: BlockStatement;
+        if (matchKeyword('ergo')) {
+            const stmtPos = peek().position;
+            const stmt = parseStatement();
+            body = { type: 'BlockStatement', body: [stmt], position: stmtPos };
+        }
+        else {
+            body = parseBlockStatement();
+        }
 
         let catchClause: CatchClause | undefined;
 
@@ -869,13 +883,14 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse for loop statement.
      *
      * GRAMMAR:
-     *   forStmt := ('ex' | 'in') expression 'pro' IDENTIFIER blockStmt ('cape' IDENTIFIER blockStmt)?
+     *   forStmt := ('ex' | 'in') expression 'pro' IDENTIFIER (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)?
      *
      * WHY: Source-first syntax consistent with import: 'ex norma importa x'
      *      'ex' for for-of (values from collection), 'in' for for-in (keys).
      *
      * Examples:
-     *   ex numeri pro n { ... }     // from numbers, for each n
+     *   ex numeri pro n { ... }      // from numbers, for each n
+     *   ex numeri pro n ergo run(n)  // one-liner
      *   in tabula pro clavis { ... } // in table, for each key
      */
     function parseForStatement(): ForStatement {
@@ -899,7 +914,16 @@ export function parse(tokens: Token[]): ParserResult {
 
         const variable = parseIdentifier();
 
-        const body = parseBlockStatement();
+        // Parse body: block or ergo one-liner
+        let body: BlockStatement;
+        if (matchKeyword('ergo')) {
+            const stmtPos = peek().position;
+            const stmt = parseStatement();
+            body = { type: 'BlockStatement', body: [stmt], position: stmtPos };
+        }
+        else {
+            body = parseBlockStatement();
+        }
 
         let catchClause: CatchClause | undefined;
 
