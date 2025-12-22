@@ -2,17 +2,17 @@
 //
 // Functions use the functio keyword:
 // - functio name(params) { ... }        - no return value
-// - functio name(params) -> Type { ... } - with return type
+// - functio name(params) -> type { ... } - with return type
 // - redde value                          - return statement
 // - futura functio ...                   - async function
 
 // Function with return type
-functio salve(nomen) -> Textus {
+functio salve(nomen) -> textus {
     redde "Salve, " + nomen + "!"
 }
 
 // Function with typed parameters
-functio adde(a, b) -> Numerus {
+functio adde(a, b) -> numerus {
     fixum summa = a + b
     redde summa
 }

@@ -1,0 +1,27 @@
+// lista<T> - Dynamic array type
+//
+// Core collection type wrapping native arrays with Latin interface.
+// Provides consistent API across all compilation targets.
+
+// TODO: Requires struct syntax support
+//
+// Proposed syntax:
+//
+// structura lista<T> {
+//     // Fields (internal, managed by target runtime)
+//
+//     // Methods
+//     functio adde(T elementum) { ... }
+//     functio remove() -> T? { ... }
+//     functio primus() -> T? { ... }
+//     functio ultimus() -> T? { ... }
+//     functio longitudo() -> numerus { ... }
+//     functio vacua() -> bivalens { ... }
+//     functio purgare() { ... }
+//     functio contine(T elementum) -> bivalens { ... }
+//     functio indiceDe(T elementum) -> numerus? { ... }
+//     functio coniunge(textus separator) -> textus { ... }
+//     functio filtra((T) -> bivalens praedicatum) -> lista<T> { ... }
+//     functio mappa((T) -> U transformatio) -> lista<U> { ... }
+//     functio reducere(U initium, (U, T) -> U aggregator) -> U { ... }
+// }

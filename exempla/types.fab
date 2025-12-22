@@ -1,62 +1,63 @@
 // Type System in Faber Romanus
 //
 // Type-first syntax: the type precedes the identifier
-// fixum Textus nomen = "Marcus"
-// functio saluta(Textus nomen) -> Textus { ... }
+// fixum textus nomen = "Marcus"
+// functio saluta(textus nomen) -> textus { ... }
 //
-// Types are case-insensitive: Textus, textus, TEXTUS all work.
-// Return types use arrow syntax: -> Type
+// Types are case-insensitive: textus, Textus, TEXTUS all work.
+// Convention: lowercase for types (Latin had no case distinction).
+// Return types use arrow syntax: -> type
 
 // =============================================================================
 // PRIMITIVE TYPES
 // =============================================================================
 
-// Textus (string)
-fixum Textus nomen = "Marcus Aurelius"
+// textus (string)
+fixum textus nomen = "Marcus Aurelius"
 
-// Numerus (number)
-fixum Numerus aetas = 30
+// numerus (number)
+fixum numerus aetas = 30
 
-// Bivalens (boolean)
-fixum Bivalens activus = verum
-fixum Bivalens completus = falsum
+// bivalens (boolean)
+fixum bivalens activus = verum
+fixum bivalens completus = falsum
 
-// Nihil (null)
+// nihil (null)
 fixum nihilum = nihil
 
 // =============================================================================
 // COLLECTION TYPES
 // =============================================================================
 
-// Lista<T> - array/list
-fixum Lista<Textus> nomina = ["Gaius", "Marcus", "Julia"]
-fixum Lista<Numerus> numeri = [1, 2, 3, 4, 5]
+// lista<T> - array/list
+fixum lista<textus> nomina = ["Gaius", "Marcus", "Julia"]
+fixum lista<numerus> numeri = [1, 2, 3, 4, 5]
 
 // =============================================================================
 // NULLABLE TYPES
 // =============================================================================
 
 // Use ? suffix for optional/nullable types
-fixum Textus? cognomen = nihil
-fixum Numerus? result = nihil
+fixum textus? cognomen = nihil
+fixum numerus? result = nihil
 
 // =============================================================================
 // FUNCTION TYPES
 // =============================================================================
 
-// Parameters: type-first (Type name)
-// Return: arrow syntax (-> Type)
-functio adde(Numerus a, Numerus b) -> Numerus {
+// Parameters: type-first (type name)
+// Return: arrow syntax (-> type)
+functio adde(numerus a, numerus b) -> numerus {
     redde a + b
 }
 
-// No return type means Vacuum (void)
-functio saluta(Textus nomen) {
+// No return type means vacuum (void)
+functio saluta(textus nomen) {
     scribe "Salve, " + nomen
 }
 
 // Multiple parameters
-functio describe(Textus nomen, Numerus aetas, Bivalens activus) -> Textus {
+functio describe(textus nomen, numerus aetas, bivalens activus) -> textus {
     redde nomen + " (" + aetas + ")"
 }
 
@@ -65,8 +66,8 @@ functio describe(Textus nomen, Numerus aetas, Bivalens activus) -> Textus {
 // =============================================================================
 
 // typus creates a type alias
-typus ID = Textus
-typus UserID = Numerus
+typus ID = textus
+typus UserID = numerus
 
 // =============================================================================
 // OBJECTS
@@ -80,19 +81,19 @@ fixum config = { host: "localhost", port: 8080 }
 // =============================================================================
 
 // Numeric type parameters:
-// fixum Numerus<32> smallInt = 42
-// fixum Numerus<Naturalis> unsigned = 100
-// fixum Fractus pi = 3.14159
+// fixum numerus<32> smallInt = 42
+// fixum numerus<naturalis> unsigned = 100
+// fixum fractus pi = 3.14159
 
 // Maps and sets:
-// fixum Tabula<Textus, Numerus> ages = { ... }
-// fixum Copia<Textus> uniques = ...
+// fixum tabula<textus, numerus> ages = { ... }
+// fixum copia<textus> uniques = ...
 
 // Type alias usage:
 // fixum ID orderId = "ORD-12345"
 
 // Systems types (Zig/Rust):
-// Indicium<T>, Refera<T>, Naturalis, Proprius, Alienus
+// indicium<T>, refera<T>, naturalis, proprius, alienus
 
 // =============================================================================
 // EXAMPLES

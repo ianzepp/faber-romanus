@@ -16,36 +16,36 @@
 //   _scribe(...args)         -> console.log / std.debug.print / etc.
 //   _vide(...args)           -> console.debug / debug output
 //   _mone(...args)           -> console.warn / warning output
-//   _lege() -> Textus        -> readline / stdin read
+//   _lege() -> textus        -> readline / stdin read
 //
 // Math:
-//   _fortuitus() -> Numerus  -> Math.random / std.rand (0.0 to 1.0)
-//   _pavimentum(n) -> Numerus -> Math.floor / @floor
-//   _tectum(n) -> Numerus     -> Math.ceil / @ceil
-//   _radix(n) -> Numerus      -> Math.sqrt / @sqrt
-//   _potentia(base, exp) -> Numerus -> Math.pow / std.math.pow
+//   _fortuitus() -> numerus  -> Math.random / std.rand (0.0 to 1.0)
+//   _pavimentum(n) -> numerus -> Math.floor / @floor
+//   _tectum(n) -> numerus     -> Math.ceil / @ceil
+//   _radix(n) -> numerus      -> Math.sqrt / @sqrt
+//   _potentia(base, exp) -> numerus -> Math.pow / std.math.pow
 
 // =============================================================================
 // I/O - Wrappers around intrinsics
 // =============================================================================
 
 // Print/log output
-functio scribe(Textus msg) {
+functio scribe(textus msg) {
     _scribe(msg)
 }
 
 // Debug output
-functio vide(Textus msg) {
+functio vide(textus msg) {
     _vide(msg)
 }
 
 // Warning output
-functio mone(Textus msg) {
+functio mone(textus msg) {
     _mone(msg)
 }
 
 // Read input line
-functio lege() -> Textus {
+functio lege() -> textus {
     redde _lege()
 }
 
@@ -54,7 +54,7 @@ functio lege() -> Textus {
 // =============================================================================
 
 // Generate sequence 0..n-1 (like Python's range(n))
-functio series(Numerus n) -> Lista<Numerus> {
+functio series(numerus n) -> numerus[] {
     esto result = []
     esto i = 0
     dum i < n {
@@ -65,7 +65,7 @@ functio series(Numerus n) -> Lista<Numerus> {
 }
 
 // Generate sequence start..end-1 with optional step
-functio seriesAb(Numerus initium, Numerus finis, Numerus gradus) -> Lista<Numerus> {
+functio seriesAb(numerus initium, numerus finis, numerus gradus) -> numerus[] {
     esto result = []
     esto i = initium
     si gradus > 0 {
@@ -88,27 +88,27 @@ functio seriesAb(Numerus initium, Numerus finis, Numerus gradus) -> Lista<Numeru
 // =============================================================================
 
 // Floor (round down)
-functio pavimentum(Numerus n) -> Numerus {
+functio pavimentum(numerus n) -> numerus {
     redde _pavimentum(n)
 }
 
 // Ceiling (round up)
-functio tectum(Numerus n) -> Numerus {
+functio tectum(numerus n) -> numerus {
     redde _tectum(n)
 }
 
 // Round to nearest integer
-functio rotundus(Numerus n) -> Numerus {
+functio rotundus(numerus n) -> numerus {
     redde _pavimentum(n + 0.5)
 }
 
 // Square root
-functio radix(Numerus n) -> Numerus {
+functio radix(numerus n) -> numerus {
     redde _radix(n)
 }
 
 // Power (exponentiation)
-functio potentia(Numerus basis, Numerus exponens) -> Numerus {
+functio potentia(numerus basis, numerus exponens) -> numerus {
     redde _potentia(basis, exponens)
 }
 
@@ -117,7 +117,7 @@ functio potentia(Numerus basis, Numerus exponens) -> Numerus {
 // =============================================================================
 
 // Absolute value
-functio absolutus(Numerus n) -> Numerus {
+functio absolutus(numerus n) -> numerus {
     si n < 0 {
         redde 0 - n
     }
@@ -125,7 +125,7 @@ functio absolutus(Numerus n) -> Numerus {
 }
 
 // Minimum of two values
-functio minimus(Numerus a, Numerus b) -> Numerus {
+functio minimus(numerus a, numerus b) -> numerus {
     si a < b {
         redde a
     }
@@ -133,7 +133,7 @@ functio minimus(Numerus a, Numerus b) -> Numerus {
 }
 
 // Maximum of two values
-functio maximus(Numerus a, Numerus b) -> Numerus {
+functio maximus(numerus a, numerus b) -> numerus {
     si a > b {
         redde a
     }
@@ -141,7 +141,7 @@ functio maximus(Numerus a, Numerus b) -> Numerus {
 }
 
 // Clamp value between min and max
-functio constrictus(Numerus n, Numerus min, Numerus max) -> Numerus {
+functio constrictus(numerus n, numerus min, numerus max) -> numerus {
     si n < min {
         redde min
     }
@@ -152,7 +152,7 @@ functio constrictus(Numerus n, Numerus min, Numerus max) -> Numerus {
 }
 
 // Sign of number (-1, 0, or 1)
-functio signum(Numerus n) -> Numerus {
+functio signum(numerus n) -> numerus {
     si n > 0 {
         redde 1
     }
@@ -167,17 +167,17 @@ functio signum(Numerus n) -> Numerus {
 // =============================================================================
 
 // Random number between 0 and 1 (wrapper around intrinsic)
-functio fortuitus() -> Numerus {
+functio fortuitus() -> numerus {
     redde _fortuitus()
 }
 
 // Random integer from 0 to n-1
-functio fortunatus(Numerus n) -> Numerus {
+functio fortunatus(numerus n) -> numerus {
     redde pavimentum(fortuitus() * n)
 }
 
 // Random integer from min to max (inclusive)
-functio fortunatusInter(Numerus min, Numerus max) -> Numerus {
+functio fortunatusInter(numerus min, numerus max) -> numerus {
     redde min + pavimentum(fortuitus() * (max - min + 1))
 }
 
@@ -188,8 +188,8 @@ functio fortunatusInter(Numerus min, Numerus max) -> Numerus {
 // These may need intrinsics depending on target capabilities
 // For now, assume targets provide implicit conversion or we add intrinsics
 
-// functio numerus(valor) -> Numerus { ... }
-// functio textus(valor) -> Textus { ... }
+// functio numerus(valor) -> numerus { ... }
+// functio textus(valor) -> textus { ... }
 
 // =============================================================================
 // CONSTANTS
@@ -206,7 +206,7 @@ fixum TAU = 6.283185307179586
 // Length is accessed via .length property, not a function
 
 // Sum of numeric array
-functio summa(Lista<Numerus> numeri) -> Numerus {
+functio summa(numerus[] numeri) -> numerus {
     esto total = 0
     ex numeri pro n {
         total = total + n
@@ -215,7 +215,7 @@ functio summa(Lista<Numerus> numeri) -> Numerus {
 }
 
 // Product of numeric array
-functio factum(Lista<Numerus> numeri) -> Numerus {
+functio factum(numerus[] numeri) -> numerus {
     esto total = 1
     ex numeri pro n {
         total = total * n
@@ -224,7 +224,7 @@ functio factum(Lista<Numerus> numeri) -> Numerus {
 }
 
 // Average of numeric array
-functio medium(Lista<Numerus> numeri) -> Numerus {
+functio medium(numerus[] numeri) -> numerus {
     si numeri.length == 0 {
         redde 0
     }
