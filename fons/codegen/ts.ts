@@ -640,7 +640,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             message = `"Assertion failed: ${test.replace(/"/g, '\\"')}"`;
         }
 
-        return `${ind()}if (!(${test})) throw new Error(${message})${semi ? ';' : ''}`;
+        return `${ind()}if (!(${test})) { throw new Error(${message}); }`;
     }
 
     function genReturnStatement(node: ReturnStatement): string {
