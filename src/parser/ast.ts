@@ -87,6 +87,7 @@ export type Statement =
     | IfStatement
     | WhileStatement
     | ForStatement
+    | WithStatement
     | ReturnStatement
     | BlockStatement
     | ThrowStatement
@@ -285,6 +286,29 @@ export interface ForStatement extends BaseNode {
     iterable: Expression;
     body: BlockStatement;
     catchClause?: CatchClause;
+}
+
+/**
+ * With statement (context block).
+ *
+ * GRAMMAR (in EBNF):
+ *   withStmt := 'cum' expression blockStmt
+ *
+ * WHY: Latin 'cum' (with) establishes context for property access.
+ *      Inside the block, bare identifiers in assignments refer to
+ *      properties of the context object.
+ *
+ * Example:
+ *   cum user {
+ *       nomen = "Marcus"
+ *       email = "marcus@roma.it"
+ *   }
+ *   // Compiles to: user.nomen = "Marcus"; user.email = "marcus@roma.it";
+ */
+export interface WithStatement extends BaseNode {
+    type: 'WithStatement';
+    object: Expression;
+    body: BlockStatement;
 }
 
 /**

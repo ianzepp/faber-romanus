@@ -52,6 +52,7 @@ import type {
     IfStatement,
     WhileStatement,
     ForStatement,
+    WithStatement,
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
@@ -174,6 +175,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genWhileStatement(node);
             case 'ForStatement':
                 return genForStatement(node);
+            case 'WithStatement':
+                return genWithStatement(node);
             case 'ReturnStatement':
                 return genReturnStatement(node);
             case 'ThrowStatement':
@@ -415,6 +418,39 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         return `${ind()}for (const ${varName} ${keyword} ${iterable}) ${body}`;
+    }
+
+    /**
+     * Generate with statement (context block).
+     *
+     * TRANSFORMS:
+     *   cum user { nomen = "Marcus" } -> user.nomen = "Marcus";
+     *
+     * WHY: Bare identifier assignments inside cum blocks become property
+     *      assignments on the context object.
+     */
+    function genWithStatement(node: WithStatement): string {
+        const context = genExpression(node.object);
+        const lines: string[] = [];
+
+        for (const stmt of node.body.body) {
+            if (
+                stmt.type === 'ExpressionStatement' &&
+                stmt.expression.type === 'AssignmentExpression' &&
+                stmt.expression.left.type === 'Identifier'
+            ) {
+                const prop = stmt.expression.left.name;
+                const value = genExpression(stmt.expression.right);
+                const op = stmt.expression.operator;
+
+                lines.push(`${ind()}${context}.${prop} ${op} ${value}${semi ? ';' : ''}`);
+            }
+            else {
+                lines.push(genStatement(stmt));
+            }
+        }
+
+        return lines.join('\n');
     }
 
     function genReturnStatement(node: ReturnStatement): string {

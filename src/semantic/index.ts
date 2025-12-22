@@ -50,6 +50,7 @@ import type {
     IfStatement,
     WhileStatement,
     ForStatement,
+    WithStatement,
     ReturnStatement,
     BlockStatement,
     Identifier,
@@ -805,6 +806,9 @@ export function analyze(program: Program): SemanticResult {
             case 'ForStatement':
                 analyzeForStatement(node);
                 break;
+            case 'WithStatement':
+                analyzeWithStatement(node);
+                break;
             case 'ReturnStatement':
                 analyzeReturnStatement(node);
                 break;
@@ -984,6 +988,32 @@ export function analyze(program: Program): SemanticResult {
         if (node.catchClause) {
             analyzeCatchClause(node.catchClause);
         }
+    }
+
+    function analyzeWithStatement(node: WithStatement): void {
+        resolveExpression(node.object);
+
+        // WHY: Inside cum blocks, bare identifier assignments become property
+        // assignments on the context object. We don't validate these as
+        // variables since they'll be transformed at codegen time.
+        enterScope();
+
+        for (const stmt of node.body.body) {
+            if (
+                stmt.type === 'ExpressionStatement' &&
+                stmt.expression.type === 'AssignmentExpression' &&
+                stmt.expression.left.type === 'Identifier'
+            ) {
+                // Skip validation for bare identifier assignments - these
+                // become property assignments on the context object
+                resolveExpression(stmt.expression.right);
+            }
+            else {
+                analyzeStatement(stmt);
+            }
+        }
+
+        exitScope();
     }
 
     function analyzeReturnStatement(node: ReturnStatement): void {

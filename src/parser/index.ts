@@ -86,6 +86,7 @@ import type {
     IfStatement,
     WhileStatement,
     ForStatement,
+    WithStatement,
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
@@ -477,6 +478,10 @@ export function parse(tokens: Token[]): ParserResult {
             return parseForStatement();
         }
 
+        if (checkKeyword('cum')) {
+            return parseWithStatement();
+        }
+
         if (checkKeyword('redde')) {
             return parseReturnStatement();
         }
@@ -790,6 +795,32 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         return { type: 'ForStatement', kind, variable, iterable, body, catchClause, position };
+    }
+
+    /**
+     * Parse with statement (context block).
+     *
+     * GRAMMAR:
+     *   withStmt := 'cum' expression blockStmt
+     *
+     * WHY: 'cum' (with) establishes context for property access.
+     *      Inside the block, bare identifier assignments become
+     *      property assignments on the context object.
+     *
+     * Example:
+     *   cum user {
+     *       nomen = "Marcus"
+     *   }
+     */
+    function parseWithStatement(): WithStatement {
+        const position = peek().position;
+
+        expectKeyword('cum', "Expected 'cum'");
+
+        const object = parseExpression();
+        const body = parseBlockStatement();
+
+        return { type: 'WithStatement', object, body, position };
     }
 
     /**
