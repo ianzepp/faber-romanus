@@ -90,8 +90,13 @@ export function isLexiconError(result: unknown): result is LexiconError {
  * PERF: Uses Wagner-Fischer algorithm with O(m*n) time and O(min(m,n)) space.
  */
 function levenshtein(a: string, b: string): number {
-    if (a.length === 0) return b.length;
-    if (b.length === 0) return a.length;
+    if (a.length === 0) {
+        return b.length;
+    }
+
+    if (b.length === 0) {
+        return a.length;
+    }
 
     // WHY: Ensure a is the shorter string for O(min(m,n)) space
     if (a.length > b.length) {
@@ -110,7 +115,7 @@ function levenshtein(a: string, b: string): number {
             curr[i] = Math.min(
                 prev[i] + 1, // deletion
                 curr[i - 1] + 1, // insertion
-                prev[i - 1] + cost // substitution
+                prev[i - 1] + cost, // substitution
             );
         }
 
@@ -222,7 +227,10 @@ export function parseNoun(word: string): ParsedNoun[] | LexiconError {
         return { error: 'invalid_ending', word, stem: bestMatch.stem, ending: bestMatch.ending };
     }
 
-    const suggestion = findClosestMatch(word, nouns.map(n => n.stem));
+    const suggestion = findClosestMatch(
+        word,
+        nouns.map(n => n.stem),
+    );
 
     return { error: 'unknown_stem', word, suggestion };
 }
@@ -328,7 +336,10 @@ export function parseType(word: string): ParsedType[] | LexiconError {
         return { error: 'invalid_ending', word, stem: bestMatch.stem, ending: bestMatch.ending };
     }
 
-    const suggestion = findClosestMatch(word, builtinTypes.map(t => t.stem));
+    const suggestion = findClosestMatch(
+        word,
+        builtinTypes.map(t => t.stem),
+    );
 
     return { error: 'unknown_stem', word, suggestion };
 }
@@ -413,7 +424,10 @@ export function parseVerb(word: string): ParsedVerb[] | LexiconError {
         return { error: 'invalid_ending', word, stem: bestMatch.stem, ending: bestMatch.ending };
     }
 
-    const suggestion = findClosestMatch(word, verbs.map(v => v.stem));
+    const suggestion = findClosestMatch(
+        word,
+        verbs.map(v => v.stem),
+    );
 
     return { error: 'unknown_stem', word, suggestion };
 }
