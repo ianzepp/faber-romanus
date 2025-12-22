@@ -189,24 +189,6 @@ export const builtinTypes: TypeEntry[] = [
     // Structural Types
     // ---------------------------------------------------------------------------
 
-    // WHY: Res (3rd decl feminine) - "thing, object, matter" (irregular but fundamental)
-    {
-        stem: 'R',
-        declension: 3,
-        gender: 'feminine',
-        meaning: 'thing/object',
-        jsType: 'object',
-        category: 'structural',
-    },
-    // WHY: Functio (3rd decl feminine) - "performance, execution, function"
-    {
-        stem: 'Function',
-        declension: 3,
-        gender: 'feminine',
-        meaning: 'function',
-        jsType: 'Function',
-        category: 'structural',
-    },
     // WHY: Promissum (2nd decl neuter) - "promise, guarantee" (neuter for abstract concepts)
     {
         stem: 'Promiss',

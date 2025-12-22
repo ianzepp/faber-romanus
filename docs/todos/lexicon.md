@@ -153,9 +153,14 @@ Examples:
 No extra computation - we already knew why parsing failed, just stopped throwing it away.
 
 ### Fix Incorrect Latin
-- [ ] `Res` stem is "R" but should be "re-" (5th declension irregular)
-- [ ] `Functio` stem "Function" isn't Latin - consider "Actio" or "Operatio"
+- [x] `Res` - Removed (5th declension irregular, not worth implementing)
+- [x] `Functio` - Removed (keyword `functio` exists for declarations, type rarely needed)
 - [ ] Add 3rd declension neuter variant (tempus/temporis pattern)
+
+**Decision (2024-12-21):** Removed `Res` and `Functio` from types-builtin:
+- `Res` requires 5th declension which is rare and irregular
+- `Functio` is already a keyword; as a type it's rarely used (prefer specific signatures)
+- Both had broken stems that wouldn't parse correctly
 
 ## Medium Priority (Correctness)
 
