@@ -227,11 +227,31 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * TRANSFORMS:
      *   esto x: Numerus = 5 -> let x: number = 5
      *   fixum y: Textus = "hello" -> const y: string = "hello"
+     *   fixum { nomen, aetas } = persona -> const { nomen, aetas } = persona
+     *   fixum { nomen: localName } = persona -> const { nomen: localName } = persona
      */
     function genVariableDeclaration(node: VariableDeclaration): string {
         // WHY: 'esto' (let it be) maps to mutable 'let', 'fixum' (fixed) to immutable 'const'
         const kind = node.kind === 'esto' ? 'let' : 'const';
-        const name = node.name.name;
+
+        let name: string;
+
+        if (node.name.type === 'ObjectPattern') {
+            // Generate object destructuring pattern
+            const props = node.name.properties.map(prop => {
+                if (prop.key.name === prop.value.name) {
+                    return prop.key.name;
+                }
+
+                return `${prop.key.name}: ${prop.value.name}`;
+            });
+
+            name = `{ ${props.join(', ')} }`;
+        }
+        else {
+            name = node.name.name;
+        }
+
         const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : '';
         const init = node.init ? ` = ${genExpression(node.init)}` : '';
 

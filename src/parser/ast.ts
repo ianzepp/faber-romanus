@@ -126,10 +126,40 @@ export interface ImportDeclaration extends BaseNode {
 // ---------------------------------------------------------------------------
 
 /**
+ * Object destructuring pattern.
+ *
+ * GRAMMAR (in EBNF):
+ *   objectPattern := '{' patternProperty (',' patternProperty)* '}'
+ *   patternProperty := IDENTIFIER (':' IDENTIFIER)?
+ *
+ * WHY: Allows unpacking object properties into variables.
+ *
+ * Examples:
+ *   { nomen, aetas }           -> extract nomen and aetas
+ *   { nomen: localName }       -> extract nomen as localName
+ */
+export interface ObjectPattern extends BaseNode {
+    type: 'ObjectPattern';
+    properties: ObjectPatternProperty[];
+}
+
+/**
+ * Single property in an object pattern.
+ *
+ * key: the property name to extract from the object
+ * value: the variable name to bind (same as key if not renamed)
+ */
+export interface ObjectPatternProperty extends BaseNode {
+    type: 'ObjectPatternProperty';
+    key: Identifier;
+    value: Identifier;
+}
+
+/**
  * Variable declaration statement.
  *
  * GRAMMAR (in EBNF):
- *   varDecl := ('esto' | 'fixum') IDENTIFIER (':' typeAnnotation)? ('=' expression)?
+ *   varDecl := ('esto' | 'fixum') (IDENTIFIER | objectPattern) (':' typeAnnotation)? ('=' expression)?
  *
  * INVARIANT: kind is Latin keyword (esto/fixum), not target language (let/const).
  * INVARIANT: Either typeAnnotation or init SHOULD be present (but not enforced by parser).
@@ -139,11 +169,13 @@ export interface ImportDeclaration extends BaseNode {
  * Examples:
  *   esto x: Numerus = 5
  *   fixum SALVE = "ave"
+ *   fixum { nomen, aetas } = persona
+ *   fixum { nomen: localName } = persona
  */
 export interface VariableDeclaration extends BaseNode {
     type: 'VariableDeclaration';
     kind: 'esto' | 'fixum';
-    name: Identifier;
+    name: Identifier | ObjectPattern;
     typeAnnotation?: TypeAnnotation;
     init?: Expression;
 }

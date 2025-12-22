@@ -107,6 +107,8 @@ import type {
     TypeAliasDeclaration,
     Literal,
     RangeExpression,
+    ObjectPattern,
+    ObjectPatternProperty,
 } from './ast';
 import { builtinTypes, typeModifiers } from '../lexicon/types-builtin';
 
@@ -583,12 +585,17 @@ export function parse(tokens: Token[]): ParserResult {
         advance(); // esto or fixum
 
         let typeAnnotation: TypeAnnotation | undefined;
-        let name: Identifier;
+        let name: Identifier | ObjectPattern;
 
-        if (isTypeName(peek())) {
+        // Check for object destructuring pattern: fixum { a, b } = obj
+        if (check('LBRACE')) {
+            name = parseObjectPattern();
+        }
+        else if (isTypeName(peek())) {
             typeAnnotation = parseTypeAnnotation();
             name = parseIdentifier();
-        } else {
+        }
+        else {
             name = parseIdentifier();
         }
 
@@ -599,6 +606,52 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         return { type: 'VariableDeclaration', kind, name, typeAnnotation, init, position };
+    }
+
+    /**
+     * Parse object destructuring pattern.
+     *
+     * GRAMMAR:
+     *   objectPattern := '{' patternProperty (',' patternProperty)* '}'
+     *   patternProperty := IDENTIFIER (':' IDENTIFIER)?
+     *
+     * Examples:
+     *   { nomen, aetas }
+     *   { nomen: localName, aetas }
+     */
+    function parseObjectPattern(): ObjectPattern {
+        const position = peek().position;
+
+        expect('LBRACE', "Expected '{'");
+
+        const properties: ObjectPatternProperty[] = [];
+
+        while (!check('RBRACE') && !isAtEnd()) {
+            const propPosition = peek().position;
+            const key = parseIdentifier();
+
+            let value = key;
+
+            // Check for rename: { nomen: localName }
+            if (match('COLON')) {
+                value = parseIdentifier();
+            }
+
+            properties.push({
+                type: 'ObjectPatternProperty',
+                key,
+                value,
+                position: propPosition,
+            });
+
+            if (!check('RBRACE')) {
+                expect('COMMA', "Expected ',' between pattern properties");
+            }
+        }
+
+        expect('RBRACE', "Expected '}'");
+
+        return { type: 'ObjectPattern', properties, position };
     }
 
     /**

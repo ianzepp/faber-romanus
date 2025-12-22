@@ -858,7 +858,27 @@ export function analyze(program: Program): SemanticResult {
     }
 
     function analyzeVariableDeclaration(node: VariableDeclaration): void {
-        // Resolve type from annotation or infer from initializer
+        // Handle object destructuring pattern
+        if (node.name.type === 'ObjectPattern') {
+            if (node.init) {
+                resolveExpression(node.init);
+            }
+
+            // Define each property as a variable
+            for (const prop of node.name.properties) {
+                define({
+                    name: prop.value.name,
+                    type: UNKNOWN, // Property types are not statically known
+                    kind: 'variable',
+                    mutable: node.kind === 'esto',
+                    position: prop.position,
+                });
+            }
+
+            return;
+        }
+
+        // Standard variable declaration
         let type: SemanticType;
 
         if (node.typeAnnotation) {
