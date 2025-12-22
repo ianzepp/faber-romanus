@@ -29,8 +29,8 @@
 "iace" @keyword.control.exception
 
 "redde" @keyword.control.return
-"rumpe" @keyword.control.return
-"perge" @keyword.control.return
+(break_statement) @keyword.control.return
+(continue_statement) @keyword.control.return
 
 ; ==============================================================================
 ; Keywords - Declarations
