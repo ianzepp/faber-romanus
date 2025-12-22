@@ -38,7 +38,7 @@ bun run src/cli.ts compile hello.fab -t wasm
 ```la
 // salve.fab - Hello World
 
-functio salve(nomen) {
+functio salve(nomen) -> Textus {
   redde "Salve, " + nomen + "!"
 }
 
@@ -49,11 +49,11 @@ scribe(salve(nomen))
 Compiles to TypeScript:
 
 ```typescript
-function salve(nomen) {
-  return ("Salve, " + nomen + "!");
+function salve(nomen): string {
+  return (("Salve, " + nomen) + "!");
 }
 const nomen = "Mundus";
-scribe(salve(nomen));
+console.log(salve(nomen));
 ```
 
 Or Zig:
@@ -96,11 +96,11 @@ fixum PI = 3.14159         // const (immutable)
 ### Functions
 
 ```la
-functio salve(nomen: Textus) -> Textus {
+functio salve(Textus nomen) -> Textus {
   redde "Salve, " + nomen
 }
 
-futura functio fetch(url: Textus) -> Textus {
+futura functio fetch(Textus url) -> Textus {
   // async function
   redde exspecta getData(url)
 }

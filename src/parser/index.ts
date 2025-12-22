@@ -575,13 +575,11 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse function declaration.
      *
      * GRAMMAR:
-     *   funcDecl := 'futura'? 'functio' typeAnnotation? IDENTIFIER '(' paramList ')' blockStmt
+     *   funcDecl := 'futura'? 'functio' IDENTIFIER '(' paramList ')' ('->' typeAnnotation)? blockStmt
      *
-     * WHY: Type-first syntax: "functio Textus greet(Textus name)"
+     * WHY: Arrow syntax for return types: "functio greet(Textus name) -> Textus"
      *      'futura' prefix marks async functions (future/promise-based).
-     *      Return type comes before function name (optional).
-     *
-     * EDGE: If token after functio is a type name, parse return type first.
+     *      Return type comes after parameters with arrow (optional).
      */
     function parseFunctionDeclaration(): FunctionDeclaration {
         const position = peek().position;
@@ -593,18 +591,18 @@ export function parse(tokens: Token[]): ParserResult {
 
         expectKeyword('functio', "Expected 'functio'");
 
-        let returnType: TypeAnnotation | undefined;
-
-        if (isTypeName(peek())) {
-            returnType = parseTypeAnnotation();
-        }
-
         const name = parseIdentifier();
 
         expect('LPAREN', "Expected '(' after function name");
         const params = parseParameterList();
 
         expect('RPAREN', "Expected ')' after parameters");
+
+        let returnType: TypeAnnotation | undefined;
+
+        if (match('THIN_ARROW')) {
+            returnType = parseTypeAnnotation();
+        }
 
         const body = parseBlockStatement();
 

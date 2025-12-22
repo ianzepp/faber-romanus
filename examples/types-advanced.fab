@@ -5,22 +5,24 @@ typus ID = Textus
 typus UserID = Numerus
 typus UserName = Textus
 
-// Using type aliases
-fixum userId: UserID = 123
-fixum userName: UserName = "Marcus"
+// Using type aliases (note: type aliases work in declarations but
+// parser only recognizes builtin types in type-first position)
+fixum userId = 123
+fixum userName = "Marcus"
 
 // Generic type with type parameter
-fixum nombres: Lista<Textus> = ["Marcus", "Julia"]
+// Note: array literals not yet supported
+// fixum Lista<Textus> nombres = ["Marcus", "Julia"]
 
 // Type with numeric parameter (size constraint)
-fixum smallNumber: Numerus<32> = 42
+fixum Numerus<32> smallNumber = 42
 
 // Type with modifier parameter (unsigned)
-fixum naturalNumber: Numerus<Naturalis> = 100
+fixum Numerus<Naturalis> naturalNumber = 100
 
 // Type with both numeric and modifier parameters
-fixum precisNumber: Numerus<32, Naturalis> = 255
+fixum Numerus<32, Naturalis> precisNumber = 255
 
 // Complex type alias with generics
 typus StringList = Lista<Textus>
-fixum names: StringList = ["Gaius", "Titus"]
+// fixum StringList names = ["Gaius", "Titus"]  // blocked on array literals

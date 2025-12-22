@@ -137,7 +137,7 @@ describe('Semantic Analyzer', () => {
     describe('Function Type Resolution', () => {
         it('records function in symbol table', () => {
             const source = `
-        functio Numerus add(Numerus a, Numerus b) {
+        functio add(Numerus a, Numerus b) -> Numerus {
           redde a + b
         }
       `;
@@ -148,7 +148,7 @@ describe('Semantic Analyzer', () => {
 
         it('type checks return statements', () => {
             const source = `
-        functio Textus greet() {
+        functio greet() -> Textus {
           redde "hello"
         }
       `;
@@ -159,7 +159,7 @@ describe('Semantic Analyzer', () => {
 
         it('reports error for wrong return type', () => {
             const source = `
-        functio Textus greet() {
+        functio greet() -> Textus {
           redde 42
         }
       `;

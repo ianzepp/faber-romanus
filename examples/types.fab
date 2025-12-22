@@ -1,15 +1,15 @@
 // Type annotations in Faber Romanus
 // Latin types map to TypeScript types
 
-// Primitives
-fixum nomen: Textus = "Marcus"
-fixum aetas: Numerus = 25
-fixum activus: Bivalens = verum
+// Primitives (type-first syntax)
+fixum Textus nomen = "Marcus"
+fixum Numerus aetas = 25
+fixum Bivalens activus = verum
 
 // Nullable type
-esto error: Textus? = nihil
+esto Textus? error = nihil
 
-// Function with typed parameters
-functio saluta(nomen: Textus, aetas: Numerus) {
+// Function with typed parameters and arrow return
+functio saluta(Textus nomen, Numerus aetas) -> Textus {
   redde "Salve, " + nomen
 }

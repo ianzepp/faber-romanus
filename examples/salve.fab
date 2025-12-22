@@ -1,6 +1,6 @@
 // Salve Mundus - Hello World in Faber Romanus
 
-functio salve(nomen) {
+functio salve(nomen) -> Textus {
   redde "Salve, " + nomen + "!"
 }
 

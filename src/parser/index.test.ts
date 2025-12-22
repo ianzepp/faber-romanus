@@ -41,9 +41,9 @@ describe('parser', () => {
     });
 
     describe('function declarations', () => {
-        test('simple function', () => {
+        test('simple function with arrow return type', () => {
             const { program } = parseCode(`
-        functio Textus salve(Textus nomen) {
+        functio salve(Textus nomen) -> Textus {
           redde nomen
         }
       `);
@@ -60,13 +60,14 @@ describe('parser', () => {
 
         test('async function with futura', () => {
             const { program } = parseCode(`
-        futura functio Textus fetch(Textus url) {
+        futura functio fetch(Textus url) -> Textus {
           redde data
         }
       `);
             const fn = program!.body[0] as any;
 
             expect(fn.async).toBe(true);
+            expect(fn.returnType.name).toBe('Textus');
         });
 
         test('function with preposition parameter', () => {
@@ -79,6 +80,18 @@ describe('parser', () => {
 
             expect(fn.params[1].preposition).toBe('ad');
             expect(fn.params[1].name.name).toBe('recipientem');
+        });
+
+        test('function without return type', () => {
+            const { program } = parseCode(`
+        functio greet(nomen) {
+          scribe(nomen)
+        }
+      `);
+            const fn = program!.body[0] as any;
+
+            expect(fn.name.name).toBe('greet');
+            expect(fn.returnType).toBeUndefined();
         });
     });
 

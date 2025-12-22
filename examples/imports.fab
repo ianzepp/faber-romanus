@@ -9,5 +9,5 @@ ex rete importa *
 // Use imported functions
 scribe("Salve, Mundus!")
 
-// Use namespaced access with wildcard import
-rete.mitte("http://example.com")
+// Note: namespaced access with wildcard import not yet fully supported
+// rete.mitte("http://example.com")
