@@ -36,8 +36,11 @@ All collection type names are feminine (Latin convention for containers).
 |-------|---------------|-------------|
 | `contine(T) -> bivalens` | `includes` | Contains element |
 | `indiceDe(T) -> numerus?` | `indexOf` | Find index |
+| `inveni((T) -> bivalens) -> T?` | `find` | Find first match |
+| `omnes((T) -> bivalens) -> bivalens` | `every` | All match predicate |
+| `aliquis((T) -> bivalens) -> bivalens` | `some` | Any matches predicate |
 
-### Transformation
+### Transformation (Functional)
 
 | Faber | JS Equivalent | Description |
 |-------|---------------|-------------|
@@ -45,6 +48,38 @@ All collection type names are feminine (Latin convention for containers).
 | `filtra((T) -> bivalens) -> lista<T>` | `filter` | Keep matching |
 | `reducere(U, (U,T) -> U) -> U` | `reduce` | Fold to value |
 | `coniunge(textus) -> textus` | `join` | Join to string |
+
+### Lodash-Inspired Methods
+
+| Faber | lodash | Description |
+|-------|--------|-------------|
+| `ordina((T) -> U) -> lista<T>` | `sortBy` | Sort by key function |
+| `congrega((T) -> K) -> tabula<K, lista<T>>` | `groupBy` | Group by key function |
+| `unica() -> lista<T>` | `uniq` | Remove duplicates |
+| `plana() -> lista<T>` | `flatten` | Flatten one level |
+| `planaOmnia() -> lista<T>` | `flattenDeep` | Flatten all levels |
+| `fragmenta(numerus) -> lista<lista<T>>` | `chunk` | Split into chunks of size n |
+| `densa() -> lista<T>` | `compact` | Remove falsy values |
+| `partire((T) -> bivalens) -> (lista<T>, lista<T>)` | `partition` | Split by predicate |
+| `misce() -> lista<T>` | `shuffle` | Randomize order |
+| `specimen() -> T?` | `sample` | Random element |
+| `specimina(numerus) -> lista<T>` | `sampleSize` | Random n elements |
+| `prima(numerus) -> lista<T>` | `take` | First n elements |
+| `ultima(numerus) -> lista<T>` | `takeRight` | Last n elements |
+| `omitte(numerus) -> lista<T>` | `drop` | Skip first n |
+| `inversa() -> lista<T>` | `reverse` | Reverse order |
+
+### Aggregation
+
+| Faber | lodash | Description |
+|-------|--------|-------------|
+| `summa() -> numerus` | `sum` | Sum of numbers |
+| `medium() -> numerus` | `mean` | Average |
+| `minimus() -> T?` | `min` | Minimum value |
+| `maximus() -> T?` | `max` | Maximum value |
+| `minimusPer((T) -> U) -> T?` | `minBy` | Min by key function |
+| `maximusPer((T) -> U) -> T?` | `maxBy` | Max by key function |
+| `numera((T) -> bivalens) -> numerus` | `countBy` | Count matching |
 
 ### Open Questions
 
@@ -88,13 +123,23 @@ All collection type names are feminine (Latin convention for containers).
 | `valores() -> cursor<V>` | `values()` | Iterate values |
 | `paria() -> cursor<(K,V)>` | `entries()` | Iterate pairs |
 
+### Lodash-Inspired Methods
+
+| Faber | lodash | Description |
+|-------|--------|-------------|
+| `accipeAut(K, V) -> V` | `get` with default | Get or return default |
+| `selige(...K) -> tabula<K,V>` | `pick` | Keep only specified keys |
+| `omitte(...K) -> tabula<K,V>` | `omit` | Remove specified keys |
+| `confla(tabula<K,V>) -> tabula<K,V>` | `merge` | Merge maps |
+| `inversa() -> tabula<V,K>` | `invert` | Swap keys and values |
+| `mappaValores((V) -> U) -> tabula<K,U>` | `mapValues` | Transform values |
+| `mappaClaves((K) -> J) -> tabula<J,V>` | `mapKeys` | Transform keys |
+
 ### Open Questions
 
 1. **Object conversion**: `exObjecto(obj)` static constructor?
    - Useful for JS interop
    - Less relevant for Zig target
-
-2. **Default values**: `accipeAut(K, V) -> V` for get-or-default?
 
 ---
 
@@ -120,12 +165,46 @@ All collection type names are feminine (Latin convention for containers).
 | `unio(copia<T>) -> copia<T>` | `union` | A ∪ B |
 | `intersectio(copia<T>) -> copia<T>` | `intersection` | A ∩ B |
 | `differentia(copia<T>) -> copia<T>` | `difference` | A - B |
+| `symmetrica(copia<T>) -> copia<T>` | — | (A - B) ∪ (B - A) |
+
+### Predicates
+
+| Faber | lodash | Description |
+|-------|--------|-------------|
+| `subcopia(copia<T>) -> bivalens` | `isSubset` | Is subset of |
+| `supercopia(copia<T>) -> bivalens` | `isSuperset` | Is superset of |
 
 ### Open Questions
 
-1. **Symmetric difference**: `symmetrica(copia<T>)` for (A - B) ∪ (B - A)?
+1. **Conversion to lista**: `inLista() -> lista<T>`?
 
-2. **Subset/superset**: `subcopia(copia<T>) -> bivalens`?
+---
+
+## Standalone Functions (norma)
+
+Functions that operate on multiple collections or don't belong to a single type.
+
+| Faber | lodash | Description |
+|-------|--------|-------------|
+| `iunge(lista<T>, lista<U>) -> lista<(T,U)>` | `zip` | Pair up elements |
+| `iungeOmnes(...lista) -> lista<(...)>` | `zipAll` | Zip multiple lists |
+| `intervallum(n) -> lista<numerus>` | `range` | 0 to n-1 |
+| `intervallum(a, b) -> lista<numerus>` | `range` | a to b-1 |
+| `repete(T, n) -> lista<T>` | `times` | Repeat value n times |
+
+---
+
+## Function Utilities (norma)
+
+Higher-order function helpers.
+
+| Faber | lodash | Description |
+|-------|--------|-------------|
+| `memora((A) -> B) -> (A) -> B` | `memoize` | Cache results |
+| `semel((A) -> B) -> (A) -> B` | `once` | Call only once |
+| `mora(numerus, fn) -> fn` | `debounce` | Delay execution |
+| `tempera(numerus, fn) -> fn` | `throttle` | Rate limit |
+| `partialis(fn, ...args) -> fn` | `partial` | Partial application |
 
 ---
 
@@ -135,9 +214,10 @@ All collection type names are feminine (Latin convention for containers).
 
 | Pattern | Meaning | Examples |
 |---------|---------|----------|
-| `-are` verbs | Actions | `adde`, `dele`, `purgare` |
-| Adjectives | Properties | `vacua`, `primus`, `ultimus` |
-| Nouns | Derived values | `longitudo`, `claves`, `valores` |
+| `-are` verbs | Actions | `adde`, `dele`, `purgare`, `filtra`, `mappa` |
+| Adjectives | Properties/predicates | `vacua`, `primus`, `ultimus`, `unica` |
+| Nouns | Derived values | `longitudo`, `claves`, `valores`, `summa` |
+| `-Per` suffix | "by" variant | `ordinaPer`, `maximusPer` |
 
 ### The `cum` Pattern
 
@@ -158,6 +238,18 @@ ex tabula.claves() pro clavis { ... }
 ex copia pro valor { ... }
 ```
 
+### Chaining
+
+Methods that return collections can be chained:
+
+```
+fixum result = users
+    .filtra((u) => u.activus)
+    .ordina((u) => u.nomen)
+    .mappa((u) => u.email)
+    .prima(10)
+```
+
 ---
 
 ## Implementation Notes
@@ -169,6 +261,8 @@ Direct mapping to native types:
 - `tabula<K,V>` → `Map<K,V>`
 - `copia<T>` → `Set<T>`
 
+Lodash methods compile to equivalent lodash calls or inline implementations.
+
 ### Zig Target
 
 Use standard library types:
@@ -177,3 +271,5 @@ Use standard library types:
 - `copia<T>` → `std.HashSet(T,...)`
 
 Zig requires allocator handling — need design decision on how to expose this.
+
+Many lodash-style methods need custom implementation for Zig.
