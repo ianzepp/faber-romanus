@@ -66,7 +66,7 @@ git commit -m "Release v${VERSION}"
 git tag "v${VERSION}"
 
 echo "=== Pushing to origin ==="
-git push
+git push -u origin main
 git push --tags
 
 echo "=== Released v${VERSION} ==="
