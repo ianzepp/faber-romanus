@@ -91,6 +91,7 @@ import type {
     SwitchCase,
     GuardStatement,
     GuardClause,
+    AssertStatement,
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
@@ -492,6 +493,10 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('custodi')) {
             return parseGuardStatement();
+        }
+
+        if (checkKeyword('adfirma')) {
+            return parseAssertStatement();
         }
 
         if (checkKeyword('redde')) {
@@ -939,6 +944,34 @@ export function parse(tokens: Token[]): ParserResult {
         expect('RBRACE', "Expected '}' after guard clauses");
 
         return { type: 'GuardStatement', clauses, position };
+    }
+
+    /**
+     * Parse assert statement.
+     *
+     * GRAMMAR:
+     *   assertStmt := 'adfirma' expression (',' expression)?
+     *
+     * WHY: 'adfirma' (affirm/assert) for runtime invariant checks.
+     *
+     * Example:
+     *   adfirma x > 0
+     *   adfirma x > 0, "x must be positive"
+     */
+    function parseAssertStatement(): AssertStatement {
+        const position = peek().position;
+
+        expectKeyword('adfirma', "Expected 'adfirma'");
+
+        const test = parseExpression();
+
+        let message: Expression | undefined;
+
+        if (match('COMMA')) {
+            message = parseExpression();
+        }
+
+        return { type: 'AssertStatement', test, message, position };
     }
 
     /**

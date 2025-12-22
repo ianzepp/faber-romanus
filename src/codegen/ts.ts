@@ -55,6 +55,7 @@ import type {
     WithStatement,
     SwitchStatement,
     GuardStatement,
+    AssertStatement,
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
@@ -183,6 +184,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genSwitchStatement(node);
             case 'GuardStatement':
                 return genGuardStatement(node);
+            case 'AssertStatement':
+                return genAssertStatement(node);
             case 'ReturnStatement':
                 return genReturnStatement(node);
             case 'ThrowStatement':
@@ -536,6 +539,32 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         return lines.join('\n');
+    }
+
+    /**
+     * Generate assert statement.
+     *
+     * TRANSFORMS:
+     *   adfirma x > 0 -> if (!(x > 0)) throw new Error("Assertion failed: x > 0");
+     *   adfirma x > 0, "custom" -> if (!(x > 0)) throw new Error("custom");
+     *
+     * WHY: Always-on runtime checks that throw on failure.
+     *      Auto-generates message from expression if not provided.
+     */
+    function genAssertStatement(node: AssertStatement): string {
+        const test = genExpression(node.test);
+
+        let message: string;
+
+        if (node.message) {
+            message = genExpression(node.message);
+        }
+        else {
+            // Auto-generate message from the test expression
+            message = `"Assertion failed: ${test.replace(/"/g, '\\"')}"`;
+        }
+
+        return `${ind()}if (!(${test})) throw new Error(${message})${semi ? ';' : ''}`;
     }
 
     function genReturnStatement(node: ReturnStatement): string {

@@ -90,6 +90,7 @@ export type Statement =
     | WithStatement
     | SwitchStatement
     | GuardStatement
+    | AssertStatement
     | ReturnStatement
     | BlockStatement
     | ThrowStatement
@@ -376,6 +377,26 @@ export interface GuardClause extends BaseNode {
     type: 'GuardClause';
     test: Expression;
     consequent: BlockStatement;
+}
+
+/**
+ * Assert statement.
+ *
+ * GRAMMAR (in EBNF):
+ *   assertStmt := 'adfirma' expression (',' STRING)?
+ *
+ * WHY: Latin 'adfirma' (affirm/assert) for runtime invariant checks.
+ *      Always-on runtime checks - if condition is false, throws an error.
+ *      Optional message for custom error text; otherwise auto-generated.
+ *
+ * Example:
+ *   adfirma x > 0
+ *   adfirma x > 0, "x must be positive"
+ */
+export interface AssertStatement extends BaseNode {
+    type: 'AssertStatement';
+    test: Expression;
+    message?: Expression;
 }
 
 /**

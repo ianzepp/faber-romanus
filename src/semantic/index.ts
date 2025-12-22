@@ -53,6 +53,7 @@ import type {
     WithStatement,
     SwitchStatement,
     GuardStatement,
+    AssertStatement,
     ReturnStatement,
     BlockStatement,
     Identifier,
@@ -817,6 +818,9 @@ export function analyze(program: Program): SemanticResult {
             case 'GuardStatement':
                 analyzeGuardStatement(node);
                 break;
+            case 'AssertStatement':
+                analyzeAssertStatement(node);
+                break;
             case 'ReturnStatement':
                 analyzeReturnStatement(node);
                 break;
@@ -1051,6 +1055,14 @@ export function analyze(program: Program): SemanticResult {
             enterScope();
             analyzeBlock(clause.consequent);
             exitScope();
+        }
+    }
+
+    function analyzeAssertStatement(node: AssertStatement): void {
+        resolveExpression(node.test);
+
+        if (node.message) {
+            resolveExpression(node.message);
         }
     }
 

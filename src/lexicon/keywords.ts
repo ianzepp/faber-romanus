@@ -83,6 +83,7 @@ export const keywords: KeywordEntry[] = [
     { latin: 'perge', meaning: 'continue', category: 'control' },
     { latin: 'redde', meaning: 'return', category: 'control' },
     { latin: 'custodi', meaning: 'guard', category: 'control' },
+    { latin: 'adfirma', meaning: 'assert', category: 'control' },
     { latin: 'tempta', meaning: 'try', category: 'control' },
     { latin: 'cape', meaning: 'catch', category: 'control' },
     { latin: 'demum', meaning: 'finally', category: 'control' },
