@@ -41,6 +41,8 @@ import { tokenize } from './tokenizer';
 import { parse } from './parser';
 import { analyze } from './semantic';
 import { generate, type CodegenTarget } from './codegen';
+import * as prettier from 'prettier';
+import prettierPlugin from './prettier/index.ts';
 
 // =============================================================================
 // CONSTANTS
@@ -93,10 +95,12 @@ Commands:
   compile <file.fab>     Compile .fab file to target language
   run <file.fab>         Compile and execute (TS target only)
   check <file.fab>       Check for errors without compiling
+  format <file.fab>      Format source file with Prettier
 
 Options:
   -t, --target <lang>    Target language: ts (default), zig, wasm
   -o, --output <file>    Output file (default: stdout)
+  -c, --check            Check formatting without writing (format command)
   -h, --help             Show this help
   -v, --version          Show version
 
@@ -106,6 +110,8 @@ Examples:
   faber compile hello.fab --target zig        # Compile to Zig
   faber compile hello.fab -t wasm -o hello.wat  # Compile to WASM text format
   faber run hello.fab                         # Compile to TS and execute
+  faber format hello.fab                      # Format file in place
+  faber format hello.fab --check              # Check if file is formatted
 `);
 }
 
@@ -294,6 +300,55 @@ async function check(inputFile: string): Promise<void> {
     }
 }
 
+/**
+ * Format source file using Prettier with the Faber plugin.
+ *
+ * FORMATTING: Uses the Prettier plugin defined in fons/prettier/ to format
+ *             .fab files with consistent style (4-space indent, Stroustrup braces).
+ *
+ * MODES:
+ * - Default: Format file in place
+ * - Check: Verify formatting without writing (for CI)
+ *
+ * @param inputFile - Path to .fab source file
+ * @param checkOnly - If true, check formatting without writing
+ */
+async function format(inputFile: string, checkOnly: boolean): Promise<void> {
+    const source = await Bun.file(inputFile).text();
+
+    try {
+        const formatted = await prettier.format(source, {
+            parser: 'faber',
+            plugins: [prettierPlugin],
+            tabWidth: 4,
+            useTabs: false,
+            printWidth: 100,
+        });
+
+        if (checkOnly) {
+            if (source === formatted) {
+                console.log(`${inputFile}: Formatted`);
+            } else {
+                console.log(`${inputFile}: Needs formatting`);
+                process.exit(1);
+            }
+        } else {
+            if (source === formatted) {
+                console.log(`${inputFile}: Already formatted`);
+            } else {
+                await Bun.write(inputFile, formatted);
+                console.log(`${inputFile}: Formatted`);
+            }
+        }
+    } catch (err) {
+        console.error(`${inputFile}: Format error`);
+        if (err instanceof Error) {
+            console.error(`  ${err.message}`);
+        }
+        process.exit(1);
+    }
+}
+
 // =============================================================================
 // COMMAND DISPATCH
 // =============================================================================
@@ -321,6 +376,7 @@ if (command === '-v' || command === '--version') {
 const inputFile = args[1];
 let outputFile: string | undefined;
 let target: CodegenTarget = DEFAULT_TARGET;
+let checkOnly = false;
 
 // WHY: Simple linear scan is sufficient for small option set
 for (let i = 2; i < args.length; i++) {
@@ -337,6 +393,8 @@ for (let i = 2; i < args.length; i++) {
         }
 
         target = t;
+    } else if (args[i] === '-c' || args[i] === '--check') {
+        checkOnly = true;
     }
 }
 
@@ -364,6 +422,9 @@ switch (command) {
         break;
     case 'check':
         await check(inputFile);
+        break;
+    case 'format':
+        await format(inputFile, checkOnly);
         break;
     default:
         console.error(`Unknown command: ${command}`);
