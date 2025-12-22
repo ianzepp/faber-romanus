@@ -1,0 +1,33 @@
+// promissum<T> - Async promise type
+//
+// Core async type wrapping native Promise with Latin interface.
+// "Promissum" = promise, guarantee.
+// Provides consistent API across all compilation targets.
+
+// TODO: Requires struct syntax support
+//
+// Proposed syntax:
+//
+// structura promissum<T> {
+//     // Instance methods
+//     functio tunc((T) -> U callback) -> promissum<U> { ... }   // then
+//     functio cape((erratum) -> U handler) -> promissum<U> { ... } // catch
+//     functio demum(() -> vacuum callback) -> promissum<T> { ... } // finally
+//
+//     // Static constructors
+//     functio resolvere(T valor) -> promissum<T> { ... }        // resolve
+//     functio reicere(erratum error) -> promissum<T> { ... }    // reject
+//
+//     // Static combinators
+//     functio omnes(lista<promissum<T>> promissa) -> promissum<lista<T>> { ... }  // all
+//     functio primus(lista<promissum<T>> promissa) -> promissum<T> { ... }        // race
+//     functio quilibet(lista<promissum<T>> promissa) -> promissum<T> { ... }      // any
+//     functio omnesStabiles(lista<promissum<T>> promissa) -> promissum<lista<T>> { ... } // allSettled
+// }
+//
+// Usage with futura/exspecta:
+//
+// futura functio fetchData(textus url) -> promissum<textus> {
+//     fixum response = exspecta fetch(url)
+//     redde response.text()
+// }

@@ -1,0 +1,23 @@
+// copia<T> - Unique value set type
+//
+// Core collection type wrapping native Set with Latin interface.
+// "Copia" = abundance, supply (collection of unique items).
+// Provides consistent API across all compilation targets.
+
+// TODO: Requires struct syntax support
+//
+// Proposed syntax:
+//
+// structura copia<T> {
+//     // Methods
+//     functio adde(T elementum) { ... }              // add
+//     functio habet(T elementum) -> bivalens { ... } // has
+//     functio dele(T elementum) -> bivalens { ... }  // delete
+//     functio purgare() { ... }                       // clear
+//     functio longitudo() -> numerus { ... }         // size
+//     functio vacua() -> bivalens { ... }            // isEmpty
+//     functio valores() -> cursor<T> { ... }         // values
+//     functio unio(copia<T> alia) -> copia<T> { ... }           // union
+//     functio intersectio(copia<T> alia) -> copia<T> { ... }    // intersection
+//     functio differentia(copia<T> alia) -> copia<T> { ... }    // difference
+// }
