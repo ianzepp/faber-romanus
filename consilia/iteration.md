@@ -19,9 +19,9 @@ Plus iterator types:
 
 ## ex...pro (For-Each Values)
 
-**Syntax:** `ex <iterable> pro <variable> { body }`
+**Syntax:** `ex <source> [per <transform>]... pro <variable> { body }`
 
-Iterates over values of a collection.
+Iterates over values, optionally through a transformation pipeline.
 
 ```
 fixum numeri = [1, 2, 3]
@@ -30,11 +30,39 @@ ex numeri pro n {
 }
 ```
 
+### Pipeline Syntax with `per`
+
+The `per` keyword chains transformations inline:
+
+```
+// From users, through filter, as user
+ex users per filtra({ .activus }) pro user {
+    scribe user.nomen
+}
+
+// Multiple transforms
+ex users per filtra({ .activus }) per ordina(cum nomen) pro user {
+    scribe user.nomen
+}
+
+// Numeric pipeline
+ex 0..100 per filtra({ . % 2 == 0 }) per mappa({ . * 2 }) pro n {
+    scribe n
+}
+```
+
+**Reading:** "from users, through filter, through sort, as user..."
+
+| Keyword | Meaning | Role |
+|---------|---------|------|
+| `ex` | from | source |
+| `per` | through | transformation |
+| `pro` | as/for | variable binding |
+
 Compiles to:
 ```typescript
-const numeri = [1, 2, 3];
-for (const n of numeri) {
-    console.log(n);
+for (const user of users.filter(u => u.activus).sort((a,b) => a.nomen.localeCompare(b.nomen))) {
+    console.log(user.nomen);
 }
 ```
 
@@ -42,6 +70,7 @@ for (const n of numeri) {
 
 ```
 ex numeri pro n ergo scribe n
+ex users per filtra({ .activus }) pro u ergo scribe u.nomen
 ```
 
 ### With Index
