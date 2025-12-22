@@ -111,6 +111,29 @@ By writing code in Latin, you're not just learning a quirky syntax. You're learn
 
 ---
 
+## Code for a New Reader
+
+Historically, programming languages were designed with machine parsing in mind. Symbols were dense, syntax was terse, and readability was a secondary concern—if considered at all. Braces, brackets, semicolons, operators: a thicket of punctuation optimized for deterministic parsing by compilers with limited memory.
+
+Humans adapted. We learned to read `x -> y => z` and `foo?.bar?.baz ?? qux`. But this was accommodation, not design.
+
+Today, a new kind of reader has emerged: the large language model. LLMs don't parse code the way compilers do. They read it the way humans do—holistically, contextually, drawing on patterns from natural language. Dense symbol sequences that a parser handles trivially can be ambiguous or opaque to an LLM. Meanwhile, natural language constructs that would complicate a traditional parser are effortlessly understood.
+
+Faber leans into this shift. When choosing between symbolic brevity and linguistic clarity, we favor clarity:
+
+- `et` over `&&`
+- `aut` over `||`
+- `cum aetas descendens et nomen` over `(a, b) => a.age < b.age || a.name > b.name`
+- `ex users pro user` over `for (const user of users)`
+
+The result is code that reads more like natural language—not because it's verbose, but because it uses words where symbols would obscure meaning. An LLM reading Faber code can leverage its training on natural language. The intent is closer to the surface.
+
+This isn't about making code "easier" in a superficial sense. It's about aligning syntax with how modern AI systems—and humans—actually process language. Code that an LLM can reason about clearly is code that can be more reliably generated, analyzed, and transformed.
+
+The Roman craftsman built for the ages. We're building for a world where code is read by minds both human and artificial.
+
+---
+
 ## Why "Faber Romanus"?
 
 *Faber*: craftsman, artisan, maker. One who builds with skill and care.
