@@ -3,7 +3,7 @@
 // Each frame is random static. XOR all N frames together to reveal a QR code.
 // This is a port of the Python qr_static.py to Faber Romanus.
 //
-// STATUS: Does not compile. Blocked on array literal support.
+// STATUS: Does not compile. Blocked on missing stdlib (range, Math).
 // See FINDINGS.md for details.
 
 // Generate a single frame of binary noise (0 or 1 per cell)

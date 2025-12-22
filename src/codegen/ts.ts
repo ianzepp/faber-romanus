@@ -57,6 +57,7 @@ import type {
     ThrowStatement,
     TryStatement,
     ExpressionStatement,
+    ArrayExpression,
     BinaryExpression,
     UnaryExpression,
     CallExpression,
@@ -475,6 +476,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genLiteral(node);
             case 'TemplateLiteral':
                 return `\`${node.raw}\``;
+            case 'ArrayExpression':
+                return genArrayExpression(node);
             case 'BinaryExpression':
                 return genBinaryExpression(node);
             case 'UnaryExpression':
@@ -523,6 +526,20 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         return String(node.value);
+    }
+
+    /**
+     * Generate array literal.
+     *
+     * TRANSFORMS:
+     *   [] -> []
+     *   [1, 2, 3] -> [1, 2, 3]
+     *   [[1], [2]] -> [[1], [2]]
+     */
+    function genArrayExpression(node: ArrayExpression): string {
+        const elements = node.elements.map(genExpression).join(', ');
+
+        return `[${elements}]`;
     }
 
     /**

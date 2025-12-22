@@ -1279,6 +1279,21 @@ export function parse(tokens: Token[]): ParserResult {
             return { type: 'TemplateLiteral', raw: token.value, position };
         }
 
+        // Array literal
+        if (match('LBRACKET')) {
+            const elements: Expression[] = [];
+
+            if (!check('RBRACKET')) {
+                do {
+                    elements.push(parseExpression());
+                } while (match('COMMA'));
+            }
+
+            expect('RBRACKET', "Expected ']' after array elements");
+
+            return { type: 'ArrayExpression', elements, position };
+        }
+
         // Parenthesized expression or arrow function
         if (match('LPAREN')) {
             // Could be arrow function: (x) => ...

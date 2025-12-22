@@ -6,39 +6,35 @@ Attempt to port `qr-static-stream` Python project to Faber Romanus.
 
 Stress-test the compiler with a real algorithm to find breaking points.
 
-## Blockers Found
+## Resolved Issues
 
-### 1. Array Literals Not Implemented (Critical)
+### Array Literals (Fixed)
 
-The parser has no handler for `[` in expressions. Array literals like `[1, 2, 3]` or `[]` fail with "Unexpected token: [".
-
-**Location:** `src/parser/index.ts` - `parsePrimary()` function has no `LBRACKET` case.
-
-**Impact:** Cannot express the QR static algorithm at all. The algorithm requires:
-- Creating empty arrays: `esto frame = []`
-- Nested arrays: `[[1, 0], [0, 1]]`
-- Array accumulation via loops
-
-**Fix needed:** Add array literal parsing to `parsePrimary()`:
-```typescript
-if (match('LBRACKET')) {
-    // Parse array elements
-    const elements: Expression[] = [];
-    if (!check('RBRACKET')) {
-        do {
-            elements.push(parseExpression());
-        } while (match('COMMA'));
-    }
-    expect('RBRACKET', "Expected ']'");
-    return { type: 'ArrayExpression', elements, position };
-}
+Array literals are now implemented. The following now works:
+```la
+esto empty = []
+fixum numbers = [1, 2, 3]
+fixum matrix = [[1, 0], [0, 1]]
 ```
 
-### 2. No Runtime Array Constructors
+## Current Blockers
 
-Even without literals, there's no way to create arrays. `Array()`, `Lista()`, and `novum Lista()` all fail.
+### 1. No `range()` Function
 
-**Impact:** No workaround for blocker #1.
+The QR static algorithm uses Python-style `range(n)` for iteration. Faber has `pro...in` loops but no built-in range generator.
+
+**Workaround options:**
+- Use `dum` (while) loops with manual counters
+- Add `range` to the standard library
+- Use `pro i in [0, 1, 2, ...]` with explicit arrays (verbose)
+
+### 2. No `Math` Global
+
+`Math.random()` and `Math.floor()` are JavaScript globals not recognized by the semantic analyzer.
+
+**Workaround options:**
+- Add `Math` to recognized globals
+- Create Latin equivalents (`Mathematica.fortuitus()`, `Mathematica.pavimentum()`)
 
 ## Other Issues Found
 

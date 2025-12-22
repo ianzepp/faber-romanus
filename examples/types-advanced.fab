@@ -10,9 +10,8 @@ typus UserName = Textus
 fixum userId = 123
 fixum userName = "Marcus"
 
-// Generic type with type parameter
-// Note: array literals not yet supported
-// fixum Lista<Textus> nombres = ["Marcus", "Julia"]
+// Generic type with type parameter and array literal
+fixum Lista<Textus> nombres = ["Marcus", "Julia", "Gaius"]
 
 // Type with numeric parameter (size constraint)
 fixum Numerus<32> smallNumber = 42
@@ -25,4 +24,11 @@ fixum Numerus<32, Naturalis> precisNumber = 255
 
 // Complex type alias with generics
 typus StringList = Lista<Textus>
-// fixum StringList names = ["Gaius", "Titus"]  // blocked on array literals
+fixum names = ["Gaius", "Titus"]
+
+// Nested arrays (2D matrix)
+fixum matrix = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1]
+]

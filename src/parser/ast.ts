@@ -380,6 +380,7 @@ export interface CatchClause extends BaseNode {
 export type Expression =
     | Identifier
     | Literal
+    | ArrayExpression
     | BinaryExpression
     | UnaryExpression
     | CallExpression
@@ -452,6 +453,24 @@ export interface Literal extends BaseNode {
 export interface TemplateLiteral extends BaseNode {
     type: 'TemplateLiteral';
     raw: string;
+}
+
+/**
+ * Array literal expression.
+ *
+ * GRAMMAR (in EBNF):
+ *   arrayExpr := '[' (expression (',' expression)*)? ']'
+ *
+ * INVARIANT: elements is always an array (empty array = empty elements).
+ *
+ * Examples:
+ *   []           -> elements=[]
+ *   [1, 2, 3]    -> elements=[Literal, Literal, Literal]
+ *   [[1], [2]]   -> elements=[ArrayExpression, ArrayExpression]
+ */
+export interface ArrayExpression extends BaseNode {
+    type: 'ArrayExpression';
+    elements: Expression[];
 }
 
 // ---------------------------------------------------------------------------

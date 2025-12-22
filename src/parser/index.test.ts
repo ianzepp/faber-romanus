@@ -248,6 +248,34 @@ describe('parser', () => {
             expect(expr.type).toBe('CallExpression');
             expect(expr.callee.type).toBe('MemberExpression');
         });
+
+        test('empty array literal', () => {
+            const { program } = parseCode('[]');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('ArrayExpression');
+            expect(expr.elements).toHaveLength(0);
+        });
+
+        test('array literal with elements', () => {
+            const { program } = parseCode('[1, 2, 3]');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('ArrayExpression');
+            expect(expr.elements).toHaveLength(3);
+            expect(expr.elements[0].value).toBe(1);
+            expect(expr.elements[2].value).toBe(3);
+        });
+
+        test('nested array literal', () => {
+            const { program } = parseCode('[[1, 2], [3, 4]]');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('ArrayExpression');
+            expect(expr.elements).toHaveLength(2);
+            expect(expr.elements[0].type).toBe('ArrayExpression');
+            expect(expr.elements[0].elements).toHaveLength(2);
+        });
     });
 
     describe('arrow functions', () => {
