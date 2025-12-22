@@ -7,8 +7,12 @@ Faber's async model maps to native async/await patterns:
 | Faber | JavaScript | Zig |
 |-------|------------|-----|
 | `futura functio` | `async function` | `fn` returning frame |
-| `exspecta` | `await` | `await` / suspend |
+| `cede` | `await` | `await` / suspend |
 | `promissum<T>` | `Promise<T>` | Future-like pattern |
+
+**Unified suspension model:** `cede` is shared with generators (`cursor functio`). The function modifier determines semantics:
+- In `futura functio`: `cede expr` awaits a promise
+- In `cursor functio`: `cede expr` yields a value
 
 ---
 
@@ -20,7 +24,7 @@ Marks a function as asynchronous. Returns `promissum<T>` implicitly.
 
 ```
 futura functio fetchData(textus url) -> textus {
-    fixum response = exspecta fetch(url)
+    fixum response = cede fetch(url)
     redde response.text()
 }
 ```
@@ -33,15 +37,17 @@ async function fetchData(url: string): Promise<string> {
 }
 ```
 
-### exspecta
+### cede (in async context)
 
 Awaits a promise. Only valid inside `futura functio`.
 
 ```
-fixum data = exspecta fetchData("https://api.example.com")
+fixum data = cede fetchData("https://api.example.com")
 ```
 
-**Etymology:** "expect, wait for, await" — the Latin root of "expect."
+**Etymology:** "yield, give way, surrender" — ceding control to the event loop until the promise resolves.
+
+**See also:** In `cursor functio`, `cede` yields values to the caller (see iteration.md).
 
 ---
 
@@ -66,8 +72,12 @@ fixum data = exspecta fetchData("https://api.example.com")
 
 | Faber | JS Equivalent | Description |
 |-------|---------------|-------------|
-| `promissum.resolvere(T)` | `Promise.resolve` | Immediate success |
-| `promissum.reicere(erratum)` | `Promise.reject` | Immediate failure |
+| `promissum.da(T)` | `Promise.resolve` | Immediate success |
+| `promissum.nega(erratum)` | `Promise.reject` | Immediate failure |
+
+**Naming rationale:**
+- `da` = "give" (imperative of dare) — here's your value
+- `nega` = "deny" (imperative of negare) — refused with error
 
 ### Static Combinators
 
@@ -76,13 +86,13 @@ fixum data = exspecta fetchData("https://api.example.com")
 | `promissum.omnes(lista<promissum<T>>)` | `Promise.all` | All must succeed |
 | `promissum.primus(lista<promissum<T>>)` | `Promise.race` | First to settle |
 | `promissum.quilibet(lista<promissum<T>>)` | `Promise.any` | First to succeed |
-| `promissum.omnesStabiles(...)` | `Promise.allSettled` | All settled |
+| `promissum.finita(...)` | `Promise.allSettled` | All settled |
 
 **Naming rationale:**
-- `omnes` = "all"
-- `primus` = "first" (race)
-- `quilibet` = "any, whichever"
-- `stabiles` = "settled, stable"
+- `omnes` = "all" (must succeed)
+- `primus` = "first" (race — first to settle wins)
+- `quilibet` = "any, whichever" (first to succeed)
+- `finita` = "finished" (all done, regardless of success/failure)
 
 ---
 
@@ -92,7 +102,7 @@ fixum data = exspecta fetchData("https://api.example.com")
 
 ```
 tempta {
-    fixum data = exspecta fetchData(url)
+    fixum data = cede fetchData(url)
     scribe data
 }
 cape err {
@@ -124,7 +134,7 @@ Open question: How to handle unhandled promise rejections?
 futura functio processAll(lista<textus> urls) -> lista<textus> {
     esto results = []
     ex urls pro url {
-        fixum data = exspecta fetchData(url)
+        fixum data = cede fetchData(url)
         results.adde(data)
     }
     redde results
@@ -136,7 +146,7 @@ futura functio processAll(lista<textus> urls) -> lista<textus> {
 ```
 futura functio fetchAll(lista<textus> urls) -> lista<textus> {
     fixum promissa = urls.mappa((url) => fetchData(url))
-    redde exspecta promissum.omnes(promissa)
+    redde cede promissum.omnes(promissa)
 }
 ```
 
@@ -144,7 +154,7 @@ futura functio fetchAll(lista<textus> urls) -> lista<textus> {
 
 ```
 futura functio cumTimeout(promissum<T> p, numerus ms) -> T {
-    redde exspecta promissum.primus([
+    redde cede promissum.primus([
         p,
         delay(ms).tunc(() => iace "Timeout")
     ])
@@ -155,7 +165,7 @@ futura functio cumTimeout(promissum<T> p, numerus ms) -> T {
 
 ## Open Questions
 
-1. **Top-level await**: Allow `exspecta` at module level?
+1. **Top-level await**: Allow `cede` at module level?
    - JS: Yes (ES modules)
    - Proposal: Yes, for scripts
 
@@ -182,7 +192,7 @@ futura functio cumTimeout(promissum<T> p, numerus ms) -> T {
 
 Direct mapping:
 - `futura functio` → `async function`
-- `exspecta` → `await`
+- `cede` (in async) → `await`
 - `promissum<T>` → `Promise<T>`
 
 All instance methods map directly to Promise prototype.
