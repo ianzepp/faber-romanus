@@ -8,5 +8,5 @@ repository = "https://github.com/ianzepp/faber-romanus"
 
 [grammars.faber_romanus]
 repository = "https://github.com/ianzepp/faber-romanus"
-rev = "579c98a41421025fdafec9fa46bdc0f73bcac637"
+rev = "3c704cb059c28e570c98fb6669a9ec428771840f"
 path = "editors/zed/grammars/faber_romanus"
