@@ -1,0 +1,307 @@
+import { test, expect, describe } from 'bun:test';
+import { tokenize } from '../tokenizer';
+import { parse } from '../parser';
+import { generate } from './index';
+
+function compile(code: string): string {
+    const { tokens } = tokenize(code);
+    const { program } = parse(tokens);
+
+    if (!program) {
+        throw new Error('Parse failed');
+    }
+
+    return generate(program, { target: 'zig' });
+}
+
+describe('zig codegen', () => {
+    describe('variable declarations', () => {
+        test('esto -> var', () => {
+            const zig = compile('esto x = 5');
+
+            expect(zig).toContain('var x');
+            expect(zig).toContain('= 5');
+        });
+
+        test('fixum -> const', () => {
+            const zig = compile('fixum PI = 3.14');
+
+            expect(zig).toContain('const PI');
+            expect(zig).toContain('= 3.14');
+        });
+
+        test('type annotation', () => {
+            const zig = compile('esto Numerus x = 5');
+
+            expect(zig).toContain('var x: i64 = 5');
+        });
+    });
+
+    describe('function declarations', () => {
+        test('simple function', () => {
+            const zig = compile(`
+        functio salve(Textus nomen) -> Nihil {
+          redde
+        }
+      `);
+
+            expect(zig).toContain('fn salve(nomen: []const u8) void');
+            expect(zig).toContain('return;');
+        });
+
+        test('async function becomes error union', () => {
+            const zig = compile(`
+        futura functio fetch(Textus url) -> Numerus {
+          redde 0
+        }
+      `);
+
+            expect(zig).toContain('fn fetch(url: []const u8) !i64');
+        });
+    });
+
+    describe('if statements', () => {
+        test('simple if', () => {
+            const zig = compile(`
+        si verum {
+          x = 1
+        }
+      `);
+
+            expect(zig).toContain('if (true)');
+        });
+
+        test('if with else', () => {
+            const zig = compile(`
+        si falsum {
+          a()
+        }
+        aliter {
+          b()
+        }
+      `);
+
+            expect(zig).toContain('if (false)');
+            expect(zig).toContain('} else {');
+        });
+    });
+
+    describe('loops', () => {
+        test('while loop', () => {
+            const zig = compile(`
+        dum verum {
+          x = 1
+        }
+      `);
+
+            expect(zig).toContain('while (true)');
+        });
+
+        test('for loop over slice', () => {
+            const zig = compile(`
+        ex items pro item {
+          process(item)
+        }
+      `);
+
+            expect(zig).toContain('for (items) |item|');
+        });
+
+        test('for loop with range', () => {
+            const zig = compile(`
+        ex 0..10 pro i {
+          process(i)
+        }
+      `);
+
+            expect(zig).toContain('var i: usize = 0');
+            expect(zig).toContain('while (i <= 10)');
+            expect(zig).toContain('(i += 1)');
+        });
+
+        test('for loop with range and step', () => {
+            const zig = compile(`
+        ex 0..10 per 2 pro i {
+          process(i)
+        }
+      `);
+
+            expect(zig).toContain('while (i <= 10)');
+            expect(zig).toContain('(i += 2)');
+        });
+    });
+
+    describe('expressions', () => {
+        test('binary operators', () => {
+            const zig = compile('1 + 2');
+
+            expect(zig).toContain('(1 + 2)');
+        });
+
+        test('logical and becomes and', () => {
+            const zig = compile('a et b');
+
+            expect(zig).toContain('(a and b)');
+        });
+
+        test('logical or becomes or', () => {
+            const zig = compile('a aut b');
+
+            expect(zig).toContain('(a or b)');
+        });
+
+        test('function call', () => {
+            const zig = compile('salve(nomen)');
+
+            expect(zig).toContain('salve(nomen)');
+        });
+
+        test('member access', () => {
+            const zig = compile('usuario.nomen');
+
+            expect(zig).toContain('usuario.nomen');
+        });
+    });
+
+    describe('special expressions', () => {
+        test('verum -> true', () => {
+            const zig = compile('verum');
+
+            expect(zig).toContain('true');
+        });
+
+        test('falsum -> false', () => {
+            const zig = compile('falsum');
+
+            expect(zig).toContain('false');
+        });
+
+        test('nihil -> null', () => {
+            const zig = compile('nihil');
+
+            expect(zig).toContain('null');
+        });
+
+        test('novum -> Type.init()', () => {
+            const zig = compile('novum Erratum(message)');
+
+            expect(zig).toContain('Erratum.init(message)');
+        });
+    });
+
+    describe('guard statements', () => {
+        test('custodi generates if statements', () => {
+            const zig = compile(`
+        custodi {
+          si x == nihil { redde }
+        }
+      `);
+
+            expect(zig).toContain('if ((x == null))');
+            expect(zig).toContain('return;');
+        });
+    });
+
+    describe('assert statements', () => {
+        test('adfirma without message', () => {
+            const zig = compile('adfirma x > 0');
+
+            expect(zig).toContain('std.debug.assert((x > 0))');
+        });
+
+        test('adfirma with message uses panic', () => {
+            const zig = compile('adfirma x > 0, "x must be positive"');
+
+            expect(zig).toContain('if (!((x > 0)))');
+            expect(zig).toContain('@panic("x must be positive")');
+        });
+    });
+
+    describe('switch statements', () => {
+        test('elige generates switch', () => {
+            const zig = compile(`
+        elige x {
+          si 1 { a() }
+          si 2 { b() }
+        }
+      `);
+
+            expect(zig).toContain('switch (x)');
+            expect(zig).toContain('1 =>');
+            expect(zig).toContain('2 =>');
+        });
+
+        test('elige with default', () => {
+            const zig = compile(`
+        elige x {
+          si 1 { a() }
+          aliter { c() }
+        }
+      `);
+
+            expect(zig).toContain('switch (x)');
+            expect(zig).toContain('else =>');
+        });
+    });
+
+    describe('with statements', () => {
+        test('cum block expands to member assignments', () => {
+            const zig = compile(`
+        cum user {
+          nomen = "Marcus"
+          aetas = 30
+        }
+      `);
+
+            expect(zig).toContain('user.nomen = "Marcus"');
+            expect(zig).toContain('user.aetas = 30');
+        });
+    });
+
+    describe('object destructuring', () => {
+        test('destructuring expands to temp + member access', () => {
+            const zig = compile('fixum { nomen, aetas } = user');
+
+            expect(zig).toContain('const _tmp = user');
+            expect(zig).toContain('const nomen = _tmp.nomen');
+            expect(zig).toContain('const aetas = _tmp.aetas');
+        });
+    });
+
+    describe('object literals', () => {
+        test('empty object', () => {
+            const zig = compile('fixum x = {}');
+
+            expect(zig).toContain('const x = .{}');
+        });
+
+        test('object with properties', () => {
+            const zig = compile('fixum user = { nomen: "Marcus", aetas: 30 }');
+
+            expect(zig).toContain('.nomen = "Marcus"');
+            expect(zig).toContain('.aetas = 30');
+        });
+    });
+
+    describe('array literals', () => {
+        test('empty array', () => {
+            const zig = compile('fixum arr = []');
+
+            expect(zig).toContain('const arr = .{}');
+        });
+
+        test('array with elements', () => {
+            const zig = compile('fixum nums = [1, 2, 3]');
+
+            expect(zig).toContain('.{ 1, 2, 3 }');
+        });
+    });
+
+    describe('type declarations', () => {
+        test('type alias', () => {
+            const zig = compile('typus ID = Textus');
+
+            expect(zig).toContain('const ID = []const u8');
+        });
+    });
+});

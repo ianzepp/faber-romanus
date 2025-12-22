@@ -54,14 +54,22 @@ import type {
     ImportDeclaration,
     VariableDeclaration,
     FunctionDeclaration,
+    TypeAliasDeclaration,
     IfStatement,
     WhileStatement,
     ForStatement,
+    WithStatement,
+    SwitchStatement,
+    GuardStatement,
+    AssertStatement,
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
     TryStatement,
     ExpressionStatement,
+    ArrayExpression,
+    ObjectExpression,
+    RangeExpression,
     BinaryExpression,
     UnaryExpression,
     CallExpression,
@@ -264,12 +272,22 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
                 return genVariableDeclaration(node);
             case 'FunctionDeclaration':
                 return genFunctionDeclaration(node);
+            case 'TypeAliasDeclaration':
+                return genTypeAliasDeclaration(node);
             case 'IfStatement':
                 return genIfStatement(node);
             case 'WhileStatement':
                 return genWhileStatement(node);
             case 'ForStatement':
                 return genForStatement(node);
+            case 'WithStatement':
+                return genWithStatement(node);
+            case 'SwitchStatement':
+                return genSwitchStatement(node);
+            case 'GuardStatement':
+                return genGuardStatement(node);
+            case 'AssertStatement':
+                return genAssertStatement(node);
             case 'ReturnStatement':
                 return genReturnStatement(node);
             case 'ThrowStatement':
@@ -321,12 +339,35 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * TRANSFORMS:
      *   esto x: Numerus = 5 -> var x: i64 = 5;
      *   fixum y: Textus = "hello" -> const y: []const u8 = "hello";
+     *   fixum { a, b } = obj -> const a = obj.a; const b = obj.b;
      *
      * TARGET: Zig requires explicit types for var (mutable) declarations.
      *         Const can infer but we add type for clarity.
+     *         Zig doesn't have destructuring, so we expand to multiple statements.
      */
     function genVariableDeclaration(node: VariableDeclaration): string {
         const kind = node.kind === 'esto' ? 'var' : 'const';
+
+        // Handle object pattern destructuring
+        if (node.name.type === 'ObjectPattern') {
+            const initExpr = node.init ? genExpression(node.init) : 'undefined';
+            const lines: string[] = [];
+
+            // Create a temp var to hold the object, then destructure
+            const tempVar = `_tmp`;
+
+            lines.push(`${ind()}const ${tempVar} = ${initExpr};`);
+
+            for (const prop of node.name.properties) {
+                const key = prop.key.name;
+                const localName = prop.value.name;
+
+                lines.push(`${ind()}${kind} ${localName} = ${tempVar}.${key};`);
+            }
+
+            return lines.join('\n');
+        }
+
         const name = node.name.name;
 
         // TARGET: Zig requires explicit types for var, we infer if not provided
@@ -334,7 +375,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         if (node.typeAnnotation) {
             typeAnno = `: ${genType(node.typeAnnotation)}`;
-        } else if (kind === 'var' && node.init) {
+        }
+        else if (kind === 'var' && node.init) {
             typeAnno = `: ${inferZigType(node.init)}`;
         }
 
@@ -522,13 +564,177 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         return `${ind()}while (${test}) ${body}`;
     }
 
+    /**
+     * Generate for statement.
+     *
+     * TRANSFORMS:
+     *   ex 0..10 pro i { } -> var i: usize = 0; while (i <= 10) : (i += 1) { }
+     *   ex items pro item { } -> for (items) |item| { }
+     *
+     * TARGET: Zig uses for (slice) |item| for iteration over slices.
+     *         For ranges, we use while loops since Zig doesn't have range syntax.
+     */
     function genForStatement(node: ForStatement): string {
         const varName = node.variable.name;
-        const iterable = genExpression(node.iterable);
         const body = genBlockStatement(node.body);
+
+        // Handle range expressions with while loop
+        if (node.iterable.type === 'RangeExpression') {
+            const range = node.iterable;
+            const start = genExpression(range.start);
+            const end = genExpression(range.end);
+
+            if (range.step) {
+                const step = genExpression(range.step);
+
+                return `${ind()}var ${varName}: usize = ${start}; while (${varName} <= ${end}) : (${varName} += ${step}) ${body}`;
+            }
+
+            return `${ind()}var ${varName}: usize = ${start}; while (${varName} <= ${end}) : (${varName} += 1) ${body}`;
+        }
+
+        const iterable = genExpression(node.iterable);
 
         // Zig uses for (slice) |item| syntax
         return `${ind()}for (${iterable}) |${varName}| ${body}`;
+    }
+
+    /**
+     * Generate with statement.
+     *
+     * TRANSFORMS:
+     *   cum user { nomen = "Marcus" } -> user.nomen = "Marcus";
+     *
+     * TARGET: Zig doesn't have with-blocks, we expand to member assignments.
+     */
+    function genWithStatement(node: WithStatement): string {
+        const context = genExpression(node.object);
+        const lines: string[] = [];
+
+        for (const stmt of node.body.body) {
+            if (
+                stmt.type === 'ExpressionStatement' &&
+                stmt.expression.type === 'AssignmentExpression' &&
+                stmt.expression.left.type === 'Identifier'
+            ) {
+                const prop = stmt.expression.left.name;
+                const value = genExpression(stmt.expression.right);
+                const op = stmt.expression.operator;
+
+                lines.push(`${ind()}${context}.${prop} ${op} ${value};`);
+            }
+            else {
+                lines.push(genStatement(stmt));
+            }
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Generate switch statement.
+     *
+     * TRANSFORMS:
+     *   elige x { si 1 { a() } si 2 { b() } aliter { c() } }
+     *   -> switch (x) { 1 => a(), 2 => b(), else => c() }
+     *
+     * TARGET: Zig uses switch (x) { value => expr, ... } syntax.
+     */
+    function genSwitchStatement(node: SwitchStatement): string {
+        const discriminant = genExpression(node.discriminant);
+        let result = `${ind()}switch (${discriminant}) {\n`;
+
+        depth++;
+
+        for (const caseNode of node.cases) {
+            const test = genExpression(caseNode.test);
+
+            result += `${ind()}${test} => {\n`;
+            depth++;
+
+            for (const stmt of caseNode.consequent.body) {
+                result += genStatement(stmt) + '\n';
+            }
+
+            depth--;
+            result += `${ind()}},\n`;
+        }
+
+        if (node.defaultCase) {
+            result += `${ind()}else => {\n`;
+            depth++;
+
+            for (const stmt of node.defaultCase.body) {
+                result += genStatement(stmt) + '\n';
+            }
+
+            depth--;
+            result += `${ind()}},\n`;
+        }
+
+        depth--;
+        result += `${ind()}}`;
+
+        return result;
+    }
+
+    /**
+     * Generate guard statement.
+     *
+     * TRANSFORMS:
+     *   custodi { si x == nihil { redde } }
+     *   -> if (x == null) { return; }
+     *
+     * TARGET: Guards are just sequential if statements in Zig too.
+     */
+    function genGuardStatement(node: GuardStatement): string {
+        const lines: string[] = [];
+
+        for (const clause of node.clauses) {
+            const test = genExpression(clause.test);
+            const body = genBlockStatement(clause.consequent);
+
+            lines.push(`${ind()}if (${test}) ${body}`);
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Generate assert statement.
+     *
+     * TRANSFORMS:
+     *   adfirma x > 0 -> std.debug.assert(x > 0)
+     *   adfirma x > 0, "msg" -> if (!(x > 0)) @panic("msg")
+     *
+     * TARGET: Zig has std.debug.assert() for assertions.
+     *         For custom messages, we use @panic.
+     */
+    function genAssertStatement(node: AssertStatement): string {
+        const test = genExpression(node.test);
+
+        if (node.message) {
+            const message = genExpression(node.message);
+
+            return `${ind()}if (!(${test})) @panic(${message});`;
+        }
+
+        return `${ind()}std.debug.assert(${test});`;
+    }
+
+    /**
+     * Generate type alias declaration.
+     *
+     * TRANSFORMS:
+     *   typus ID = Textus -> const ID = []const u8;
+     *
+     * TARGET: Zig uses const for type aliases.
+     */
+    function genTypeAliasDeclaration(node: TypeAliasDeclaration): string {
+        const name = node.name.name;
+        const typeAnno = genType(node.typeAnnotation);
+
+        return `${ind()}const ${name} = ${typeAnno};`;
     }
 
     function genReturnStatement(node: ReturnStatement): string {
@@ -613,6 +819,12 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             case 'TemplateLiteral':
                 // Zig doesn't have template literals, convert to string
                 return `"${node.raw.replace(/`/g, '')}"`;
+            case 'ArrayExpression':
+                return genArrayExpression(node);
+            case 'ObjectExpression':
+                return genObjectExpression(node);
+            case 'RangeExpression':
+                return genRangeExpression(node);
             case 'BinaryExpression':
                 return genBinaryExpression(node);
             case 'UnaryExpression':
@@ -685,6 +897,68 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         }
 
         return String(node.value);
+    }
+
+    /**
+     * Generate array literal.
+     *
+     * TRANSFORMS:
+     *   [1, 2, 3] -> .{ 1, 2, 3 }
+     *
+     * TARGET: Zig uses .{ } for array/tuple literals.
+     */
+    function genArrayExpression(node: ArrayExpression): string {
+        if (node.elements.length === 0) {
+            return '.{}';
+        }
+
+        const elements = node.elements.map(genExpression).join(', ');
+
+        return `.{ ${elements} }`;
+    }
+
+    /**
+     * Generate object literal.
+     *
+     * TRANSFORMS:
+     *   { nomen: "Marcus" } -> .{ .nomen = "Marcus" }
+     *
+     * TARGET: Zig uses .{ .field = value } for struct literals.
+     */
+    function genObjectExpression(node: ObjectExpression): string {
+        if (node.properties.length === 0) {
+            return '.{}';
+        }
+
+        const props = node.properties.map(prop => {
+            const key = prop.key.type === 'Identifier'
+                ? prop.key.name
+                : String((prop.key as Literal).value);
+            const value = genExpression(prop.value);
+
+            return `.${key} = ${value}`;
+        });
+
+        return `.{ ${props.join(', ')} }`;
+    }
+
+    /**
+     * Generate range expression.
+     *
+     * TRANSFORMS:
+     *   0..10 -> (range not directly expressible in Zig)
+     *
+     * TARGET: Zig doesn't have range literals. This is only used when a range
+     *         appears outside a for loop. We generate a comment indicating
+     *         the limitation.
+     */
+    function genRangeExpression(node: RangeExpression): string {
+        const start = genExpression(node.start);
+        const end = genExpression(node.end);
+
+        // Zig doesn't have standalone range expressions
+        // This would need to be converted to a slice or iterator
+        return `@compileError("Range expressions must be used in for loops")`;
     }
 
     /**

@@ -289,4 +289,176 @@ describe('codegen', () => {
             expect(js).toContain('console.log(salve("Mundus"))');
         });
     });
+
+    describe('guard statements', () => {
+        test('custodi with single clause', () => {
+            const js = compile(`
+        custodi {
+          si x == nihil { redde }
+        }
+      `);
+
+            expect(js).toContain('if ((x == null))');
+            expect(js).toContain('return;');
+        });
+
+        test('custodi with multiple clauses', () => {
+            const js = compile(`
+        custodi {
+          si x < 0 { redde }
+          si y == nihil { iace "error" }
+        }
+      `);
+
+            expect(js).toContain('if ((x < 0))');
+            expect(js).toContain('if ((y == null))');
+            expect(js).toContain('throw "error"');
+        });
+    });
+
+    describe('assert statements', () => {
+        test('adfirma without message', () => {
+            const js = compile('adfirma x > 0');
+
+            expect(js).toContain('if (!(');
+            expect(js).toContain('throw new Error(');
+            expect(js).toContain('Assertion failed');
+        });
+
+        test('adfirma with message', () => {
+            const js = compile('adfirma x > 0, "x must be positive"');
+
+            expect(js).toContain('if (!(');
+            expect(js).toContain('throw new Error("x must be positive")');
+        });
+    });
+
+    describe('range expressions', () => {
+        test('simple range in for loop', () => {
+            const js = compile(`
+        ex 0..10 pro i {
+          _scribe(i)
+        }
+      `);
+
+            expect(js).toContain('for (let i = 0; i <= 10; i++)');
+        });
+
+        test('range with step', () => {
+            const js = compile(`
+        ex 0..10 per 2 pro i {
+          _scribe(i)
+        }
+      `);
+
+            expect(js).toContain('for (let i = 0; i <= 10; i += 2)');
+        });
+
+        test('range with expressions', () => {
+            const js = compile(`
+        ex 1..n pro i {
+          _scribe(i)
+        }
+      `);
+
+            expect(js).toContain('for (let i = 1; i <= n; i++)');
+        });
+    });
+
+    describe('switch statements', () => {
+        test('elige with cases', () => {
+            const js = compile(`
+        elige x {
+          si 1 { a() }
+          si 2 { b() }
+        }
+      `);
+
+            expect(js).toContain('switch (x)');
+            expect(js).toContain('case 1:');
+            expect(js).toContain('case 2:');
+            expect(js).toContain('break;');
+        });
+
+        test('elige with default', () => {
+            const js = compile(`
+        elige x {
+          si 1 { a() }
+          aliter { c() }
+        }
+      `);
+
+            expect(js).toContain('switch (x)');
+            expect(js).toContain('case 1:');
+            expect(js).toContain('default:');
+        });
+    });
+
+    describe('with statements', () => {
+        test('cum block transforms assignments', () => {
+            const js = compile(`
+        cum user {
+          nomen = "Marcus"
+          aetas = 30
+        }
+      `);
+
+            expect(js).toContain('user.nomen = "Marcus"');
+            expect(js).toContain('user.aetas = 30');
+        });
+    });
+
+    describe('object destructuring', () => {
+        test('simple destructuring', () => {
+            const js = compile('fixum { nomen, aetas } = user');
+
+            expect(js).toBe('const { nomen, aetas } = user;');
+        });
+
+        test('destructuring with rename', () => {
+            const js = compile('fixum { nomen: localName } = user');
+
+            expect(js).toBe('const { nomen: localName } = user;');
+        });
+
+        test('mutable destructuring', () => {
+            const js = compile('esto { count } = data');
+
+            expect(js).toBe('let { count } = data;');
+        });
+    });
+
+    describe('object literals', () => {
+        test('empty object', () => {
+            const js = compile('fixum x = {}');
+
+            expect(js).toBe('const x = {};');
+        });
+
+        test('object with properties', () => {
+            const js = compile('fixum user = { nomen: "Marcus", aetas: 30 }');
+
+            expect(js).toBe('const user = { nomen: "Marcus", aetas: 30 };');
+        });
+
+        test('object with expression values', () => {
+            const js = compile('fixum data = { sum: 1 + 2, active: verum }');
+
+            expect(js).toBe('const data = { sum: (1 + 2), active: true };');
+        });
+    });
+
+    describe('array literals', () => {
+        test('empty array', () => {
+            const js = compile('fixum arr = []');
+
+            expect(js).toBe('const arr = [];');
+        });
+
+        test('array with elements', () => {
+            const js = compile('fixum nums = [1, 2, 3]');
+
+            expect(js).toBe('const nums = [1, 2, 3];');
+        });
+    });
 });
