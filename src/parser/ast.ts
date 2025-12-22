@@ -89,6 +89,7 @@ export type Statement =
     | ForStatement
     | WithStatement
     | SwitchStatement
+    | GuardStatement
     | ReturnStatement
     | BlockStatement
     | ThrowStatement
@@ -343,6 +344,36 @@ export interface SwitchStatement extends BaseNode {
  */
 export interface SwitchCase extends BaseNode {
     type: 'SwitchCase';
+    test: Expression;
+    consequent: BlockStatement;
+}
+
+/**
+ * Guard statement (grouped early-exit checks).
+ *
+ * GRAMMAR (in EBNF):
+ *   guardStmt := 'custodi' '{' guardClause+ '}'
+ *   guardClause := 'si' expression blockStmt
+ *
+ * WHY: Latin 'custodi' (guard!) groups early-exit conditions.
+ *      Each clause should contain an early exit (redde, iace, rumpe, perge).
+ *
+ * Example:
+ *   custodi {
+ *       si user == nihil { redde nihil }
+ *       si useri age < 0 { iace "Invalid age" }
+ *   }
+ */
+export interface GuardStatement extends BaseNode {
+    type: 'GuardStatement';
+    clauses: GuardClause[];
+}
+
+/**
+ * Guard clause (part of guard statement).
+ */
+export interface GuardClause extends BaseNode {
+    type: 'GuardClause';
     test: Expression;
     consequent: BlockStatement;
 }

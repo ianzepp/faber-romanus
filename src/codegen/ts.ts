@@ -54,6 +54,7 @@ import type {
     ForStatement,
     WithStatement,
     SwitchStatement,
+    GuardStatement,
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
@@ -180,6 +181,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genWithStatement(node);
             case 'SwitchStatement':
                 return genSwitchStatement(node);
+            case 'GuardStatement':
+                return genGuardStatement(node);
             case 'ReturnStatement':
                 return genReturnStatement(node);
             case 'ThrowStatement':
@@ -511,6 +514,28 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         return result;
+    }
+
+    /**
+     * Generate guard statement.
+     *
+     * TRANSFORMS:
+     *   custodi { si x == nihil { redde } si y < 0 { iace "error" } }
+     *   -> if (x == null) { return; } if (y < 0) { throw "error"; }
+     *
+     * WHY: Guard clauses are just sequential if statements with early exits.
+     */
+    function genGuardStatement(node: GuardStatement): string {
+        const lines: string[] = [];
+
+        for (const clause of node.clauses) {
+            const test = genExpression(clause.test);
+            const body = genBlockStatement(clause.consequent);
+
+            lines.push(`${ind()}if (${test}) ${body}`);
+        }
+
+        return lines.join('\n');
     }
 
     function genReturnStatement(node: ReturnStatement): string {

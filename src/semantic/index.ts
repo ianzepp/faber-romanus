@@ -52,6 +52,7 @@ import type {
     ForStatement,
     WithStatement,
     SwitchStatement,
+    GuardStatement,
     ReturnStatement,
     BlockStatement,
     Identifier,
@@ -813,6 +814,9 @@ export function analyze(program: Program): SemanticResult {
             case 'SwitchStatement':
                 analyzeSwitchStatement(node);
                 break;
+            case 'GuardStatement':
+                analyzeGuardStatement(node);
+                break;
             case 'ReturnStatement':
                 analyzeReturnStatement(node);
                 break;
@@ -1038,6 +1042,15 @@ export function analyze(program: Program): SemanticResult {
 
         if (node.catchClause) {
             analyzeCatchClause(node.catchClause);
+        }
+    }
+
+    function analyzeGuardStatement(node: GuardStatement): void {
+        for (const clause of node.clauses) {
+            resolveExpression(clause.test);
+            enterScope();
+            analyzeBlock(clause.consequent);
+            exitScope();
         }
     }
 

@@ -89,6 +89,8 @@ import type {
     WithStatement,
     SwitchStatement,
     SwitchCase,
+    GuardStatement,
+    GuardClause,
     ReturnStatement,
     BlockStatement,
     ThrowStatement,
@@ -486,6 +488,10 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('elige')) {
             return parseSwitchStatement();
+        }
+
+        if (checkKeyword('custodi')) {
+            return parseGuardStatement();
         }
 
         if (checkKeyword('redde')) {
@@ -888,6 +894,51 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         return { type: 'SwitchStatement', discriminant, cases, defaultCase, catchClause, position };
+    }
+
+    /**
+     * Parse guard statement.
+     *
+     * GRAMMAR:
+     *   guardStmt := 'custodi' '{' guardClause+ '}'
+     *   guardClause := 'si' expression blockStmt
+     *
+     * WHY: 'custodi' (guard!) groups early-exit conditions.
+     *
+     * Example:
+     *   custodi {
+     *       si user == nihil { redde nihil }
+     *       si useri age < 0 { iace "Invalid age" }
+     *   }
+     */
+    function parseGuardStatement(): GuardStatement {
+        const position = peek().position;
+
+        expectKeyword('custodi', "Expected 'custodi'");
+
+        expect('LBRACE', "Expected '{' after custodi");
+
+        const clauses: GuardClause[] = [];
+
+        while (!check('RBRACE') && !isAtEnd()) {
+            if (checkKeyword('si')) {
+                const clausePosition = peek().position;
+
+                expectKeyword('si', "Expected 'si'");
+                const test = parseExpression();
+                const consequent = parseBlockStatement();
+
+                clauses.push({ type: 'GuardClause', test, consequent, position: clausePosition });
+            }
+            else {
+                error("Expected 'si' in guard block");
+                break;
+            }
+        }
+
+        expect('RBRACE', "Expected '}' after guard clauses");
+
+        return { type: 'GuardStatement', clauses, position };
     }
 
     /**
