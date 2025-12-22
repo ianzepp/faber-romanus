@@ -66,6 +66,7 @@ export interface LexiconError {
     word: string;
     stem?: string; // Present if we matched a stem but ending failed
     ending?: string; // The ending that didn't match
+    suggestion?: string; // "Did you mean?" suggestion for near-misses
 }
 
 /**
@@ -73,6 +74,75 @@ export interface LexiconError {
  */
 export function isLexiconError(result: unknown): result is LexiconError {
     return result !== null && typeof result === 'object' && 'error' in result;
+}
+
+// =============================================================================
+// STRING SIMILARITY FOR "DID YOU MEAN?" SUGGESTIONS
+// =============================================================================
+
+/**
+ * Compute Levenshtein edit distance between two strings.
+ *
+ * WHY: Edit distance measures how many single-character edits (insertions,
+ *      deletions, substitutions) are needed to transform one string into another.
+ *      Lower distance = more similar.
+ *
+ * PERF: Uses Wagner-Fischer algorithm with O(m*n) time and O(min(m,n)) space.
+ */
+function levenshtein(a: string, b: string): number {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    // WHY: Ensure a is the shorter string for O(min(m,n)) space
+    if (a.length > b.length) {
+        [a, b] = [b, a];
+    }
+
+    let prev = Array.from({ length: a.length + 1 }, (_, i) => i);
+    let curr = new Array(a.length + 1);
+
+    for (let j = 1; j <= b.length; j++) {
+        curr[0] = j;
+
+        for (let i = 1; i <= a.length; i++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+
+            curr[i] = Math.min(
+                prev[i] + 1, // deletion
+                curr[i - 1] + 1, // insertion
+                prev[i - 1] + cost // substitution
+            );
+        }
+
+        [prev, curr] = [curr, prev];
+    }
+
+    return prev[a.length];
+}
+
+/**
+ * Find the closest match in a vocabulary list.
+ *
+ * @param word - The unknown word to find suggestions for
+ * @param candidates - List of known stems to compare against
+ * @param maxDistance - Maximum edit distance to consider (default 3)
+ * @returns Closest matching stem, or undefined if none close enough
+ */
+function findClosestMatch(word: string, candidates: string[], maxDistance = 3): string | undefined {
+    const lowerWord = word.toLowerCase();
+    let bestMatch: string | undefined;
+    let bestDistance = Infinity;
+
+    for (const candidate of candidates) {
+        const distance = levenshtein(lowerWord, candidate.toLowerCase());
+
+        if (distance < bestDistance && distance <= maxDistance) {
+            bestDistance = distance;
+            bestMatch = candidate;
+        }
+    }
+
+    return bestMatch;
 }
 
 /**
@@ -147,12 +217,14 @@ export function parseNoun(word: string): ParsedNoun[] | LexiconError {
         }
     }
 
-    // Return what we learned
+    // Return what we learned, with suggestion if available
     if (bestMatch) {
         return { error: 'invalid_ending', word, stem: bestMatch.stem, ending: bestMatch.ending };
     }
 
-    return { error: 'unknown_stem', word };
+    const suggestion = findClosestMatch(word, nouns.map(n => n.stem));
+
+    return { error: 'unknown_stem', word, suggestion };
 }
 
 // ---------------------------------------------------------------------------
@@ -163,19 +235,21 @@ export function parseNoun(word: string): ParsedNoun[] | LexiconError {
  * Parse an inflected Latin type name to determine its grammatical properties.
  *
  * ALGORITHM:
- *   1. Preserve original case for stem matching (types are TitleCase)
- *   2. Try each built-in type stem
- *   3. Extract ending (convert to lowercase for ending lookup)
- *   4. Lookup ending in appropriate declension table
- *   5. Return all matching interpretations
+ *   1. Check for alternate nominative forms (e.g., Tempus for Tempor-)
+ *   2. Preserve original case for stem matching (types are TitleCase)
+ *   3. Try each built-in type stem
+ *   4. Extract ending (convert to lowercase for ending lookup)
+ *   5. Lookup ending in appropriate declension table
+ *   6. Return all matching interpretations
  *
  * WHY: Types use TitleCase (Textus, Numerus) to distinguish from user nouns.
  *      This follows TypeScript convention where types start with uppercase.
  *
- * EDGE: 3rd declension types (Cursor, Functio) have no ending in nominative
- *       singular. Must handle empty ending specially.
+ * EDGE: 3rd declension types have special nominative handling:
+ *       - Regular: stem equals nominative (Cursor)
+ *       - Neuter: nominative differs from stem (Tempus vs Tempor-)
  *
- * @param word - The inflected type name (e.g., "Textus", "Cursorem")
+ * @param word - The inflected type name (e.g., "Textus", "Cursorem", "Tempus")
  * @returns Array of possible interpretations with target type info, or LexiconError
  */
 export function parseType(word: string): ParsedType[] | LexiconError {
@@ -184,6 +258,23 @@ export function parseType(word: string): ParsedType[] | LexiconError {
 
     // WHY: Case-sensitive stem matching preserves TitleCase convention for types
     for (const typeEntry of builtinTypes) {
+        // EDGE: Check alternate nominative forms first (e.g., Tempus for Tempor-)
+        //       3rd declension neuters have nominatives that differ from stems
+        if (typeEntry.nominative && word === typeEntry.nominative) {
+            return [
+                {
+                    stem: typeEntry.stem,
+                    declension: typeEntry.declension,
+                    gender: typeEntry.gender,
+                    case: 'nominative',
+                    number: 'singular',
+                    jsType: typeEntry.jsType,
+                    category: typeEntry.category,
+                    generic: typeEntry.generic,
+                },
+            ];
+        }
+
         if (!word.startsWith(typeEntry.stem)) {
             continue;
         }
@@ -200,7 +291,7 @@ export function parseType(word: string): ParsedType[] | LexiconError {
         bestMatch = { stem: typeEntry.stem, ending };
 
         // EDGE: 3rd declension nominative singular has no ending
-        //       Example: "Cursor" (not "Cursorus"), "Functio" (as-is)
+        //       Example: "Cursor" (not "Cursorus")
         if (ending === '' && typeEntry.declension === 3) {
             return [
                 {
@@ -232,12 +323,14 @@ export function parseType(word: string): ParsedType[] | LexiconError {
         }
     }
 
-    // Return what we learned
+    // Return what we learned, with suggestion if available
     if (bestMatch) {
         return { error: 'invalid_ending', word, stem: bestMatch.stem, ending: bestMatch.ending };
     }
 
-    return { error: 'unknown_stem', word };
+    const suggestion = findClosestMatch(word, builtinTypes.map(t => t.stem));
+
+    return { error: 'unknown_stem', word, suggestion };
 }
 
 // ---------------------------------------------------------------------------
@@ -315,12 +408,14 @@ export function parseVerb(word: string): ParsedVerb[] | LexiconError {
         }
     }
 
-    // Return what we learned
+    // Return what we learned, with suggestion if available
     if (bestMatch) {
         return { error: 'invalid_ending', word, stem: bestMatch.stem, ending: bestMatch.ending };
     }
 
-    return { error: 'unknown_stem', word };
+    const suggestion = findClosestMatch(word, verbs.map(v => v.stem));
+
+    return { error: 'unknown_stem', word, suggestion };
 }
 
 // =============================================================================

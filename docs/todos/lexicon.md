@@ -132,8 +132,20 @@ Designed for cross-target portability (TS, Zig, Rust, C, WASM):
 ### Error Diagnostics
 - [x] Return structured errors instead of `null`
 - [x] Distinguish unknown stem vs invalid ending
-- [ ] Add position information for error messages
-- [ ] "Did you mean?" suggestions for near-misses
+- [x] Add position information for error messages
+- [x] "Did you mean?" suggestions for near-misses
+
+**Decision (2024-12-21):** Implemented "Did you mean?" suggestions:
+- Added Levenshtein edit distance algorithm for string similarity
+- `findClosestMatch()` finds vocabulary entries within edit distance 3
+- `LexiconError.suggestion` field populated for `unknown_stem` errors
+- Example: `parseVerb('mett')` → `{ error: 'unknown_stem', suggestion: 'mitt' }`
+
+**Decision (2024-12-21):** Position information is handled at the correct layer:
+- Tokenizer already attaches position (line, column, offset) to every token
+- Lexicon operates on words, not source code - position is not its concern
+- Parser can attach token position when creating errors from lexicon results
+- No changes needed to lexicon; architecture is correct
 
 **Decision (2024-12-21):** Parse functions now return `LexiconError` instead of `null`:
 
@@ -155,7 +167,13 @@ No extra computation - we already knew why parsing failed, just stopped throwing
 ### Fix Incorrect Latin
 - [x] `Res` - Removed (5th declension irregular, not worth implementing)
 - [x] `Functio` - Removed (keyword `functio` exists for declarations, type rarely needed)
-- [ ] Add 3rd declension neuter variant (tempus/temporis pattern)
+- [x] Add 3rd declension neuter variant (tempus/temporis pattern)
+
+**Decision (2024-12-21):** 3rd declension neuters with stem-changing nominatives:
+- Added `nominative` field to TypeEntry for types where nominative ≠ stem + ending
+- Added `declension3NeutEndings` table with -a plurals instead of -es
+- Updated `getEndingsForDeclension` to use neuter table for 3rd decl neuters
+- Tempus now parses correctly: nominative "Tempus" with stem "Tempor-"
 
 **Decision (2024-12-21):** Removed `Res` and `Functio` from types-builtin:
 - `Res` requires 5th declension which is rare and irregular

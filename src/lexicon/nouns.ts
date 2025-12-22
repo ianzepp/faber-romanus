@@ -170,9 +170,9 @@ export const declension2NeutEndings: EndingMap = {
 // ---------------------------------------------------------------------------
 
 /**
- * 3rd declension endings (consonant stems, various genders).
+ * 3rd declension endings (consonant stems, masculine/feminine).
  *
- * EXAMPLES: Functio (function), Cursor (cursor/iterator), Tempus (time)
+ * EXAMPLES: Cursor (cursor/iterator)
  *
  * WHY: Third declension is the most irregular and complex. Nominative singular
  *      varies greatly (no predictable ending), but other cases follow patterns.
@@ -188,6 +188,35 @@ export const declension3Endings: EndingMap = {
     e: [{ case: 'ablative', number: 'singular' }],
     // WHY: Unlike other declensions, 3rd has nominative = accusative for plural
     es: [
+        { case: 'nominative', number: 'plural' },
+        { case: 'accusative', number: 'plural' },
+    ],
+    um: [{ case: 'genitive', number: 'plural' }],
+    ibus: [
+        { case: 'dative', number: 'plural' },
+        { case: 'ablative', number: 'plural' },
+    ],
+};
+
+/**
+ * 3rd declension neuter endings (consonant stems).
+ *
+ * EXAMPLES: Tempus (time), Corpus (body), Opus (work)
+ *
+ * WHY: Neuter 3rd declension follows the neuter rule (nom = acc) and has
+ *      -a for nominative/accusative plural instead of -es.
+ *
+ * EDGE: Nominative singular has alternate form (tempus, not tempor) - handled
+ *       via nominative field in TypeEntry. Accusative = nominative for neuters.
+ */
+export const declension3NeutEndings: EndingMap = {
+    // EDGE: Nominative/accusative singular use alternate form (e.g., Tempus)
+    //       Handled via nominative field in TypeEntry
+    is: [{ case: 'genitive', number: 'singular' }],
+    i: [{ case: 'dative', number: 'singular' }],
+    e: [{ case: 'ablative', number: 'singular' }],
+    // WHY: Neuter plural uses -a instead of -es
+    a: [
         { case: 'nominative', number: 'plural' },
         { case: 'accusative', number: 'plural' },
     ],
@@ -234,8 +263,8 @@ export const declension4Endings: EndingMap = {
 /**
  * Get the appropriate ending table for a declension/gender combination.
  *
- * WHY: Gender affects endings in 2nd declension (masculine vs neuter have
- *      different patterns). Other declensions are gender-neutral in their endings.
+ * WHY: Gender affects endings in 2nd and 3rd declension (masculine vs neuter have
+ *      different patterns). 1st and 4th declensions are gender-neutral in their endings.
  *
  * @param declension - The declension number (1-5)
  * @param gender - The grammatical gender
@@ -253,6 +282,11 @@ export function getEndingsForDeclension(declension: Declension, gender: Gender):
 
     if (declension === 2 && gender === 'neuter') {
         return declension2NeutEndings;
+    }
+
+    // WHY: 3rd declension neuters have -a plurals instead of -es
+    if (declension === 3 && gender === 'neuter') {
+        return declension3NeutEndings;
     }
 
     if (declension === 3) {

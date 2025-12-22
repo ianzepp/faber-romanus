@@ -60,6 +60,9 @@ export interface TypeEntry extends NounEntry {
     jsType: string;
     category: 'primitive' | 'collection' | 'structural' | 'iteration';
     generic?: boolean;
+    // WHY: 3rd declension neuters like tempus/temporis have nominatives that
+    //      differ from their stems. This field allows parseType to recognize them.
+    nominative?: string;
 }
 
 // =============================================================================
@@ -220,8 +223,10 @@ export const builtinTypes: TypeEntry[] = [
         generic: true,
     },
     // WHY: Tempus (3rd decl neuter) - "time, period"
+    //      Nominative differs from stem (tempus vs tempor-)
     {
         stem: 'Tempor',
+        nominative: 'Tempus',
         declension: 3,
         gender: 'neuter',
         meaning: 'time/date',

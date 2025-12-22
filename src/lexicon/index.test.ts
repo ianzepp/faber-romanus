@@ -104,6 +104,26 @@ describe('parseNoun', () => {
                 expect(result.ending).toBe('xx');
             }
         });
+
+        test('suggests similar stem for unknown word', () => {
+            const result = parseNoun('numer'); // typo/incomplete, close to 'numer'
+
+            expect(isLexiconError(result)).toBe(true);
+            if (isLexiconError(result)) {
+                expect(result.error).toBe('invalid_ending');
+                // No suggestion needed for invalid_ending - we already know the stem
+            }
+
+            const result2 = parseNoun('numer'); // This is actually valid with empty ending... let's use different word
+
+            const result3 = parseNoun('nunts'); // close to nunti stem
+
+            expect(isLexiconError(result3)).toBe(true);
+            if (isLexiconError(result3)) {
+                expect(result3.error).toBe('unknown_stem');
+                expect(result3.suggestion).toBe('nunti');
+            }
+        });
     });
 });
 
@@ -195,6 +215,16 @@ describe('parseVerb', () => {
                 expect(result.error).toBe('invalid_ending');
                 expect(result.stem).toBe('mitt');
                 expect(result.ending).toBe('xx');
+            }
+        });
+
+        test('suggests similar stem for unknown verb', () => {
+            const result = parseVerb('mett'); // typo, close to mitt
+
+            expect(isLexiconError(result)).toBe(true);
+            if (isLexiconError(result)) {
+                expect(result.error).toBe('unknown_stem');
+                expect(result.suggestion).toBe('mitt');
             }
         });
     });
@@ -338,6 +368,27 @@ describe('parseType', () => {
             if (Array.isArray(results)) {
                 expect(results[0].jsType).toBe('Iterator');
                 expect(results[0].case).toBe('nominative');
+            }
+        });
+
+        test('Tempus (3rd declension neuter, alternate nominative)', () => {
+            const results = parseType('Tempus');
+
+            expect(Array.isArray(results)).toBe(true);
+            if (Array.isArray(results)) {
+                expect(results[0].jsType).toBe('Date');
+                expect(results[0].case).toBe('nominative');
+                expect(results[0].stem).toBe('Tempor');
+            }
+        });
+
+        test('Temporis (3rd declension neuter, genitive)', () => {
+            const results = parseType('Temporis');
+
+            expect(Array.isArray(results)).toBe(true);
+            if (Array.isArray(results)) {
+                expect(results[0].jsType).toBe('Date');
+                expect(results[0].case).toBe('genitive');
             }
         });
     });
