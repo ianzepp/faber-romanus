@@ -117,17 +117,19 @@ export interface SemanticResult {
  * Map Latin type names to semantic types.
  */
 const LATIN_TYPE_MAP: Record<string, SemanticType> = {
-    Textus: TEXTUS,
-    Numerus: NUMERUS,
-    Bivalens: BIVALENS,
-    Nihil: NIHIL,
-    Vacuum: VACUUM,
+    textus: TEXTUS,
+    numerus: NUMERUS,
+    bivalens: BIVALENS,
+    nihil: NIHIL,
+    vacuum: VACUUM,
 };
 
 /**
  * Generic types that take type parameters.
+ *
+ * CASE: Lowercase keys. Lookup normalizes input to lowercase.
  */
-const GENERIC_TYPES = new Set(['Lista', 'Tabula', 'Copia', 'Promissum', 'Cursor', 'Fluxus']);
+const GENERIC_TYPES = new Set(['lista', 'tabula', 'copia', 'promissum', 'cursor', 'fluxus']);
 
 // =============================================================================
 // STANDARD LIBRARY EXPORTS
@@ -345,8 +347,8 @@ export function analyze(program: Program): SemanticResult {
             return unionType(types);
         }
 
-        // Check for built-in primitive type
-        const primitive = LATIN_TYPE_MAP[node.name];
+        // Check for built-in primitive type (case-insensitive)
+        const primitive = LATIN_TYPE_MAP[node.name.toLowerCase()];
 
         if (primitive) {
             // Extract modifiers and size from type parameters
@@ -371,8 +373,8 @@ export function analyze(program: Program): SemanticResult {
             return primitive;
         }
 
-        // Check for generic type
-        if (GENERIC_TYPES.has(node.name)) {
+        // Check for generic type (case-insensitive)
+        if (GENERIC_TYPES.has(node.name.toLowerCase())) {
             // Filter only TypeAnnotation params for generic type parameters
             const typeParams = (node.typeParameters ?? [])
                 .filter(p => p.type === 'TypeAnnotation')

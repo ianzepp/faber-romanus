@@ -199,11 +199,13 @@ export function typesEqual(a: SemanticType, b: SemanticType): boolean {
 
     switch (a.kind) {
         case 'primitive':
-            return a.name === (b as PrimitiveType).name;
+            // Case-insensitive comparison (textus == Textus == TEXTUS)
+            return a.name.toLowerCase() === (b as PrimitiveType).name.toLowerCase();
         case 'generic': {
             const bg = b as GenericType;
 
-            if (a.name !== bg.name) {
+            // Case-insensitive comparison
+            if (a.name.toLowerCase() !== bg.name.toLowerCase()) {
                 return false;
             }
 
@@ -264,8 +266,8 @@ export function isAssignableTo(source: SemanticType, target: SemanticType): bool
         return true;
     }
 
-    // Nihil is assignable to nullable types
-    if (source.kind === 'primitive' && source.name === 'Nihil') {
+    // Nihil is assignable to nullable types (case-insensitive)
+    if (source.kind === 'primitive' && source.name.toLowerCase() === 'nihil') {
         return target.nullable === true;
     }
 

@@ -153,58 +153,60 @@ export interface ParserResult {
  *      in type-first syntax parsing (e.g., "fixum Textus nomen" vs "fixum nomen").
  */
 const BUILTIN_TYPE_NAMES = new Set([
-    // Primitives
-    'Textus',
-    'Numerus',
-    'Bivalens',
-    'Fractus',
-    'Decimus',
-    'Signum',
-    'Incertum',
-    'Nihil',
+    // Primitives (lowercase - matching is case-insensitive)
+    'textus',
+    'numerus',
+    'bivalens',
+    'fractus',
+    'decimus',
+    'signum',
+    'incertum',
+    'nihil',
     // Collections
-    'Lista',
-    'Tabula',
-    'Copia',
+    'lista',
+    'tabula',
+    'copia',
     // Structural
-    'Res',
-    'Functio',
-    'Promissum',
-    'Forsitan',
-    'Fors',
-    'Tempus',
-    'Erratum',
-    'Vacuum',
-    'Quodlibet',
-    'Ignotum',
+    'res',
+    'functio',
+    'promissum',
+    'forsitan',
+    'fors',
+    'tempus',
+    'erratum',
+    'vacuum',
+    'quodlibet',
+    'ignotum',
     // Iteration
-    'Cursor',
-    'Fluxus',
-    'FuturaCursor',
-    'FuturusFluxus',
+    'cursor',
+    'fluxus',
+    'futuracursor',
+    'futurusfluxus',
     // Systems
-    'Indicium',
-    'Refera',
+    'indicium',
+    'refera',
     // Utility (TypeScript only)
-    'Pars',
-    'Totum',
-    'Lectum',
-    'Registrum',
-    'Selectum',
-    'Omissum',
-    'Extractum',
-    'Exclusum',
-    'NonNihil',
-    'Reditus',
-    'Parametra',
+    'pars',
+    'totum',
+    'lectum',
+    'registrum',
+    'selectum',
+    'omissum',
+    'extractum',
+    'exclusum',
+    'nonnihil',
+    'reditus',
+    'parametra',
 ]);
 
 /**
  * Set of all type modifier names for quick lookup.
  *
  * WHY: Used to distinguish modifiers from regular type parameters.
+ *
+ * CASE: Lowercase canonical form. Lookup is case-insensitive.
  */
-const TYPE_MODIFIER_NAMES = new Set(['Naturalis', 'Proprius', 'Alienus', 'Mutabilis']);
+const TYPE_MODIFIER_NAMES = new Set(['naturalis', 'proprius', 'alienus', 'mutabilis']);
 
 // =============================================================================
 // MAIN PARSER FUNCTION
@@ -368,7 +370,8 @@ export function parse(tokens: Token[]): ParserResult {
      * @returns true if token is an identifier and a known builtin type
      */
     function isTypeName(token: Token): boolean {
-        return token.type === 'IDENTIFIER' && BUILTIN_TYPE_NAMES.has(token.value);
+        // Case-insensitive lookup (textus, Textus, TEXTUS all match)
+        return token.type === 'IDENTIFIER' && BUILTIN_TYPE_NAMES.has(token.value.toLowerCase());
     }
 
     /**
@@ -379,7 +382,8 @@ export function parse(tokens: Token[]): ParserResult {
      * @returns true if token is an identifier and a known type modifier
      */
     function isModifier(token: Token): boolean {
-        return token.type === 'IDENTIFIER' && TYPE_MODIFIER_NAMES.has(token.value);
+        // Case-insensitive lookup
+        return token.type === 'IDENTIFIER' && TYPE_MODIFIER_NAMES.has(token.value.toLowerCase());
     }
 
     /**
