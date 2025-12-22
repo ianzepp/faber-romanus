@@ -301,14 +301,16 @@ futura ex lege(fd) pro chunk {
 **Etymology:** "yield, give way, withdraw" — the root of "cede" and "concede."
 
 - `cede value` — yield a single value
-- `cede* iterator` — delegate to another iterator (yield*)
+- `cede ex iterator` — delegate to another iterator (yield*)
 
 ```
 cursor functio omnia() -> numerus {
-    cede* numerare(5)    // yields 0,1,2,3,4
-    cede* numerare(3)    // yields 0,1,2
+    cede ex numerare(5)    // yields 0,1,2,3,4
+    cede ex numerare(3)    // yields 0,1,2
 }
 ```
+
+The `cede ex` pattern mirrors `ex...pro` — "yield from this source."
 
 ### Return Type
 
