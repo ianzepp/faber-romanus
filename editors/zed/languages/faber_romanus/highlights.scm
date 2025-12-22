@@ -35,7 +35,7 @@
 ; Keywords - Declarations
 ; ==============================================================================
 
-"esto" @keyword.storage
+"varia" @keyword.storage
 "fixum" @keyword.storage
 "functio" @keyword.function
 "futura" @keyword.modifier

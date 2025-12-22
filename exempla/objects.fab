@@ -23,7 +23,7 @@ scribe userName
 scribe userAge
 
 // Mutable destructuring
-esto { activus: isActive } = persona
+varia { activus: isActive } = persona
 isActive = falsum
 
 // With block (cum) - set properties in context

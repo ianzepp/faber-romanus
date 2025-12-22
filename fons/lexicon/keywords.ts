@@ -18,7 +18,7 @@
  *
  * Keywords are categorized by their syntactic role:
  * - control: Control flow statements (si, dum, redde)
- * - declaration: Variable/function declarations (esto, functio)
+ * - declaration: Variable/function declarations (varia, functio)
  * - operator: Logical operators (et, aut, non)
  * - value: Literal values (verum, falsum, nihil)
  * - preposition: Case-governing prepositions (in, ex, cum, ad)
@@ -98,8 +98,8 @@ export const keywords: KeywordEntry[] = [
     // Declarations
     // ---------------------------------------------------------------------------
 
-    // WHY: "esto" (be!) and "fixum" (fixed) express mutability in Latin terms
-    { latin: 'esto', meaning: 'let', category: 'declaration' },
+    // WHY: "varia" (be!) and "fixum" (fixed) express mutability in Latin terms
+    { latin: 'varia', meaning: 'let', category: 'declaration' },
     { latin: 'fixum', meaning: 'const', category: 'declaration' },
     { latin: 'functio', meaning: 'function', category: 'declaration' },
     { latin: 'novum', meaning: 'new', category: 'declaration' },

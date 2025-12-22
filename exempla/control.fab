@@ -55,14 +55,14 @@ aliter {
 }
 
 // While loop (dum)
-esto i = 0
+varia i = 0
 dum i < 3 {
     scribe i
     i = i + 1
 }
 
 // While one-liner
-esto j = 3
+varia j = 3
 dum j > 0 {
     j = j - 1
 }

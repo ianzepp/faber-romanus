@@ -65,7 +65,7 @@
  * 4. Return partial AST with collected errors
  *
  * Synchronization points (keywords that start statements):
- * - functio, esto, fixum (declarations)
+ * - functio, varia, fixum (declarations)
  * - si, dum, pro (control flow)
  * - redde, tempta (other statements)
  *
@@ -439,7 +439,7 @@ export function parse(tokens: Token[]): ParserResult {
         while (!isAtEnd()) {
             if (
                 checkKeyword('functio') ||
-                checkKeyword('esto') ||
+                checkKeyword('varia') ||
                 checkKeyword('fixum') ||
                 checkKeyword('typus') ||
                 checkKeyword('si') ||
@@ -480,7 +480,7 @@ export function parse(tokens: Token[]): ParserResult {
             return parseForStatement();
         }
 
-        if (checkKeyword('esto') || checkKeyword('fixum')) {
+        if (checkKeyword('varia') || checkKeyword('fixum')) {
             return parseVariableDeclaration();
         }
 
@@ -581,19 +581,19 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse variable declaration.
      *
      * GRAMMAR:
-     *   varDecl := ('esto' | 'fixum') (typeAnnotation IDENTIFIER | IDENTIFIER) ('=' expression)?
+     *   varDecl := ('varia' | 'fixum') (typeAnnotation IDENTIFIER | IDENTIFIER) ('=' expression)?
      *
      * WHY: Type-first syntax: "fixum Textus nomen = value" or "fixum nomen = value"
-     *      Latin 'esto' (let it be) for mutable, 'fixum' (fixed) for immutable.
+     *      Latin 'varia' (let it be) for mutable, 'fixum' (fixed) for immutable.
      *
-     * EDGE: If next token after esto/fixum is a type name, parse type first.
+     * EDGE: If next token after varia/fixum is a type name, parse type first.
      *       Otherwise, parse identifier (type inference case).
      */
     function parseVariableDeclaration(): VariableDeclaration {
         const position = peek().position;
-        const kind = peek().keyword as 'esto' | 'fixum';
+        const kind = peek().keyword as 'varia' | 'fixum';
 
-        advance(); // esto or fixum
+        advance(); // varia or fixum
 
         let typeAnnotation: TypeAnnotation | undefined;
         let name: Identifier | ObjectPattern;

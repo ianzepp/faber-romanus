@@ -16,8 +16,8 @@ function compile(code: string): string {
 
 describe('codegen', () => {
     describe('variable declarations', () => {
-        test('esto -> let', () => {
-            const js = compile('esto nomen = "Marcus"');
+        test('varia -> let', () => {
+            const js = compile('varia nomen = "Marcus"');
 
             expect(js).toBe('let nomen = "Marcus";');
         });
@@ -422,7 +422,7 @@ describe('codegen', () => {
         });
 
         test('mutable destructuring', () => {
-            const js = compile('esto { count } = data');
+            const js = compile('varia { count } = data');
 
             expect(js).toBe('let { count } = data;');
         });

@@ -53,8 +53,8 @@ describe('tokenizer', () => {
             expect(tokens[0].keyword).toBe('fixum');
         });
 
-        test('recognizes esto as keyword', () => {
-            const { tokens } = tokenize('esto');
+        test('recognizes varia as keyword', () => {
+            const { tokens } = tokenize('varia');
 
             expect(tokens[0].type).toBe('KEYWORD');
         });

@@ -343,7 +343,7 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate variable declaration.
      *
      * TRANSFORMS:
-     *   esto x: Numerus = 5 -> var x: i64 = 5;
+     *   varia x: Numerus = 5 -> var x: i64 = 5;
      *   fixum y: Textus = "hello" -> const y: []const u8 = "hello";
      *   fixum { a, b } = obj -> const a = obj.a; const b = obj.b;
      *
@@ -352,7 +352,7 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      *         Zig doesn't have destructuring, so we expand to multiple statements.
      */
     function genVariableDeclaration(node: VariableDeclaration): string {
-        const kind = node.kind === 'esto' ? 'var' : 'const';
+        const kind = node.kind === 'varia' ? 'var' : 'const';
 
         // Handle object pattern destructuring
         if (node.name.type === 'ObjectPattern') {

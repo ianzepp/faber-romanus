@@ -12,7 +12,7 @@
  * mutability, etc.). Scopes form a parent-child chain representing block nesting.
  *
  * The symbol table tracks:
- * - Variables (esto/fixum declarations)
+ * - Variables (varia/fixum declarations)
  * - Functions (functio declarations)
  * - Parameters (within function scope)
  *

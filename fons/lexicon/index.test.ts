@@ -239,7 +239,7 @@ describe('keywords', () => {
     });
 
     test('recognizes declaration keywords', () => {
-        expect(isKeyword('esto')).toBe(true);
+        expect(isKeyword('varia')).toBe(true);
         expect(isKeyword('fixum')).toBe(true);
         expect(isKeyword('functio')).toBe(true);
     });
@@ -257,7 +257,7 @@ describe('keywords', () => {
 
     test('getKeyword returns meaning', () => {
         expect(getKeyword('si')?.meaning).toBe('if');
-        expect(getKeyword('esto')?.meaning).toBe('let');
+        expect(getKeyword('varia')?.meaning).toBe('let');
         expect(getKeyword('fixum')?.meaning).toBe('const');
         expect(getKeyword('verum')?.meaning).toBe('true');
         expect(getKeyword('futura')?.meaning).toBe('async');

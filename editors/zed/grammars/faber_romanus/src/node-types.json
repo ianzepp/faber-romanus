@@ -1407,7 +1407,7 @@
         "required": true,
         "types": [
           {
-            "type": "esto",
+            "type": "varia",
             "named": false
           },
           {
@@ -1698,7 +1698,7 @@
     "named": false
   },
   {
-    "type": "esto",
+    "type": "varia",
     "named": false
   },
   {

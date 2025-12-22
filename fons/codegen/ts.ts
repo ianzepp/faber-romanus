@@ -233,14 +233,14 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate variable declaration.
      *
      * TRANSFORMS:
-     *   esto x: Numerus = 5 -> let x: number = 5
+     *   varia x: Numerus = 5 -> let x: number = 5
      *   fixum y: Textus = "hello" -> const y: string = "hello"
      *   fixum { nomen, aetas } = persona -> const { nomen, aetas } = persona
      *   fixum { nomen: localName } = persona -> const { nomen: localName } = persona
      */
     function genVariableDeclaration(node: VariableDeclaration): string {
-        // WHY: 'esto' (let it be) maps to mutable 'let', 'fixum' (fixed) to immutable 'const'
-        const kind = node.kind === 'esto' ? 'let' : 'const';
+        // WHY: 'varia' (let it be) maps to mutable 'let', 'fixum' (fixed) to immutable 'const'
+        const kind = node.kind === 'varia' ? 'let' : 'const';
 
         let name: string;
 

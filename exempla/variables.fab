@@ -1,12 +1,12 @@
 // Variables in Faber Romanus
 //
 // Two ways to bind values:
-// - esto (let it be) - mutable, can be reassigned
+// - varia (let it be) - mutable, can be reassigned
 // - fixum (fixed) - immutable constant
 
-// Mutable bindings with esto
-esto valor = 42
-esto nomen = "Marcus"
+// Mutable bindings with varia
+varia valor = 42
+varia nomen = "Marcus"
 
 // Immutable bindings with fixum
 fixum PI = 3.14159
@@ -19,7 +19,7 @@ fixum falsitatis = falsum
 // Null literal: nihil (nothing)
 fixum nihilum = nihil
 
-// Reassignment works only with esto bindings
+// Reassignment works only with varia bindings
 valor = 100
 nomen = "Claudius"
 

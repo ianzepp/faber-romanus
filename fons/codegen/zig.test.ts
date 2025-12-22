@@ -16,8 +16,8 @@ function compile(code: string): string {
 
 describe('zig codegen', () => {
     describe('variable declarations', () => {
-        test('esto -> var', () => {
-            const zig = compile('esto x = 5');
+        test('varia -> var', () => {
+            const zig = compile('varia x = 5');
 
             expect(zig).toContain('var x');
             expect(zig).toContain('= 5');
@@ -31,7 +31,7 @@ describe('zig codegen', () => {
         });
 
         test('type annotation', () => {
-            const zig = compile('esto Numerus x = 5');
+            const zig = compile('varia Numerus x = 5');
 
             expect(zig).toContain('var x: i64 = 5');
         });

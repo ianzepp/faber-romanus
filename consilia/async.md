@@ -132,7 +132,7 @@ Open question: How to handle unhandled promise rejections?
 
 ```
 futura functio processAll(lista<textus> urls) -> lista<textus> {
-    esto results = []
+    varia results = []
     ex urls pro url {
         fixum data = cede fetchData(url)
         results.adde(data)

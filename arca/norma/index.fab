@@ -55,8 +55,8 @@ functio lege() -> textus {
 
 // Generate sequence 0..n-1 (like Python's range(n))
 functio series(numerus n) -> numerus[] {
-    esto result = []
-    esto i = 0
+    varia result = []
+    varia i = 0
     dum i < n {
         result.push(i)
         i = i + 1
@@ -66,8 +66,8 @@ functio series(numerus n) -> numerus[] {
 
 // Generate sequence start..end-1 with optional step
 functio seriesAb(numerus initium, numerus finis, numerus gradus) -> numerus[] {
-    esto result = []
-    esto i = initium
+    varia result = []
+    varia i = initium
     si gradus > 0 {
         dum i < finis {
             result.push(i)
@@ -207,7 +207,7 @@ fixum TAU = 6.283185307179586
 
 // Sum of numeric array
 functio summa(numerus[] numeri) -> numerus {
-    esto total = 0
+    varia total = 0
     ex numeri pro n {
         total = total + n
     }
@@ -216,7 +216,7 @@ functio summa(numerus[] numeri) -> numerus {
 
 // Product of numeric array
 functio factum(numerus[] numeri) -> numerus {
-    esto total = 1
+    varia total = 1
     ex numeri pro n {
         total = total * n
     }

@@ -14,7 +14,7 @@
  * The AST design follows several key principles:
  * 1. All nodes extend BaseNode to carry source position for error reporting
  * 2. Discriminated unions (via 'type' field) enable exhaustive pattern matching
- * 3. Latin keywords are preserved as literals (esto, fixum) for semantic analysis
+ * 3. Latin keywords are preserved as literals (varia, fixum) for semantic analysis
  * 4. Optional morphology info on Identifiers enables case-aware transformations
  *
  * This AST sits between the parser and semantic analyzer in the pipeline. It
@@ -160,22 +160,22 @@ export interface ObjectPatternProperty extends BaseNode {
  * Variable declaration statement.
  *
  * GRAMMAR (in EBNF):
- *   varDecl := ('esto' | 'fixum') (IDENTIFIER | objectPattern) (':' typeAnnotation)? ('=' expression)?
+ *   varDecl := ('varia' | 'fixum') (IDENTIFIER | objectPattern) (':' typeAnnotation)? ('=' expression)?
  *
- * INVARIANT: kind is Latin keyword (esto/fixum), not target language (let/const).
+ * INVARIANT: kind is Latin keyword (varia/fixum), not target language (let/const).
  * INVARIANT: Either typeAnnotation or init SHOULD be present (but not enforced by parser).
  *
  * WHY: Preserves Latin keywords for semantic phase to map to target semantics.
  *
  * Examples:
- *   esto x: Numerus = 5
+ *   varia x: Numerus = 5
  *   fixum SALVE = "ave"
  *   fixum { nomen, aetas } = persona
  *   fixum { nomen: localName } = persona
  */
 export interface VariableDeclaration extends BaseNode {
     type: 'VariableDeclaration';
-    kind: 'esto' | 'fixum';
+    kind: 'varia' | 'fixum';
     name: Identifier | ObjectPattern;
     typeAnnotation?: TypeAnnotation;
     init?: Expression;

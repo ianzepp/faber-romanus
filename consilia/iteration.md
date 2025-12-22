@@ -195,7 +195,7 @@ No mental gymnastics. Say what you mean.
 **Syntax:** `dum <condition> { body }`
 
 ```
-esto i = 0
+varia i = 0
 dum i < 10 {
     scribe i
     i = i + 1
@@ -278,7 +278,7 @@ Custom iterator (requires generator syntax — see Open Questions):
 ```
 // Proposed generator syntax
 functio* numerare(numerus n) -> cursor<numerus> {
-    esto i = 0
+    varia i = 0
     dum i < n {
         cede i    // yield
         i = i + 1
@@ -334,7 +334,7 @@ The keyword matches the return type — one concept, one keyword:
 
 ```
 cursor functio numerare(numerus n) -> numerus {
-    esto i = 0
+    varia i = 0
     dum i < n {
         cede i
         i = i + 1

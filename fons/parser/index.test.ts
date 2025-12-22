@@ -10,14 +10,14 @@ function parseCode(code: string) {
 
 describe('parser', () => {
     describe('variable declarations', () => {
-        test('esto without type', () => {
-            const { program } = parseCode('esto nomen = "Marcus"');
+        test('varia without type', () => {
+            const { program } = parseCode('varia nomen = "Marcus"');
 
             expect(program).not.toBeNull();
             expect(program!.body[0].type).toBe('VariableDeclaration');
             const decl = program!.body[0] as any;
 
-            expect(decl.kind).toBe('esto');
+            expect(decl.kind).toBe('varia');
             expect(decl.name.name).toBe('nomen');
             expect(decl.init.value).toBe('Marcus');
         });

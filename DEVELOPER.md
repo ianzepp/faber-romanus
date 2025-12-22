@@ -273,7 +273,7 @@ function visit(node: Expression) {
 ```typescript
 // Syntax (parser output): preserves Latin names
 interface VariableDeclaration {
-  kind: "esto" | "fixum";  // Latin keywords
+  kind: "varia" | "fixum";  // Latin keywords
   name: Identifier;
   typeAnnotation?: TypeAnnotation;  // Textus, Numerus, etc.
 }
@@ -317,7 +317,7 @@ describe("parser", () => {
 
 ```typescript
 test("recovers from missing semicolon", () => {
-  const { program, errors } = parse(tokenize("esto x = 1 esto y = 2").tokens);
+  const { program, errors } = parse(tokenize("varia x = 1 varia y = 2").tokens);
 
   // Should parse both declarations despite error
   expect(program.body).toHaveLength(2);

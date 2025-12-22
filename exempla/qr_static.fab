@@ -59,7 +59,7 @@ functio encode(qrMatrix, numerus nFrames) -> numerus[][][] {
         frames.push(generateNoiseFrame(rows, cols))
     }
 
-    esto accumulated = qrMatrix
+    varia accumulated = qrMatrix
 
     ex frames pro frame {
         accumulated = xorMatrices(accumulated, frame)
@@ -77,7 +77,7 @@ functio decode(frames) -> numerus[][] {
         iace "No frames to decode"
     }
 
-    esto result = frames[0]
+    varia result = frames[0]
 
     ex seriesAb(1, frames.length, 1) pro i {
         result = xorMatrices(result, frames[i])
@@ -89,7 +89,7 @@ functio decode(frames) -> numerus[][] {
 // Helper to print a matrix
 functio printMatrix(m) {
     ex m pro row {
-        esto line = ""
+        varia line = ""
         ex row pro cell {
             si cell == 1 {
                 line = line + "#"

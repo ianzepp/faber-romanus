@@ -901,7 +901,7 @@ export function analyze(program: Program): SemanticResult {
                     name: prop.value.name,
                     type: UNKNOWN, // Property types are not statically known
                     kind: 'variable',
-                    mutable: node.kind === 'esto',
+                    mutable: node.kind === 'varia',
                     position: prop.position,
                 });
             }
@@ -941,7 +941,7 @@ export function analyze(program: Program): SemanticResult {
             name: node.name.name,
             type,
             kind: 'variable',
-            mutable: node.kind === 'esto',
+            mutable: node.kind === 'varia',
             position: node.position,
         });
 

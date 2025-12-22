@@ -99,9 +99,9 @@ module.exports = grammar({
       ),
     ),
 
-    // Variable: esto/fixum [type] name = value (type-first, optional)
+    // Variable: varia/fixum [type] name = value (type-first, optional)
     variable_declaration: $ => seq(
-      field("kind", choice("esto", "fixum")),
+      field("kind", choice("varia", "fixum")),
       choice(
         // Type-first: fixum textus name
         seq(

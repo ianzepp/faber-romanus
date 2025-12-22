@@ -73,7 +73,7 @@ pub fn main() void {
 ### Variables
 
 ```
-esto nomen = "Marcus"      // let (mutable)
+varia nomen = "Marcus"      // let (mutable)
 fixum PI = 3.14159         // const (immutable)
 
 // Boolean and null literals
@@ -202,7 +202,7 @@ fixum { nomen, aetas } = persona
 fixum { nomen: userName } = persona
 
 // With block - set properties in context
-esto config = { host: "", port: 0 }
+varia config = { host: "", port: 0 }
 cum config {
   host = "localhost"
   port = 8080
@@ -291,7 +291,7 @@ fixum Lista<Numerus> items = [1, 2, 3]
 
 | Latin | JavaScript | Category |
 |-------|------------|----------|
-| `esto` | `let` | declaration |
+| `varia` | `let` | declaration |
 | `fixum` | `const` | declaration |
 | `functio` | `function` | declaration |
 | `futura` | `async` | modifier |
