@@ -138,10 +138,10 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented
 | Methods | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Async methods | [x] | [~] | [x] | [ ] | [ ] | [ ] |
 | Generator methods | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
-| `implet` (implements) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
+| `implet` (implements) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Generic classes | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
-| `pactum` declaration | [x] | [~] | [x] | [ ] | [ ] | [ ] |
-| Interface methods | [x] | [~] | [x] | [ ] | [ ] | [ ] |
+| `pactum` declaration | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| Interface methods | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 
 ## Import/Export
 
@@ -222,7 +222,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented
 ### Zig Target Notes
 
 1. **No classes** - Uses `struct` with methods; `genus` → `const Name = struct { ... };`
-2. **No interfaces** - Duck typing via comptime; `pactum` emits documentation comment
+2. **No interfaces** - Zig uses duck typing, but Faber's semantic analyzer enforces `pactum`/`implet` before codegen (like TypeScript → JavaScript). Zig receives already-validated code.
 3. **No constructors** - Uses `init()` pattern; auto-merge via comptime `@hasField`
 4. **Self reference** - `const Self = @This();` for methods to reference own type
 5. **No exceptions** - Error unions (`!T`) and `try` for propagation; `iace` → `@panic`
@@ -236,7 +236,6 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented
 - Static fields (`generis`) - would need module-level const
 - Public/private - Zig doesn't have field visibility
 - Generic classes - requires comptime type parameters
-- `implet` (implements) - Zig uses structural typing, not nominal
 
 **Minimum version**: Zig 0.11+ (stable)
 
