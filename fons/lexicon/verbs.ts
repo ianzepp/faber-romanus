@@ -47,7 +47,7 @@
  * @module lexicon/verbs
  */
 
-import type { VerbEntry } from './types';
+import type { VerbEntry, Tense, Person, Number } from './types';
 
 // =============================================================================
 // USER VOCABULARY
@@ -110,7 +110,7 @@ export const verbs: VerbEntry[] = [
  */
 export const conjugation3Endings: Record<
     string,
-    { tense: string; person?: number; number?: string; async: boolean }[]
+    { tense: Tense; person?: Person; number?: Number; async: boolean }[]
 > = {
     // WHY: Imperative is command form (2nd person only), always synchronous
     e: [{ tense: 'imperative', person: 2, number: 'singular', async: false }],
@@ -148,7 +148,7 @@ export const conjugation3Endings: Record<
  */
 export const conjugation1Endings: Record<
     string,
-    { tense: string; person?: number; number?: string; async: boolean }[]
+    { tense: Tense; person?: Person; number?: Number; async: boolean }[]
 > = {
     // WHY: Imperative singular is just the stem + -a
     a: [{ tense: 'imperative', person: 2, number: 'singular', async: false }],
@@ -193,7 +193,7 @@ export const conjugation1Endings: Record<
  */
 export const conjugation2Endings: Record<
     string,
-    { tense: string; person?: number; number?: string; async: boolean }[]
+    { tense: Tense; person?: Person; number?: Number; async: boolean }[]
 > = {
     // WHY: Imperative uses -e (like 3rd conj) but from -ē- stem
     e: [{ tense: 'imperative', person: 2, number: 'singular', async: false }],
@@ -239,7 +239,7 @@ export const conjugation2Endings: Record<
  */
 export const conjugation4Endings: Record<
     string,
-    { tense: string; person?: number; number?: string; async: boolean }[]
+    { tense: Tense; person?: Person; number?: Number; async: boolean }[]
 > = {
     // WHY: Imperative uses -i (singular), -ite (plural)
     i: [{ tense: 'imperative', person: 2, number: 'singular', async: false }],

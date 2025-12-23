@@ -36,7 +36,7 @@
  *
  * INVARIANTS
  * ==========
- * INV-1: Type stems are TitleCase (textus not textus)
+ * INV-1: Type stems are lowercase (lookup is case-insensitive)
  * INV-2: All types follow valid Latin declension patterns
  * INV-3: Generic types are marked with generic flag
  * INV-4: Each type has a unique stem
