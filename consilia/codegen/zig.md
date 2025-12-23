@@ -220,6 +220,67 @@ cum arena {
 
 This maps to Zig's pattern of creating child arenas for bounded scopes.
 
+## Lambda Syntax
+
+Faber uses `fac` for lambdas/closures, with `fit`/`fiet` as the delimiter between parameters and body.
+
+### Syntax
+
+```
+fac <params> fit <expr>   // sync lambda
+fac <params> fiet <expr>  // async lambda
+```
+
+Parameters are comma-separated identifiers, terminated by `fit` (sync) or `fiet` (async).
+
+### Examples
+
+```
+fixum double = fac x fit x * 2
+fixum add = fac x, y fit x + y
+fixum fetcher = fac url fiet getData(url)
+
+// With higher-order functions
+lista.mappata(fac item fit item.nomen)
+lista.reducta(fac acc, x fit acc + x, 0)
+lista.filtrata(fac x fit x > 0)
+```
+
+Reads as: "do x, becomes x times 2"
+
+### Zig Output
+
+Zig doesn't have closures. Lambdas compile to function pointers with explicit context.
+
+**Non-capturing lambda:**
+```
+// Faber
+fac x fit x * 2
+
+// Zig
+struct { fn call(x: i64) i64 { return x * 2; } }.call
+```
+
+**Capturing lambda:**
+```
+// Faber
+fixum multiplier = 2
+fac x fit x * multiplier
+
+// Zig - context struct
+const Context = struct { multiplier: i64 };
+const ctx = Context{ .multiplier = 2 };
+fn lambda(ctx: *const Context, x: i64) i64 {
+    return x * ctx.multiplier;
+}
+```
+
+The compiler identifies captures (variables referenced but not in param list) and generates context structs automatically.
+
+### Capture Semantics
+
+For Zig, all captures are by value (copied into context struct). This matches Zig's explicit ownership model. If mutable capture is needed, use `in` preposition on the captured variable.
+
 ## Error Handling Design
 
 Faber uses a simplified error model that maps cleanly to Zig's error unions. This design is shared with the Rust target.
@@ -374,13 +435,15 @@ Remaining tensions:
 | `de`/`in` prepositions | No | Design complete, not implemented |
 | Arena allocator | No | Design complete, not implemented |
 | `iace`/`mori` errors | No | Design complete, not implemented |
+| `fac` lambdas | No | Design complete, not implemented |
 
 ## Future Considerations
 
 1. ~~**Allocator threading**~~ - Solved: arena allocator with implicit threading
 2. ~~**Ownership annotations**~~ - Solved: `de`/`in` prepositions (shared with Rust)
-3. ~~**Error handling**~~ - Solved: `iace`/`mori` split, `cape` on any block, remove `tempta`/`demum`
-4. **Iterator pattern** - Manual struct for generators
-5. **Comptime generics** - `fn(comptime T: type)` for generic types
-6. **Build integration** - Generate `build.zig` for projects
-7. **Scope-based arenas** - `cum arena { }` for bounded allocation lifetimes
+3. ~~**Error handling**~~ - Solved: `iace`/`mori` split, `fac`/`cape` for blocks
+4. ~~**Lambda syntax**~~ - Solved: `fac x fit expr` with context struct for captures
+5. **Iterator pattern** - Manual struct for generators
+6. **Comptime generics** - `fn(comptime T: type)` for generic types
+7. **Build integration** - Generate `build.zig` for projects
+8. **Scope-based arenas** - `cum arena { }` for bounded allocation lifetimes

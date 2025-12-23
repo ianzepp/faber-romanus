@@ -284,6 +284,88 @@ When no annotation is provided:
 - Local variables: owned (`T`)
 - Method receivers: `&self` for reads, `&mut self` for mutations
 
+## Lambda Syntax
+
+Faber uses `fac` for lambdas/closures, with `fit`/`fiet` as the delimiter between parameters and body.
+
+### Syntax
+
+```
+fac <params> fit <expr>   // sync lambda
+fac <params> fiet <expr>  // async lambda
+```
+
+Parameters are comma-separated identifiers, terminated by `fit` (sync) or `fiet` (async).
+
+### Examples
+
+```
+fixum double = fac x fit x * 2
+fixum add = fac x, y fit x + y
+fixum fetcher = fac url fiet getData(url)
+
+// With higher-order functions
+lista.mappata(fac item fit item.nomen)
+lista.reducta(fac acc, x fit acc + x, 0)
+lista.filtrata(fac x fit x > 0)
+```
+
+Reads as: "do x, becomes x times 2"
+
+### Rust Output
+
+Rust has native closures with `|params| body` syntax.
+
+**Non-capturing lambda:**
+```
+// Faber
+fac x fit x * 2
+
+// Rust
+|x| x * 2
+```
+
+**Capturing lambda:**
+```
+// Faber
+fixum multiplier = 2
+fac x fit x * multiplier
+
+// Rust - captures by reference by default
+let multiplier = 2;
+|x| x * multiplier
+```
+
+### Capture Semantics
+
+The compiler identifies captures (variables referenced but not in param list). For Rust:
+
+- Default: capture by reference (`Fn`)
+- With `in` preposition: capture by mutable reference (`FnMut`)
+- Move semantics inferred when closure outlives scope (`FnOnce`)
+
+```
+// Faber - mutable capture
+varia counter = 0
+fixum increment = fac x fit { counter = counter + 1; redde x }
+
+// Rust
+let mut counter = 0;
+|x| { counter += 1; x }  // FnMut
+```
+
+### Async Lambdas
+
+```
+// Faber
+fac url fiet fetchData(url)
+
+// Rust
+|url| async move { fetch_data(url).await }
+```
+
+Async lambdas generate `async move` blocks to avoid lifetime issues.
+
 ## Error Handling Design
 
 Faber uses a simplified error model that maps cleanly to Rust's `Result` type. This design is shared with the Zig target.
@@ -434,10 +516,11 @@ Future enhancement: infer error enums from `iace` usage patterns.
 1. ~~**Ownership strategy**~~ - Solved: prepositions (`de`, `in`) with clone-all as fallback
 2. ~~**Lifetime inference**~~ - Solved: `de` on return type mirrors Rust elision
 3. ~~**Memory management**~~ - Solved: arena allocator (`bumpalo`) as default
-4. ~~**Error handling**~~ - Solved: `iace`/`mori` split, `cape` on any block, remove `tempta`/`demum`
-5. **Async runtime** - Tokio vs async-std vs runtime-agnostic
-6. **Derive macros** - Auto-generate `Default`, `Clone`, `Debug`
-7. **Cargo integration** - Generate `Cargo.toml` for projects (include `bumpalo` dep)
+4. ~~**Error handling**~~ - Solved: `iace`/`mori` split, `fac`/`cape` for blocks
+5. ~~**Lambda syntax**~~ - Solved: `fac x fit expr` maps to native closures
+6. **Async runtime** - Tokio vs async-std vs runtime-agnostic
+7. **Derive macros** - Auto-generate `Default`, `Clone`, `Debug`
+8. **Cargo integration** - Generate `Cargo.toml` for projects (include `bumpalo` dep)
 
 ## Open Questions
 
