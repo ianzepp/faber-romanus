@@ -11,16 +11,18 @@
 - Type parameters (`genus capsa<T>`)
 - `pactum` declaration
 - `implet` for interface implementation
-- Methods in genus (without `ego`)
+- Methods in genus with `ego` self-reference
+- `novum Type` instantiation without parentheses
+- `novum Type cum { ... }` inline field overrides (literal object only)
+- `creo` post-initialization hook
+- Computed properties (`numerus area => ...`)
 
 ### Not Yet Implemented
 
-- `ego` (self-reference in methods)
-- `novum Type` without parentheses
-- `novum Type cum { ... }` field override syntax
-- `creo` constructor function
+- `novum Type ex dato` construction from existing variable (ablative — "from this source")
+- `creo` with `cum` has `ego` pre-merged
+- Passing previously declared objects directly to `cum` (inline literal required today)
 - Value semantics (copy on assign)
-- Computed properties
 
 ---
 
@@ -151,35 +153,59 @@ fixum m = math.maximus(5, 3)  // 5
 
 **Naming rationale:** `generis` is the genitive of `genus` — literally "of the type."
 
+### Computed Properties
+
+- Declare with `type name => expression`
+- Expression runs in the instance context (`ego` is available)
+- Honors `publicus`/`generis` modifiers (public getters vs. type-level constants)
+- Currently read-only (no setter syntax yet)
+
+```
+genus rectangulum {
+    numerus latitudo: 1
+    numerus altitudo: 1
+    publicus numerus area => ego.latitudo * ego.altitudo
+}
+```
+
 ### Constructor
 
-The `creo` function receives a key/value object and initializes fields:
+The compiler automatically merges field defaults with `cum { ... }` overrides. The optional `creo` hook runs afterward for validation or derived fields — it takes no arguments because `ego` already has the merged values:
 
 ```
 genus persona {
-    textus nomen
-    numerus aetas
+    textus nomen: "Incognitus"
+    numerus aetas: 0
 
-    functio creo(valores) {
-        ego.nomen = valores.nomen
-        ego.aetas = valores.aetas ?? 0
+    functio creo() {
+        // ego.nomen and ego.aetas are already set
+        si ego.aetas < 0 {
+            ego.aetas = 0
+        }
     }
 }
 ```
+
+**Initialization order:**
+1. Field defaults applied
+2. `cum { ... }` overrides merged
+3. `creo()` runs (if defined)
+
+Most types won't need `creo` at all — it's only for invariants, clamping, or computing derived state.
 
 ### Instantiation
 
 Use `novum` with optional `cum` for field values:
 
 ```
-// With defaults (calls creo with empty object)
+// With defaults only
 fixum p = novum persona
 
-// With values
-fixum p = novum persona cum { nomen: "Marcus", aetas: 30 }
-
-// The cum object is passed to creo()
+// Override specific fields
+fixum q = novum persona cum { nomen: "Marcus", aetas: 30 }
 ```
+
+The compiler merges defaults with overrides, then calls `creo()` if defined.
 
 ### Generics
 
@@ -249,24 +275,24 @@ genus foo implet bar, baz {
 
 ---
 
-## Value Semantics
+## Value Semantics (Future)
 
-Genus instances are **value types** by default:
+Goal: genus instances behave like value types (copy on assign, no accidental aliasing) so they map cleanly to Zig/Rust structs. **Current reality:**
 
-- Assigned by copy, not reference
-- Matches Rust `struct` and Zig `struct` semantics
-- Enables future compilation to both targets
+- TypeScript backend emits `class` declarations (reference semantics)
+- Assignments copy references (`b = a` points to the same object)
+- Computed properties/constructors already use `this`, so switching to structs requires coordinated runtime changes
 
 ```
+// Today
 fixum a = novum punctum cum { x: 1, y: 2 }
-fixum b = a        // b is a copy
-b.x = 10           // a.x is still 1
+fixum b = a        // b references the same object
+b.x = 10           // a.x is ALSO 10 (reference semantics)
 ```
 
-**Open question:** Do we need explicit reference types? Options:
-- `&persona` reference syntax
-- `arcus<persona>` wrapper type (like Rust's `Rc`/`Arc`)
-- Defer until needed
+**Open questions:**
+- Should we introduce explicit reference wrappers (`arcus<persona>`, `&persona`) once value semantics arrive?
+- How do we express borrowing/ownership hints in Latin syntax?
 
 ---
 
@@ -301,14 +327,25 @@ functio inveni() -> persona?
 ### TypeScript Target
 
 ```typescript
-// genus persona { textus nomen, numerus aetas }
+// genus persona {
+//     textus nomen: "Incognitus"
+//     numerus aetas: 0
+//     functio creo() { if (this.aetas < 0) this.aetas = 0 }
+// }
 class persona {
-    nomen: string;
-    aetas: number;
+    nomen: string = "Incognitus";
+    aetas: number = 0;
 
-    constructor(valores: { nomen?: string, aetas?: number }) {
-        this.nomen = valores.nomen ?? "";
-        this.aetas = valores.aetas ?? 0;
+    constructor(overrides: { nomen?: string, aetas?: number } = {}) {
+        // Merge overrides into defaults
+        if (overrides.nomen !== undefined) this.nomen = overrides.nomen;
+        if (overrides.aetas !== undefined) this.aetas = overrides.aetas;
+        // Then call creo() if defined
+        this.creo();
+    }
+
+    private creo() {
+        if (this.aetas < 0) this.aetas = 0;
     }
 }
 
@@ -319,16 +356,27 @@ new persona({ nomen: "Marcus" })
 ### Zig Target
 
 ```zig
-// genus persona { textus nomen, numerus aetas }
+// genus persona {
+//     textus nomen: "Incognitus"
+//     numerus aetas: 0
+//     functio creo() { ... }
+// }
 const Persona = struct {
-    nomen: []const u8,
-    aetas: i64,
+    nomen: []const u8 = "Incognitus",
+    aetas: i64 = 0,
 
-    pub fn init(valores: anytype) Persona {
-        return .{
-            .nomen = valores.nomen orelse "",
-            .aetas = valores.aetas orelse 0,
-        };
+    pub fn init(overrides: anytype) Persona {
+        var self = Persona{};
+        // Merge overrides
+        if (@hasField(@TypeOf(overrides), "nomen")) self.nomen = overrides.nomen;
+        if (@hasField(@TypeOf(overrides), "aetas")) self.aetas = overrides.aetas;
+        // Then call creo() if defined
+        self.creo();
+        return self;
+    }
+
+    fn creo(self: *Persona) void {
+        if (self.aetas < 0) self.aetas = 0;
     }
 };
 ```
@@ -342,16 +390,8 @@ const Persona = struct {
 
 ## Open Questions
 
-1. **Computed properties** — Getter/setter syntax? Deferred.
-   ```
-   genus rectangulum {
-       numerus latus
-       numerus altitudo
-
-       // computed?
-       numerus area => ego.latus * ego.altitudo
-   }
-   ```
+1. **`novum Type ex dato` syntax** — We want to pass previously declared objects (e.g., `novum civis ex claudia_datum`) without retyping the literal. Need to settle the Latin case/preposition story and how it lowers to the merge step.
+2. **Value/reference interop** — Once value semantics arrive, how do we opt into shared references? (`arcus<persona>`? `&persona`?) What does that look like in JS/TS output?
 
 ---
 
