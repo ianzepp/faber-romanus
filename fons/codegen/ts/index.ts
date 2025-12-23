@@ -152,6 +152,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     // Track indentation depth for nested blocks
     let depth = 0;
 
+    // Track if we're inside a generator function (for cede -> yield vs await)
+    let inGenerator = false;
+
     /**
      * Generate indentation for current depth.
      * WHY: Centralized indentation logic ensures consistent formatting.
@@ -427,12 +430,33 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      */
     function genMethodDeclaration(node: FunctionDeclaration): string {
         const asyncMod = node.async ? 'async ' : '';
+        const star = node.generator ? '*' : '';
         const name = node.name.name;
         const params = node.params.map(genParameter).join(', ');
-        const returnType = node.returnType ? `: ${genType(node.returnType)}` : '';
-        const body = genBlockStatement(node.body);
 
-        return `${ind()}${asyncMod}${name}(${params})${returnType} ${body}`;
+        // Wrap return type based on async/generator semantics
+        let returnType = '';
+        if (node.returnType) {
+            let baseType = genType(node.returnType);
+            if (node.async && node.generator) {
+                baseType = `AsyncGenerator<${baseType}>`;
+            }
+            else if (node.generator) {
+                baseType = `Generator<${baseType}>`;
+            }
+            else if (node.async) {
+                baseType = `Promise<${baseType}>`;
+            }
+            returnType = `: ${baseType}`;
+        }
+
+        // Track generator context for cede -> yield vs await
+        const prevInGenerator = inGenerator;
+        inGenerator = node.generator;
+        const body = genBlockStatement(node.body);
+        inGenerator = prevInGenerator;
+
+        return `${ind()}${asyncMod}${star}${name}(${params})${returnType} ${body}`;
     }
 
     /**
@@ -463,7 +487,14 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const params = node.params.map(genParameter).join(', ');
         let returnType = node.returnType ? genType(node.returnType) : 'void';
 
-        if (node.async) {
+        // Wrap return type based on async/generator semantics
+        if (node.async && node.generator) {
+            returnType = `AsyncGenerator<${returnType}>`;
+        }
+        else if (node.generator) {
+            returnType = `Generator<${returnType}>`;
+        }
+        else if (node.async) {
             returnType = `Promise<${returnType}>`;
         }
 
@@ -557,16 +588,39 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      *
      * TRANSFORMS:
      *   functio salve(nomen: textus): nihil -> function salve(nomen: string): null
-     *   futura functio f(): numerus -> async function f(): number
+     *   futura functio f(): numerus -> async function f(): Promise<number>
+     *   cursor functio f(): numerus -> function* f(): Generator<number>
+     *   futura cursor functio f(): numerus -> async function* f(): AsyncGenerator<number>
      */
     function genFunctionDeclaration(node: FunctionDeclaration): string {
         const async = node.async ? 'async ' : '';
+        const star = node.generator ? '*' : '';
         const name = node.name.name;
         const params = node.params.map(genParameter).join(', ');
-        const returnType = node.returnType ? `: ${genType(node.returnType)}` : '';
-        const body = genBlockStatement(node.body);
 
-        return `${ind()}${async}function ${name}(${params})${returnType} ${body}`;
+        // Wrap return type based on async/generator semantics
+        let returnType = '';
+        if (node.returnType) {
+            let baseType = genType(node.returnType);
+            if (node.async && node.generator) {
+                baseType = `AsyncGenerator<${baseType}>`;
+            }
+            else if (node.generator) {
+                baseType = `Generator<${baseType}>`;
+            }
+            else if (node.async) {
+                baseType = `Promise<${baseType}>`;
+            }
+            returnType = `: ${baseType}`;
+        }
+
+        // Track generator context for cede -> yield vs await
+        const prevInGenerator = inGenerator;
+        inGenerator = node.generator;
+        const body = genBlockStatement(node.body);
+        inGenerator = prevInGenerator;
+
+        return `${ind()}${async}function${star} ${name}(${params})${returnType} ${body}`;
     }
 
     /**
@@ -918,7 +972,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             case 'AssignmentExpression':
                 return genAssignmentExpression(node);
             case 'AwaitExpression':
-                return `await ${genExpression(node.argument)}`;
+                // WHY: cede maps to yield in generators, await in async functions
+                return `${inGenerator ? 'yield' : 'await'} ${genExpression(node.argument)}`;
             case 'NewExpression':
                 return genNewExpression(node);
             case 'ConditionalExpression':

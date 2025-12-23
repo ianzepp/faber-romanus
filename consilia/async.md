@@ -1,8 +1,8 @@
 # Async Design
 
-## TODO: Verb Conjugation for Async/Iterator Semantics
+## Verb Conjugation for Return Types
 
-Consider replacing `futura`/`cursor` prefixes with Latin verb conjugation of *fieri* (to become):
+Faber uses Latin verb conjugation of *fieri* (to become) to encode async/iterator semantics in the return type:
 
 | | Sync | Async |
 |---|---|---|
@@ -21,7 +21,26 @@ Grammar encodes both dimensions:
 - **Tense**: present (sync) vs future (async)
 - **Number**: singular (return once) vs plural (yield many)
 
-This eliminates `futura`/`cursor` prefixes — the return type verb carries all semantics.
+### Compatibility with Prefixes
+
+The `->` arrow and `futura`/`cursor` prefixes remain valid. Either mechanism works:
+
+| Syntax | Semantics |
+|--------|-----------|
+| `functio f() -> T` | sync, single (default) |
+| `functio f() fit T` | sync, single (explicit) |
+| `functio f() fiet T` | async, single |
+| `functio f() fiunt T` | sync, generator |
+| `functio f() fient T` | async, generator |
+| `futura functio f() -> T` | async, single (prefix determines) |
+| `cursor functio f() -> T` | sync, generator (prefix determines) |
+| `futura cursor functio f() -> T` | async, generator |
+
+**Validation**: If both prefix and verb are used, they must agree:
+- `futura functio f() fit T` - ERROR: `fit` (sync) contradicts `futura` (async)
+- `cursor functio f() fit T` - ERROR: `fit` (single) contradicts `cursor` (generator)
+- `futura functio f() fiet T` - OK: redundant but valid
+- `cursor functio f() fiunt T` - OK: redundant but valid
 
 ---
 

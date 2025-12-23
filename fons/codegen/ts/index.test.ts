@@ -50,6 +50,76 @@ describe('codegen', () => {
 
             expect(js).toContain('async function fetch(url)');
         });
+
+        test('fit returns sync function', () => {
+            const js = compile('functio greet() fit textus { redde "hello" }');
+
+            expect(js).toContain('function greet(): string');
+            expect(js).not.toContain('async');
+            expect(js).not.toContain('*');
+        });
+
+        test('fiet returns async function with Promise<T>', () => {
+            const js = compile('functio fetch() fiet textus { redde "data" }');
+
+            expect(js).toContain('async function fetch(): Promise<string>');
+        });
+
+        test('fiunt returns generator function with Generator<T>', () => {
+            const js = compile('functio range() fiunt numerus { redde 1 }');
+
+            expect(js).toContain('function* range(): Generator<number>');
+        });
+
+        test('fient returns async generator function with AsyncGenerator<T>', () => {
+            const js = compile('functio stream() fient textus { redde "chunk" }');
+
+            expect(js).toContain('async function* stream(): AsyncGenerator<string>');
+        });
+
+        test('cursor prefix with fiunt is redundant but valid', () => {
+            const js = compile('cursor functio range() fiunt numerus { redde 1 }');
+
+            expect(js).toContain('function* range(): Generator<number>');
+        });
+
+        test('futura prefix with fiet is redundant but valid', () => {
+            const js = compile('futura functio fetch() fiet textus { redde "data" }');
+
+            expect(js).toContain('async function fetch(): Promise<string>');
+        });
+
+        test('cursor prefix makes generator without verb', () => {
+            const js = compile('cursor functio range() -> numerus { redde 1 }');
+
+            expect(js).toContain('function* range(): Generator<number>');
+        });
+
+        test('futura cursor makes async generator', () => {
+            const js = compile('futura cursor functio stream() -> textus { redde "chunk" }');
+
+            expect(js).toContain('async function* stream(): AsyncGenerator<string>');
+        });
+
+        test('cede emits yield in generator functions', () => {
+            const js = compile('functio range() fiunt numerus { cede 1 }');
+
+            expect(js).toContain('yield 1');
+            expect(js).not.toContain('await');
+        });
+
+        test('cede emits await in async functions', () => {
+            const js = compile('functio fetch() fiet textus { cede getData() }');
+
+            expect(js).toContain('await getData()');
+            expect(js).not.toContain('yield');
+        });
+
+        test('cede emits yield in async generators', () => {
+            const js = compile('functio stream() fient textus { cede "chunk" }');
+
+            expect(js).toContain('yield "chunk"');
+        });
     });
 
     describe('if statements', () => {

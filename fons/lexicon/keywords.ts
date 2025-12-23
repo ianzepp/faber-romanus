@@ -125,6 +125,8 @@ export const keywords: KeywordEntry[] = [
 
     // WHY: "futura" (future/about to be) naturally expresses async operations
     { latin: 'futura', meaning: 'async', category: 'modifier' },
+    // WHY: "cursor" (runner) for generator/iterator functions
+    { latin: 'cursor', meaning: 'generator', category: 'modifier' },
     // WHY: "publicus" for visibility - default is private
     { latin: 'publicus', meaning: 'public', category: 'modifier' },
     // WHY: "generis" (of the genus) for type-level/static members
@@ -142,8 +144,15 @@ export const keywords: KeywordEntry[] = [
     { latin: 'non', meaning: '!', category: 'operator' },
     // WHY: "est" (is) for strict equality - natural Latin copula
     { latin: 'est', meaning: '===', category: 'operator' },
-    // WHY: "fit" (becomes) for return type annotation - "functio f() fit textus"
+    // WHY: "fieri" conjugation encodes return semantics:
+    //   fit   = becomes (sync, single return)
+    //   fiet  = will become (async, single return)
+    //   fiunt = become [plural] (sync, yields many)
+    //   fient = will become [plural] (async, yields many)
     { latin: 'fit', meaning: '->', category: 'operator' },
+    { latin: 'fiet', meaning: 'async ->', category: 'operator' },
+    { latin: 'fiunt', meaning: 'yields ->', category: 'operator' },
+    { latin: 'fient', meaning: 'async yields ->', category: 'operator' },
 
     // ---------------------------------------------------------------------------
     // Literal Values

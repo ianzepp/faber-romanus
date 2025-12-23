@@ -204,6 +204,7 @@ export interface FunctionDeclaration extends BaseNode {
     returnType?: TypeAnnotation;
     body: BlockStatement;
     async: boolean;
+    generator: boolean;
     isConstructor?: boolean;
 }
 
@@ -357,6 +358,7 @@ export interface PactumMethod extends BaseNode {
     params: Parameter[];
     returnType?: TypeAnnotation;
     async: boolean;
+    generator: boolean;
 }
 
 // ---------------------------------------------------------------------------

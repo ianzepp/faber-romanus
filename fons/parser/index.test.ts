@@ -456,7 +456,7 @@ describe('parser', () => {
         });
 
         test('genus with implet', () => {
-            const { program } = parseCode('genus cursor implet iterabilis { numerus index }');
+            const { program } = parseCode('genus iterator implet iterabilis { numerus index }');
             const genus = program!.body[0] as any;
 
             expect(genus.implements).toHaveLength(1);
@@ -1209,6 +1209,34 @@ describe('parser', () => {
             const { errors } = parseCode('x + + y');
 
             expect(errors.length).toBeGreaterThan(0);
+        });
+
+        test('futura with fit contradicts (sync vs async)', () => {
+            const { errors } = parseCode('futura functio f() fit textus { redde "x" }');
+
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0].message).toContain('contradicts');
+        });
+
+        test('cursor with fit contradicts (single vs generator)', () => {
+            const { errors } = parseCode('cursor functio f() fit textus { redde "x" }');
+
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0].message).toContain('contradicts');
+        });
+
+        test('futura with fiunt contradicts (sync generator vs async)', () => {
+            const { errors } = parseCode('futura functio f() fiunt numerus { redde 1 }');
+
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0].message).toContain('contradicts');
+        });
+
+        test('cursor with fiet contradicts (single async vs generator)', () => {
+            const { errors } = parseCode('cursor functio f() fiet textus { redde "x" }');
+
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0].message).toContain('contradicts');
         });
     });
 

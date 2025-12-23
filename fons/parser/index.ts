@@ -469,7 +469,7 @@ export function parse(tokens: Token[]): ParserResult {
             return parseVariableDeclaration();
         }
 
-        if (checkKeyword('functio') || checkKeyword('futura')) {
+        if (checkKeyword('functio') || checkKeyword('futura') || checkKeyword('cursor')) {
             return parseFunctionDeclaration();
         }
 
@@ -663,19 +663,28 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse function declaration.
      *
      * GRAMMAR:
-     *   funcDecl := 'futura'? 'functio' IDENTIFIER '(' paramList ')' ('->' typeAnnotation)? blockStmt
+     *   funcDecl := ('futura' | 'cursor')* 'functio' IDENTIFIER '(' paramList ')' returnClause? blockStmt
+     *   returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
      *
      * WHY: Arrow syntax for return types: "functio greet(textus name) -> textus"
      *      'futura' prefix marks async functions (future/promise-based).
-     *      Return type comes after parameters with arrow (optional).
+     *      'cursor' prefix marks generator functions (yield-based).
+     *      Verb forms encode semantics: fit (sync), fiet (async), fiunt (generator), fient (async generator).
      */
     function parseFunctionDeclaration(): FunctionDeclaration {
         const position = peek().position;
 
-        let async = false;
+        // Parse optional prefixes (futura = async, cursor = generator)
+        let prefixAsync = false;
+        let prefixGenerator = false;
 
-        if (matchKeyword('futura')) {
-            async = true;
+        while (checkKeyword('futura') || checkKeyword('cursor')) {
+            if (matchKeyword('futura')) {
+                prefixAsync = true;
+            }
+            else if (matchKeyword('cursor')) {
+                prefixGenerator = true;
+            }
         }
 
         expectKeyword('functio', ParserErrorCode.ExpectedKeywordFunctio);
@@ -689,15 +698,61 @@ export function parse(tokens: Token[]): ParserResult {
         expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
         let returnType: TypeAnnotation | undefined;
+        let verbAsync: boolean | undefined;
+        let verbGenerator: boolean | undefined;
 
-        // 'fit' (becomes) is Latin alias for ->
-        if (match('THIN_ARROW') || matchKeyword('fit')) {
+        // Parse return type with arrow or verb form
+        // Verb forms: fit (sync, single), fiet (async, single), fiunt (sync, generator), fient (async, generator)
+        if (match('THIN_ARROW')) {
             returnType = parseTypeAnnotation();
+            // Arrow is neutral - semantics from prefix only
         }
+        else if (matchKeyword('fit')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = false;
+            verbGenerator = false;
+        }
+        else if (matchKeyword('fiet')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = true;
+            verbGenerator = false;
+        }
+        else if (matchKeyword('fiunt')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = false;
+            verbGenerator = true;
+        }
+        else if (matchKeyword('fient')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = true;
+            verbGenerator = true;
+        }
+
+        // Validate prefix/verb agreement
+        // If verb specifies sync (fit/fiunt) but prefix says async (futura) = error
+        // If verb specifies single (fit/fiet) but prefix says generator (cursor) = error
+        if (verbAsync === false && prefixAsync) {
+            errors.push({
+                code: ParserErrorCode.GenericError,
+                message: 'fit/fiunt (sync) contradicts futura (async)',
+                position,
+            });
+        }
+        if (verbGenerator === false && prefixGenerator) {
+            errors.push({
+                code: ParserErrorCode.GenericError,
+                message: 'fit/fiet (single) contradicts cursor (generator)',
+                position,
+            });
+        }
+
+        // Merge semantics: verb takes precedence if specified, otherwise use prefix
+        const async = verbAsync ?? prefixAsync;
+        const generator = verbGenerator ?? prefixGenerator;
 
         const body = parseBlockStatement();
 
-        return { type: 'FunctionDeclaration', name, params, returnType, body, async, position };
+        return { type: 'FunctionDeclaration', name, params, returnType, body, async, generator, position };
     }
 
     /**
@@ -882,7 +937,7 @@ export function parse(tokens: Token[]): ParserResult {
      * GRAMMAR:
      *   genusMember := fieldDecl | methodDecl
      *   fieldDecl := 'publicus'? 'generis'? typeAnnotation IDENTIFIER (':' expression)?
-     *   methodDecl := 'publicus'? 'generis'? 'futura'? 'functio' ...
+     *   methodDecl := 'publicus'? 'generis'? ('futura' | 'cursor')* 'functio' ...
      *
      * WHY: Distinguishes between fields and methods by looking for 'functio' keyword.
      */
@@ -892,7 +947,8 @@ export function parse(tokens: Token[]): ParserResult {
         // Parse modifiers
         let isPublic = false;
         let isStatic = false;
-        let isAsync = false;
+        let prefixAsync = false;
+        let prefixGenerator = false;
 
         if (matchKeyword('publicus')) {
             isPublic = true;
@@ -902,8 +958,14 @@ export function parse(tokens: Token[]): ParserResult {
             isStatic = true;
         }
 
-        if (matchKeyword('futura')) {
-            isAsync = true;
+        // Parse function modifiers (futura = async, cursor = generator)
+        while (checkKeyword('futura') || checkKeyword('cursor')) {
+            if (matchKeyword('futura')) {
+                prefixAsync = true;
+            }
+            else if (matchKeyword('cursor')) {
+                prefixGenerator = true;
+            }
         }
 
         // If we see 'functio', it's a method
@@ -919,10 +981,48 @@ export function parse(tokens: Token[]): ParserResult {
             expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
             let returnType: TypeAnnotation | undefined;
+            let verbAsync: boolean | undefined;
+            let verbGenerator: boolean | undefined;
 
-            // 'fit' (becomes) is Latin alias for ->
-            if (match('THIN_ARROW') || matchKeyword('fit')) {
+            // Parse return type with arrow or verb form
+            if (match('THIN_ARROW')) {
                 returnType = parseTypeAnnotation();
+            }
+            else if (matchKeyword('fit')) {
+                returnType = parseTypeAnnotation();
+                verbAsync = false;
+                verbGenerator = false;
+            }
+            else if (matchKeyword('fiet')) {
+                returnType = parseTypeAnnotation();
+                verbAsync = true;
+                verbGenerator = false;
+            }
+            else if (matchKeyword('fiunt')) {
+                returnType = parseTypeAnnotation();
+                verbAsync = false;
+                verbGenerator = true;
+            }
+            else if (matchKeyword('fient')) {
+                returnType = parseTypeAnnotation();
+                verbAsync = true;
+                verbGenerator = true;
+            }
+
+            // Validate prefix/verb agreement
+            if (verbAsync === false && prefixAsync) {
+                errors.push({
+                    code: ParserErrorCode.GenericError,
+                    message: 'fit/fiunt (sync) contradicts futura (async)',
+                    position,
+                });
+            }
+            if (verbGenerator === false && prefixGenerator) {
+                errors.push({
+                    code: ParserErrorCode.GenericError,
+                    message: 'fit/fiet (single) contradicts cursor (generator)',
+                    position,
+                });
             }
 
             const body = parseBlockStatement();
@@ -933,7 +1033,8 @@ export function parse(tokens: Token[]): ParserResult {
                 params,
                 returnType,
                 body,
-                async: isAsync,
+                async: verbAsync ?? prefixAsync,
+                generator: verbGenerator ?? prefixGenerator,
                 position,
             };
 
@@ -1023,7 +1124,18 @@ export function parse(tokens: Token[]): ParserResult {
     function parsePactumMethod(): PactumMethod {
         const position = peek().position;
 
-        const isAsync = matchKeyword('futura');
+        // Parse optional prefixes (futura = async, cursor = generator)
+        let prefixAsync = false;
+        let prefixGenerator = false;
+
+        while (checkKeyword('futura') || checkKeyword('cursor')) {
+            if (matchKeyword('futura')) {
+                prefixAsync = true;
+            }
+            else if (matchKeyword('cursor')) {
+                prefixGenerator = true;
+            }
+        }
 
         expectKeyword('functio', ParserErrorCode.ExpectedKeywordFunctio);
 
@@ -1036,10 +1148,48 @@ export function parse(tokens: Token[]): ParserResult {
         expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
         let returnType: TypeAnnotation | undefined;
+        let verbAsync: boolean | undefined;
+        let verbGenerator: boolean | undefined;
 
-        // 'fit' (becomes) is Latin alias for ->
-        if (match('THIN_ARROW') || matchKeyword('fit')) {
+        // Parse return type with arrow or verb form
+        if (match('THIN_ARROW')) {
             returnType = parseTypeAnnotation();
+        }
+        else if (matchKeyword('fit')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = false;
+            verbGenerator = false;
+        }
+        else if (matchKeyword('fiet')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = true;
+            verbGenerator = false;
+        }
+        else if (matchKeyword('fiunt')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = false;
+            verbGenerator = true;
+        }
+        else if (matchKeyword('fient')) {
+            returnType = parseTypeAnnotation();
+            verbAsync = true;
+            verbGenerator = true;
+        }
+
+        // Validate prefix/verb agreement
+        if (verbAsync === false && prefixAsync) {
+            errors.push({
+                code: ParserErrorCode.GenericError,
+                message: 'fit/fiunt (sync) contradicts futura (async)',
+                position,
+            });
+        }
+        if (verbGenerator === false && prefixGenerator) {
+            errors.push({
+                code: ParserErrorCode.GenericError,
+                message: 'fit/fiet (single) contradicts cursor (generator)',
+                position,
+            });
         }
 
         return {
@@ -1047,7 +1197,8 @@ export function parse(tokens: Token[]): ParserResult {
             name,
             params,
             returnType,
-            async: isAsync,
+            async: verbAsync ?? prefixAsync,
+            generator: verbGenerator ?? prefixGenerator,
             position,
         };
     }
