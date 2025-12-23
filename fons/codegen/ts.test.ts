@@ -461,4 +461,59 @@ describe('codegen', () => {
             expect(js).toBe('const nums = [1, 2, 3];');
         });
     });
+
+    describe('genus declarations', () => {
+        test('genus generates auto-merge constructor', () => {
+            const js = compile('genus persona { textus nomen: "X" }');
+
+            expect(js).toContain('class persona');
+            expect(js).toContain('nomen: string = "X"');
+            expect(js).toContain('constructor(overrides: { nomen?: string } = {})');
+            expect(js).toContain('if (overrides.nomen !== undefined) this.nomen = overrides.nomen');
+        });
+
+        test('genus with creo emits private no-args method', () => {
+            const js = compile(`
+                genus persona {
+                    numerus aetas: 0
+                    functio creo() {
+                        si ego.aetas < 0 { ego.aetas = 0 }
+                    }
+                }
+            `);
+
+            expect(js).toContain('this.creo();');
+            expect(js).toContain('private creo()');
+        });
+
+        test('genus without creo does not call creo', () => {
+            const js = compile('genus persona { textus nomen: "X" }');
+
+            expect(js).not.toContain('this.creo()');
+            expect(js).not.toContain('private creo()');
+        });
+
+        test('novum without cum passes empty object', () => {
+            const js = compile('fixum p = novum persona');
+
+            expect(js).toBe('const p = new persona();');
+        });
+
+        test('novum with cum passes overrides', () => {
+            const js = compile('fixum p = novum persona cum { nomen: "Claudia" }');
+
+            expect(js).toBe('const p = new persona({ nomen: "Claudia" });');
+        });
+
+        test('ego becomes this', () => {
+            const js = compile(`
+                genus persona {
+                    textus nomen: "X"
+                    functio saluta() { redde ego.nomen }
+                }
+            `);
+
+            expect(js).toContain('return this.nomen');
+        });
+    });
 });

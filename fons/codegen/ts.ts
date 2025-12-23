@@ -279,15 +279,20 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate genus (struct) declaration as TypeScript class.
      *
      * TRANSFORMS:
-     *   genus persona { textus nomen numerus aetas }
+     *   genus persona { textus nomen: "X" numerus aetas: 0 }
      *   ->
      *   class persona {
-     *       nomen: string;
-     *       aetas: number;
+     *       nomen: string = "X";
+     *       aetas: number = 0;
+     *       constructor(overrides: { nomen?: string, aetas?: number } = {}) {
+     *           if (overrides.nomen !== undefined) this.nomen = overrides.nomen;
+     *           if (overrides.aetas !== undefined) this.aetas = overrides.aetas;
+     *           this.creo(); // if defined
+     *       }
+     *       private creo() { ... } // user's creo body, no args
      *   }
      *
-     * WHY: TypeScript classes provide the closest analog to Latin genus -
-     *      encapsulated data with methods.
+     * WHY: Auto-merge design - field defaults + cum overrides merged before creo runs.
      */
     function genGenusDeclaration(node: GenusDeclaration): string {
         const name = node.name.name;
@@ -313,8 +318,12 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             sections.push(node.computedFields.map(genComputedFieldDeclaration));
         }
 
+        // Always generate constructor for auto-merge
+        sections.push([genAutoMergeConstructor(node)]);
+
+        // Emit user's creo as private no-args method (if defined)
         if (node.constructor) {
-            sections.push([genConstructorDeclaration(node.constructor)]);
+            sections.push([genCreoMethod(node.constructor)]);
         }
 
         if (node.methods.length > 0) {
@@ -332,6 +341,56 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         lines.push(`${ind()}}`);
 
         return lines.join('\n');
+    }
+
+    /**
+     * Generate auto-merge constructor.
+     *
+     * WHY: The constructor handles merging field defaults with cum { ... } overrides,
+     *      then calls creo() if defined. User never writes merge boilerplate.
+     */
+    function genAutoMergeConstructor(node: GenusDeclaration): string {
+        const lines: string[] = [];
+
+        // Build overrides type: { fieldName?: fieldType, ... }
+        const overrideProps = node.fields.map(f => {
+            const fieldName = f.name.name;
+            const fieldType = genType(f.fieldType);
+            return `${fieldName}?: ${fieldType}`;
+        });
+        const overridesType = overrideProps.length > 0
+            ? `{ ${overrideProps.join(', ')} }`
+            : 'Record<string, never>';
+
+        lines.push(`${ind()}constructor(overrides: ${overridesType} = {}) {`);
+        depth++;
+
+        // Apply each override if provided
+        for (const field of node.fields) {
+            const fieldName = field.name.name;
+            lines.push(`${ind()}if (overrides.${fieldName} !== undefined) this.${fieldName} = overrides.${fieldName}${semi ? ';' : ''}`);
+        }
+
+        // Call creo() if user defined it
+        if (node.constructor) {
+            lines.push(`${ind()}this.creo()${semi ? ';' : ''}`);
+        }
+
+        depth--;
+        lines.push(`${ind()}}`);
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Generate user's creo as a private no-args method.
+     *
+     * WHY: creo() is a post-initialization hook. By the time it runs,
+     *      ego (this) already has merged field values. No args needed.
+     */
+    function genCreoMethod(node: FunctionDeclaration): string {
+        const body = genBlockStatement(node.body);
+        return `${ind()}private creo() ${body}`;
     }
 
     /**
@@ -371,13 +430,6 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const body = genBlockStatement(node.body);
 
         return `${ind()}${asyncMod}${name}(${params})${returnType} ${body}`;
-    }
-
-    function genConstructorDeclaration(node: FunctionDeclaration): string {
-        const params = node.params.map(genParameter).join(', ');
-        const body = genBlockStatement(node.body);
-
-        return `${ind()}constructor(${params}) ${body}`;
     }
 
     /**

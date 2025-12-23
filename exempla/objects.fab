@@ -44,49 +44,32 @@ scribe config.port
 // =============================================================================
 // GENUS (STRUCT)
 // =============================================================================
-// genus declarations now support instantiation via `novum`, `cum { ... }` overrides,
-// computed fields, constructors (`creo`), and `ego` for self-reference.
+// genus declarations support:
+// - Field defaults using `:` (declarative "has value")
+// - Instantiation via `novum Type` or `novum Type cum { ... }`
+// - Auto-merge: compiler merges defaults + cum overrides
+// - Optional `creo()` hook runs after merge (ego already set)
+// - Computed fields using `=>`
+// - Methods with `ego` self-reference
 
-// Basic genus - fields without defaults (all required)
+// Basic genus - fields without defaults
 genus punctum {
     numerus x
     numerus y
 }
 
-// Genus with default field values (use : not =)
-// The colon means "has value" - declarative specification
-// The equals sign means "assign" - imperative action
+// Genus with default field values
+// No creo needed - compiler handles merging defaults with overrides
 genus civis {
     textus nomen: "Incognitus"
     numerus aetas: 0
     bivalens activus: verum
-
-    functio creo(valores) {
-        si nonnulla valores {
-            si nonnulla valores.nomen {
-                ego.nomen = valores.nomen
-            }
-            si nonnulla valores.aetas {
-                ego.aetas = valores.aetas
-            }
-            si nonnulla valores.activus {
-                ego.activus = valores.activus
-            }
-        }
-    }
 }
 
 // Genus with methods
+// Methods can reference ego (self) for instance data
 genus salutator {
     textus nomen: "Mundus"
-
-    functio creo(valores) {
-        si nonnulla valores {
-            si nonnulla valores.nomen {
-                ego.nomen = valores.nomen
-            }
-        }
-    }
 
     functio saluta() -> textus {
         redde "Salve, " + ego.nomen + "!"
@@ -101,20 +84,21 @@ genus liber {
     bivalens lectus: falsum     // optional - defaults to falsum
 }
 
-// Genus with constructor + computed property
+// Genus with creo() hook + computed property
+// creo() takes no args - ego already has merged values
+// Use creo() for validation, clamping, or derived state
 genus rectangulum {
     numerus latitudo: 1
     numerus altitudo: 1
     publicus numerus area => ego.latitudo * ego.altitudo
 
-    functio creo(valores) {
-        si nonnulla valores {
-            si nonnulla valores.latitudo {
-                ego.latitudo = valores.latitudo
-            }
-            si nonnulla valores.altitudo {
-                ego.altitudo = valores.altitudo
-            }
+    functio creo() {
+        // Enforce minimum dimensions
+        si ego.latitudo < 1 {
+            ego.latitudo = 1
+        }
+        si ego.altitudo < 1 {
+            ego.altitudo = 1
         }
     }
 }

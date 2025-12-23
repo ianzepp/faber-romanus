@@ -14,13 +14,13 @@
 - Methods in genus with `ego` self-reference
 - `novum Type` instantiation without parentheses
 - `novum Type cum { ... }` inline field overrides (literal object only)
-- `creo` post-initialization hook
+- `creo()` post-initialization hook (no args, `ego` pre-merged)
 - Computed properties (`numerus area => ...`)
+- Auto-merge: constructor merges field defaults + `cum { ... }` overrides
 
 ### Not Yet Implemented
 
 - `novum Type ex dato` construction from existing variable (ablative — "from this source")
-- `creo` with `cum` has `ego` pre-merged
 - Passing previously declared objects directly to `cum` (inline literal required today)
 - Value semantics (copy on assign)
 
