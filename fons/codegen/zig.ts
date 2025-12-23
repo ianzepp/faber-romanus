@@ -1144,6 +1144,16 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             return `(${arg}.len > 0)`;
         }
 
+        // negativum: check if less than zero
+        if (node.operator === 'negativum') {
+            return `(${arg} < 0)`;
+        }
+
+        // positivum: check if greater than zero
+        if (node.operator === 'positivum') {
+            return `(${arg} > 0)`;
+        }
+
         return node.prefix ? `${node.operator}${arg}` : `${arg}${node.operator}`;
     }
 

@@ -85,6 +85,8 @@ export const keywords: KeywordEntry[] = [
     { latin: 'ergo', meaning: 'then', category: 'control' },
     { latin: 'nulla', meaning: 'none/empty', category: 'operator' },
     { latin: 'nonnulla', meaning: 'some/non-empty', category: 'operator' },
+    { latin: 'negativum', meaning: '< 0', category: 'operator' },
+    { latin: 'positivum', meaning: '> 0', category: 'operator' },
     { latin: 'quando', meaning: 'case', category: 'control' },
     { latin: 'rumpe', meaning: 'break', category: 'control' },
     { latin: 'perge', meaning: 'continue', category: 'control' },
@@ -138,6 +140,8 @@ export const keywords: KeywordEntry[] = [
     { latin: 'et', meaning: '&&', category: 'operator' },
     { latin: 'aut', meaning: '||', category: 'operator' },
     { latin: 'non', meaning: '!', category: 'operator' },
+    // WHY: "est" (is) for strict equality - natural Latin copula
+    { latin: 'est', meaning: '===', category: 'operator' },
 
     // ---------------------------------------------------------------------------
     // Literal Values

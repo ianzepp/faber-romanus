@@ -694,6 +694,35 @@ describe('parser', () => {
             expect(stmt.alternate.alternate.type).toBe('BlockStatement');
         });
 
+        test('est as strict equality operator', () => {
+            const { program } = parseCode('si x est nihil { scribe "null" }');
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('IfStatement');
+            expect(stmt.test.type).toBe('BinaryExpression');
+            expect(stmt.test.operator).toBe('===');
+            expect(stmt.test.left.name).toBe('x');
+            expect(stmt.test.right.value).toBe(null);
+        });
+
+        test('negativum as unary check', () => {
+            const { program } = parseCode('si negativum n { scribe "negative" }');
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('IfStatement');
+            expect(stmt.test.type).toBe('UnaryExpression');
+            expect(stmt.test.operator).toBe('negativum');
+        });
+
+        test('positivum as unary check', () => {
+            const { program } = parseCode('si positivum n { scribe "positive" }');
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('IfStatement');
+            expect(stmt.test.type).toBe('UnaryExpression');
+            expect(stmt.test.operator).toBe('positivum');
+        });
+
         test('dum with ergo', () => {
             const { program } = parseCode('dum x > 0 ergo x = x - 1');
             const stmt = program!.body[0] as any;

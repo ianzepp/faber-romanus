@@ -9,13 +9,19 @@
 // si <condition> { <body> } aliter { <body> }
 // si <cond1> { } aliter si <cond2> { } aliter { }
 //
+// STYLES:
+// Literal: si / aliter si / aliter
+// Poetic:  si / sin / secus
+//
 // ETYMOLOGY:
 // si: "if" (conditional particle)
 // aliter: "otherwise, differently" (from alius - other)
+// sin: "but if" (classical Latin for else-if)
+// secus: "otherwise" (alternative to aliter)
 //
 // WHY LATIN:
 // - si is the standard Latin conditional
-// - aliter conveys "the other way" more explicitly than "else"
+// - sin/secus provide a rhythmic alternative (si/sin/secus)
 
 // =============================================================================
 // BASIC SI
@@ -128,7 +134,8 @@ aliter {
 // SI IN FUNCTIONS
 // =============================================================================
 
-functio classify(n) -> textus {
+// Using comparison operators
+functio classifyWithOps(n) -> textus {
     si n < 0 {
         redde "negative"
     }
@@ -140,6 +147,31 @@ functio classify(n) -> textus {
     }
 }
 
+// Using unary checks (negativum/positivum) - clearer, no symbols
+functio classify(n) -> textus {
+    si negativum n { redde "negative" }
+    sin positivum n { redde "positive" }
+    secus { redde "zero" }
+}
+
 scribe classify(-5)
 scribe classify(0)
 scribe classify(10)
+
+// =============================================================================
+// EST - STRICT EQUALITY
+// =============================================================================
+
+// "est" (is) provides strict equality (===)
+// Useful for null checks and type-safe comparisons
+
+functio checkValue(x) -> textus {
+    si x est nihil { redde "is null" }
+    si x est verum { redde "is true" }
+    si x est falsum { redde "is false" }
+    redde "is something else"
+}
+
+scribe checkValue(nihil)
+scribe checkValue(verum)
+scribe checkValue(42)

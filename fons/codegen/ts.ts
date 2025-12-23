@@ -1059,6 +1059,16 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             return `(${arg} != null && (Array.isArray(${arg}) || typeof ${arg} === 'string' ? ${arg}.length > 0 : typeof ${arg} === 'object' ? Object.keys(${arg}).length > 0 : Boolean(${arg})))`;
         }
 
+        // negativum: check if less than zero
+        if (node.operator === 'negativum') {
+            return `(${arg} < 0)`;
+        }
+
+        // positivum: check if greater than zero
+        if (node.operator === 'positivum') {
+            return `(${arg} > 0)`;
+        }
+
         return node.prefix ? `${node.operator}${arg}` : `${arg}${node.operator}`;
     }
 

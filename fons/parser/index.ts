@@ -1659,16 +1659,22 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse equality expression.
      *
      * GRAMMAR:
-     *   equality := comparison (('==' | '!=') comparison)*
+     *   equality := comparison (('==' | '!=' | 'est') comparison)*
      *
      * PRECEDENCE: Lower than comparison, higher than AND.
+     *
+     * WHY: 'est' (is) is the Latin copula for strict equality (===).
+     *      Allows natural syntax: si x est nihil { ... }
      */
     function parseEquality(): Expression {
         let left = parseComparison();
 
-        while (match('EQUAL_EQUAL', 'BANG_EQUAL')) {
-            const operator = tokens[current - 1].value;
-            const position = tokens[current - 1].position;
+        while (match('EQUAL_EQUAL', 'BANG_EQUAL') || matchKeyword('est')) {
+            const token = tokens[current - 1];
+            const position = token.position;
+
+            // 'est' maps to strict equality (===)
+            const operator = token.type === 'KEYWORD' ? '===' : token.value;
             const right = parseComparison();
 
             left = { type: 'BinaryExpression', operator, left, right, position };
@@ -1783,12 +1789,12 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse unary expression.
      *
      * GRAMMAR:
-     *   unary := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'cede' | 'novum') unary | call
+     *   unary := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'negativum' | 'positivum' | 'cede' | 'novum') unary | call
      *
      * PRECEDENCE: Higher than binary operators, lower than call/member access.
      *
      * WHY: Latin 'non' (not), 'nulla' (none/empty), 'nonnulla' (some/non-empty),
-     *      'cede' (await), 'novum' (new).
+     *      'negativum' (< 0), 'positivum' (> 0), 'cede' (await), 'novum' (new).
      */
     function parseUnary(): Expression {
         if (match('BANG') || matchKeyword('non')) {
@@ -1823,6 +1829,20 @@ export function parse(tokens: Token[]): ParserResult {
                 prefix: true,
                 position,
             };
+        }
+
+        if (matchKeyword('negativum')) {
+            const position = tokens[current - 1].position;
+            const argument = parseUnary();
+
+            return { type: 'UnaryExpression', operator: 'negativum', argument, prefix: true, position };
+        }
+
+        if (matchKeyword('positivum')) {
+            const position = tokens[current - 1].position;
+            const argument = parseUnary();
+
+            return { type: 'UnaryExpression', operator: 'positivum', argument, prefix: true, position };
         }
 
         if (matchKeyword('cede')) {
