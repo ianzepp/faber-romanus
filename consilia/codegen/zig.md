@@ -2,6 +2,8 @@
 
 Zig is a systems programming target that presents interesting challenges due to its explicit, low-level nature. It serves as an educational bridge between high-level Latin syntax and systems programming concepts.
 
+Zig and Rust share similar memory management concerns. Faber uses a **unified approach** for both targets: Latin prepositions (`de`, `in`) for borrowing semantics, and arena allocation for memory management. See rust.md for the full ownership design; this document covers Zig-specific details.
+
 ## What Makes Zig Easier
 
 ### 1. `varia`/`fixum` → `var`/`const`
@@ -71,7 +73,7 @@ Faber has `lista<T>` style generics. Zig uses comptime type parameters: `fn Arra
 
 Faber allows `"a" + "b"`. In Zig, you can only do this at comptime with `++`. Runtime string building needs an allocator and `std.mem.concat` or similar.
 
-**Current approach:** Use `++` and hope it's comptime. Runtime concatenation not properly handled.
+**Solution:** Arena allocator (see Memory Management section below). Runtime concatenation uses `std.fmt.allocPrint` with arena allocator.
 
 ### 7. Nullable Types
 
@@ -104,19 +106,159 @@ Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works
 | `vacuum` | `void` | Void return |
 | `textus?` | `?[]const u8` | Optional |
 
+## Ownership Design: Latin Prepositions
+
+> **Note:** The `de` and `in` keywords are **systems-target-specific**. They are only valid in Faber projects configured to compile to Zig or Rust. TypeScript or Python targets would reject these as syntax errors.
+
+Faber uses Latin prepositions to annotate borrowing semantics. This design is shared with the Rust target (see rust.md for full rationale).
+
+| Preposition | Meaning | Zig Output |
+|-------------|---------|------------|
+| (none) | Owned, may allocate | Allocator-managed value |
+| `de` | Borrowed, read-only | `[]const u8`, `*const T` |
+| `in` | Mutable borrow | `*T`, `*[]u8` |
+
+### Examples
+
+```
+// No preposition = owned, allocator-managed
+functio greet(textus name) -> textus {
+    redde "Hello, " + name + "!"
+}
+
+// "de" = borrowed slice, read-only
+functio length(de textus source) -> numerus {
+    redde source.longitudo
+}
+
+// "in" = mutable pointer, will be modified
+functio append(in lista<textus> items, textus value) {
+    items.adde(value)
+}
+```
+
+**Zig output:**
+```zig
+fn greet(alloc: Allocator, name: []const u8) []const u8 {
+    return std.fmt.allocPrint(alloc, "Hello, {s}!", .{name}) catch @panic("OOM");
+}
+
+fn length(source: []const u8) i64 {
+    return @intCast(source.len);
+}
+
+fn append(alloc: Allocator, items: *std.ArrayList([]const u8), value: []const u8) void {
+    items.append(alloc, value) catch @panic("OOM");
+}
+```
+
+### Type Mappings with Prepositions
+
+| Faber | Zig | Notes |
+|-------|-----|-------|
+| `textus` | arena-allocated `[]const u8` | Owned string |
+| `de textus` | `[]const u8` | Borrowed slice (no alloc needed) |
+| `in textus` | `*std.ArrayList(u8)` | Mutable string buffer |
+| `lista<T>` | `std.ArrayList(T)` | Arena-managed list |
+| `de lista<T>` | `[]const T` | Borrowed slice view |
+| `in lista<T>` | `*std.ArrayList(T)` | Mutable list pointer |
+
+## Memory Management: Arena Allocator
+
+Faber uses arena allocation as the default memory strategy for systems targets. This provides GC-like ergonomics without runtime overhead.
+
+### Why Arena?
+
+1. **Simple mental model** - Allocate freely, everything freed at scope exit
+2. **No explicit frees** - Generated code doesn't need `defer alloc.free(...)`
+3. **Zero memory leaks** - Arena deinit handles everything
+4. **Standard library** - Uses `std.heap.ArenaAllocator`, no external deps
+5. **Unified approach** - Same strategy works for Rust (`bumpalo`)
+
+### Generated Code Pattern
+
+```zig
+const std = @import("std");
+
+pub fn main() void {
+    // Arena wraps all allocations
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const alloc = arena.allocator();
+
+    // User code - allocations use arena
+    const greeting = greet(alloc, "World");
+    std.debug.print("{s}\n", .{greeting});
+
+    // Arena freed on function exit - no manual cleanup
+}
+```
+
+### Allocator Threading
+
+Functions that may allocate receive `alloc: std.mem.Allocator` as a hidden first parameter. The codegen inserts this automatically for:
+- Functions returning owned values (no `de` on return type)
+- Functions that concatenate strings
+- Functions that build collections
+
+Functions with only borrowed parameters (`de`) and borrowed returns don't need allocator.
+
+```
+// Needs allocator (returns owned)
+functio build() -> textus { ... }
+// Zig: fn build(alloc: Allocator) []const u8
+
+// No allocator needed (all borrowed)
+functio first(de lista<textus> items) -> de textus { ... }
+// Zig: fn first(items: []const []const u8) []const u8
+```
+
+### Scope-Based Arenas (Future)
+
+For long-running programs, nested arenas can bound memory lifetime:
+
+```
+// Faber (future syntax)
+cum arena {
+    // allocations here freed when block exits
+}
+```
+
+This maps to Zig's pattern of creating child arenas for bounded scopes.
+
 ## Design Tensions
 
-The core tension: **Faber leans toward dynamic/high-level semantics** (from its JS/TS heritage) while **Zig is explicitly low-level** with manual memory, no GC, and compile-time-everything.
+The core tension: **Faber leans toward dynamic/high-level semantics** while **Zig is explicitly low-level**. The ownership prepositions and arena allocator bridge this gap, giving Zig users familiar semantics without sacrificing Faber's accessibility.
 
-Features that would need rethinking for Zig to be a first-class target:
-- Memory ownership/lifetime annotations
-- Explicit allocator passing
-- Comptime vs runtime distinction in the source language
+Remaining tensions:
+- **Comptime vs runtime** - Faber doesn't distinguish; may generate runtime code where comptime would work
+- **Error handling** - Faber's exceptions don't map cleanly to error unions
+- **Generics** - Faber's runtime-style generics vs Zig's comptime monomorphization
+
+## Current Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Variables | Done | `var`/`const` |
+| Functions | Done | `fn` with params and return type |
+| Control flow | Done | `if`, `while`, `for`, `switch` |
+| `genus` | Done | `struct` with `init()` |
+| `pactum` | Partial | Documentation comment only |
+| `ego` | Done | → `self` |
+| `novum cum` | Done | `@hasField` pattern |
+| Async | Partial | Error unions, not real async |
+| Generators | No | Would need iterator struct |
+| Generics | No | Would need comptime params |
+| Collections | No | `lista` methods not mapped |
+| `de`/`in` prepositions | No | Design complete, not implemented |
+| Arena allocator | No | Design complete, not implemented |
 
 ## Future Considerations
 
-1. **Allocator threading** - Functions that allocate need allocator params
-2. **Iterator pattern** - Manual struct for generators
-3. **Comptime generics** - `fn(comptime T: type)` for generic types
-4. **Error sets** - Named error types instead of generic `@panic`
-5. **Build integration** - Generate `build.zig` for projects
+1. ~~**Allocator threading**~~ - Solved: arena allocator with implicit threading
+2. ~~**Ownership annotations**~~ - Solved: `de`/`in` prepositions (shared with Rust)
+3. **Iterator pattern** - Manual struct for generators
+4. **Comptime generics** - `fn(comptime T: type)` for generic types
+5. **Error sets** - Named error types instead of generic `@panic`
+6. **Build integration** - Generate `build.zig` for projects
+7. **Scope-based arenas** - `cum arena { }` for bounded allocation lifetimes

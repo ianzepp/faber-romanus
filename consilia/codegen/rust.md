@@ -1,6 +1,8 @@
 # Rust Target Notes
 
-Rust presents unique challenges as a compilation target due to its ownership system. While many Faber constructs have natural Rust equivalents, the fundamental mismatch is that Faber assumes garbage-collected semantics while Rust requires explicit ownership reasoning.
+Rust presents unique challenges as a compilation target due to its ownership system. While many Faber constructs have natural Rust equivalents, the fundamental difference is that Rust requires explicit ownership reasoning. Faber addresses this through Latin prepositions (`de`, `in`) that map naturally to Rust's borrow semantics.
+
+Rust and Zig share similar memory management concerns. Faber uses a **unified approach** for both targets: Latin prepositions (`de`, `in`) for borrowing semantics, and arena allocation for memory management. See zig.md for Zig-specific details.
 
 ## What Makes Rust Easier
 
@@ -38,31 +40,26 @@ Faber's nullable types (`textus?`) map to Rust's `Option<String>`. Rust has firs
 
 ## What Makes Rust Harder
 
-### 1. Ownership (The Big One)
+### 1. Ownership (Solved via Prepositions)
 
-Faber has no concept of ownership, borrowing, or moves. Every variable is implicitly "owned" with GC-style semantics. In Rust:
+Rust requires explicit ownership reasoning:
 - Who owns this value?
 - Should this be `&T`, `&mut T`, or `T`?
 - When does this get dropped?
 
-Faber can't express this, so we'd have to either:
-- **Clone everything** (safe but inefficient)
-- **Use `Rc<RefCell<T>>` everywhere** (runtime borrow checking)
-- **Make educated guesses** and hope
+**Solution:** Latin prepositions annotate ownership on parameters. See "Ownership Design" section below. Without annotations, fallback to clone-all semantics.
 
-### 2. Lifetimes
+### 2. Lifetimes (Solved via `de` on Return)
 
-Related to ownership - Faber has no lifetime annotations. If a Faber function returns a reference to something passed in, Rust needs `'a` annotations. We can't know this from Faber source.
+Rust needs lifetime annotations when returning borrowed values.
 
-```rust
-// Faber: functio first(lista<textus> items) -> textus
-// What Rust needs: fn first<'a>(items: &'a [String]) -> &'a str
-// What we'd generate: fn first(items: Vec<String>) -> String  // clone everything
-```
+**Solution:** Use `de` on return type to indicate borrowed return tied to input lifetimes. Mirrors Rust's elision rules. See "Lifetimes via `de` on Return Type" section below.
 
-### 3. String Types
+### 3. String Types (Solved via Prepositions)
 
-Rust has `String` (owned) vs `&str` (borrowed slice). Faber just has `textus`. We'd probably always generate `String` and `.clone()` liberally, which is wasteful.
+Rust has `String` (owned) vs `&str` (borrowed slice). Faber's `textus` maps to either based on preposition:
+- `textus` → `String` (owned)
+- `de textus` → `&str` (borrowed)
 
 ### 4. Exception Model
 
@@ -90,16 +87,19 @@ The struct update syntax is close but requires `Default` impl.
 
 | Aspect | Zig | Rust | Easier Target |
 |--------|-----|------|---------------|
-| Ownership/borrowing | No GC, but simpler model | Complex borrow checker | Zig |
+| Ownership/borrowing | `de`/`in` prepositions | `de`/`in` prepositions | Same (unified) |
+| Memory management | Arena (`std.heap.ArenaAllocator`) | Arena (`bumpalo`) | Same (unified) |
 | Interfaces | Duck typing (lossy) | Real traits | Rust |
 | Error handling | Error unions | Result<T, E> | Similar |
 | Generics | Comptime | Monomorphized | Similar |
-| String handling | `[]const u8` slices | `String`/`&str` split | Zig |
+| String handling | `de textus` → `[]const u8` | `de textus` → `&str` | Same (unified) |
 | Auto-merge constructor | `@hasField` comptime | Needs builder/Default | Zig |
 | Async | Frame-based | Future + runtime | Both hard |
 | Ecosystem/tooling | Newer | Mature (cargo) | Rust |
 
 ## Ownership Design: Latin Prepositions
+
+> **Note:** The `de` and `in` keywords are **systems-target-specific**. They are only valid in Faber projects configured to compile to Rust or Zig. TypeScript or Python targets would reject these as syntax errors. See thesis.md on target-specific features; see zig.md for Zig-specific mappings.
 
 A key insight: **Rust's ownership model maps naturally to Latin grammatical cases.** Latin uses declensions (noun endings) to indicate relationships - subject, object, possession, recipient. These concepts align with Rust's owned, moved, borrowed, and mutably borrowed.
 
@@ -226,11 +226,53 @@ The same restriction applies to generators (`cursor` functions) yielding borrowe
 4. **`de` on return = borrowed, lifetime tied to inputs**
 5. **Both syntaxes are equivalent** (same semantics, different aesthetics)
 
-## Fallback Approaches
+## Memory Management: Arena Allocator
 
-If ownership annotations aren't used, these fallbacks apply:
+Faber uses arena allocation as the default memory strategy for systems targets. This provides GC-like ergonomics without sacrificing Rust's safety guarantees.
 
-### Fallback 1: Clone Everything
+### Why Arena?
+
+1. **Simple mental model** - Allocate freely, everything freed at scope exit
+2. **No lifetime complexity** - Arena owns everything, no borrowing headaches
+3. **Zero memory leaks** - Arena drop handles cleanup
+4. **Battle-tested** - Uses `bumpalo` crate (widely used in production)
+5. **Unified approach** - Same strategy works for Zig (`std.heap.ArenaAllocator`)
+
+### Generated Code Pattern
+
+```rust
+use bumpalo::Bump;
+
+fn main() {
+    // Arena wraps all allocations
+    let arena = Bump::new();
+
+    // User code - allocations use arena
+    let greeting = greet(&arena, "World");
+    println!("{}", greeting);
+
+    // Arena dropped on function exit - no manual cleanup
+}
+
+fn greet<'a>(arena: &'a Bump, name: &str) -> &'a str {
+    arena.alloc_str(&format!("Hello, {}!", name))
+}
+```
+
+### Allocator Threading
+
+Functions that may allocate receive `arena: &Bump` as a hidden first parameter. The codegen inserts this automatically for:
+- Functions returning owned values (no `de` on return type)
+- Functions that concatenate strings
+- Functions that build collections
+
+Functions with only borrowed parameters (`de`) and borrowed returns don't need arena.
+
+### Fallback Approaches
+
+If arena allocation is disabled or insufficient:
+
+**Fallback 1: Clone Everything**
 
 Generate owned values everywhere, clone on every pass. Safe but inefficient.
 
@@ -240,16 +282,7 @@ fn process(items: Vec<String>) -> Vec<String> {
 }
 ```
 
-### Fallback 2: Rc<RefCell<T>> Wrapper
-
-Use reference-counted, runtime-borrow-checked wrappers for all values. Approximates GC semantics.
-
-```rust
-type FaberString = Rc<RefCell<String>>;
-type FaberList<T> = Rc<RefCell<Vec<T>>>;
-```
-
-### Fallback 3: Inference Heuristics
+**Fallback 2: Inference Heuristics**
 
 When no annotation is provided:
 - Function params: borrow by default (`&T`)
@@ -276,20 +309,22 @@ When no annotation is provided:
 
 ## Future Considerations
 
-1. **Ownership strategy** - Must decide on clone-all vs Rc vs inference
-2. **Lifetime inference** - Heuristics for when to borrow vs own
-3. **Error type design** - Custom error enum vs `Box<dyn Error>`
-4. **Async runtime** - Tokio vs async-std vs runtime-agnostic
-5. **Derive macros** - Auto-generate `Default`, `Clone`, `Debug`
-6. **Cargo integration** - Generate `Cargo.toml` for projects
+1. ~~**Ownership strategy**~~ - Solved: prepositions (`de`, `in`) with clone-all as fallback
+2. ~~**Lifetime inference**~~ - Solved: `de` on return type mirrors Rust elision
+3. ~~**Memory management**~~ - Solved: arena allocator (`bumpalo`) as default
+4. **Error type design** - Custom error enum vs `Box<dyn Error>`
+5. **Async runtime** - Tokio vs async-std vs runtime-agnostic
+6. **Derive macros** - Auto-generate `Default`, `Clone`, `Debug`
+7. **Cargo integration** - Generate `Cargo.toml` for projects (include `bumpalo` dep)
 
 ## Open Questions
 
 1. ~~Should Faber grow ownership annotations to support Rust properly?~~ **Yes - via Latin prepositions (`de`, `in`) with future declension support.**
-2. Is "clone everything" acceptable as fallback for unannotated code?
+2. ~~Is "clone everything" acceptable as fallback for unannotated code?~~ **Arena is primary, clone is fallback.**
 3. Could we detect pure functions and optimize ownership automatically?
 4. Should `genus` generate `#[derive(Clone, Default)]` automatically?
-5. What preposition maps to `Box<T>` (heap allocation)?
+5. ~~What preposition maps to `Box<T>` (heap allocation)?~~ **Arena handles this - explicit Box not needed.**
 6. ~~How do we handle lifetime annotations when borrowing across scopes?~~ **Use `de` on return type - mirrors Rust's elision rules.**
 7. Should `de de textus` (double borrow) mean `&&str`? Probably not needed.
 8. What about complex lifetime relationships (multiple distinct lifetimes)? Rare in practice - defer.
+9. Scope-based arenas: should `cum arena { }` create nested arenas for bounded lifetimes?
