@@ -66,6 +66,7 @@ import type {
     AssignmentExpression,
     AwaitExpression,
     NewExpression,
+    ArrayExpression,
     TypeAnnotation,
     ThrowStatement,
     ScribeStatement,
@@ -480,6 +481,9 @@ export function analyze(program: Program): SemanticResult {
             case 'ObjectExpression':
                 return resolveObjectExpression(node);
 
+            case 'ArrayExpression':
+                return resolveArrayExpression(node);
+
             default: {
                 const _exhaustive: never = node;
 
@@ -501,6 +505,45 @@ export function analyze(program: Program): SemanticResult {
         node.resolvedType = objType;
 
         return objType;
+    }
+
+    function resolveArrayExpression(node: ArrayExpression): SemanticType {
+        // Empty array - unknown element type
+        if (node.elements.length === 0) {
+            const arrType = genericType('lista', [UNKNOWN]);
+
+            node.resolvedType = arrType;
+
+            return arrType;
+        }
+
+        // Resolve all element types
+        const elementTypes: SemanticType[] = [];
+
+        for (const element of node.elements) {
+            elementTypes.push(resolveExpression(element));
+        }
+
+        // Infer element type from first element
+        const inferredElementType = elementTypes[0];
+
+        // Validate all elements match the inferred type
+        for (let i = 1; i < elementTypes.length; i++) {
+            if (!isAssignableTo(elementTypes[i], inferredElementType)) {
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.TypeMismatch];
+
+                error(
+                    `${text(formatType(elementTypes[i]), formatType(inferredElementType))} in array element ${i + 1}\n${help}`,
+                    node.elements[i].position,
+                );
+            }
+        }
+
+        const arrType = genericType('lista', [inferredElementType]);
+
+        node.resolvedType = arrType;
+
+        return arrType;
     }
 
     function resolveRange(node: Expression & { type: 'RangeExpression' }): SemanticType {
@@ -594,7 +637,24 @@ export function analyze(program: Program): SemanticResult {
         }
 
         // Comparison operators: <, >, <=, >=
+        // WHY: Only allow comparison between compatible types (both numeric or both string)
         if (['<', '>', '<=', '>='].includes(node.operator)) {
+            const leftPrim = leftType.kind === 'primitive' ? leftType.name : null;
+            const rightPrim = rightType.kind === 'primitive' ? rightType.name : null;
+
+            // Check for incompatible comparison (e.g., numerus > textus)
+            if (leftPrim && rightPrim && leftPrim !== rightPrim) {
+                // Allow unknown types to pass through
+                if (leftPrim !== 'unknown' && rightPrim !== 'unknown') {
+                    const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.IncompatibleComparison];
+
+                    error(
+                        `${text(formatType(leftType), formatType(rightType), node.operator)}\n${help}`,
+                        node.position,
+                    );
+                }
+            }
+
             node.resolvedType = BIVALENS;
 
             return BIVALENS;
@@ -622,12 +682,21 @@ export function analyze(program: Program): SemanticResult {
     function resolveUnaryExpression(node: UnaryExpression): SemanticType {
         const argType = resolveExpression(node.argument);
 
+        // Logical negation: !, non
         if (node.operator === '!' || node.operator === 'non') {
             node.resolvedType = BIVALENS;
 
             return BIVALENS;
         }
 
+        // Null checks: nulla (is null/empty), nonnulla (is not null/non-empty)
+        if (node.operator === 'nulla' || node.operator === 'nonnulla') {
+            node.resolvedType = BIVALENS;
+
+            return BIVALENS;
+        }
+
+        // Numeric negation
         if (node.operator === '-') {
             node.resolvedType = NUMERUS;
 

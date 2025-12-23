@@ -292,27 +292,30 @@ describe('Semantic Analyzer', () => {
         });
     });
 
-    describe('Missing Features - nulla/nonnulla operators', () => {
-        it.todo('nulla resolves to bivalens type', () => {
-            // SEMANTIC GAP: nulla/nonnulla type resolution not implemented
-            const source = `varia x = nulla items`;
+    describe('nulla/nonnulla operators', () => {
+        it('nulla resolves to bivalens type', () => {
+            const source = `
+                varia items = [1, 2, 3]
+                varia x = nulla items
+            `;
             const { errors, types } = analyzeSource(source);
 
             expect(errors).toHaveLength(0);
             expect(types.get('x')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
-        it.todo('nonnulla resolves to bivalens type', () => {
-            // SEMANTIC GAP: nulla/nonnulla type resolution not implemented
-            const source = `varia x = nonnulla data`;
+        it('nonnulla resolves to bivalens type', () => {
+            const source = `
+                varia data = "hello"
+                varia x = nonnulla data
+            `;
             const { errors, types } = analyzeSource(source);
 
             expect(errors).toHaveLength(0);
             expect(types.get('x')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
-        it.todo('nulla on array type', () => {
-            // SEMANTIC GAP: nulla/nonnulla type resolution not implemented
+        it('nulla on array type', () => {
             const source = `
                 varia lista<numerus> nums = [1, 2, 3]
                 varia check = nulla nums
@@ -323,8 +326,7 @@ describe('Semantic Analyzer', () => {
             expect(types.get('check')).toEqual({ kind: 'primitive', name: 'bivalens' });
         });
 
-        it.todo('nonnulla on nullable type', () => {
-            // SEMANTIC GAP: nulla/nonnulla type resolution not implemented
+        it('nonnulla on nullable type', () => {
             const source = `
                 varia textus? name = "test"
                 varia check = nonnulla name
@@ -442,8 +444,7 @@ describe('Semantic Analyzer', () => {
             expect(errors).toHaveLength(0);
         });
 
-        it.todo('assigning null to non-nullable should error', () => {
-            // SEMANTIC GAP: Should error on null assignment to non-nullable
+        it('assigning null to non-nullable should error', () => {
             const source = `varia textus s = nihil`;
             const { errors } = analyzeSource(source);
 
@@ -476,12 +477,13 @@ describe('Semantic Analyzer', () => {
             expect(errors.length).toBeGreaterThan(0);
         });
 
-        it.todo('validates array element types', () => {
-            // SEMANTIC GAP: Should error on type mismatch in array
+        it('validates array element types', () => {
             const source = `varia lista<numerus> nums = [1, "two", 3]`;
             const { errors } = analyzeSource(source);
 
             expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0].message).toContain('textus');
+            expect(errors[0].message).toContain('numerus');
         });
     });
 
@@ -623,14 +625,14 @@ describe('Semantic Analyzer', () => {
             expect(errors).toBeDefined();
         });
 
-        it.todo('comparison between incompatible types', () => {
-            // SEMANTIC GAP: Should warn on comparing incompatible types
+        it('comparison between incompatible types', () => {
             const source = `
                 varia result = 5 > "text"
             `;
             const { errors } = analyzeSource(source);
 
             expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0].message).toContain('Cannot compare');
         });
     });
 

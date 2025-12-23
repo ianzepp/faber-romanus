@@ -107,15 +107,15 @@ describe('Python codegen', () => {
             expect(result).toContain('return (x * 2)');
         });
 
-        // Note: These tests verify the codegen handles the async/generator flags
-        // when the AST has them set. The parser may not fully support these keywords yet.
-        test.skip('async function', () => {
-            const result = compile('futura functio fetch() fit textus { redde "data" }');
+        test('async function', () => {
+            // fiet = async single return (not fit which is sync)
+            const result = compile('functio fetch() fiet textus { redde "data" }');
             expect(result).toContain('async def fetch() -> Awaitable[str]:');
         });
 
-        test.skip('generator function', () => {
-            const result = compile('cursor functio gen() fit numerus { cede 1 }');
+        test('generator function', () => {
+            // fiunt = sync generator (not fit which is single return)
+            const result = compile('functio gen() fiunt numerus { cede 1 }');
             expect(result).toContain('def gen() -> Iterator[int]:');
             expect(result).toContain('yield 1');
         });

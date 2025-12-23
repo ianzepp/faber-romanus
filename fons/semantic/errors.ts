@@ -44,6 +44,7 @@ export enum SemanticErrorCode {
     ReturnTypeMismatch = 'S005',
     NoTypeOrInitializer = 'S006',
     NotExportedFromModule = 'S007',
+    IncompatibleComparison = 'S008',
 }
 
 // =============================================================================
@@ -86,5 +87,10 @@ export const SEMANTIC_ERRORS = {
     [SemanticErrorCode.NotExportedFromModule]: {
         text: (name: string, module: string) => `'${name}' is not exported from '${module}'`,
         help: 'Check the module documentation for available exports. You may have a typo in the import name.',
+    },
+    [SemanticErrorCode.IncompatibleComparison]: {
+        text: (leftType: string, rightType: string, operator: string) =>
+            `Cannot compare '${leftType}' with '${rightType}' using '${operator}'`,
+        help: 'Comparison operators require operands of the same type. Both sides must be numbers or both must be strings.',
     },
 } as const;
