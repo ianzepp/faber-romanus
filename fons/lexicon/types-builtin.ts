@@ -102,8 +102,10 @@ export const builtinTypes: TypeEntry[] = [
         category: 'primitive',
     },
     // WHY: bivalens (3rd decl masculine) - "two-valued, having two values"
+    //      Nominative differs from stem (bivalens vs bivalen-)
     {
         stem: 'bivalen',
+        nominative: 'bivalens',
         declension: 3,
         gender: 'masculine',
         meaning: 'boolean',
