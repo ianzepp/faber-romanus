@@ -848,14 +848,11 @@ export function parse(tokens: Token[]): ParserResult {
 
             if (member.type === 'FieldDeclaration') {
                 fields.push(member);
-            }
-            else if (member.type === 'ComputedFieldDeclaration') {
+            } else if (member.type === 'ComputedFieldDeclaration') {
                 computedFields.push(member);
-            }
-            else if (member.isConstructor) {
+            } else if (member.isConstructor) {
                 constructorMethod = member;
-            }
-            else {
+            } else {
                 methods.push(member);
             }
         }
@@ -2175,7 +2172,13 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         // Build the base type
-        let result: TypeAnnotation = { type: 'TypeAnnotation', name, typeParameters, nullable, position };
+        let result: TypeAnnotation = {
+            type: 'TypeAnnotation',
+            name,
+            typeParameters,
+            nullable,
+            position,
+        };
 
         // Handle array shorthand: numerus[] -> lista<numerus>
         // Each [] wraps in lista with arrayShorthand flag for round-trip fidelity

@@ -460,7 +460,9 @@ describe('parser', () => {
         });
 
         test('genus with creo constructor', () => {
-            const { program } = parseCode('genus persona { functio creo(valores) { redde nihil } }');
+            const { program } = parseCode(
+                'genus persona { functio creo(valores) { redde nihil } }',
+            );
             const genus = program!.body[0] as any;
 
             expect(genus.constructor).toBeDefined();

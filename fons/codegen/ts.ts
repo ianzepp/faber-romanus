@@ -358,9 +358,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             const fieldType = genType(f.fieldType);
             return `${fieldName}?: ${fieldType}`;
         });
-        const overridesType = overrideProps.length > 0
-            ? `{ ${overrideProps.join(', ')} }`
-            : 'Record<string, never>';
+        const overridesType =
+            overrideProps.length > 0 ? `{ ${overrideProps.join(', ')} }` : 'Record<string, never>';
 
         lines.push(`${ind()}constructor(overrides: ${overridesType} = {}) {`);
         depth++;
@@ -368,7 +367,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         // Apply each override if provided
         for (const field of node.fields) {
             const fieldName = field.name.name;
-            lines.push(`${ind()}if (overrides.${fieldName} !== undefined) this.${fieldName} = overrides.${fieldName}${semi ? ';' : ''}`);
+            lines.push(
+                `${ind()}if (overrides.${fieldName} !== undefined) this.${fieldName} = overrides.${fieldName}${semi ? ';' : ''}`,
+            );
         }
 
         // Call creo() if user defined it
