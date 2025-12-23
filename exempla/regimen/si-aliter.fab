@@ -86,7 +86,7 @@ aliter {
     scribe "F - Failing"
 }
 
-// Complex conditions using "sin" instead of "aliter si"
+// Complex conditions using "si/sin/secus"
 fixum hour = 14
 
 si hour < 6 {
@@ -101,7 +101,7 @@ sin hour < 18 {
 sin hour < 22 {
     scribe "Evening"
 }
-aliter {
+secus {
     scribe "Night"
 }
 

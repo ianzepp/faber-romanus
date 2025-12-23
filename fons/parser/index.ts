@@ -1057,17 +1057,18 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse if statement.
      *
      * GRAMMAR:
-     *   ifStmt := 'si' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)? ('aliter' (ifStmt | blockStmt | statement) | 'sin' ifStmt)?
+     *   ifStmt := 'si' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)? (elseClause | 'sin' ifStmt)?
+     *   elseClause := ('aliter' | 'secus') (ifStmt | blockStmt | statement)
      *
      * WHY: 'cape' (catch/seize) clause allows error handling within conditionals.
-     *      'aliter' (otherwise) for else clause.
-     *      'sin' (but if) is classical Latin for else-if, equivalent to 'aliter si'.
      *      'ergo' (therefore) for one-liner consequents.
+     *      Literal style: si / aliter si / aliter
+     *      Poetic style:  si / sin / secus
      *
      * Examples:
      *   si x > 5 ergo scribe("big")
      *   si x > 5 { scribe("big") } aliter scribe("small")
-     *   si x < 0 { ... } sin x == 0 { ... } aliter { ... }
+     *   si x < 0 { ... } sin x == 0 { ... } secus { ... }
      */
     function parseIfStatement(skipSiKeyword = false): IfStatement {
         const position = peek().position;
@@ -1095,16 +1096,16 @@ export function parse(tokens: Token[]): ParserResult {
             catchClause = parseCatchClause();
         }
 
-        // Check for alternate (aliter or sin)
+        // Check for alternate: aliter/secus (else) or sin (else-if)
         let alternate: BlockStatement | IfStatement | undefined;
 
-        if (matchKeyword('aliter')) {
+        if (matchKeyword('aliter') || matchKeyword('secus')) {
             if (checkKeyword('si')) {
                 alternate = parseIfStatement();
             } else if (check('LBRACE')) {
                 alternate = parseBlockStatement();
             } else {
-                // One-liner: aliter statement (no ergo needed)
+                // One-liner: aliter/secus statement (no ergo needed)
                 const stmtPos = peek().position;
                 const stmt = parseStatement();
                 alternate = { type: 'BlockStatement', body: [stmt], position: stmtPos };
@@ -1239,10 +1240,10 @@ export function parse(tokens: Token[]): ParserResult {
      * GRAMMAR:
      *   switchStmt := 'elige' expression '{' switchCase* defaultCase? '}' catchClause?
      *   switchCase := 'si' expression (blockStmt | 'ergo' expression)
-     *   defaultCase := 'aliter' (blockStmt | statement)
+     *   defaultCase := ('aliter' | 'secus') (blockStmt | statement)
      *
      * WHY: 'elige' (choose) for switch, 'si' (if) for cases, 'ergo' (therefore) for one-liners.
-     *      'aliter' (otherwise) doesn't need 'ergo' - it's already the consequence.
+     *      'aliter'/'secus' (otherwise) doesn't need 'ergo' - it's already the consequence.
      *
      * Examples:
      *   elige status {
@@ -1304,8 +1305,8 @@ export function parse(tokens: Token[]): ParserResult {
                 const consequent = parseSiBody();
 
                 cases.push({ type: 'SwitchCase', test, consequent, position: casePosition });
-            } else if (checkKeyword('aliter')) {
-                expectKeyword('aliter', ParserErrorCode.ExpectedKeywordAliter);
+            } else if (checkKeyword('aliter') || checkKeyword('secus')) {
+                advance(); // consume aliter or secus
 
                 defaultCase = parseAliterBody();
                 break; // Default must be last

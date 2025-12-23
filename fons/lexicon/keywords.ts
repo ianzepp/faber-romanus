@@ -72,10 +72,12 @@ export const keywords: KeywordEntry[] = [
     // ---------------------------------------------------------------------------
 
     // WHY: Latin uses imperative mood (command forms) for control structures
+    // Literal: si / aliter si / aliter
+    // Poetic:  si / sin / secus
     { latin: 'si', meaning: 'if', category: 'control' },
     { latin: 'aliter', meaning: 'else', category: 'control' },
-    // WHY: "sin" (but if) is classical Latin for introducing an alternative condition
     { latin: 'sin', meaning: 'else if', category: 'control' },
+    { latin: 'secus', meaning: 'else', category: 'control' },
     { latin: 'dum', meaning: 'while', category: 'control' },
     { latin: 'fac', meaning: 'do', category: 'control' },
     { latin: 'pro', meaning: 'for', category: 'control' },
