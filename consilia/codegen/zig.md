@@ -39,43 +39,37 @@ Faber encourages type annotations (`numerus x = 5`). Zig requires them for `var`
 
 ## What Makes Zig Harder
 
-### 1. Exception Model (`tempta`/`cape`/`iace`)
-
-Faber has try/catch/throw semantics from the JS world. Zig uses error unions (`!T`) and `try` for propagation. There's no `catch` block equivalent - you either handle errors inline with `catch |err|` or propagate with `try`. The `demum` (finally) block has no Zig equivalent at all.
-
-**Current approach:** `iace` → `@panic`, `tempta` → comment, `futura` → `!ReturnType`
-
-### 2. `pactum` (Interfaces)
+### 1. `pactum` (Interfaces)
 
 Faber has nominal interfaces. Zig uses structural/duck typing. We can't actually enforce that a struct "implements" a pactum - we just document the contract and hope.
 
 **Current approach:** Emit documentation comment describing the required methods.
 
-### 3. Generators (`cursor` Functions)
+### 2. Generators (`cursor` Functions)
 
 Faber supports generator functions with `cede` yielding values. Zig has no generators - you'd need to manually build an iterator struct with state. This is a significant impedance mismatch.
 
 **Current approach:** Not implemented.
 
-### 4. Async Model
+### 3. Async Model
 
 Faber's `futura`/`cede` assumes JS-style Promise-based async. Zig's async is frame-based with explicit suspend/resume points and allocator concerns.
 
 **Current approach:** Fake it with error unions (`!T` return type, `try` for cede).
 
-### 5. Generics
+### 4. Generics
 
 Faber has `lista<T>` style generics. Zig uses comptime type parameters: `fn ArrayList(comptime T: type)`. Runtime generic instantiation doesn't exist - everything is monomorphized at compile time.
 
 **Current approach:** Not implemented for genus. Collection types not supported.
 
-### 6. String Concatenation
+### 5. String Concatenation
 
 Faber allows `"a" + "b"`. In Zig, you can only do this at comptime with `++`. Runtime string building needs an allocator and `std.mem.concat` or similar.
 
 **Solution:** Arena allocator (see Memory Management section below). Runtime concatenation uses `std.fmt.allocPrint` with arena allocator.
 
-### 7. Nullable Types
+### 6. Nullable Types
 
 Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works, but Zig's optional handling requires explicit unwrapping (`.?`, `orelse`, `if (x) |val|`) that Faber doesn't surface.
 
@@ -226,13 +220,115 @@ cum arena {
 
 This maps to Zig's pattern of creating child arenas for bounded scopes.
 
+## Error Handling Design
+
+Faber uses a simplified error model that maps cleanly to Zig's error unions. This design is shared with the Rust target.
+
+### Keywords
+
+| Keyword | Meaning | Zig Output |
+|---------|---------|------------|
+| `iace` | Expected failure, recoverable | `return error.X` |
+| `mori` | Fatal, unrecoverable | `@panic("msg")` |
+| `cape` | Catch errors on any block | `catch \|err\|` |
+
+**Removed keywords:**
+- ~~`tempta`~~ - Redundant; `cape` attaches to any block
+- ~~`demum`~~ - No Zig equivalent; use code after block instead
+
+### `iace` - Recoverable Errors
+
+`iace` (throw) becomes an error return. The compiler automatically:
+1. Marks functions containing `iace` as failable
+2. Changes return type from `T` to `!T`
+3. Inserts `try` at call sites of failable functions
+4. Wraps successful returns appropriately
+
+```
+// Faber
+functio fetch(url: textus) -> textus {
+    si timeout { iace "timeout" }
+    redde data
+}
+
+fixum result = fetch(url)
+```
+
+**Zig output:**
+```zig
+fn fetch(alloc: Allocator, url: []const u8) ![]const u8 {
+    if (timeout) { return error.Timeout; }
+    return data;
+}
+
+const result = try fetch(alloc, url);
+```
+
+### `mori` - Fatal Errors
+
+`mori` (to die) indicates an unrecoverable error - a bug or impossible state. Maps directly to `@panic`.
+
+```
+// Faber
+si index < 0 { mori "negative index" }
+
+// Zig
+if (index < 0) { @panic("negative index"); }
+```
+
+### `cape` - Error Boundaries
+
+`cape` attaches to any block to catch errors. No `tempta` needed.
+
+```
+// Faber
+{
+    riskyCall()
+} cape err {
+    handleError(err)
+}
+
+si needsData {
+    fetchData()
+} cape err {
+    useFallback()
+}
+```
+
+**Zig output:**
+```zig
+if (riskyCall()) |_| {
+    // success path
+} else |err| {
+    handleError(err);
+}
+
+if (needsData) {
+    if (fetchData()) |_| {
+        // success
+    } else |err| {
+        useFallback();
+    }
+}
+```
+
+### Error Type Inference
+
+The compiler infers error types from `iace` usage. String literals become error enum members:
+
+```
+iace "timeout"     // -> error.Timeout
+iace "not_found"   // -> error.NotFound
+```
+
+Functions that can fail get an inferred error set based on all possible errors in their call graph.
+
 ## Design Tensions
 
 The core tension: **Faber leans toward dynamic/high-level semantics** while **Zig is explicitly low-level**. The ownership prepositions and arena allocator bridge this gap, giving Zig users familiar semantics without sacrificing Faber's accessibility.
 
 Remaining tensions:
 - **Comptime vs runtime** - Faber doesn't distinguish; may generate runtime code where comptime would work
-- **Error handling** - Faber's exceptions don't map cleanly to error unions
 - **Generics** - Faber's runtime-style generics vs Zig's comptime monomorphization
 
 ## Current Implementation Status
@@ -252,13 +348,14 @@ Remaining tensions:
 | Collections | No | `lista` methods not mapped |
 | `de`/`in` prepositions | No | Design complete, not implemented |
 | Arena allocator | No | Design complete, not implemented |
+| `iace`/`mori` errors | No | Design complete, not implemented |
 
 ## Future Considerations
 
 1. ~~**Allocator threading**~~ - Solved: arena allocator with implicit threading
 2. ~~**Ownership annotations**~~ - Solved: `de`/`in` prepositions (shared with Rust)
-3. **Iterator pattern** - Manual struct for generators
-4. **Comptime generics** - `fn(comptime T: type)` for generic types
-5. **Error sets** - Named error types instead of generic `@panic`
+3. ~~**Error handling**~~ - Solved: `iace`/`mori` split, `cape` on any block, remove `tempta`/`demum`
+4. **Iterator pattern** - Manual struct for generators
+5. **Comptime generics** - `fn(comptime T: type)` for generic types
 6. **Build integration** - Generate `build.zig` for projects
 7. **Scope-based arenas** - `cum arena { }` for bounded allocation lifetimes

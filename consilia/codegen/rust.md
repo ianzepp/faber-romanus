@@ -61,21 +61,15 @@ Rust has `String` (owned) vs `&str` (borrowed slice). Faber's `textus` maps to e
 - `textus` → `String` (owned)
 - `de textus` → `&str` (borrowed)
 
-### 4. Exception Model
-
-Like Zig, Rust has no exceptions. `tempta`/`cape`/`iace` would need to become `Result<T, E>` with `match` or `?`. But Faber's catch blocks expect to receive the error and continue - Rust's model is more "handle or propagate."
-
-`demum` (finally) has no equivalent. Rust uses RAII/Drop for cleanup.
-
-### 5. Generators
+### 4. Generators
 
 Rust has unstable generator syntax, but stable Rust requires manual `Iterator` impl with state structs - same problem as Zig.
 
-### 6. Async Model
+### 5. Async Model
 
 Rust's async is also different from JS. It's lazy (futures don't run until polled), needs a runtime (tokio, async-std), and has `Pin` complexity for self-referential futures. Faber's simple `futura`/`cede` hides all this.
 
-### 7. `novum X cum { overrides }`
+### 6. `novum X cum { overrides }`
 
 Rust doesn't have Zig's comptime `@hasField`. The auto-merge pattern would need:
 - A builder pattern, or
@@ -290,6 +284,109 @@ When no annotation is provided:
 - Local variables: owned (`T`)
 - Method receivers: `&self` for reads, `&mut self` for mutations
 
+## Error Handling Design
+
+Faber uses a simplified error model that maps cleanly to Rust's `Result` type. This design is shared with the Zig target.
+
+### Keywords
+
+| Keyword | Meaning | Rust Output |
+|---------|---------|-------------|
+| `iace` | Expected failure, recoverable | `return Err(...)` |
+| `mori` | Fatal, unrecoverable | `panic!("msg")` |
+| `cape` | Catch errors on any block | `match` / `if let Err` |
+
+**Removed keywords:**
+- ~~`tempta`~~ - Redundant; `cape` attaches to any block
+- ~~`demum`~~ - No Rust equivalent; use code after block or RAII
+
+### `iace` - Recoverable Errors
+
+`iace` (throw) becomes an error return. The compiler automatically:
+1. Marks functions containing `iace` as failable
+2. Changes return type from `T` to `Result<T, FaberError>`
+3. Inserts `?` at call sites of failable functions
+4. Wraps successful returns in `Ok(...)`
+
+```
+// Faber
+functio fetch(url: textus) -> textus {
+    si timeout { iace "timeout" }
+    redde data
+}
+
+fixum result = fetch(url)
+```
+
+**Rust output:**
+```rust
+fn fetch(arena: &Bump, url: &str) -> Result<String, FaberError> {
+    if timeout { return Err(FaberError::new("timeout")); }
+    Ok(data)
+}
+
+let result = fetch(&arena, url)?;
+```
+
+### `mori` - Fatal Errors
+
+`mori` (to die) indicates an unrecoverable error - a bug or impossible state. Maps directly to `panic!`.
+
+```
+// Faber
+si index < 0 { mori "negative index" }
+
+// Rust
+if index < 0 { panic!("negative index"); }
+```
+
+### `cape` - Error Boundaries
+
+`cape` attaches to any block to catch errors. No `tempta` needed.
+
+```
+// Faber
+{
+    riskyCall()
+} cape err {
+    handleError(err)
+}
+
+si needsData {
+    fetchData()
+} cape err {
+    useFallback()
+}
+```
+
+**Rust output:**
+```rust
+match risky_call() {
+    Ok(_) => { /* success path */ },
+    Err(err) => { handle_error(err); }
+}
+
+if needs_data {
+    match fetch_data() {
+        Ok(_) => { /* success */ },
+        Err(err) => { use_fallback(); }
+    }
+}
+```
+
+### Error Type
+
+By default, Faber uses a simple `FaberError` type wrapping a string message:
+
+```rust
+#[derive(Debug)]
+pub struct FaberError {
+    message: String,
+}
+```
+
+Future enhancement: infer error enums from `iace` usage patterns.
+
 ## Type Mappings
 
 | Faber | Rust | Notes |
@@ -312,7 +409,7 @@ When no annotation is provided:
 1. ~~**Ownership strategy**~~ - Solved: prepositions (`de`, `in`) with clone-all as fallback
 2. ~~**Lifetime inference**~~ - Solved: `de` on return type mirrors Rust elision
 3. ~~**Memory management**~~ - Solved: arena allocator (`bumpalo`) as default
-4. **Error type design** - Custom error enum vs `Box<dyn Error>`
+4. ~~**Error handling**~~ - Solved: `iace`/`mori` split, `cape` on any block, remove `tempta`/`demum`
 5. **Async runtime** - Tokio vs async-std vs runtime-agnostic
 6. **Derive macros** - Auto-generate `Default`, `Clone`, `Debug`
 7. **Cargo integration** - Generate `Cargo.toml` for projects (include `bumpalo` dep)
