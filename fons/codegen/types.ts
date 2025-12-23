@@ -28,10 +28,15 @@
 // =============================================================================
 
 /**
- * WHY: Three targets are supported - TypeScript (default), Zig, and WASM
- *      Future targets (C, Rust) would extend this union
+ * WHY: Multiple targets are supported for different use cases:
+ *      - ts: TypeScript (default) - web-first development
+ *      - zig: Systems programming, educational
+ *      - wasm: WebAssembly for browser runtime
+ *      - py: Python - popular, good for teaching
+ *      - rb: Ruby - dynamic semantics similar to Python
+ *      - cpp: C++ - systems programming alternative
  */
-export type CodegenTarget = 'ts' | 'zig' | 'wasm';
+export type CodegenTarget = 'ts' | 'zig' | 'wasm' | 'py' | 'rb' | 'cpp';
 
 /**
  * Configuration options for code generation.

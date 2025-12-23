@@ -38,6 +38,9 @@ import type { CodegenOptions } from './types';
 import { generateTs } from './ts/index';
 import { generateZig } from './zig/index';
 import { generateWasm } from './wasm/index';
+import { generatePy } from './py/index';
+import { generateRb } from './rb/index';
+import { generateCpp } from './cpp/index';
 
 // =============================================================================
 // PUBLIC API
@@ -47,6 +50,9 @@ export type { CodegenOptions, CodegenTarget } from './types';
 export { generateTs } from './ts/index';
 export { generateZig } from './zig/index';
 export { generateWasm } from './wasm/index';
+export { generatePy } from './py/index';
+export { generateRb } from './rb/index';
+export { generateCpp } from './cpp/index';
 
 // =============================================================================
 // TARGET DISPATCHER
@@ -81,6 +87,12 @@ export function generate(program: Program, options: CodegenOptions = {}): string
             return generateZig(program, options);
         case 'wasm':
             return generateWasm(program, options);
+        case 'py':
+            return generatePy(program, options);
+        case 'rb':
+            return generateRb(program, options);
+        case 'cpp':
+            return generateCpp(program, options);
         default:
             // EDGE: TypeScript types prevent this, but defensive check for runtime
             throw new Error(`Unknown codegen target: ${target}`);
