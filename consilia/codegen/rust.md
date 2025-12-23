@@ -294,11 +294,35 @@ Faber uses a simplified error model that maps cleanly to Rust's `Result` type. T
 |---------|---------|-------------|
 | `iace` | Expected failure, recoverable | `return Err(...)` |
 | `mori` | Fatal, unrecoverable | `panic!("msg")` |
-| `cape` | Catch errors on any block | `match` / `if let Err` |
+| `fac` | Block scope (like `{}`) | scoped block |
+| `cape` | Catch errors on block | `match` / `if let Err` |
 
-**Removed keywords:**
-- ~~`tempta`~~ - Redundant; `cape` attaches to any block
-- ~~`demum`~~ - No Rust equivalent; use code after block or RAII
+**Target-specific keywords:**
+- `tempta`/`demum` - Available for TS/Python (maps to try/finally), but **not valid for Rust** because `demum` has no equivalent (Rust uses RAII/Drop). Use `fac`/`cape` instead.
+
+### `fac` vs `tempta`
+
+`fac` (do!) is a simple block scope. `tempta` (try) implies the full try/catch/finally pattern.
+
+```
+// Systems targets (Zig/Rust): use fac
+fac {
+    riskyCall()
+} cape err {
+    handleError(err)
+}
+
+// TS/Python: tempta with demum works
+tempta {
+    riskyCall()
+} cape err {
+    handleError(err)
+} demum {
+    cleanup()  // always runs
+}
+```
+
+For Rust, `tempta` is rejected because it implies `demum` which cannot be directly implemented. Use `fac` for explicit block scoping with error handling.
 
 ### `iace` - Recoverable Errors
 
@@ -342,16 +366,17 @@ if index < 0 { panic!("negative index"); }
 
 ### `cape` - Error Boundaries
 
-`cape` attaches to any block to catch errors. No `tempta` needed.
+`cape` attaches to `fac` blocks or control flow statements to catch errors.
 
 ```
-// Faber
-{
+// Faber - fac block with cape
+fac {
     riskyCall()
 } cape err {
     handleError(err)
 }
 
+// cape on control flow
 si needsData {
     fetchData()
 } cape err {

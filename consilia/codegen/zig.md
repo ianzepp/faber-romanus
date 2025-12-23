@@ -230,11 +230,35 @@ Faber uses a simplified error model that maps cleanly to Zig's error unions. Thi
 |---------|---------|------------|
 | `iace` | Expected failure, recoverable | `return error.X` |
 | `mori` | Fatal, unrecoverable | `@panic("msg")` |
-| `cape` | Catch errors on any block | `catch \|err\|` |
+| `fac` | Block scope (like `{}`) | scoped block |
+| `cape` | Catch errors on block | `catch \|err\|` |
 
-**Removed keywords:**
-- ~~`tempta`~~ - Redundant; `cape` attaches to any block
-- ~~`demum`~~ - No Zig equivalent; use code after block instead
+**Target-specific keywords:**
+- `tempta`/`demum` - Available for TS/Python (maps to try/finally), but **not valid for Zig** because `demum` has no equivalent. Use `fac`/`cape` instead.
+
+### `fac` vs `tempta`
+
+`fac` (do!) is a simple block scope. `tempta` (try) implies the full try/catch/finally pattern.
+
+```
+// Systems targets (Zig/Rust): use fac
+fac {
+    riskyCall()
+} cape err {
+    handleError(err)
+}
+
+// TS/Python: tempta with demum works
+tempta {
+    riskyCall()
+} cape err {
+    handleError(err)
+} demum {
+    cleanup()  // always runs
+}
+```
+
+For Zig, `tempta` is rejected because it implies `demum` which cannot be implemented. Use `fac` for explicit block scoping with error handling.
 
 ### `iace` - Recoverable Errors
 
@@ -278,16 +302,17 @@ if (index < 0) { @panic("negative index"); }
 
 ### `cape` - Error Boundaries
 
-`cape` attaches to any block to catch errors. No `tempta` needed.
+`cape` attaches to `fac` blocks or control flow statements to catch errors.
 
 ```
-// Faber
-{
+// Faber - fac block with cape
+fac {
     riskyCall()
 } cape err {
     handleError(err)
 }
 
+// cape on control flow
 si needsData {
     fetchData()
 } cape err {
