@@ -152,59 +152,42 @@ export interface ParserResult {
 // =============================================================================
 
 /**
+ * Compute nominative singular form from stem, declension, and gender.
+ *
+ * WHY: Users write nominative forms in source (textus, numerus), but lexicon
+ *      stores stems (text, numer). This computes the nominative for lookup.
+ */
+function computeNominative(stem: string, declension: number, gender: string): string {
+    switch (declension) {
+        case 1:
+            return stem + 'a'; // lista, tabula, copia
+        case 2:
+            return gender === 'neuter' ? stem + 'um' : stem + 'us'; // numerus, datum
+        case 3:
+            return stem; // 3rd decl nominative varies - handled via nominative field
+        case 4:
+            return stem + 'us'; // textus, fluxus
+        case 5:
+            return stem + 'es';
+        default:
+            return stem;
+    }
+}
+
+/**
  * Set of all builtin type names for quick lookup.
  *
  * PERF: Pre-computed Set enables O(1) type name checking.
  *
  * WHY: Used by isTypeName() to distinguish type names from regular identifiers
  *      in type-first syntax parsing (e.g., "fixum textus nomen" vs "fixum nomen").
+ *
+ * DESIGN: Computed from builtinTypes to avoid duplication. Uses nominative forms
+ *         since that's what users write in source code.
  */
-const BUILTIN_TYPE_NAMES = new Set([
-    // Primitives (lowercase - matching is case-insensitive)
-    'textus',
-    'numerus',
-    'bivalens',
-    'fractus',
-    'decimus',
-    'signum',
-    'incertum',
-    'nihil',
-    // Collections
-    'lista',
-    'tabula',
-    'copia',
-    // Structural
-    'res',
-    'functio',
-    'promissum',
-    'forsitan',
-    'fors',
-    'tempus',
-    'erratum',
-    'vacuum',
-    'quodlibet',
-    'ignotum',
-    // Iteration
-    'cursor',
-    'fluxus',
-    'futuracursor',
-    'futurusfluxus',
-    // Systems
-    'indicium',
-    'refera',
-    // Utility (TypeScript only)
-    'pars',
-    'totum',
-    'lectum',
-    'registrum',
-    'selectum',
-    'omissum',
-    'extractum',
-    'exclusum',
-    'nonnihil',
-    'reditus',
-    'parametra',
-]);
+const BUILTIN_TYPE_NAMES = new Set(
+    builtinTypes.map(t => t.nominative ?? computeNominative(t.stem, t.declension, t.gender)),
+);
 
 /**
  * Set of all type modifier names for quick lookup.
@@ -212,8 +195,10 @@ const BUILTIN_TYPE_NAMES = new Set([
  * WHY: Used to distinguish modifiers from regular type parameters.
  *
  * CASE: Lowercase canonical form. Lookup is case-insensitive.
+ *
+ * DESIGN: Computed from typeModifiers to avoid duplication.
  */
-const TYPE_MODIFIER_NAMES = new Set(['naturalis', 'proprius', 'alienus', 'mutabilis']);
+const TYPE_MODIFIER_NAMES = new Set(Object.keys(typeModifiers));
 
 // =============================================================================
 // MAIN PARSER FUNCTION
@@ -1871,7 +1856,7 @@ export function parse(tokens: Token[]): ParserResult {
                 };
             } else if (match('LBRACKET')) {
                 const position = tokens[current - 1].position;
-                const property = parseExpression() as Identifier;
+                const property = parseExpression();
 
                 expect('RBRACKET', "Expected ']'");
                 expr = {
@@ -2151,10 +2136,15 @@ export function parse(tokens: Token[]): ParserResult {
                     });
                 } else if (isModifier(peek())) {
                     const modToken = advance();
+                    const modName = modToken.value.toLowerCase() as
+                        | 'naturalis'
+                        | 'proprius'
+                        | 'alienus'
+                        | 'mutabilis';
 
                     typeParameters.push({
                         type: 'ModifierParameter',
-                        name: modToken.value as 'Naturalis' | 'Proprius' | 'Alienus' | 'Mutabilis',
+                        name: modName,
                         position: modToken.position,
                     });
                 } else {

@@ -889,7 +889,7 @@ export interface CallExpression extends BaseNode {
 export interface MemberExpression extends BaseNode {
     type: 'MemberExpression';
     object: Expression;
-    property: Identifier;
+    property: Expression;
     computed: boolean;
 }
 
@@ -1014,21 +1014,21 @@ export type TypeParameter = TypeAnnotation | Literal | ModifierParameter;
  * GRAMMAR (in EBNF):
  *   modifierParam := 'Naturalis' | 'Proprius' | 'Alienus' | 'Mutabilis'
  *
- * INVARIANT: name is one of the four supported modifiers.
+ * INVARIANT: name is one of the four supported modifiers (lowercase canonical form).
  *
  * WHY: Type modifiers control numeric signedness, ownership semantics, etc.
- *      - Naturalis: unsigned/natural numbers
- *      - Proprius: owned (move semantics)
- *      - Alienus: borrowed (reference semantics)
- *      - Mutabilis: mutable
+ *      - naturalis: unsigned/natural numbers
+ *      - proprius: owned (move semantics)
+ *      - alienus: borrowed (reference semantics)
+ *      - mutabilis: mutable
  *
  * Examples:
- *   numerus<Naturalis> -> unsigned integer
- *   textus<Alienus> -> borrowed string reference
+ *   numerus<naturalis> -> unsigned integer
+ *   textus<alienus> -> borrowed string reference
  */
 export interface ModifierParameter extends BaseNode {
     type: 'ModifierParameter';
-    name: 'Naturalis' | 'Proprius' | 'Alienus' | 'Mutabilis';
+    name: 'naturalis' | 'proprius' | 'alienus' | 'mutabilis';
 }
 
 /**
