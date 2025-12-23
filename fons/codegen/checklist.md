@@ -1,6 +1,6 @@
 # Codegen Target Checklist
 
-Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented
+Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not applicable to target
 
 ## Type System
 
@@ -41,8 +41,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented
 | Parameter type annotations | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Return type annotation | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `futura` (async) | [x] | [~] | [x] | [ ] | [ ] | [ ] |
-| `cursor` (generator) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
-| Async generator | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
+| `cursor` (generator) | [x] | [-] | [x] | [ ] | [ ] | [ ] |
+| Async generator | [x] | [-] | [x] | [ ] | [ ] | [ ] |
 | Arrow functions | [x] | [~] | [x] | [ ] | [ ] | [ ] |
 
 ## Control Flow Statements
@@ -78,9 +78,9 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented
 
 | Feature | TypeScript | Zig | Python | WASM | Rust | C++ |
 |---------|:----------:|:---:|:------:|:----:|:----:|:---:|
-| `tempta` (try) | [x] | [~] | [x] | [ ] | [ ] | [ ] |
+| `tempta` (try) | [x] | [-] | [x] | [ ] | [ ] | [ ] |
 | `cape` (catch) | [x] | [~] | [x] | [ ] | [ ] | [ ] |
-| `demum` (finally) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
+| `demum` (finally) | [x] | [-] | [x] | [ ] | [ ] | [ ] |
 | `iace` (throw) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `adfirma` (assert) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Assert with message | [x] | [x] | [x] | [ ] | [ ] | [ ] |
@@ -137,7 +137,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented
 | Auto-merge constructor | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Methods | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Async methods | [x] | [~] | [x] | [ ] | [ ] | [ ] |
-| Generator methods | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
+| Generator methods | [x] | [-] | [x] | [ ] | [ ] | [ ] |
 | `implet` (implements) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Generic classes | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `pactum` declaration | [x] | [x] | [x] | [ ] | [ ] | [ ] |
