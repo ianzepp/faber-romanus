@@ -99,9 +99,80 @@ The struct update syntax is close but requires `Default` impl.
 | Async | Frame-based | Future + runtime | Both hard |
 | Ecosystem/tooling | Newer | Mature (cargo) | Rust |
 
-## Potential Approaches
+## Ownership Design: Latin Prepositions
 
-### Approach 1: Clone Everything
+A key insight: **Rust's ownership model maps naturally to Latin grammatical cases.** Latin uses declensions (noun endings) to indicate relationships - subject, object, possession, recipient. These concepts align with Rust's owned, moved, borrowed, and mutably borrowed.
+
+| Latin Case | Grammatical Role | Rust Ownership |
+|------------|------------------|----------------|
+| Nominative | Subject, the "doer" | Owned value (`T`) |
+| Accusative | Direct object, acted upon | Moved/consumed (`T`) |
+| Genitive | Possession, "of X" | Borrowed reference (`&T`) |
+| Dative | Indirect object, "to/for X" | Mutable borrow (`&mut T`) |
+| Ablative | "by/with/from X" | Source, transformed from |
+
+### Primary Mechanism: Prepositions
+
+Since variable names are often not Latin (e.g., `queryResult`, `app`, `userId`), we can't rely on declining them. Instead, use **Latin prepositions** to annotate ownership on parameters:
+
+```
+// No preposition = owned, will be moved/consumed (default)
+functio consume(textus data) -> Result
+
+// "de" (from/concerning) = borrowed, read-only
+functio read(de textus source) -> numerus
+
+// "in" (into) = mutable borrow, will be modified
+functio append(in textus target, textus suffix)
+```
+
+This reads naturally as Latin:
+- `de textus source` = "concerning the string source" (borrowed)
+- `in textus target` = "into the string target" (mutable)
+
+**Rust output:**
+```rust
+fn consume(data: String) -> Result          // owned
+fn read(source: &str) -> i64                // borrowed
+fn append(target: &mut String, suffix: String)  // mut borrow + owned
+```
+
+### Future Enhancement: Declensions
+
+For those who want pure Latin, type declensions can work **interchangeably** with prepositions:
+
+```
+// Preposition style (works with any variable name)
+functio read(de textus queryResult) -> numerus
+
+// Declension style (pure Latin)
+functio read(texti nomen) -> numerus
+
+// Both generate the same Rust:
+fn read(query_result: &str) -> i64
+fn read(nomen: &str) -> i64
+```
+
+The compiler already has morphological analysis via the lexicon. It knows `texti` is genitive of `textus` - no type explosion needed, just lookup.
+
+| Type (Nominative) | Genitive | Dative | Rust Mapping |
+|-------------------|----------|--------|--------------|
+| `textus` | `texti` | `texto` | `String` / `&str` / `&mut String` |
+| `numerus` | `numeri` | `numero` | `i64` / `&i64` / `&mut i64` |
+| `lista` | `listae` | `listae` | `Vec<T>` / `&[T]` / `&mut Vec<T>` |
+
+### Design Principles
+
+1. **No preposition = owned** (matches Rust's default move semantics)
+2. **Prepositions are the accessible path** (work with any variable name)
+3. **Declensions are the elegant path** (for Latin purists)
+4. **Both are equivalent** (same semantics, different aesthetics)
+
+## Fallback Approaches
+
+If ownership annotations aren't used, these fallbacks apply:
+
+### Fallback 1: Clone Everything
 
 Generate owned values everywhere, clone on every pass. Safe but inefficient.
 
@@ -111,7 +182,7 @@ fn process(items: Vec<String>) -> Vec<String> {
 }
 ```
 
-### Approach 2: Rc<RefCell<T>> Wrapper
+### Fallback 2: Rc<RefCell<T>> Wrapper
 
 Use reference-counted, runtime-borrow-checked wrappers for all values. Approximates GC semantics.
 
@@ -120,19 +191,9 @@ type FaberString = Rc<RefCell<String>>;
 type FaberList<T> = Rc<RefCell<Vec<T>>>;
 ```
 
-### Approach 3: Ownership Annotations in Faber
+### Fallback 3: Inference Heuristics
 
-Extend Faber with ownership hints:
-
-```
-functio process(&lista<textus> items) -> textus  // borrowed
-functio take(lista<textus> items) -> lista<textus>  // moved
-```
-
-This is a language design change, not just codegen.
-
-### Approach 4: Inference Heuristics
-
+When no annotation is provided:
 - Function params: borrow by default (`&T`)
 - Return values: owned by default (`T`)
 - Local variables: owned (`T`)
@@ -166,7 +227,10 @@ This is a language design change, not just codegen.
 
 ## Open Questions
 
-1. Should Faber grow ownership annotations to support Rust properly?
-2. Is "clone everything" acceptable for educational/prototype use?
+1. ~~Should Faber grow ownership annotations to support Rust properly?~~ **Yes - via Latin prepositions (`de`, `in`) with future declension support.**
+2. Is "clone everything" acceptable as fallback for unannotated code?
 3. Could we detect pure functions and optimize ownership automatically?
 4. Should `genus` generate `#[derive(Clone, Default)]` automatically?
+5. What preposition maps to `Box<T>` (heap allocation)?
+6. How do we handle lifetime annotations when borrowing across scopes?
+7. Should `de de textus` (double borrow) mean `&&str`? Probably not needed.
