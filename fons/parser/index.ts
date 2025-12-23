@@ -1659,24 +1659,42 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse equality expression.
      *
      * GRAMMAR:
-     *   equality := comparison (('==' | '!=' | 'est') comparison)*
+     *   equality := comparison (('==' | '!=' | 'est' | 'non' 'est') comparison)*
      *
      * PRECEDENCE: Lower than comparison, higher than AND.
      *
      * WHY: 'est' (is) is the Latin copula for strict equality (===).
+     *      'non est' (is not) is strict inequality (!==).
      *      Allows natural syntax: si x est nihil { ... }
      */
     function parseEquality(): Expression {
         let left = parseComparison();
 
-        while (match('EQUAL_EQUAL', 'BANG_EQUAL') || matchKeyword('est')) {
-            const token = tokens[current - 1];
-            const position = token.position;
+        while (true) {
+            let operator: string;
+            let position: Position;
 
-            // 'est' maps to strict equality (===)
-            const operator = token.type === 'KEYWORD' ? '===' : token.value;
+            if (match('EQUAL_EQUAL', 'BANG_EQUAL')) {
+                operator = tokens[current - 1].value;
+                position = tokens[current - 1].position;
+            }
+            else if (checkKeyword('non') && peek(1)?.type === 'KEYWORD' && peek(1)?.value.toLowerCase() === 'est') {
+                // 'non est' maps to strict inequality (!==)
+                position = peek().position;
+                advance(); // consume 'non'
+                advance(); // consume 'est'
+                operator = '!==';
+            }
+            else if (matchKeyword('est')) {
+                // 'est' maps to strict equality (===)
+                operator = '===';
+                position = tokens[current - 1].position;
+            }
+            else {
+                break;
+            }
+
             const right = parseComparison();
-
             left = { type: 'BinaryExpression', operator, left, right, position };
         }
 

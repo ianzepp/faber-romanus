@@ -705,6 +705,17 @@ describe('parser', () => {
             expect(stmt.test.right.value).toBe(null);
         });
 
+        test('non est as strict inequality operator', () => {
+            const { program } = parseCode('si x non est nihil { scribe "not null" }');
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('IfStatement');
+            expect(stmt.test.type).toBe('BinaryExpression');
+            expect(stmt.test.operator).toBe('!==');
+            expect(stmt.test.left.name).toBe('x');
+            expect(stmt.test.right.value).toBe(null);
+        });
+
         test('negativum as unary check', () => {
             const { program } = parseCode('si negativum n { scribe "negative" }');
             const stmt = program!.body[0] as any;
