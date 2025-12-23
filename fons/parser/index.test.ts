@@ -58,6 +58,18 @@ describe('parser', () => {
             expect(fn.async).toBe(false);
         });
 
+        test('fit as return type alias for arrow', () => {
+            const { program } = parseCode(`
+        functio salve(nomen) fit textus {
+          redde nomen
+        }
+      `);
+            const fn = program!.body[0] as any;
+
+            expect(fn.type).toBe('FunctionDeclaration');
+            expect(fn.returnType.name).toBe('textus');
+        });
+
         test('async function with futura', () => {
             const { program } = parseCode(`
         futura functio fetch(textus url) -> textus {

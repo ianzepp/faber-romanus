@@ -690,7 +690,8 @@ export function parse(tokens: Token[]): ParserResult {
 
         let returnType: TypeAnnotation | undefined;
 
-        if (match('THIN_ARROW')) {
+        // 'fit' (becomes) is Latin alias for ->
+        if (match('THIN_ARROW') || matchKeyword('fit')) {
             returnType = parseTypeAnnotation();
         }
 
@@ -919,7 +920,8 @@ export function parse(tokens: Token[]): ParserResult {
 
             let returnType: TypeAnnotation | undefined;
 
-            if (match('THIN_ARROW')) {
+            // 'fit' (becomes) is Latin alias for ->
+            if (match('THIN_ARROW') || matchKeyword('fit')) {
                 returnType = parseTypeAnnotation();
             }
 
@@ -1035,7 +1037,8 @@ export function parse(tokens: Token[]): ParserResult {
 
         let returnType: TypeAnnotation | undefined;
 
-        if (match('THIN_ARROW')) {
+        // 'fit' (becomes) is Latin alias for ->
+        if (match('THIN_ARROW') || matchKeyword('fit')) {
             returnType = parseTypeAnnotation();
         }
 

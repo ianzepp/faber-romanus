@@ -142,6 +142,8 @@ export const keywords: KeywordEntry[] = [
     { latin: 'non', meaning: '!', category: 'operator' },
     // WHY: "est" (is) for strict equality - natural Latin copula
     { latin: 'est', meaning: '===', category: 'operator' },
+    // WHY: "fit" (becomes) for return type annotation - "functio f() fit textus"
+    { latin: 'fit', meaning: '->', category: 'operator' },
 
     // ---------------------------------------------------------------------------
     // Literal Values
