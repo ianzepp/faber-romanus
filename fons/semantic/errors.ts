@@ -1,0 +1,90 @@
+/**
+ * Semantic Error Catalog
+ *
+ * COMPILER PHASE
+ * ==============
+ * semantic
+ *
+ * ARCHITECTURE
+ * ============
+ * This module defines all error codes and messages for the semantic analysis
+ * phase. Each error has:
+ * - A unique code (S001, S002, etc.)
+ * - User-facing text
+ * - Helpful guidance that teaches proper usage
+ *
+ * Error messages should:
+ * - Be clear and actionable
+ * - Teach Latin syntax and semantics
+ * - Point to specific locations in source
+ *
+ * INPUT/OUTPUT CONTRACT
+ * =====================
+ * INPUT:  None (constant definitions)
+ * OUTPUT: Error catalog for semantic analyzer
+ * ERRORS: N/A
+ *
+ * @module semantic/errors
+ */
+
+// =============================================================================
+// ERROR CODES
+// =============================================================================
+
+/**
+ * Semantic error codes.
+ *
+ * WHY: S-prefix identifies semantic phase errors at a glance.
+ */
+export enum SemanticErrorCode {
+    UndefinedVariable = 'S001',
+    AlreadyDefined = 'S002',
+    ImmutableAssignment = 'S003',
+    TypeMismatch = 'S004',
+    ReturnTypeMismatch = 'S005',
+    NoTypeOrInitializer = 'S006',
+    NotExportedFromModule = 'S007',
+}
+
+// =============================================================================
+// ERROR CATALOG
+// =============================================================================
+
+/**
+ * Error message catalog with text and help fields.
+ *
+ * DESIGN: Catalog is indexed by error code for O(1) lookup.
+ *         Each entry provides user-facing text and helpful guidance.
+ */
+export const SEMANTIC_ERRORS = {
+    [SemanticErrorCode.UndefinedVariable]: {
+        text: (name: string) => `Undefined variable '${name}'`,
+        help: "Variables must be declared with 'varia' or 'fixum' before use",
+    },
+    [SemanticErrorCode.AlreadyDefined]: {
+        text: (name: string, line: number) => `'${name}' is already defined at line ${line}`,
+        help: 'Each name can only be defined once in the same scope. Use a different name or assign to the existing variable.',
+    },
+    [SemanticErrorCode.ImmutableAssignment]: {
+        text: (name: string) => `Cannot assign to immutable variable '${name}'`,
+        help: "Variables declared with 'fixum' cannot be reassigned. Use 'varia' for mutable variables.",
+    },
+    [SemanticErrorCode.TypeMismatch]: {
+        text: (sourceType: string, targetType: string) =>
+            `Type '${sourceType}' is not assignable to type '${targetType}'`,
+        help: 'Ensure the types are compatible. You may need a type conversion or to change the variable type.',
+    },
+    [SemanticErrorCode.ReturnTypeMismatch]: {
+        text: (returnType: string, functionType: string) =>
+            `Return type '${returnType}' is not assignable to function return type '${functionType}'`,
+        help: 'The returned value must match the function return type annotation.',
+    },
+    [SemanticErrorCode.NoTypeOrInitializer]: {
+        text: (name: string) => `Variable '${name}' has no type annotation or initializer`,
+        help: "Variables must have either a type annotation (e.g., 'numerus x') or an initializer (e.g., 'varia x = 5').",
+    },
+    [SemanticErrorCode.NotExportedFromModule]: {
+        text: (name: string, module: string) => `'${name}' is not exported from '${module}'`,
+        help: 'Check the module documentation for available exports. You may have a typo in the import name.',
+    },
+} as const;

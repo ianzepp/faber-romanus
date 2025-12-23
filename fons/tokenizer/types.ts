@@ -159,11 +159,16 @@ export interface Token {
  * WHY: Separate from Token to allow continued tokenization after errors.
  *      The tokenizer never throws - it collects errors and continues.
  *
+ * WHY: Include code field for testability and tooling support. Tests can
+ *      assert on error codes rather than brittle message string matching.
+ *
  * EDGE: Position points to where the error was detected, which may not be
  *       where the problem started (e.g., unterminated string detected at EOF).
  */
 export interface TokenizerError {
-    message: string;
+    code: string;
+    text: string;
+    help: string;
     position: Position;
 }
 

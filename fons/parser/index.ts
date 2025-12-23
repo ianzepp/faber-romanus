@@ -119,6 +119,7 @@ import type {
     ObjectProperty,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
+import { ParserErrorCode, PARSER_ERRORS } from './errors';
 
 // =============================================================================
 // TYPES
@@ -128,8 +129,11 @@ import { builtinTypes } from '../lexicon/types-builtin';
  * Parser error with source location.
  *
  * INVARIANT: position always references valid source location.
+ * INVARIANT: code is from ParserErrorCode enum.
+ * INVARIANT: message combines error text with context (e.g., "got 'x'").
  */
 export interface ParserError {
+    code: ParserErrorCode;
     message: string;
     position: Position;
 }
@@ -289,20 +293,36 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
+     * Report error using error catalog.
+     *
+     * WHY: Centralizes error creation with consistent structure.
+     *
+     * @param code - Error code from ParserErrorCode enum
+     * @param context - Optional context to append (e.g., "got 'x'")
+     */
+    function reportError(code: ParserErrorCode, context?: string): void {
+        const token = peek();
+        const { text } = PARSER_ERRORS[code];
+        const message = context ? `${text}, ${context}` : text;
+
+        errors.push({ code, message, position: token.position });
+    }
+
+    /**
      * Expect specific token type or record error.
      *
      * ERROR RECOVERY: Records error but returns current token (possibly wrong type).
      *
      * @returns Matched token if found, current token if not
      */
-    function expect(type: TokenType, message: string): Token {
+    function expect(type: TokenType, code: ParserErrorCode): Token {
         if (check(type)) {
             return advance();
         }
 
         const token = peek();
 
-        errors.push({ message: `${message}, got '${token.value}'`, position: token.position });
+        reportError(code, `got '${token.value}'`);
 
         return token;
     }
@@ -312,14 +332,14 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * ERROR RECOVERY: Records error but returns current token.
      */
-    function expectKeyword(keyword: string, message: string): Token {
+    function expectKeyword(keyword: string, code: ParserErrorCode): Token {
         if (checkKeyword(keyword)) {
             return advance();
         }
 
         const token = peek();
 
-        errors.push({ message: `${message}, got '${token.value}'`, position: token.position });
+        reportError(code, `got '${token.value}'`);
 
         return token;
     }
@@ -330,11 +350,9 @@ export function parse(tokens: Token[]): ParserResult {
      * WHY: Used in expression parsing where we can't easily recover locally.
      *      Caught by statement parser which calls synchronize().
      */
-    function error(message: string): never {
-        const token = peek();
-
-        errors.push({ message, position: token.position });
-        throw new Error(message);
+    function error(code: ParserErrorCode, context?: string): never {
+        reportError(code, context);
+        throw new Error(PARSER_ERRORS[code].text);
     }
 
     // ---------------------------------------------------------------------------
@@ -532,12 +550,12 @@ export function parse(tokens: Token[]): ParserResult {
     function parseImportDeclaration(): ImportDeclaration {
         const position = peek().position;
 
-        expectKeyword('ex', "Expected 'ex'");
+        expectKeyword('ex', ParserErrorCode.ExpectedKeywordEx);
 
-        const sourceToken = expect('IDENTIFIER', "Expected module name after 'ex'");
+        const sourceToken = expect('IDENTIFIER', ParserErrorCode.ExpectedModuleName);
         const source = sourceToken.value;
 
-        expectKeyword('importa', "Expected 'importa' after module name");
+        expectKeyword('importa', ParserErrorCode.ExpectedKeywordImporta);
 
         if (match('STAR')) {
             return { type: 'ImportDeclaration', source, specifiers: [], wildcard: true, position };
@@ -606,11 +624,14 @@ export function parse(tokens: Token[]): ParserResult {
     function parseObjectPattern(): ObjectPattern {
         const position = peek().position;
 
-        expect('LBRACE', "Expected '{'");
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const properties: ObjectPatternProperty[] = [];
 
-        while (!check('RBRACE') && !isAtEnd()) {
+        // True while there are unparsed properties (not at '}' or EOF)
+        const hasMoreProperties = () => !check('RBRACE') && !isAtEnd();
+
+        while (hasMoreProperties()) {
             const propPosition = peek().position;
             const key = parseIdentifier();
 
@@ -629,11 +650,11 @@ export function parse(tokens: Token[]): ParserResult {
             });
 
             if (!check('RBRACE')) {
-                expect('COMMA', "Expected ',' between pattern properties");
+                expect('COMMA', ParserErrorCode.ExpectedComma);
             }
         }
 
-        expect('RBRACE', "Expected '}'");
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         return { type: 'ObjectPattern', properties, position };
     }
@@ -650,20 +671,22 @@ export function parse(tokens: Token[]): ParserResult {
      */
     function parseFunctionDeclaration(): FunctionDeclaration {
         const position = peek().position;
+
         let async = false;
 
         if (matchKeyword('futura')) {
             async = true;
         }
 
-        expectKeyword('functio', "Expected 'functio'");
+        expectKeyword('functio', ParserErrorCode.ExpectedKeywordFunctio);
 
         const name = parseIdentifier();
 
-        expect('LPAREN', "Expected '(' after function name");
+        expect('LPAREN', ParserErrorCode.ExpectedOpeningParen);
+
         const params = parseParameterList();
 
-        expect('RPAREN', "Expected ')' after parameters");
+        expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
         let returnType: TypeAnnotation | undefined;
 
@@ -743,11 +766,11 @@ export function parse(tokens: Token[]): ParserResult {
     function parseTypeAliasDeclaration(): TypeAliasDeclaration {
         const position = peek().position;
 
-        expectKeyword('typus', "Expected 'typus'");
+        expectKeyword('typus', ParserErrorCode.ExpectedKeywordTypus);
 
         const name = parseIdentifier();
 
-        expect('EQUAL', "Expected '=' after type alias name");
+        expect('EQUAL', ParserErrorCode.ExpectedEqual);
 
         const typeAnnotation = parseTypeAnnotation();
 
@@ -772,7 +795,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseGenusDeclaration(): GenusDeclaration {
         const position = peek().position;
 
-        expectKeyword('genus', "Expected 'genus'");
+        expectKeyword('genus', ParserErrorCode.ExpectedKeywordGenus);
 
         const name = parseIdentifier();
 
@@ -781,10 +804,12 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (match('LESS')) {
             typeParameters = [];
+
             do {
                 typeParameters.push(parseIdentifier());
             } while (match('COMMA'));
-            expect('GREATER', "Expected '>' after type parameters");
+
+            expect('GREATER', ParserErrorCode.ExpectedClosingAngle);
         }
 
         // Parse optional 'implet' clause
@@ -792,33 +817,50 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (matchKeyword('implet')) {
             implementsList = [];
+
             do {
                 implementsList.push(parseIdentifier());
             } while (match('COMMA'));
         }
 
-        expect('LBRACE', "Expected '{' to begin genus body");
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const fields: FieldDeclaration[] = [];
         const computedFields: ComputedFieldDeclaration[] = [];
         const methods: FunctionDeclaration[] = [];
         let constructorMethod: FunctionDeclaration | undefined;
 
-        while (!check('RBRACE') && !isAtEnd()) {
+        // True while there are unparsed members (not at '}' or EOF)
+        const hasMoreMembers = () => !check('RBRACE') && !isAtEnd();
+
+        while (hasMoreMembers()) {
             const member = parseGenusMember();
 
-            if (member.type === 'FieldDeclaration') {
-                fields.push(member);
-            } else if (member.type === 'ComputedFieldDeclaration') {
-                computedFields.push(member);
-            } else if (member.isConstructor) {
-                constructorMethod = member;
-            } else {
-                methods.push(member);
+            switch (member.type) {
+                case 'FieldDeclaration':
+                    fields.push(member);
+                    break;
+
+                case 'ComputedFieldDeclaration':
+                    computedFields.push(member);
+                    break;
+
+                case 'FunctionDeclaration':
+                    if (member.isConstructor) {
+                        constructorMethod = member;
+                    } else {
+                        methods.push(member);
+                    }
+                    break;
+
+                default: {
+                    const _exhaustive: never = member;
+                    throw new Error(`Unknown genus member type: ${(_exhaustive as any).type}`);
+                }
             }
         }
 
-        expect('RBRACE', "Expected '}' to end genus body");
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         return {
             type: 'GenusDeclaration',
@@ -865,12 +907,15 @@ export function parse(tokens: Token[]): ParserResult {
 
         // If we see 'functio', it's a method
         if (checkKeyword('functio')) {
-            expectKeyword('functio', "Expected 'functio'");
+            expectKeyword('functio', ParserErrorCode.ExpectedKeywordFunctio);
+
             const methodName = parseIdentifier();
 
-            expect('LPAREN', "Expected '(' after method name");
+            expect('LPAREN', ParserErrorCode.ExpectedOpeningParen);
+
             const params = parseParameterList();
-            expect('RPAREN', "Expected ')' after parameters");
+
+            expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
             let returnType: TypeAnnotation | undefined;
 
@@ -941,7 +986,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parsePactumDeclaration(): PactumDeclaration {
         const position = peek().position;
 
-        expectKeyword('pactum', "Expected 'pactum'");
+        expectKeyword('pactum', ParserErrorCode.ExpectedKeywordPactum);
 
         const name = parseIdentifier();
 
@@ -949,36 +994,44 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (match('LESS')) {
             typeParameters = [];
+
             do {
                 typeParameters.push(parseIdentifier());
             } while (match('COMMA'));
-            expect('GREATER', "Expected '>' after type parameters");
+
+            expect('GREATER', ParserErrorCode.ExpectedClosingAngle);
         }
 
-        expect('LBRACE', "Expected '{' to begin pactum body");
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const methods: PactumMethod[] = [];
 
-        while (!check('RBRACE') && !isAtEnd()) {
+        // True while there are unparsed methods (not at '}' or EOF)
+        const hasMoreMethods = () => !check('RBRACE') && !isAtEnd();
+
+        while (hasMoreMethods()) {
             methods.push(parsePactumMethod());
         }
 
-        expect('RBRACE', "Expected '}' to end pactum body");
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         return { type: 'PactumDeclaration', name, typeParameters, methods, position };
     }
 
     function parsePactumMethod(): PactumMethod {
         const position = peek().position;
+
         const isAsync = matchKeyword('futura');
 
-        expectKeyword('functio', "Expected 'functio' in pactum");
+        expectKeyword('functio', ParserErrorCode.ExpectedKeywordFunctio);
 
         const name = parseIdentifier();
 
-        expect('LPAREN', "Expected '(' after pactum method name");
+        expect('LPAREN', ParserErrorCode.ExpectedOpeningParen);
+
         const params = parseParameterList();
-        expect('RPAREN', "Expected ')' after pactum method parameters");
+
+        expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
         let returnType: TypeAnnotation | undefined;
 
@@ -1017,7 +1070,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseIfStatement(): IfStatement {
         const position = peek().position;
 
-        expectKeyword('si', "Expected 'si'");
+        expectKeyword('si', ParserErrorCode.ExpectedKeywordSi);
 
         const test = parseExpression();
 
@@ -1072,7 +1125,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseWhileStatement(): WhileStatement {
         const position = peek().position;
 
-        expectKeyword('dum', "Expected 'dum'");
+        expectKeyword('dum', ParserErrorCode.ExpectedKeywordDum);
 
         const test = parseExpression();
 
@@ -1119,12 +1172,12 @@ export function parse(tokens: Token[]): ParserResult {
         } else if (matchKeyword('in')) {
             kind = 'in';
         } else {
-            error("Expected 'ex' or 'in' to start for loop");
+            error(ParserErrorCode.InvalidForLoopStart);
         }
 
         const iterable = parseExpression();
 
-        expectKeyword('pro', "Expected 'pro' after iterable");
+        expectKeyword('pro', ParserErrorCode.ExpectedKeywordPro);
 
         const variable = parseIdentifier();
 
@@ -1165,7 +1218,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseWithStatement(): WithStatement {
         const position = peek().position;
 
-        expectKeyword('cum', "Expected 'cum'");
+        expectKeyword('cum', ParserErrorCode.ExpectedKeywordCum);
 
         const object = parseExpression();
         const body = parseBlockStatement();
@@ -1194,11 +1247,11 @@ export function parse(tokens: Token[]): ParserResult {
     function parseSwitchStatement(): SwitchStatement {
         const position = peek().position;
 
-        expectKeyword('elige', "Expected 'elige'");
+        expectKeyword('elige', ParserErrorCode.ExpectedKeywordElige);
 
         const discriminant = parseExpression();
 
-        expect('LBRACE', "Expected '{' after switch expression");
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const cases: SwitchCase[] = [];
         let defaultCase: BlockStatement | undefined;
@@ -1231,26 +1284,31 @@ export function parse(tokens: Token[]): ParserResult {
             };
         }
 
-        while (!check('RBRACE') && !isAtEnd()) {
+        // True while there are unparsed cases (not at '}' or EOF)
+        const hasMoreCases = () => !check('RBRACE') && !isAtEnd();
+
+        while (hasMoreCases()) {
             if (checkKeyword('si')) {
                 const casePosition = peek().position;
 
-                expectKeyword('si', "Expected 'si'");
+                expectKeyword('si', ParserErrorCode.ExpectedKeywordSi);
+
                 const test = parseExpression();
                 const consequent = parseSiBody();
 
                 cases.push({ type: 'SwitchCase', test, consequent, position: casePosition });
             } else if (checkKeyword('aliter')) {
-                expectKeyword('aliter', "Expected 'aliter'");
+                expectKeyword('aliter', ParserErrorCode.ExpectedKeywordAliter);
+
                 defaultCase = parseAliterBody();
                 break; // Default must be last
             } else {
-                error("Expected 'si' or 'aliter' in switch block");
+                error(ParserErrorCode.InvalidSwitchCaseStart);
                 break;
             }
         }
 
-        expect('RBRACE', "Expected '}' after switch cases");
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         let catchClause: CatchClause | undefined;
 
@@ -1279,28 +1337,32 @@ export function parse(tokens: Token[]): ParserResult {
     function parseGuardStatement(): GuardStatement {
         const position = peek().position;
 
-        expectKeyword('custodi', "Expected 'custodi'");
+        expectKeyword('custodi', ParserErrorCode.ExpectedKeywordCustodi);
 
-        expect('LBRACE', "Expected '{' after custodi");
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const clauses: GuardClause[] = [];
 
-        while (!check('RBRACE') && !isAtEnd()) {
+        // True while there are unparsed clauses (not at '}' or EOF)
+        const hasMoreClauses = () => !check('RBRACE') && !isAtEnd();
+
+        while (hasMoreClauses()) {
             if (checkKeyword('si')) {
                 const clausePosition = peek().position;
 
-                expectKeyword('si', "Expected 'si'");
+                expectKeyword('si', ParserErrorCode.ExpectedKeywordSi);
+
                 const test = parseExpression();
                 const consequent = parseBlockStatement();
 
                 clauses.push({ type: 'GuardClause', test, consequent, position: clausePosition });
             } else {
-                error("Expected 'si' in guard block");
+                error(ParserErrorCode.InvalidGuardClauseStart);
                 break;
             }
         }
 
-        expect('RBRACE', "Expected '}' after guard clauses");
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         return { type: 'GuardStatement', clauses, position };
     }
@@ -1320,7 +1382,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseAssertStatement(): AssertStatement {
         const position = peek().position;
 
-        expectKeyword('adfirma', "Expected 'adfirma'");
+        expectKeyword('adfirma', ParserErrorCode.ExpectedKeywordAdfirma);
 
         const test = parseExpression();
 
@@ -1344,7 +1406,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseReturnStatement(): ReturnStatement {
         const position = peek().position;
 
-        expectKeyword('redde', "Expected 'redde'");
+        expectKeyword('redde', ParserErrorCode.ExpectedKeywordRedde);
 
         let argument: Expression | undefined;
 
@@ -1366,7 +1428,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseThrowStatement(): ThrowStatement {
         const position = peek().position;
 
-        expectKeyword('iace', "Expected 'iace'");
+        expectKeyword('iace', ParserErrorCode.ExpectedKeywordIace);
 
         const argument = parseExpression();
 
@@ -1390,7 +1452,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseScribeStatement(): ScribeStatement {
         const position = peek().position;
 
-        expectKeyword('scribe', "Expected 'scribe'");
+        expectKeyword('scribe', ParserErrorCode.ExpectedKeywordScribe);
 
         const args: Expression[] = [];
 
@@ -1416,7 +1478,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseTryStatement(): Statement {
         const position = peek().position;
 
-        expectKeyword('tempta', "Expected 'tempta'");
+        expectKeyword('tempta', ParserErrorCode.ExpectedKeywordTempta);
 
         const block = parseBlockStatement();
 
@@ -1444,7 +1506,7 @@ export function parse(tokens: Token[]): ParserResult {
     function parseCatchClause(): CatchClause {
         const position = peek().position;
 
-        expectKeyword('cape', "Expected 'cape'");
+        expectKeyword('cape', ParserErrorCode.ExpectedKeywordCape);
 
         const param = parseIdentifier();
         const body = parseBlockStatement();
@@ -1461,15 +1523,18 @@ export function parse(tokens: Token[]): ParserResult {
     function parseBlockStatement(): BlockStatement {
         const position = peek().position;
 
-        expect('LBRACE', "Expected '{'");
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const body: Statement[] = [];
 
-        while (!check('RBRACE') && !isAtEnd()) {
+        // True while there are unparsed statements (not at '}' or EOF)
+        const hasMoreStatements = () => !check('RBRACE') && !isAtEnd();
+
+        while (hasMoreStatements()) {
             body.push(parseStatement());
         }
 
-        expect('RBRACE', "Expected '}'");
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         return { type: 'BlockStatement', body, position };
     }
@@ -1530,7 +1595,7 @@ export function parse(tokens: Token[]): ParserResult {
                 };
             }
 
-            error('Invalid assignment target');
+            error(ParserErrorCode.InvalidAssignmentTarget);
         }
 
         return expr;
@@ -1780,7 +1845,8 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (match('LPAREN')) {
             args = parseArgumentList();
-            expect('RPAREN', "Expected ')' after arguments");
+
+            expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
         }
 
         let withExpression: ObjectExpression | undefined;
@@ -1789,7 +1855,7 @@ export function parse(tokens: Token[]): ParserResult {
             const override = parsePrimary();
 
             if (override.type !== 'ObjectExpression') {
-                error("Expected object literal after 'cum'");
+                error(ParserErrorCode.ExpectedObjectAfterCum);
             }
 
             withExpression = override as ObjectExpression;
@@ -1817,7 +1883,8 @@ export function parse(tokens: Token[]): ParserResult {
                 const position = tokens[current - 1].position;
                 const args = parseArgumentList();
 
-                expect('RPAREN', "Expected ')' after arguments");
+                expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
+
                 expr = { type: 'CallExpression', callee: expr, arguments: args, position };
             } else if (match('DOT')) {
                 const position = tokens[current - 1].position;
@@ -1834,7 +1901,8 @@ export function parse(tokens: Token[]): ParserResult {
                 const position = tokens[current - 1].position;
                 const property = parseExpression();
 
-                expect('RBRACKET', "Expected ']'");
+                expect('RBRACKET', ParserErrorCode.ExpectedClosingBracket);
+
                 expr = {
                     type: 'MemberExpression',
                     object: expr,
@@ -1938,7 +2006,7 @@ export function parse(tokens: Token[]): ParserResult {
                 } while (match('COMMA'));
             }
 
-            expect('RBRACKET', "Expected ']' after array elements");
+            expect('RBRACKET', ParserErrorCode.ExpectedClosingBracket);
 
             return { type: 'ArrayExpression', elements, position };
         }
@@ -1967,7 +2035,7 @@ export function parse(tokens: Token[]): ParserResult {
                         key = parseIdentifier();
                     }
 
-                    expect('COLON', "Expected ':' after property key");
+                    expect('COLON', ParserErrorCode.ExpectedColon);
 
                     const value = parseExpression();
 
@@ -1975,7 +2043,7 @@ export function parse(tokens: Token[]): ParserResult {
                 } while (match('COMMA'));
             }
 
-            expect('RBRACE', "Expected '}' after object properties");
+            expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
             return { type: 'ObjectExpression', properties, position };
         }
@@ -2018,7 +2086,7 @@ export function parse(tokens: Token[]): ParserResult {
             current = startPos;
             const expr = parseExpression();
 
-            expect('RPAREN', "Expected ')'");
+            expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
             return expr;
         }
@@ -2028,7 +2096,7 @@ export function parse(tokens: Token[]): ParserResult {
             return parseIdentifier();
         }
 
-        error(`Unexpected token: ${peek().value}`);
+        error(ParserErrorCode.UnexpectedToken, `token '${peek().value}'`);
     }
 
     /**
@@ -2042,8 +2110,9 @@ export function parse(tokens: Token[]): ParserResult {
     function parseArrowFunction(position: Position): ArrowFunctionExpression {
         const params = parseParameterList();
 
-        expect('RPAREN', "Expected ')' after arrow function parameters");
-        expect('ARROW', "Expected '=>'");
+        expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
+
+        expect('ARROW', ParserErrorCode.ExpectedArrow);
 
         let body: Expression | BlockStatement;
 
@@ -2063,7 +2132,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   identifier := IDENTIFIER
      */
     function parseIdentifier(): Identifier {
-        const token = expect('IDENTIFIER', 'Expected identifier');
+        const token = expect('IDENTIFIER', ParserErrorCode.ExpectedIdentifier);
 
         return { type: 'Identifier', name: token.value, position: token.position };
     }
@@ -2090,13 +2159,15 @@ export function parse(tokens: Token[]): ParserResult {
      */
     function parseTypeAnnotation(): TypeAnnotation {
         const position = peek().position;
-        const token = expect('IDENTIFIER', 'Expected type name');
+
+        const token = expect('IDENTIFIER', ParserErrorCode.ExpectedTypeName);
         const name = token.value;
 
         let typeParameters: TypeParameter[] | undefined;
 
         if (match('LESS')) {
             typeParameters = [];
+
             do {
                 if (check('NUMBER')) {
                     // Numeric parameter (e.g., numerus<32>)
@@ -2117,7 +2188,7 @@ export function parse(tokens: Token[]): ParserResult {
                 }
             } while (match('COMMA'));
 
-            expect('GREATER', "Expected '>' after type parameters");
+            expect('GREATER', ParserErrorCode.ExpectedClosingAngle);
         }
 
         let nullable = false;

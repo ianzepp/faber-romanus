@@ -4,8 +4,6 @@ ex utilities importa formatDate, parseNumber, validateEmail
 
 ex mathematics importa *
 
-ex norma importa lege, scribe
-
 functio processData(data) {
     si isEmpty(data) {
         scribe "No data to process"

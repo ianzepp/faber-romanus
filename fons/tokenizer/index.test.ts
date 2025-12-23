@@ -260,14 +260,14 @@ describe('tokenizer', () => {
             const { errors } = tokenize('"unterminated');
 
             expect(errors.length).toBeGreaterThan(0);
-            expect(errors[0].message).toContain('Unterminated');
+            expect(errors[0].text).toContain('Unterminated');
         });
 
         test('reports unexpected character', () => {
             const { errors } = tokenize('fixum @ nomen');
 
             expect(errors.length).toBeGreaterThan(0);
-            expect(errors[0].message).toContain('Unexpected');
+            expect(errors[0].text).toContain('Unexpected');
         });
     });
 

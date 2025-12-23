@@ -68,6 +68,7 @@
 
 import type { Token, TokenType, Position, TokenizerResult, TokenizerError } from './types';
 import { isKeyword, getKeyword } from '../lexicon';
+import { TokenizerErrorCode, TOKENIZER_ERRORS } from './errors';
 
 // =============================================================================
 // MAIN TOKENIZER FUNCTION
@@ -203,9 +204,14 @@ export function tokenize(source: string): TokenizerResult {
      *      - IDE error squiggles for all errors at once
      *      - Partial compilation when some sections are valid
      *      - Better batch error reporting
+     *
+     * @param code - Error code from TokenizerErrorCode enum
+     * @param pos - Source position where error occurred
      */
-    function addError(message: string, pos: Position): void {
-        errors.push({ message, position: pos });
+    function addError(code: TokenizerErrorCode, pos: Position): void {
+        const { text, help } = TOKENIZER_ERRORS[code];
+
+        errors.push({ code, text, help, position: pos });
     }
 
     // =============================================================================
@@ -223,7 +229,10 @@ export function tokenize(source: string): TokenizerResult {
      *         documentation generators or IDE tooling.
      */
     function skipWhitespace(): void {
-        while (!isAtEnd()) {
+        // True while there's whitespace or comments to consume
+        const hasWhitespaceOrComment = () => !isAtEnd();
+
+        while (hasWhitespaceOrComment()) {
             const char = peek();
 
             if (char === ' ' || char === '\t' || char === '\r') {
@@ -233,23 +242,31 @@ export function tokenize(source: string): TokenizerResult {
                 line++;
                 lineStart = current;
             } else if (char === '/' && peek(1) === '/') {
-                // WHY: Single-line comments extend to end of line (C++ style)
-
+                // Single-line comment extends to end of line (C++ style)
                 const pos = position();
                 let comment = '';
 
                 advance(); // /
                 advance(); // /
-                while (!isAtEnd() && peek() !== '\n') {
+
+                // True while there's more comment content on this line
+                const hasCommentContent = () => !isAtEnd() && peek() !== '\n';
+
+                while (hasCommentContent()) {
                     comment += advance();
                 }
+
                 // FUTURE: Emit comment tokens for documentation tooling
                 // addToken("COMMENT", comment.trim(), pos)
             } else if (char === '/' && peek(1) === '*') {
-                // WHY: Multi-line comments can span multiple lines (C style)
+                // Multi-line comment can span multiple lines (C style)
                 advance(); // /
                 advance(); // *
-                while (!isAtEnd() && !(peek() === '*' && peek(1) === '/')) {
+
+                // True while comment is not terminated
+                const notCommentEnd = () => !isAtEnd() && !(peek() === '*' && peek(1) === '/');
+
+                while (notCommentEnd()) {
                     if (peek() === '\n') {
                         line++;
                         lineStart = current + 1;
@@ -295,6 +312,7 @@ export function tokenize(source: string): TokenizerResult {
         // Decimal part (only if followed by digit to avoid member access)
         if (peek() === '.' && isDigit(peek(1))) {
             value += advance(); // .
+
             while (isDigit(peek())) {
                 value += advance();
             }
@@ -322,18 +340,22 @@ export function tokenize(source: string): TokenizerResult {
 
         advance(); // opening quote
 
-        while (!isAtEnd() && peek() !== quote) {
+        // True while there's more string content to consume
+        const hasStringContent = () => !isAtEnd() && peek() !== quote;
+
+        while (hasStringContent()) {
             if (peek() === '\n') {
-                addError('Unterminated string', pos);
+                addError(TokenizerErrorCode.UnterminatedString, pos);
 
                 return;
             }
 
             if (peek() === '\\') {
                 advance();
+
                 const escaped = advance();
 
-                // WHY: Map escape sequences to their runtime equivalents
+                // Map escape sequences to their runtime equivalents
                 switch (escaped) {
                     case 'n':
                         value += '\n';
@@ -359,12 +381,13 @@ export function tokenize(source: string): TokenizerResult {
         }
 
         if (isAtEnd()) {
-            addError('Unterminated string', pos);
+            addError(TokenizerErrorCode.UnterminatedString, pos);
 
             return;
         }
 
         advance(); // closing quote
+
         addToken('STRING', value, pos);
     }
 
@@ -390,23 +413,31 @@ export function tokenize(source: string): TokenizerResult {
 
         advance(); // opening backtick
 
-        while (!isAtEnd() && peek() !== '`') {
+        // True while there's more template content to consume
+        const hasTemplateContent = () => !isAtEnd() && peek() !== '`';
+
+        while (hasTemplateContent()) {
             if (peek() === '\n') {
-                // WHY: Template strings can span multiple lines (unlike STRING)
+                // Template strings can span multiple lines (unlike STRING)
                 line++;
                 lineStart = current + 1;
                 value += advance();
             } else if (peek() === '\\') {
-                // WHY: Preserve escapes in template for later processing
+                // Preserve escapes in template for later processing
                 advance();
+
                 value += advance();
             } else if (peek() === '$' && peek(1) === '{') {
-                // WHY: Capture interpolation syntax including nested braces
+                // Capture interpolation syntax including nested braces
                 value += advance(); // $
                 value += advance(); // {
+
                 let braceDepth = 1;
 
-                while (!isAtEnd() && braceDepth > 0) {
+                // True while interpolation is not terminated
+                const hasInterpolationContent = () => !isAtEnd() && braceDepth > 0;
+
+                while (hasInterpolationContent()) {
                     if (peek() === '{') {
                         braceDepth++;
                     }
@@ -423,12 +454,13 @@ export function tokenize(source: string): TokenizerResult {
         }
 
         if (isAtEnd()) {
-            addError('Unterminated template string', pos);
+            addError(TokenizerErrorCode.UnterminatedTemplateString, pos);
 
             return;
         }
 
         advance(); // closing backtick
+
         addToken('TEMPLATE_STRING', value, pos);
     }
 
@@ -456,7 +488,7 @@ export function tokenize(source: string): TokenizerResult {
             value += advance();
         }
 
-        // WHY: Check lexicon for keyword match
+        // Check lexicon for keyword match
         if (isKeyword(value)) {
             const kw = getKeyword(value)!;
 
@@ -481,6 +513,7 @@ export function tokenize(source: string): TokenizerResult {
      */
     function scanToken(): void {
         skipWhitespace();
+
         if (isAtEnd()) {
             return;
         }
@@ -520,8 +553,9 @@ export function tokenize(source: string): TokenizerResult {
         // Operators and Delimiters
         // ---------------------------------------------------------------------------
 
-        // WHY: Advance first, then lookahead for multi-character operators
+        // Operators and delimiters - advance first, then lookahead for multi-character operators
         advance();
+
         switch (char) {
             // Single-character delimiters
             case '(':
@@ -582,7 +616,7 @@ export function tokenize(source: string): TokenizerResult {
                     advance();
                     addToken('AND', '&&', pos);
                 } else {
-                    addError(`Unexpected character '${char}'`, pos);
+                    addError(TokenizerErrorCode.UnexpectedCharacter, pos);
                 }
 
                 break;
@@ -665,7 +699,7 @@ export function tokenize(source: string): TokenizerResult {
 
             // EDGE: Unrecognized character - emit error but continue
             default:
-                addError(`Unexpected character '${char}'`, pos);
+                addError(TokenizerErrorCode.UnexpectedCharacter, pos);
         }
     }
 
@@ -685,3 +719,4 @@ export function tokenize(source: string): TokenizerResult {
 }
 
 export * from './types';
+export * from './errors';

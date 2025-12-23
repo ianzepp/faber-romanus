@@ -89,6 +89,7 @@ import {
     formatType,
     isAssignableTo,
 } from './types';
+import { SemanticErrorCode, SEMANTIC_ERRORS } from './errors';
 
 // =============================================================================
 // TYPES
@@ -188,8 +189,11 @@ export function analyze(program: Program): SemanticResult {
     let currentScope: Scope = createGlobalScope();
     let currentFunctionReturnType: SemanticType | null = null;
 
-    // Define built-in functions
     defineBuiltins();
+
+    // ---------------------------------------------------------------------------
+    // Built-in Definitions
+    // ---------------------------------------------------------------------------
 
     /**
      * Define built-in functions (intrinsics) in global scope.
@@ -200,7 +204,6 @@ export function analyze(program: Program): SemanticResult {
     function defineBuiltins(): void {
         const builtinPos = { line: 0, column: 0 };
 
-        // Helper to define a function intrinsic
         function defFn(name: string, params: SemanticType[], ret: SemanticType): void {
             currentScope.symbols.set(name, {
                 name,
@@ -211,41 +214,23 @@ export function analyze(program: Program): SemanticResult {
             });
         }
 
-        // =====================================================================
         // I/O Intrinsics (prefixed with _ for internal use by norma.fab)
-        // =====================================================================
-
-        // _scribe - print/log (variadic, returns void)
         defFn('_scribe', [], VACUUM);
-
-        // _vide - debug output
         defFn('_vide', [], VACUUM);
-
-        // _mone - warning output
         defFn('_mone', [], VACUUM);
-
-        // _lege - read input line
         defFn('_lege', [], TEXTUS);
 
-        // =====================================================================
         // Math Intrinsics (prefixed with _ for internal use by norma.fab)
-        // =====================================================================
-
-        // _fortuitus - random number 0.0 to 1.0
         defFn('_fortuitus', [], NUMERUS);
-
-        // _pavimentum - floor
         defFn('_pavimentum', [NUMERUS], NUMERUS);
-
-        // _tectum - ceiling
         defFn('_tectum', [NUMERUS], NUMERUS);
-
-        // _radix - square root
         defFn('_radix', [NUMERUS], NUMERUS);
-
-        // _potentia - power (base, exponent)
         defFn('_potentia', [NUMERUS, NUMERUS], NUMERUS);
     }
+
+    // ---------------------------------------------------------------------------
+    // Error Reporting
+    // ---------------------------------------------------------------------------
 
     /**
      * Report a semantic error.
@@ -253,6 +238,10 @@ export function analyze(program: Program): SemanticResult {
     function error(message: string, position: Position): void {
         errors.push({ message, position });
     }
+
+    // ---------------------------------------------------------------------------
+    // Scope Management
+    // ---------------------------------------------------------------------------
 
     /**
      * Enter a new scope.
@@ -288,13 +277,12 @@ export function analyze(program: Program): SemanticResult {
     /**
      * Analyze import declaration and add symbols to scope.
      *
-     * Currently only recognizes 'norma' standard library.
-     * Other modules are passed through without type information.
+     * WHY: Currently only recognizes 'norma' standard library.
+     *      Other modules pass through without type info for external JS/TS modules.
      */
     function analyzeImportDeclaration(node: ImportDeclaration): void {
+        // Unknown module - imports pass through without type info
         if (node.source !== 'norma') {
-            // Unknown module - imports pass through without type info
-            // This allows importing external JS/TS modules
             return;
         }
 
@@ -309,23 +297,29 @@ export function analyze(program: Program): SemanticResult {
                     position: node.position,
                 });
             }
-        } else {
-            // ex norma importa scribe, series - add specific exports
-            for (const specifier of node.specifiers) {
-                const exportInfo = NORMA_EXPORTS[specifier.name];
 
-                if (exportInfo) {
-                    currentScope.symbols.set(specifier.name, {
-                        name: specifier.name,
-                        type: exportInfo.type,
-                        kind: exportInfo.kind,
-                        mutable: false,
-                        position: specifier.position,
-                    });
-                } else {
-                    error(`'${specifier.name}' is not exported from 'norma'`, specifier.position);
-                }
+            return;
+        }
+
+        // ex norma importa scribe, series - add specific exports
+        for (const specifier of node.specifiers) {
+            const exportInfo = NORMA_EXPORTS[specifier.name];
+
+            if (!exportInfo) {
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NotExportedFromModule];
+
+                error(`${text(specifier.name, 'norma')}\n${help}`, specifier.position);
+
+                continue;
             }
+
+            currentScope.symbols.set(specifier.name, {
+                name: specifier.name,
+                type: exportInfo.type,
+                kind: exportInfo.kind,
+                mutable: false,
+                position: specifier.position,
+            });
         }
     }
 
@@ -352,10 +346,8 @@ export function analyze(program: Program): SemanticResult {
         const primitive = LATIN_TYPE_MAP[node.name.toLowerCase()];
 
         if (primitive) {
-            // Extract size from type parameters (e.g., numerus<32>)
             const size = extractSizeFromTypeParams(node.typeParameters);
 
-            // Check if any size or nullable flag is set
             if (node.nullable || size !== undefined) {
                 return {
                     ...primitive,
@@ -381,7 +373,6 @@ export function analyze(program: Program): SemanticResult {
         const typeAlias = lookupSymbol(currentScope, node.name);
 
         if (typeAlias && typeAlias.kind === 'type') {
-            // Resolve the aliased type with any additional modifiers
             if (node.nullable && !typeAlias.type.nullable) {
                 return { ...typeAlias.type, nullable: true };
             }
@@ -448,36 +439,52 @@ export function analyze(program: Program): SemanticResult {
         switch (node.type) {
             case 'Identifier':
                 return resolveIdentifier(node);
+
             case 'Literal':
                 return resolveLiteral(node);
+
             case 'TemplateLiteral':
                 node.resolvedType = TEXTUS;
-
                 return TEXTUS;
+
             case 'BinaryExpression':
                 return resolveBinaryExpression(node);
+
             case 'UnaryExpression':
                 return resolveUnaryExpression(node);
+
             case 'CallExpression':
                 return resolveCallExpression(node);
+
             case 'MemberExpression':
                 return resolveMemberExpression(node);
+
             case 'ArrowFunctionExpression':
                 return resolveArrowFunction(node);
+
             case 'AssignmentExpression':
                 return resolveAssignment(node);
+
             case 'AwaitExpression':
                 return resolveAwait(node);
+
             case 'NewExpression':
                 return resolveNew(node);
+
             case 'ConditionalExpression':
                 return resolveConditional(node);
+
             case 'RangeExpression':
                 return resolveRange(node);
+
             case 'ObjectExpression':
                 return resolveObjectExpression(node);
-            default:
+
+            default: {
+                const _exhaustive: never = node;
+
                 return UNKNOWN;
+            }
         }
     }
 
@@ -489,7 +496,6 @@ export function analyze(program: Program): SemanticResult {
             resolveExpression(prop.value);
         }
 
-        // Object literals have user type (structural typing)
         const objType = userType('Object');
 
         node.resolvedType = objType;
@@ -531,7 +537,9 @@ export function analyze(program: Program): SemanticResult {
         const symbol = lookupSymbol(currentScope, node.name);
 
         if (!symbol) {
-            error(`Undefined variable '${node.name}'`, node.position);
+            const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.UndefinedVariable];
+
+            error(`${text(node.name)}\n${help}`, node.position);
             node.resolvedType = UNKNOWN;
 
             return UNKNOWN;
@@ -556,7 +564,7 @@ export function analyze(program: Program): SemanticResult {
 
         // Arithmetic operators: +, -, *, /, %
         if (['+', '-', '*', '/', '%'].includes(node.operator)) {
-            // String concatenation
+            // String concatenation with + operator
             if (
                 node.operator === '+' &&
                 leftType.kind === 'primitive' &&
@@ -579,7 +587,7 @@ export function analyze(program: Program): SemanticResult {
                 return NUMERUS;
             }
 
-            // Mixed or unknown
+            // Mixed or unknown - default to numerus
             node.resolvedType = NUMERUS;
 
             return NUMERUS;
@@ -653,7 +661,8 @@ export function analyze(program: Program): SemanticResult {
 
     function resolveMemberExpression(node: MemberExpression): SemanticType {
         resolveExpression(node.object);
-        // Property access type depends on the object type - for now return unknown
+
+        // TODO: Property access type depends on the object type
         node.resolvedType = UNKNOWN;
 
         return UNKNOWN;
@@ -706,12 +715,18 @@ export function analyze(program: Program): SemanticResult {
             const symbol = lookupSymbol(currentScope, node.left.name);
 
             if (!symbol) {
-                error(`Undefined variable '${node.left.name}'`, node.left.position);
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.UndefinedVariable];
+
+                error(`${text(node.left.name)}\n${help}`, node.left.position);
             } else if (!symbol.mutable) {
-                error(`Cannot assign to immutable variable '${node.left.name}'`, node.position);
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.ImmutableAssignment];
+
+                error(`${text(node.left.name)}\n${help}`, node.position);
             } else if (!isAssignableTo(rightType, symbol.type)) {
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.TypeMismatch];
+
                 error(
-                    `Type '${formatType(rightType)}' is not assignable to type '${formatType(symbol.type)}'`,
+                    `${text(formatType(rightType), formatType(symbol.type))}\n${help}`,
                     node.position,
                 );
             }
@@ -747,7 +762,6 @@ export function analyze(program: Program): SemanticResult {
             resolveExpression(arg);
         }
 
-        // Return user type based on constructor name
         const type = userType(node.callee.name);
 
         node.resolvedType = type;
@@ -759,6 +773,7 @@ export function analyze(program: Program): SemanticResult {
         node: Expression & { type: 'ConditionalExpression' },
     ): SemanticType {
         resolveExpression(node.test);
+
         const consequentType = resolveExpression(node.consequent);
         const alternateType = resolveExpression(node.alternate);
 
@@ -789,54 +804,75 @@ export function analyze(program: Program): SemanticResult {
             case 'ImportDeclaration':
                 analyzeImportDeclaration(node);
                 break;
+
             case 'VariableDeclaration':
                 analyzeVariableDeclaration(node);
                 break;
+
             case 'FunctionDeclaration':
                 analyzeFunctionDeclaration(node);
                 break;
+
             case 'TypeAliasDeclaration':
                 analyzeTypeAliasDeclaration(node);
                 break;
+
             case 'IfStatement':
                 analyzeIfStatement(node);
                 break;
+
             case 'WhileStatement':
                 analyzeWhileStatement(node);
                 break;
+
             case 'ForStatement':
                 analyzeForStatement(node);
                 break;
+
             case 'WithStatement':
                 analyzeWithStatement(node);
                 break;
+
             case 'SwitchStatement':
                 analyzeSwitchStatement(node);
                 break;
+
             case 'GuardStatement':
                 analyzeGuardStatement(node);
                 break;
+
             case 'AssertStatement':
                 analyzeAssertStatement(node);
                 break;
+
             case 'ReturnStatement':
                 analyzeReturnStatement(node);
                 break;
+
             case 'BlockStatement':
                 analyzeBlock(node);
                 break;
+
             case 'ExpressionStatement':
                 resolveExpression(node.expression);
                 break;
+
             case 'ThrowStatement':
                 analyzeThrowStatement(node);
                 break;
+
             case 'ScribeStatement':
                 analyzeScribeStatement(node);
                 break;
+
             case 'TryStatement':
                 analyzeTryStatement(node);
                 break;
+
+            default: {
+                const _exhaustive: never = node;
+                break;
+            }
         }
     }
 
@@ -857,7 +893,7 @@ export function analyze(program: Program): SemanticResult {
             for (const prop of node.name.properties) {
                 define({
                     name: prop.value.name,
-                    type: UNKNOWN, // Property types are not statically known
+                    type: UNKNOWN,
                     kind: 'variable',
                     mutable: node.kind === 'varia',
                     position: prop.position,
@@ -867,7 +903,7 @@ export function analyze(program: Program): SemanticResult {
             return;
         }
 
-        // Standard variable declaration
+        // Standard variable declaration - resolve type
         let type: SemanticType;
 
         if (node.typeAnnotation) {
@@ -876,10 +912,10 @@ export function analyze(program: Program): SemanticResult {
             type = resolveExpression(node.init);
         } else {
             type = UNKNOWN;
-            error(
-                `Variable '${node.name.name}' has no type annotation or initializer`,
-                node.position,
-            );
+
+            const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NoTypeOrInitializer];
+
+            error(`${text(node.name.name)}\n${help}`, node.position);
         }
 
         // Check initializer type compatibility
@@ -887,10 +923,9 @@ export function analyze(program: Program): SemanticResult {
             const initType = resolveExpression(node.init);
 
             if (!isAssignableTo(initType, type)) {
-                error(
-                    `Type '${formatType(initType)}' is not assignable to type '${formatType(type)}'`,
-                    node.position,
-                );
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.TypeMismatch];
+
+                error(`${text(formatType(initType), formatType(type))}\n${help}`, node.position);
             }
         }
 
@@ -908,7 +943,7 @@ export function analyze(program: Program): SemanticResult {
     }
 
     function analyzeFunctionDeclaration(node: FunctionDeclaration): void {
-        // Build function type
+        // Build function type from parameters and return type
         const paramTypes: SemanticType[] = node.params.map(p =>
             p.typeAnnotation ? resolveTypeAnnotation(p.typeAnnotation) : UNKNOWN,
         );
@@ -927,6 +962,7 @@ export function analyze(program: Program): SemanticResult {
 
         // Analyze function body in new scope
         enterScope('function');
+
         const previousReturnType = currentFunctionReturnType;
 
         currentFunctionReturnType = returnType;
@@ -944,7 +980,6 @@ export function analyze(program: Program): SemanticResult {
             });
         }
 
-        // Analyze body
         analyzeBlock(node.body);
 
         currentFunctionReturnType = previousReturnType;
@@ -954,10 +989,8 @@ export function analyze(program: Program): SemanticResult {
     }
 
     function analyzeTypeAliasDeclaration(node: TypeAliasDeclaration): void {
-        // Resolve the aliased type
         const type = resolveTypeAnnotation(node.typeAnnotation);
 
-        // Define type alias in symbol table
         // WHY: Type aliases are stored as "type" symbols to distinguish from variables
         define({
             name: node.name.name,
@@ -974,8 +1007,9 @@ export function analyze(program: Program): SemanticResult {
     function analyzeIfStatement(node: IfStatement): void {
         const testType = resolveExpression(node.test);
 
+        // TODO: Warn but don't error - truthy/falsy is valid
         if (testType.kind === 'primitive' && testType.name !== 'bivalens') {
-            // Warn but don't error - truthy/falsy is valid
+            // Could warn here about non-boolean in condition
         }
 
         enterScope();
@@ -999,6 +1033,7 @@ export function analyze(program: Program): SemanticResult {
 
     function analyzeWhileStatement(node: WhileStatement): void {
         resolveExpression(node.test);
+
         enterScope();
         analyzeBlock(node.body);
         exitScope();
@@ -1012,10 +1047,11 @@ export function analyze(program: Program): SemanticResult {
         resolveExpression(node.iterable);
 
         enterScope();
-        // Define loop variable
+
+        // TODO: Infer loop variable type from iterable element type
         define({
             name: node.variable.name,
-            type: UNKNOWN, // Would need to infer from iterable element type
+            type: UNKNOWN,
             kind: 'variable',
             mutable: false,
             position: node.variable.position,
@@ -1033,19 +1069,19 @@ export function analyze(program: Program): SemanticResult {
         resolveExpression(node.object);
 
         // WHY: Inside cum blocks, bare identifier assignments become property
-        // assignments on the context object. We don't validate these as
-        // variables since they'll be transformed at codegen time.
+        //      assignments on the context object. We don't validate these as
+        //      variables since they'll be transformed at codegen time.
         enterScope();
 
         for (const stmt of node.body.body) {
-            if (
+            const isBareAssignment =
                 stmt.type === 'ExpressionStatement' &&
                 stmt.expression.type === 'AssignmentExpression' &&
-                stmt.expression.left.type === 'Identifier'
-            ) {
-                // Skip validation for bare identifier assignments - these
-                // become property assignments on the context object
-                resolveExpression(stmt.expression.right);
+                stmt.expression.left.type === 'Identifier';
+
+            if (isBareAssignment) {
+                // Skip validation for bare identifier assignments
+                resolveExpression((stmt.expression as AssignmentExpression).right);
             } else {
                 analyzeStatement(stmt);
             }
@@ -1059,6 +1095,7 @@ export function analyze(program: Program): SemanticResult {
 
         for (const caseNode of node.cases) {
             resolveExpression(caseNode.test);
+
             enterScope();
             analyzeBlock(caseNode.consequent);
             exitScope();
@@ -1078,6 +1115,7 @@ export function analyze(program: Program): SemanticResult {
     function analyzeGuardStatement(node: GuardStatement): void {
         for (const clause of node.clauses) {
             resolveExpression(clause.test);
+
             enterScope();
             analyzeBlock(clause.consequent);
             exitScope();
@@ -1093,18 +1131,19 @@ export function analyze(program: Program): SemanticResult {
     }
 
     function analyzeReturnStatement(node: ReturnStatement): void {
-        if (node.argument) {
-            const returnType = resolveExpression(node.argument);
+        if (!node.argument) {
+            return;
+        }
 
-            if (
-                currentFunctionReturnType &&
-                !isAssignableTo(returnType, currentFunctionReturnType)
-            ) {
-                error(
-                    `Return type '${formatType(returnType)}' is not assignable to function return type '${formatType(currentFunctionReturnType)}'`,
-                    node.position,
-                );
-            }
+        const returnType = resolveExpression(node.argument);
+
+        if (currentFunctionReturnType && !isAssignableTo(returnType, currentFunctionReturnType)) {
+            const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.ReturnTypeMismatch];
+
+            error(
+                `${text(formatType(returnType), formatType(currentFunctionReturnType))}\n${help}`,
+                node.position,
+            );
         }
     }
 
@@ -1130,6 +1169,7 @@ export function analyze(program: Program): SemanticResult {
 
     function analyzeCatchClause(node: { param: Identifier; body: BlockStatement }): void {
         enterScope();
+
         define({
             name: node.param.name,
             type: userType('Error'),
@@ -1137,6 +1177,7 @@ export function analyze(program: Program): SemanticResult {
             mutable: false,
             position: node.param.position,
         });
+
         analyzeBlock(node.body);
         exitScope();
     }
@@ -1161,3 +1202,4 @@ export function analyze(program: Program): SemanticResult {
 // Re-export types
 export * from './types';
 export * from './scope';
+export * from './errors';
