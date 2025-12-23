@@ -1057,20 +1057,24 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse if statement.
      *
      * GRAMMAR:
-     *   ifStmt := 'si' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)? ('aliter' (ifStmt | blockStmt | statement))?
+     *   ifStmt := 'si' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)? ('aliter' (ifStmt | blockStmt | statement) | 'sin' ifStmt)?
      *
      * WHY: 'cape' (catch/seize) clause allows error handling within conditionals.
      *      'aliter' (otherwise) for else clause.
+     *      'sin' (but if) is classical Latin for else-if, equivalent to 'aliter si'.
      *      'ergo' (therefore) for one-liner consequents.
      *
      * Examples:
      *   si x > 5 ergo scribe("big")
      *   si x > 5 { scribe("big") } aliter scribe("small")
+     *   si x < 0 { ... } sin x == 0 { ... } aliter { ... }
      */
-    function parseIfStatement(): IfStatement {
+    function parseIfStatement(skipSiKeyword = false): IfStatement {
         const position = peek().position;
 
-        expectKeyword('si', ParserErrorCode.ExpectedKeywordSi);
+        if (!skipSiKeyword) {
+            expectKeyword('si', ParserErrorCode.ExpectedKeywordSi);
+        }
 
         const test = parseExpression();
 
@@ -1091,7 +1095,7 @@ export function parse(tokens: Token[]): ParserResult {
             catchClause = parseCatchClause();
         }
 
-        // Check for alternate (aliter)
+        // Check for alternate (aliter or sin)
         let alternate: BlockStatement | IfStatement | undefined;
 
         if (matchKeyword('aliter')) {
@@ -1105,6 +1109,9 @@ export function parse(tokens: Token[]): ParserResult {
                 const stmt = parseStatement();
                 alternate = { type: 'BlockStatement', body: [stmt], position: stmtPos };
             }
+        } else if (matchKeyword('sin')) {
+            // "sin" (but if) is classical Latin for else-if
+            alternate = parseIfStatement(true);
         }
 
         return { type: 'IfStatement', test, consequent, alternate, catchClause, position };

@@ -668,6 +668,19 @@ describe('parser', () => {
             expect(stmt.alternate.body[0].type).toBe('ScribeStatement');
         });
 
+        test('sin as else-if alias', () => {
+            const { program } = parseCode(`
+                si x < 0 { redde "negative" }
+                sin x == 0 { redde "zero" }
+                aliter { redde "positive" }
+            `);
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('IfStatement');
+            expect(stmt.alternate.type).toBe('IfStatement');
+            expect(stmt.alternate.alternate.type).toBe('BlockStatement');
+        });
+
         test('dum with ergo', () => {
             const { program } = parseCode('dum x > 0 ergo x = x - 1');
             const stmt = program!.body[0] as any;
