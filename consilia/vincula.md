@@ -53,7 +53,38 @@ result = transform(result)
 result = cede fetchMore()  // can still use cede for subsequent awaits
 ```
 
-The gerundive form ("that which will be...") signals futurity — the value isn't available now but will be fixed/set once the async operation completes.
+The gerundive form ("that which will be...") signals futurity — the value isn't available now but will be fixed/set once the operation completes.
+
+---
+
+## Sync/Async Agnostic
+
+A key property: `figendum` and `variandum` work with both sync and async values:
+
+```
+figendum a = syncFunction()     // returns immediately
+figendum b = asyncFunction()    // awaits the promise
+figendum c = maybeAsync()       // handles either case
+```
+
+If the RHS is a promise, it awaits. If it's a plain value, it passes through immediately (like JavaScript's `await` on non-promises).
+
+**Benefits:**
+
+1. **Future-proof** — if a function becomes async later, callers don't need to change
+2. **Simpler mental model** — "value will be ready on next line" regardless of sync/async
+3. **Unified API** — library authors can change sync→async without breaking callers
+4. **No tracking** — don't need to know or care if something is async
+
+This makes `figendum` a safe default for any function call binding:
+
+```
+figendum config = loadConfig()    // don't care if sync or async
+figendum user = getUser(id)       // don't care if sync or async
+figendum data = parse(input)      // don't care if sync or async
+```
+
+The compiler handles the difference — sync values pass through, async values are awaited.
 
 ---
 
@@ -73,16 +104,16 @@ Both use the Latin future/gerundive to indicate "not yet, but will be."
 
 ## Type Annotations
 
-Type annotations follow the binding keyword:
+Type comes first, then binding keyword, then name:
 
 ```
 // Sync
-fixum name: textus = "Marcus"
-varia count: numerus = 0
+fixum textus name = "Marcus"
+varia numerus count = 0
 
 // Async
-figendum users: lista<User> = fetchUsers()
-variandum data: Response = pete(url)
+figendum user[] users = fetchUsers()
+variandum response data = pete(url)
 ```
 
 ---
@@ -225,6 +256,17 @@ fixum data = cede asyncValue
 ```
 
 This remains valid. `figendum`/`variandum` are syntactic sugar for common async patterns.
+
+### Why sync/async agnostic?
+
+`figendum` handles both sync and async RHS values — if it's a promise, await; if not, pass through. This means:
+
+- Code is future-proof (sync→async changes don't break callers)
+- No need to track which functions are async
+- `figendum` becomes a safe default for any function call binding
+- Library APIs can evolve without breaking changes
+
+This mirrors JavaScript's `await` behavior on non-promises, but makes the intent explicit in the binding declaration.
 
 ---
 
