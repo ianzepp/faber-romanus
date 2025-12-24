@@ -188,8 +188,10 @@ Base64 and hex encode raw bytes to text. The input must be `octeti`, and decode 
 
 ### Error handling?
 
-Invalid input (e.g., bad base64 string) returns an error via the standard `fors` result type:
+Invalid input (e.g., bad base64 string) throws a recoverable error via `iace`:
 
 ```
-fixum result = decoda("invalid!!!", "base64")  // fors<octeti>
+figendum result = decoda("invalid!!!", "base64")  // may iace on invalid input
 ```
+
+Use `cape` to handle decoding errors, or let them propagate.

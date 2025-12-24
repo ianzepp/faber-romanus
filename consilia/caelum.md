@@ -263,13 +263,13 @@ try server.listen(address);
 
 ## Error Handling
 
-Network errors use `fors` result type:
+Network errors use `iace` for recoverable failures:
 
 ```
-fixum result = cede pete(url)
+figendum response = pete(url)
 
-si result.status >= 400 {
-    iace "HTTP error: " + result.status
+si response.status >= 400 {
+    iace "HTTP error: " + response.status
 }
 ```
 
