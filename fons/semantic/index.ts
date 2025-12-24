@@ -71,6 +71,8 @@ import type {
     ThrowStatement,
     ScribeStatement,
     TryStatement,
+    FacBlockStatement,
+    FacExpression,
 } from '../parser/ast';
 import type { Position } from '../tokenizer/types';
 import type { Scope, Symbol } from './scope';
@@ -484,6 +486,9 @@ export function analyze(program: Program): SemanticResult {
             case 'ArrayExpression':
                 return resolveArrayExpression(node);
 
+            case 'FacExpression':
+                return resolveFacExpression(node);
+
             default: {
                 const _exhaustive: never = node;
 
@@ -777,6 +782,41 @@ export function analyze(program: Program): SemanticResult {
         return fnType;
     }
 
+    /**
+     * Resolve fac expression (lambda).
+     *
+     * WHY: FacExpression is simpler than ArrowFunction - params are just
+     *      identifiers (no type annotations) and body is always an expression.
+     */
+    function resolveFacExpression(node: FacExpression): SemanticType {
+        enterScope('function');
+
+        // Define parameters (untyped - infer from usage)
+        const paramTypes: SemanticType[] = [];
+
+        for (const param of node.params) {
+            const paramType = UNKNOWN;
+            paramTypes.push(paramType);
+            define({
+                name: param.name,
+                type: paramType,
+                kind: 'parameter',
+                mutable: false,
+                position: param.position,
+            });
+        }
+
+        // Resolve body expression
+        const returnType = resolveExpression(node.body);
+
+        exitScope();
+
+        const fnType = functionType(paramTypes, returnType, node.async);
+        node.resolvedType = fnType;
+
+        return fnType;
+    }
+
     function resolveAssignment(node: AssignmentExpression): SemanticType {
         const rightType = resolveExpression(node.right);
 
@@ -936,6 +976,10 @@ export function analyze(program: Program): SemanticResult {
 
             case 'TryStatement':
                 analyzeTryStatement(node);
+                break;
+
+            case 'FacBlockStatement':
+                analyzeFacBlockStatement(node);
                 break;
 
             default: {
@@ -1249,6 +1293,21 @@ export function analyze(program: Program): SemanticResult {
 
         analyzeBlock(node.body);
         exitScope();
+    }
+
+    /**
+     * Analyze fac block statement (explicit scope block).
+     *
+     * WHY: fac creates an explicit scope. With cape, it's like try-catch.
+     */
+    function analyzeFacBlockStatement(node: FacBlockStatement): void {
+        enterScope();
+        analyzeBlock(node.body);
+        exitScope();
+
+        if (node.catchClause) {
+            analyzeCatchClause(node.catchClause);
+        }
     }
 
     function analyzeBlock(node: BlockStatement): void {

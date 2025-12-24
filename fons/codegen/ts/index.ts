@@ -83,6 +83,8 @@ import type {
     Parameter,
     TypeAnnotation,
     TypeParameter,
+    FacBlockStatement,
+    FacExpression,
 } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import { getListaMethod } from './norma/lista';
@@ -220,6 +222,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genTryStatement(node);
             case 'BlockStatement':
                 return genBlockStatement(node);
+            case 'FacBlockStatement':
+                return genFacBlockStatement(node);
             case 'ExpressionStatement':
                 return genExpressionStatement(node);
             default:
@@ -928,6 +932,27 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         return result;
     }
 
+    /**
+     * Generate fac block statement (explicit scope block).
+     *
+     * TRANSFORMS:
+     *   fac { x() } -> { x(); }
+     *   fac { x() } cape e { y() } -> try { x(); } catch (e) { y(); }
+     *
+     * WHY: fac alone is just a scope block. With cape, it becomes try-catch.
+     */
+    function genFacBlockStatement(node: FacBlockStatement): string {
+        if (node.catchClause) {
+            // With cape, emit as try-catch
+            let result = `${ind()}try ${genBlockStatement(node.body)}`;
+            result += ` catch (${node.catchClause.param.name}) ${genBlockStatement(node.catchClause.body)}`;
+            return result;
+        }
+
+        // Without cape, just emit the block
+        return `${ind()}${genBlockStatement(node.body)}`;
+    }
+
     function genBlockStatement(node: BlockStatement): string {
         if (node.body.length === 0) {
             return '{}';
@@ -988,6 +1013,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genRangeExpression(node);
             case 'ObjectExpression':
                 return genObjectExpression(node);
+            case 'FacExpression':
+                return genFacExpression(node);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }
@@ -1271,6 +1298,26 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const body = genExpression(node.body as Expression);
 
         return `(${params}) => ${body}`;
+    }
+
+    /**
+     * Generate fac expression (lambda/anonymous function).
+     *
+     * TRANSFORMS:
+     *   fac x fit x * 2 -> (x) => x * 2
+     *   fac x, y fit x + y -> (x, y) => x + y
+     *   fac fit 42 -> () => 42
+     *   fac url fiet getData(url) -> async (url) => await getData(url)
+     *
+     * WHY: Latin fac (do) + fit (becomes) creates arrow functions.
+     *      fiet makes it async.
+     */
+    function genFacExpression(node: FacExpression): string {
+        const params = node.params.map(p => p.name).join(', ');
+        const body = genExpression(node.body);
+        const asyncPrefix = node.async ? 'async ' : '';
+
+        return `${asyncPrefix}(${params}) => ${body}`;
     }
 
     function genAssignmentExpression(node: AssignmentExpression): string {

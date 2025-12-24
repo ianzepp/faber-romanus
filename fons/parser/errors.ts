@@ -84,6 +84,8 @@ export enum ParserErrorCode {
     ExpectedKeywordCape = 'P037',
     ExpectedKeywordAliter = 'P038',
     ExpectedKeywordSecus = 'P039',
+    ExpectedKeywordFac = 'P040',
+    ExpectedKeywordFit = 'P041',
 
     // Module/source errors (P050-P059)
     ExpectedModuleName = 'P050',
@@ -254,6 +256,14 @@ export const PARSER_ERRORS = {
     [ParserErrorCode.ExpectedKeywordSecus]: {
         text: "Expected 'secus'",
         help: "Latin ternary expressions use 'secus' (otherwise) after 'sic' (thus): verum sic 1 secus 0",
+    },
+    [ParserErrorCode.ExpectedKeywordFac]: {
+        text: "Expected 'fac'",
+        help: "Block scopes use 'fac' (do) keyword: fac { ... } or lambdas: fac x fit x * 2",
+    },
+    [ParserErrorCode.ExpectedKeywordFit]: {
+        text: "Expected 'fit' or 'fiet'",
+        help: "Lambdas require 'fit' (becomes) or 'fiet' (will become) after parameters: fac x fit x * 2",
     },
 
     // Module/source errors

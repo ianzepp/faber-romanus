@@ -97,7 +97,8 @@ export type Statement =
     | BlockStatement
     | ThrowStatement
     | TryStatement
-    | ScribeStatement;
+    | ScribeStatement
+    | FacBlockStatement;
 
 // ---------------------------------------------------------------------------
 // Import/Export Declarations
@@ -654,6 +655,61 @@ export interface CatchClause extends BaseNode {
     body: BlockStatement;
 }
 
+// ---------------------------------------------------------------------------
+// Fac (Do) Block and Lambda
+// ---------------------------------------------------------------------------
+
+/**
+ * Fac block statement (explicit scope block).
+ *
+ * GRAMMAR (in EBNF):
+ *   facBlockStmt := 'fac' blockStmt ('cape' IDENTIFIER blockStmt)?
+ *
+ * INVARIANT: body is always a BlockStatement.
+ * INVARIANT: catchClause is optional - for error handling.
+ *
+ * WHY: Latin 'fac' (do!) creates an explicit scope boundary.
+ *      Unlike `si verum { }`, this communicates intent clearly.
+ *      When paired with 'cape', provides error boundary semantics.
+ *
+ * Examples:
+ *   fac { riskyOperation() }
+ *   fac { riskyOperation() } cape err { handleError(err) }
+ */
+export interface FacBlockStatement extends BaseNode {
+    type: 'FacBlockStatement';
+    body: BlockStatement;
+    catchClause?: CatchClause;
+}
+
+/**
+ * Fac expression (lambda/anonymous function).
+ *
+ * GRAMMAR (in EBNF):
+ *   facExpr := 'fac' params? ('fit' | 'fiet') expression
+ *   params := IDENTIFIER (',' IDENTIFIER)*
+ *
+ * INVARIANT: params is always an array (empty for zero-arg lambdas).
+ * INVARIANT: async is true when 'fiet' used, false for 'fit'.
+ * INVARIANT: body is always an Expression (no block body syntax).
+ *
+ * WHY: Latin 'fac' (do) + 'fit' (becomes) creates lambda syntax.
+ *      'fiet' (will become) for async lambdas.
+ *      Expression-only body reads naturally: "do x, becoming x * 2"
+ *
+ * Examples:
+ *   fac x fit x * 2           -> (x) => x * 2
+ *   fac x, y fit x + y        -> (x, y) => x + y
+ *   fac fit 42                -> () => 42
+ *   fac url fiet getData(url) -> async (url) => await getData(url)
+ */
+export interface FacExpression extends BaseNode {
+    type: 'FacExpression';
+    params: Identifier[];
+    body: Expression;
+    async: boolean;
+}
+
 // =============================================================================
 // EXPRESSION TYPES
 // =============================================================================
@@ -679,7 +735,8 @@ export type Expression =
     | ConditionalExpression
     | AwaitExpression
     | NewExpression
-    | TemplateLiteral;
+    | TemplateLiteral
+    | FacExpression;
 
 // ---------------------------------------------------------------------------
 // Primary Expressions

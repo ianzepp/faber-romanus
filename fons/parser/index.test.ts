@@ -1436,4 +1436,84 @@ describe('parser', () => {
             expect(stmt.arguments[1].type).toBe('MemberExpression');
         });
     });
+
+    describe('fac block and lambda', () => {
+        describe('fac block statement', () => {
+            test('simple fac block', () => {
+                const { program } = parseCode('fac { varia x = 1 }');
+                const stmt = program!.body[0] as any;
+
+                expect(stmt.type).toBe('FacBlockStatement');
+                expect(stmt.body.type).toBe('BlockStatement');
+                expect(stmt.catchClause).toBeUndefined();
+            });
+
+            test('fac block with cape', () => {
+                const { program } = parseCode('fac { x() } cape e { y() }');
+                const stmt = program!.body[0] as any;
+
+                expect(stmt.type).toBe('FacBlockStatement');
+                expect(stmt.catchClause).not.toBeUndefined();
+                expect(stmt.catchClause.param.name).toBe('e');
+            });
+        });
+
+        describe('fac expression (lambda)', () => {
+            test('single param lambda', () => {
+                const { program } = parseCode('fac x fit x * 2');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('FacExpression');
+                expect(expr.params).toHaveLength(1);
+                expect(expr.params[0].name).toBe('x');
+                expect(expr.body.type).toBe('BinaryExpression');
+                expect(expr.async).toBe(false);
+            });
+
+            test('multi param lambda', () => {
+                const { program } = parseCode('fac a, b fit a + b');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('FacExpression');
+                expect(expr.params).toHaveLength(2);
+                expect(expr.params[0].name).toBe('a');
+                expect(expr.params[1].name).toBe('b');
+            });
+
+            test('zero param lambda', () => {
+                const { program } = parseCode('fac fit 42');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('FacExpression');
+                expect(expr.params).toHaveLength(0);
+                expect(expr.body.value).toBe(42);
+            });
+
+            test('async lambda with fiet', () => {
+                const { program } = parseCode('fac url fiet getData(url)');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('FacExpression');
+                expect(expr.async).toBe(true);
+                expect(expr.params[0].name).toBe('url');
+            });
+
+            test('lambda in variable declaration', () => {
+                const { program } = parseCode('fixum double = fac x fit x * 2');
+                const decl = program!.body[0] as any;
+
+                expect(decl.type).toBe('VariableDeclaration');
+                expect(decl.init.type).toBe('FacExpression');
+            });
+
+            test('nested lambdas', () => {
+                const { program } = parseCode('fac x fit fac y fit x + y');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('FacExpression');
+                expect(expr.body.type).toBe('FacExpression');
+                expect(expr.body.body.type).toBe('BinaryExpression');
+            });
+        });
+    });
 });

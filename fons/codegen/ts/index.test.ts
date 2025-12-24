@@ -1314,4 +1314,57 @@ describe('codegen', () => {
             });
         });
     });
+
+    // =========================================================================
+    // FAC - Block Scope and Lambda Expressions
+    // =========================================================================
+    describe('fac - block scope and lambda', () => {
+        describe('fac block statement', () => {
+            test('fac block -> bare block', () => {
+                const js = compile('fac { varia x = 1 }');
+                expect(js).toContain('{');
+                expect(js).toContain('let x = 1');
+            });
+
+            test('fac with cape -> try-catch', () => {
+                const js = compile('fac { x() } cape e { y() }');
+                expect(js).toContain('try {');
+                expect(js).toContain('x()');
+                expect(js).toContain('catch (e)');
+                expect(js).toContain('y()');
+            });
+        });
+
+        describe('fac expression (lambda)', () => {
+            test('single param lambda', () => {
+                const js = compile('fac x fit x * 2');
+                expect(js).toBe('(x) => (x * 2);');
+            });
+
+            test('multi param lambda', () => {
+                const js = compile('fac x, y fit x + y');
+                expect(js).toBe('(x, y) => (x + y);');
+            });
+
+            test('zero param lambda', () => {
+                const js = compile('fac fit 42');
+                expect(js).toBe('() => 42;');
+            });
+
+            test('async lambda with fiet', () => {
+                const js = compile('fac url fiet fetch(url)');
+                expect(js).toBe('async (url) => fetch(url);');
+            });
+
+            test('lambda used in variable declaration', () => {
+                const js = compile('fixum double = fac x fit x * 2');
+                expect(js).toBe('const double = (x) => (x * 2);');
+            });
+
+            test('lambda as method argument', () => {
+                const js = compile('items.filtrata(fac x fit x > 0)');
+                expect(js).toBe('items.filter((x) => (x > 0));');
+            });
+        });
+    });
 });

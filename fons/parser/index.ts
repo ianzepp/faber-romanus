@@ -118,6 +118,8 @@ import type {
     ObjectPatternProperty,
     ObjectExpression,
     ObjectProperty,
+    FacBlockStatement,
+    FacExpression,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
 import { ParserErrorCode, PARSER_ERRORS } from './errors';
@@ -524,6 +526,14 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('tempta')) {
             return parseTryStatement();
+        }
+
+        if (checkKeyword('fac')) {
+            // fac { } is block statement, fac x fit expr is lambda (expression)
+            if (peek(1).type === 'LBRACE') {
+                return parseFacBlockStatement();
+            }
+            // Lambda falls through to expression statement parsing
         }
 
         if (check('LBRACE')) {
@@ -1697,6 +1707,30 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
+     * Parse fac block statement (explicit scope block).
+     *
+     * GRAMMAR:
+     *   facBlockStmt := 'fac' blockStmt ('cape' IDENTIFIER blockStmt)?
+     *
+     * WHY: Creates explicit scope boundary with optional error handling.
+     */
+    function parseFacBlockStatement(): FacBlockStatement {
+        const position = peek().position;
+
+        expectKeyword('fac', ParserErrorCode.ExpectedKeywordFac);
+
+        const body = parseBlockStatement();
+
+        let catchClause: CatchClause | undefined;
+
+        if (checkKeyword('cape')) {
+            catchClause = parseCatchClause();
+        }
+
+        return { type: 'FacBlockStatement', body, catchClause, position };
+    }
+
+    /**
      * Parse block statement.
      *
      * GRAMMAR:
@@ -2253,6 +2287,11 @@ export function parse(tokens: Token[]): ParserResult {
             return { type: 'Literal', value: null, raw: 'nihil', position };
         }
 
+        // Lambda expression: fac x fit expr, fac x, y fit expr, fac fit expr
+        if (checkKeyword('fac')) {
+            return parseFacExpression();
+        }
+
         // Number literal
         if (check('NUMBER')) {
             const token = advance();
@@ -2404,6 +2443,49 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         return { type: 'ArrowFunctionExpression', params, body, async: false, position };
+    }
+
+    /**
+     * Parse fac expression (lambda/anonymous function).
+     *
+     * GRAMMAR:
+     *   facExpr := 'fac' params? ('fit' | 'fiet') expression
+     *   params := IDENTIFIER (',' IDENTIFIER)*
+     *
+     * WHY: Latin 'fac' (do) + 'fit' (becomes) creates lambda syntax.
+     *      'fiet' (will become) for async lambdas.
+     *      Zero-param: fac fit expr -> () => expr
+     *      Single param: fac x fit expr -> (x) => expr
+     *      Multi param: fac x, y fit expr -> (x, y) => expr
+     */
+    function parseFacExpression(): FacExpression {
+        const position = peek().position;
+
+        expectKeyword('fac', ParserErrorCode.ExpectedKeywordFac);
+
+        const params: Identifier[] = [];
+        let async = false;
+
+        // Check for immediate fit/fiet (zero-param lambda)
+        if (!checkKeyword('fit') && !checkKeyword('fiet')) {
+            // Parse parameters until we hit fit/fiet
+            do {
+                params.push(parseIdentifier());
+            } while (match('COMMA'));
+        }
+
+        // Check for fit (sync) or fiet (async)
+        if (matchKeyword('fiet')) {
+            async = true;
+        }
+        else {
+            expectKeyword('fit', ParserErrorCode.ExpectedKeywordFit);
+        }
+
+        // Parse the body expression
+        const body = parseExpression();
+
+        return { type: 'FacExpression', params, body, async, position };
     }
 
     /**
