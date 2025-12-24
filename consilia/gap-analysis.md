@@ -6,11 +6,11 @@ Comparison of features documented in `consilia/` against `fons/codegen/checklist
 
 | Category | In Checklist | In Consilia Only | Total |
 |----------|--------------|------------------|-------|
-| Core Language | 95+ | ~15 | ~110 |
-| Stdlib Modules | 0 | ~80 | ~80 |
-| **Total** | ~95 | ~95 | ~190 |
+| Core Language | 110+ | ~5 | ~115 |
+| Stdlib Modules | ~25 | ~55 | ~80 |
+| **Total** | ~135 | ~60 | ~195 |
 
-The checklist covers core language features well but omits the entire stdlib design.
+The checklist now covers core language features comprehensively. Stdlib is partially tracked.
 
 ---
 
@@ -27,137 +27,71 @@ These appear implemented/designed but lack dedicated consilia docs:
 
 ## Features In Consilia But Missing From Checklist
 
-### Core Language (should be added to checklist)
+### Core Language
 
-#### Control Flow
+Most core language features are now tracked in the checklist. Remaining gaps:
 
-| Faber | Meaning | Source | Status |
-|-------|---------|--------|--------|
-| `sin` | else if (poetic) | keywords.ts | Not in checklist |
-| `secus` | else/ternary alternate | keywords.ts | Not in checklist |
-| `fac` | do/block | keywords.ts | Not in checklist |
-| `ergo` | then (one-liner) | iteration.md | Not in checklist |
-| `quando` | case (for elige) | keywords.ts | Not in checklist |
-| `rumpe` | break | iteration.md | Designed, not impl |
-| `perge` | continue | iteration.md | Designed, not impl |
+#### Participle Conjugation (collections.md)
 
-#### Declarations
+| Pattern | Meaning | Example | Status |
+|---------|---------|---------|--------|
+| Imperative | Mutate in place | `adde` | Implemented |
+| Perfect participle | Return new | `addita` | Implemented |
+| Future | Async mutate | `addet` | Not implemented |
+| Future participle | Async return new | `additura` | Not implemented |
 
-| Faber | Meaning | Source | Status |
-|-------|---------|--------|--------|
-| `ordo` | enum | keywords.ts | Not in checklist |
-| `figendum` | async immutable binding | vincula.md | Designed, not impl |
-| `variandum` | async mutable binding | vincula.md | Designed, not impl |
-| `nexum` | reactive binding | rendering.md | Designed, not impl |
-
-#### Operators / Verb Forms
-
-| Faber | Meaning | Source | Status |
-|-------|---------|--------|--------|
-| `est` | === (strict equality) | keywords.ts | Not in checklist |
-| `sic` | ? (ternary condition) | keywords.ts | Not in checklist |
-| `fit` | -> (sync single) | keywords.ts | Partial (arrow fns) |
-| `fiet` | async -> | keywords.ts | Partial |
-| `fiunt` | yields -> (generator) | keywords.ts | Partial |
-| `fient` | async yields -> | keywords.ts | Partial |
-
-#### Lifecycle / Methods
-
-| Faber | Meaning | Source | Status |
-|-------|---------|--------|--------|
-| `creo` | constructor hook | types.md | Implemented |
-| `pingo` | render method | rendering.md | Designed, not impl |
-| `deleo` | destructor | rendering.md | Designed, not impl |
-
-#### Error Handling
-
-| Faber | Meaning | Source | Status |
-|-------|---------|--------|--------|
-| `mori` | panic/fatal error | keywords.ts | Not in checklist |
-
-### Collection DSL (consilia/collections.md)
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| `ex items filtra ubi...` | DSL pipeline | Designed, not impl |
-| `cum property` | Property shorthand | Designed, not impl |
-| `{ .property }` | Implicit subject | Designed, not impl |
-| `cum aetas descendens` | Sort direction | Designed, not impl |
-
-### Participle Conjugation (collections.md)
-
-| Pattern | Meaning | Example |
-|---------|---------|---------|
-| Imperative | Mutate in place | `adde` |
-| Perfect participle | Return new | `addita` |
-| Future | Async mutate | `addet` |
-| Future participle | Async return new | `additura` |
+The async participle forms (`addet`, `additura`) are designed but not yet implemented.
 
 ---
 
-## Stdlib Modules (Entirely Missing From Checklist)
+## Stdlib Modules (Partially in Checklist)
 
-These are designed in consilia but not tracked in the codegen checklist.
+The checklist now tracks high-priority stdlib items. These remain untracked:
 
-### fasciculus.md — File I/O (Core Statements)
+### fasciculus.md — File I/O (Lower Priority)
 
 | Faber | Meaning | Priority |
 |-------|---------|----------|
-| `lege path` | Read file as text | High |
-| `lege path ut format` | Read with parsing (json, toml, csv) | High |
-| `inscribe path, data` | Write file | High |
-| `appone path, data` | Append to file | Medium |
 | `aperi path` | Open file descriptor | Medium |
 | `claude fd` | Close file descriptor | Medium |
 | `quaere fd, pos` | Seek in file | Low |
 | `formator<T>` | Custom format interface | Medium |
 | `verte`/`reverte` | Format serialize/deserialize | Medium |
 
-### solum.md — Local Filesystem
+### solum.md — Local Filesystem (Lower Priority)
 
 | Faber | Meaning | Priority |
 |-------|---------|----------|
-| `exstat path` | Check existence | High |
-| `dele path` | Delete file | High |
 | `duplica src, dest` | Copy file | Medium |
 | `move src, dest` | Move/rename | Medium |
 | `inspice path` | Get file info | Medium |
 | `trunca path, size` | Truncate file | Low |
 | `tange path` | Touch (create/update mtime) | Low |
-| `crea path` | Create directory | High |
-| `elenca path` | List directory | High |
 | `ambula path` | Walk directory tree | Medium |
 | `vacua path` | Remove empty directory | Low |
 | `dele_arbor path` | Recursive delete | Medium |
-| `via.iunge` | Path join | High |
 | `via.parse` | Parse path | Medium |
 | `necte src, link` | Create symlink | Low |
 | `modus path` | Get/set permissions | Low |
 | `temporarium` | Temp file with cura | Medium |
 
-### caelum.md — Network I/O
+### caelum.md — Network I/O (Lower Priority)
 
 | Faber | Meaning | Priority |
 |-------|---------|----------|
-| `pete url` | HTTP GET | High |
-| `mitte url, body` | HTTP POST | High |
 | `pone url, body` | HTTP PUT | Medium |
 | `dele url` | HTTP DELETE | Medium |
-| Response methods | `.corpus()`, `.textus()`, `.json()` | High |
 | `ws.aperi url` | WebSocket client | Medium |
 | `socket proto, host, port` | TCP/UDP socket | Low |
 | `servi proto, host, port` | TCP/UDP server | Low |
 | `resolve host` | DNS lookup | Low |
 
-### tempus.md — Time Operations
+### tempus.md — Time Operations (Lower Priority)
 
 | Faber | Meaning | Priority |
 |-------|---------|----------|
-| `nunc()` | Current epoch ms | High |
 | `tempus.nunc()` | Current datetime | High |
 | `hodie()` | Current date | Medium |
-| `dormi ms` | Async sleep | High |
-| Duration constants | `SECUNDUM`, `MINUTUM`, `HORA`, `DIES` | High |
 | `duratio.secunda(n)` | Create duration | Medium |
 | `post ms, fn` | One-shot timer | Medium |
 | `intervallum ms, fn` | Repeating timer | Medium |
@@ -165,15 +99,13 @@ These are designed in consilia but not tracked in the codegen checklist.
 | `lege_tempus str, pattern` | Parse datetime | Medium |
 | `.in_zona(tz)` | Timezone conversion | Low |
 
-### crypto.md — Cryptography
+### crypto.md — Cryptography (Lower Priority)
 
 | Faber | Meaning | Priority |
 |-------|---------|----------|
-| `digere data, algo` | Hash (sha256, etc.) | High |
 | `hmac msg, key, algo` | HMAC | Medium |
 | `cifra data, key, algo` | Encrypt (AES-GCM) | Medium |
 | `decifra data, key, algo` | Decrypt | Medium |
-| `fortuita n` | Secure random bytes | High |
 | `fortuita_uuid()` | UUID v4 | Medium |
 | `deriva pass, salt, opts` | Key derivation (argon2id) | Medium |
 
@@ -195,32 +127,20 @@ These are designed in consilia but not tracked in the codegen checklist.
 | URL encoding | `"url"`, `"url_component"` | Medium |
 | HTML entities | `"html"` | Low |
 
-### cura.md — Resource Management
+### eventus.md — Events (Lower Priority)
 
 | Faber | Meaning | Priority |
 |-------|---------|----------|
-| `cura acquire fit binding { }` | Scoped resource | High |
-| `curator` interface | Resource with cleanup | High |
-| `solve()` method | Cleanup action | High |
-
-### eventus.md — Events
-
-| Faber | Meaning | Priority |
-|-------|---------|----------|
-| `emitte name, data` | Emit event | Medium |
-| `ausculta name` | Event stream | Medium |
 | `audi name, fn` | Callback subscription | Low |
 
 ---
 
 ## Implementation Priority Recommendation
 
-### Phase 1: Core Language Gaps
+### Phase 1: Core Language Gaps (Remaining)
 
-1. `ordo` (enum) — Common need
-2. `rumpe`/`perge` (break/continue) — Expected loop control
-3. `mori` (panic) — Error handling completeness
-4. `fac`/`cape` for systems targets — Zig/Rust need this
+1. `ordo` (enum) — Common need, in checklist but not implemented
+2. `quando` (switch case alt) — In checklist but not implemented
 
 ### Phase 2: Basic Stdlib
 
@@ -239,43 +159,48 @@ These are designed in consilia but not tracked in the codegen checklist.
 1. `nexum`/`pingo` — Reactive rendering
 2. Collection DSL — `ex items filtra ubi...`
 3. `figendum`/`variandum` — Async bindings
+4. Async participles — `addet`, `additura`
 
 ---
 
-## Checklist Update Suggestions
+## Recently Added to Checklist
 
-The codegen checklist should add sections for:
+The following items were added to the checklist and are now tracked:
 
-1. **Enum (`ordo`)** — Under declarations
-2. **Break/Continue** — Under control flow
-3. **Fatal Errors (`mori`)** — Under exception handling
-4. **Async Bindings** — New section for `figendum`/`variandum`
-5. **Reactive Bindings** — New section for `nexum`
-6. **Stdlib Intrinsics** — Expand beyond `_scribe` to include file I/O, time, etc.
+### Control Flow
+- `sin` (else if poetic) — TS: implemented
+- `secus` (else/ternary alt) — TS: implemented
+- `fac` (do/block) — TS: implemented
+- `ergo` (then one-liner) — TS: implemented
+- `quando` (switch case) — Not implemented
+- `rumpe` (break) — TS: implemented
+- `perge` (continue) — TS: implemented
 
----
+### Declarations
+- `ordo` (enum) — Not implemented
+- `figendum` (async immutable) — Not implemented
+- `variandum` (async mutable) — Not implemented
+- `nexum` (reactive binding) — Not implemented
 
-## Cross-Reference: Keywords Not In Checklist
+### Operators
+- `est` (strict equality) — TS: implemented
+- `sic`/`secus` ternary — TS: implemented
+- `aut` (logical or) — TS: implemented
 
-From `fons/lexicon/keywords.ts`:
+### Lifecycle
+- `deleo` (destructor) — Not implemented
+- `pingo` (render) — Not implemented
 
-| Keyword | Category | In Checklist |
-|---------|----------|--------------|
-| `sin` | control | No |
-| `secus` | control | No |
-| `fac` | control | No |
-| `ergo` | control | No |
-| `quando` | control | No |
-| `rumpe` | control | No |
-| `perge` | control | No |
-| `mori` | control | No |
-| `ordo` | declaration | No |
-| `futura` | modifier | Yes (as `futura functio`) |
-| `cursor` | modifier | Yes |
-| `est` | operator | No |
-| `sic` | operator | No |
-| `fit` | operator | Partial |
-| `fiet` | operator | Partial |
-| `fiunt` | operator | Partial |
-| `fient` | operator | Partial |
-| `vel` | operator | No |
+### Error Handling
+- `mori` (panic) — TS: partial (emits throw with comment)
+
+### Collection DSL
+- All items now tracked as "Future"
+
+### Stdlib Sections Added
+- File I/O (fasciculus) — High-priority items
+- Filesystem (solum) — High-priority items
+- Network (caelum) — High-priority items
+- Time (tempus) — High-priority items
+- Crypto — High-priority items
+- Resource Management (cura)

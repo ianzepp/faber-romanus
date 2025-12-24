@@ -62,6 +62,8 @@ import type {
     GuardStatement,
     AssertStatement,
     ReturnStatement,
+    BreakStatement,
+    ContinueStatement,
     BlockStatement,
     ThrowStatement,
     ScribeStatement,
@@ -217,6 +219,10 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genAssertStatement(node);
             case 'ReturnStatement':
                 return genReturnStatement(node);
+            case 'BreakStatement':
+                return genBreakStatement();
+            case 'ContinueStatement':
+                return genContinueStatement();
             case 'ThrowStatement':
                 return genThrowStatement(node);
             case 'ScribeStatement':
@@ -912,6 +918,26 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         return `${ind()}return${semi ? ';' : ''}`;
+    }
+
+    /**
+     * Generate break statement.
+     *
+     * TRANSFORMS:
+     *   rumpe -> break
+     */
+    function genBreakStatement(): string {
+        return `${ind()}break${semi ? ';' : ''}`;
+    }
+
+    /**
+     * Generate continue statement.
+     *
+     * TRANSFORMS:
+     *   perge -> continue
+     */
+    function genContinueStatement(): string {
+        return `${ind()}continue${semi ? ';' : ''}`;
     }
 
     function genThrowStatement(node: ThrowStatement): string {

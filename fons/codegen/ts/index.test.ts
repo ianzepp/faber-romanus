@@ -224,6 +224,65 @@ describe('codegen', () => {
 
             expect(js).toContain('for await (const key in asyncObj)');
         });
+
+        test('rumpe generates break', () => {
+            const js = compile(`
+                dum verum {
+                    rumpe
+                }
+            `);
+
+            expect(js).toContain('while (true)');
+            expect(js).toContain('break;');
+        });
+
+        test('perge generates continue', () => {
+            const js = compile(`
+                dum verum {
+                    perge
+                }
+            `);
+
+            expect(js).toContain('while (true)');
+            expect(js).toContain('continue;');
+        });
+
+        test('rumpe in for loop', () => {
+            const js = compile(`
+                ex items pro item {
+                    si item == nihil { rumpe }
+                }
+            `);
+
+            expect(js).toContain('for (const item of items)');
+            expect(js).toContain('if ((item == null))');
+            expect(js).toContain('break;');
+        });
+
+        test('perge in for loop', () => {
+            const js = compile(`
+                ex items pro item {
+                    si item == nihil { perge }
+                    scribe item
+                }
+            `);
+
+            expect(js).toContain('for (const item of items)');
+            expect(js).toContain('continue;');
+            expect(js).toContain('console.log(item)');
+        });
+
+        test('rumpe and perge together', () => {
+            const js = compile(`
+                dum verum {
+                    si skip { perge }
+                    si done { rumpe }
+                }
+            `);
+
+            expect(js).toContain('continue;');
+            expect(js).toContain('break;');
+        });
     });
 
     describe('expressions', () => {

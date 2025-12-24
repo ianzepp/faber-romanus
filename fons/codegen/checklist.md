@@ -28,9 +28,20 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 |---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
 | `varia` (mutable) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `fixum` (immutable) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `figendum` (async immutable) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `variandum` (async mutable) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `nexum` (reactive binding) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Type annotations | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Object destructuring | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Initializer expressions | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+
+## Enum Declarations
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `ordo` (enum) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Enum variants | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Enum with values | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Function Declarations
 
@@ -52,6 +63,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `si` (if) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `aliter` (else) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `aliter si` (else if) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `sin` (else if, poetic) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `dum` (while) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `ex...pro` (for-of) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `in...pro` (for-in) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
@@ -61,8 +73,14 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Range with step (`per`) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `cum` (with/context) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `elige` (switch) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `quando` (switch case) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Switch cases (`si`) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Switch default (`aliter`) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `secus` (else/ternary alt) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `fac` (do/block) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `ergo` (then, one-liner) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `rumpe` (break) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `perge` (continue) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `custodi` (guard) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Catch on control flow | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 
@@ -84,6 +102,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `iace` (throw) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `adfirma` (assert) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Assert with message | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `mori` (panic/fatal) | [~] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Output/Debug/Events
 
@@ -123,9 +142,21 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Method calls | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Assignment | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Conditional (ternary) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `sic`/`secus` ternary syntax | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `cede` (await/yield) | [x] | [~] | [x] | [ ] | [ ] | [ ] |
 | `novum` (new) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `novum...cum` (new with props) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `est` (strict equality) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `aut` (logical or) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Arrow/Lambda Operators
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `fit` (-> sync single) | [~] | [~] | [~] | [ ] | [ ] | [ ] |
+| `fiet` (async ->) | [~] | [ ] | [~] | [ ] | [ ] | [ ] |
+| `fiunt` (yields ->, generator) | [~] | [-] | [~] | [ ] | [ ] | [ ] |
+| `fient` (async yields ->) | [~] | [-] | [~] | [ ] | [ ] | [ ] |
 
 ## OOP Features (genus/pactum)
 
@@ -137,7 +168,9 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Computed fields (getters) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Static fields (`generis`) | [x] | [ ] | [~] | [ ] | [ ] | [ ] |
 | Public/private visibility | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
-| `creo` constructor | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `creo` (constructor hook) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `deleo` (destructor) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `pingo` (render method) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Auto-merge constructor | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Methods | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Async methods | [x] | [~] | [x] | [ ] | [ ] | [ ] |
@@ -205,6 +238,64 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `aliquis` (some) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `coniunge` (join) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `perambula` (forEach) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
+
+## Collection DSL (Future)
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `ex items filtra ubi...` | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `cum property` shorthand | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `{ .property }` implicit | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `cum X descendens` sort | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Stdlib: File I/O (fasciculus)
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `lege path` (read file) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `lege path ut format` (read+parse) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `inscribe path, data` (write) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `appone path, data` (append) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Stdlib: Filesystem (solum)
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `exstat path` (exists) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `dele path` (delete) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `crea path` (mkdir) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `elenca path` (list dir) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `via.iunge` (path join) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Stdlib: Network (caelum)
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `pete url` (HTTP GET) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `mitte url, body` (HTTP POST) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Response `.corpus()/.textus()/.json()` | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Stdlib: Time (tempus)
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `nunc()` (current epoch) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `dormi ms` (sleep) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Duration constants | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Stdlib: Crypto
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `digere data, algo` (hash) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `fortuita n` (random bytes) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Stdlib: Resource Management (cura)
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `cura acquire fit binding {}` | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `curator` interface | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Target-Specific Considerations
 

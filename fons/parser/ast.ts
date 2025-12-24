@@ -94,6 +94,8 @@ export type Statement =
     | GuardStatement
     | AssertStatement
     | ReturnStatement
+    | BreakStatement
+    | ContinueStatement
     | BlockStatement
     | ThrowStatement
     | TryStatement
@@ -569,6 +571,43 @@ export interface AssertStatement extends BaseNode {
 export interface ReturnStatement extends BaseNode {
     type: 'ReturnStatement';
     argument?: Expression;
+}
+
+/**
+ * Break statement (loop exit).
+ *
+ * GRAMMAR (in EBNF):
+ *   breakStmt := 'rumpe'
+ *
+ * WHY: Latin 'rumpe' (break!) exits the innermost loop.
+ *      Used within dum, ex...pro, and in...pro loops.
+ *
+ * Example:
+ *   dum verum {
+ *       si found { rumpe }
+ *   }
+ */
+export interface BreakStatement extends BaseNode {
+    type: 'BreakStatement';
+}
+
+/**
+ * Continue statement (loop skip).
+ *
+ * GRAMMAR (in EBNF):
+ *   continueStmt := 'perge'
+ *
+ * WHY: Latin 'perge' (continue/proceed!) skips to next iteration.
+ *      Used within dum, ex...pro, and in...pro loops.
+ *
+ * Example:
+ *   ex items pro item {
+ *       si item.skip { perge }
+ *       process(item)
+ *   }
+ */
+export interface ContinueStatement extends BaseNode {
+    type: 'ContinueStatement';
 }
 
 /**

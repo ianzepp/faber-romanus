@@ -1015,6 +1015,89 @@ describe('parser', () => {
             expect(stmt.consequent.type).toBe('BlockStatement');
             expect(stmt.consequent.body[0].type).toBe('ReturnStatement');
         });
+
+        test('ergo with rumpe', () => {
+            const { program } = parseCode('si done ergo rumpe');
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('IfStatement');
+            expect(stmt.consequent.type).toBe('BlockStatement');
+            expect(stmt.consequent.body[0].type).toBe('BreakStatement');
+        });
+
+        test('ergo with perge', () => {
+            const { program } = parseCode('si skip ergo perge');
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('IfStatement');
+            expect(stmt.consequent.type).toBe('BlockStatement');
+            expect(stmt.consequent.body[0].type).toBe('ContinueStatement');
+        });
+    });
+
+    describe('break and continue (rumpe/perge)', () => {
+        test('rumpe parses as BreakStatement', () => {
+            const { program } = parseCode('dum verum { rumpe }');
+            const loop = program!.body[0] as any;
+
+            expect(loop.type).toBe('WhileStatement');
+            expect(loop.body.body[0].type).toBe('BreakStatement');
+        });
+
+        test('perge parses as ContinueStatement', () => {
+            const { program } = parseCode('dum verum { perge }');
+            const loop = program!.body[0] as any;
+
+            expect(loop.type).toBe('WhileStatement');
+            expect(loop.body.body[0].type).toBe('ContinueStatement');
+        });
+
+        test('rumpe in for loop', () => {
+            const { program } = parseCode('ex items pro item { rumpe }');
+            const loop = program!.body[0] as any;
+
+            expect(loop.type).toBe('ForStatement');
+            expect(loop.body.body[0].type).toBe('BreakStatement');
+        });
+
+        test('perge in for loop', () => {
+            const { program } = parseCode('ex items pro item { perge }');
+            const loop = program!.body[0] as any;
+
+            expect(loop.type).toBe('ForStatement');
+            expect(loop.body.body[0].type).toBe('ContinueStatement');
+        });
+
+        test('rumpe inside conditional in loop', () => {
+            const { program } = parseCode('dum verum { si found { rumpe } }');
+            const loop = program!.body[0] as any;
+            const ifStmt = loop.body.body[0];
+
+            expect(ifStmt.type).toBe('IfStatement');
+            expect(ifStmt.consequent.body[0].type).toBe('BreakStatement');
+        });
+
+        test('perge inside conditional in loop', () => {
+            const { program } = parseCode('dum verum { si skip { perge } }');
+            const loop = program!.body[0] as any;
+            const ifStmt = loop.body.body[0];
+
+            expect(ifStmt.type).toBe('IfStatement');
+            expect(ifStmt.consequent.body[0].type).toBe('ContinueStatement');
+        });
+
+        test('multiple rumpe and perge in same loop', () => {
+            const { program } = parseCode(`
+                dum verum {
+                    si skip { perge }
+                    si done { rumpe }
+                }
+            `);
+            const loop = program!.body[0] as any;
+
+            expect(loop.body.body[0].consequent.body[0].type).toBe('ContinueStatement');
+            expect(loop.body.body[1].consequent.body[0].type).toBe('BreakStatement');
+        });
     });
 
     describe('loop verb conjugation (fit/fiet)', () => {

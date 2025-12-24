@@ -98,6 +98,8 @@ import type {
     GuardClause,
     AssertStatement,
     ReturnStatement,
+    BreakStatement,
+    ContinueStatement,
     BlockStatement,
     ThrowStatement,
     ScribeStatement,
@@ -519,6 +521,14 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('redde')) {
             return parseReturnStatement();
+        }
+
+        if (checkKeyword('rumpe')) {
+            return parseBreakStatement();
+        }
+
+        if (checkKeyword('perge')) {
+            return parseContinueStatement();
         }
 
         if (checkKeyword('iace')) {
@@ -1676,6 +1686,40 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         return { type: 'ReturnStatement', argument, position };
+    }
+
+    /**
+     * Parse break statement.
+     *
+     * GRAMMAR:
+     *   breakStmt := 'rumpe'
+     *
+     * WHY: 'rumpe' (break!) exits the innermost loop.
+     */
+    function parseBreakStatement(): BreakStatement {
+        const position = peek().position;
+
+        // Consume the 'rumpe' keyword (already validated by checkKeyword in parseStatement)
+        advance();
+
+        return { type: 'BreakStatement', position };
+    }
+
+    /**
+     * Parse continue statement.
+     *
+     * GRAMMAR:
+     *   continueStmt := 'perge'
+     *
+     * WHY: 'perge' (continue/proceed!) skips to the next loop iteration.
+     */
+    function parseContinueStatement(): ContinueStatement {
+        const position = peek().position;
+
+        // Consume the 'perge' keyword (already validated by checkKeyword in parseStatement)
+        advance();
+
+        return { type: 'ContinueStatement', position };
     }
 
     /**
