@@ -249,11 +249,19 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate import declaration.
      *
      * TRANSFORMS:
-     *   ex norma importa * -> import * as norma from "norma"
-     *   ex norma importa scribe, lege -> import { scribe, lege } from "norma"
+     *   ex "norma/tempus" importa nunc -> (no output, handled via intrinsics)
+     *   ex "@hono/hono" importa Hono -> import { Hono } from "@hono/hono"
+     *
+     * WHY: norma/* imports are compiler-handled via intrinsics, not runtime imports.
+     *      External packages pass through as native imports.
      */
     function genImportDeclaration(node: ImportDeclaration): string {
         const source = node.source;
+
+        // Skip norma imports - these are handled via intrinsics
+        if (source === 'norma' || source.startsWith('norma/')) {
+            return '';
+        }
 
         if (node.wildcard) {
             return `${ind()}import * as ${source} from "${source}"${semi ? ';' : ''}`;
@@ -271,11 +279,16 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      *   varia x: numerus = 5 -> let x: number = 5
      *   fixum y: textus = "hello" -> const y: string = "hello"
      *   fixum { nomen, aetas } = persona -> const { nomen, aetas } = persona
-     *   fixum { nomen: localName } = persona -> const { nomen: localName } = persona
+     *   figendum data = fetchData() -> const data = await fetchData()
+     *   variandum result = fetch() -> let result = await fetch()
+     *
+     * WHY: Async bindings (figendum/variandum) imply await without explicit cede.
+     *      The gerundive form ("that which will be fixed/varied") signals async intent.
      */
     function genVariableDeclaration(node: VariableDeclaration): string {
-        // WHY: 'varia' (let it be) maps to mutable 'let', 'fixum' (fixed) to immutable 'const'
-        const kind = node.kind === 'varia' ? 'let' : 'const';
+        // Map kind to JS keyword and determine if async
+        const isAsync = node.kind === 'figendum' || node.kind === 'variandum';
+        const kind = (node.kind === 'varia' || node.kind === 'variandum') ? 'let' : 'const';
 
         let name: string;
 
@@ -295,7 +308,13 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : '';
-        const init = node.init ? ` = ${genExpression(node.init)}` : '';
+
+        // Async bindings wrap initializer in await
+        let init = '';
+        if (node.init) {
+            const expr = genExpression(node.init);
+            init = isAsync ? ` = await ${expr}` : ` = ${expr}`;
+        }
 
         return `${ind()}${kind} ${name}${typeAnno}${init}${semi ? ';' : ''}`;
     }
@@ -1090,8 +1109,14 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      */
     function genExpression(node: Expression): string {
         switch (node.type) {
-            case 'Identifier':
+            case 'Identifier': {
+                // Check for constant intrinsics (norma/tempus duration constants, etc.)
+                const constant = TS_CONSTANTS[node.name];
+                if (constant) {
+                    return constant;
+                }
                 return node.name;
+            }
             case 'Literal':
                 return genLiteral(node);
             case 'TemplateLiteral':
@@ -1357,20 +1382,45 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * TypeScript intrinsic mappings.
      *
      * Maps Latin intrinsic names to TypeScript/JavaScript equivalents.
+     *
+     * Two categories:
+     * - _prefixed: Internal intrinsics called from arca/norma/index.fab
+     * - unprefixed: Direct stdlib functions (norma/tempus, etc.)
      */
     const TS_INTRINSICS: Record<string, (args: string) => string> = {
-        // I/O (internal intrinsics used by norma.fab)
+        // I/O (internal intrinsics used by arca/norma/index.fab)
         _scribe: args => `console.log(${args})`,
         _vide: args => `console.debug(${args})`,
         _mone: args => `console.warn(${args})`,
         _lege: () => `prompt() ?? ""`,
 
-        // Math (internal intrinsics used by norma.fab)
+        // Math (internal intrinsics used by arca/norma/index.fab)
         _fortuitus: () => `Math.random()`,
         _pavimentum: args => `Math.floor(${args})`,
         _tectum: args => `Math.ceil(${args})`,
         _radix: args => `Math.sqrt(${args})`,
         _potentia: args => `Math.pow(${args})`,
+
+        // norma/tempus - Time functions
+        nunc: () => `Date.now()`,
+        nunc_nano: () => `BigInt(Date.now()) * 1000000n`,
+        nunc_secunda: () => `Math.floor(Date.now() / 1000)`,
+        dormi: args => `new Promise(r => setTimeout(r, ${args}))`,
+    };
+
+    /**
+     * TypeScript constant intrinsics.
+     *
+     * Maps Latin constant names to literal values.
+     * Used for identifier references (not function calls).
+     */
+    const TS_CONSTANTS: Record<string, string> = {
+        // norma/tempus - Duration constants (milliseconds)
+        MILLISECUNDUM: '1',
+        SECUNDUM: '1000',
+        MINUTUM: '60000',
+        HORA: '3600000',
+        DIES: '86400000',
     };
 
     /**

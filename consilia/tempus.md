@@ -319,19 +319,21 @@ std.time.sleep(1_000_000_000)  // nanoseconds
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `nunc` | Not Done | Current instant |
-| `tempus.nunc()` | Not Done | Current datetime |
+| `nunc` | **Done** | Current instant (TS) |
+| `nunc_nano` | **Done** | Nanosecond precision (TS) |
+| `nunc_secunda` | **Done** | Seconds since epoch (TS) |
+| `dormi` | **Done** | Async sleep (TS) |
+| Duration constants | **Done** | MILLISECUNDUM, SECUNDUM, MINUTUM, HORA, DIES (TS) |
+| `tempus.nunc()` | Not Done | Current datetime object |
 | `hodie` | Not Done | Current date |
-| `dormi` | Not Done | Async sleep |
 | Duration type | Not Done | Time spans |
-| Duration constants | Not Done | SECUNDUM, etc. |
 | `post` | Not Done | One-shot timer |
 | `intervallum` | Not Done | Repeating timer |
 | `forma` | Not Done | Format to string |
 | `lege_tempus` | Not Done | Parse from string |
 | Time zones | Not Done | Zona support |
 | Date arithmetic | Not Done | Add/subtract |
-| TypeScript codegen | Not Done | Date, setTimeout |
+| TypeScript codegen | **Partial** | Basic functions done |
 | Python codegen | Not Done | datetime, asyncio |
 | Rust codegen | Not Done | chrono, tokio |
 | Zig codegen | Not Done | std.time |

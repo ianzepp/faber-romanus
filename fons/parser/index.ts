@@ -436,6 +436,8 @@ export function parse(tokens: Token[]): ParserResult {
                 checkKeyword('functio') ||
                 checkKeyword('varia') ||
                 checkKeyword('fixum') ||
+                checkKeyword('figendum') ||
+                checkKeyword('variandum') ||
                 checkKeyword('typus') ||
                 checkKeyword('ordo') ||
                 checkKeyword('si') ||
@@ -464,8 +466,10 @@ export function parse(tokens: Token[]): ParserResult {
         // Distinguish 'ex norma importa' (import), 'ex items pro n' (for-loop),
         // and 'ex response fixum { }' (destructuring)
         if (checkKeyword('ex')) {
-            // Look ahead: ex IDENTIFIER importa -> import
-            if (peek(1).type === 'IDENTIFIER' && peek(2).keyword === 'importa') {
+            // Look ahead: ex (IDENTIFIER|STRING) importa -> import
+            const nextType = peek(1).type;
+
+            if ((nextType === 'IDENTIFIER' || nextType === 'STRING') && peek(2).keyword === 'importa') {
                 return parseImportDeclaration();
             }
 
@@ -478,7 +482,7 @@ export function parse(tokens: Token[]): ParserResult {
             return parseForStatement();
         }
 
-        if (checkKeyword('varia') || checkKeyword('fixum')) {
+        if (checkKeyword('varia') || checkKeyword('fixum') || checkKeyword('figendum') || checkKeyword('variandum')) {
             return parseVariableDeclaration();
         }
 
@@ -589,11 +593,12 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse import declaration.
      *
      * GRAMMAR:
-     *   importDecl := 'ex' IDENTIFIER 'importa' (identifierList | '*')
+     *   importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (identifierList | '*')
      *   identifierList := IDENTIFIER (',' IDENTIFIER)*
      *
      * Examples:
      *   ex norma importa scribe, lege
+     *   ex "norma/tempus" importa nunc, dormi
      *   ex norma importa *
      */
     function parseImportDeclaration(): ImportDeclaration {
@@ -601,8 +606,18 @@ export function parse(tokens: Token[]): ParserResult {
 
         expectKeyword('ex', ParserErrorCode.ExpectedKeywordEx);
 
-        const sourceToken = expect('IDENTIFIER', ParserErrorCode.ExpectedModuleName);
-        const source = sourceToken.value;
+        // WHY: Accept both bare identifiers (ex norma) and strings (ex "norma/tempus")
+        // String paths enable hierarchical module organization for stdlib
+        let source: string;
+
+        if (check('STRING')) {
+            const sourceToken = advance();
+            source = sourceToken.value;
+        }
+        else {
+            const sourceToken = expect('IDENTIFIER', ParserErrorCode.ExpectedModuleName);
+            source = sourceToken.value;
+        }
 
         expectKeyword('importa', ParserErrorCode.ExpectedKeywordImporta);
 
@@ -630,12 +645,15 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * EDGE: If next token after varia/fixum is a type name, parse type first.
      *       Otherwise, parse identifier (type inference case).
+     *
+     * Async bindings (figendum/variandum) work the same way syntactically,
+     * but imply await on the initializer during codegen.
      */
     function parseVariableDeclaration(): VariableDeclaration {
         const position = peek().position;
-        const kind = peek().keyword as 'varia' | 'fixum';
+        const kind = peek().keyword as 'varia' | 'fixum' | 'figendum' | 'variandum';
 
-        advance(); // varia or fixum
+        advance(); // varia, fixum, figendum, or variandum
 
         let typeAnnotation: TypeAnnotation | undefined;
         let name: Identifier | ObjectPattern;
@@ -1463,9 +1481,9 @@ export function parse(tokens: Token[]): ParserResult {
         const source = parseExpression();
 
         // Dispatch based on what follows the expression
-        if (checkKeyword('fixum') || checkKeyword('varia')) {
-            // Destructuring: ex source fixum { ... }
-            const kind = advance().keyword as 'varia' | 'fixum';
+        if (checkKeyword('fixum') || checkKeyword('varia') || checkKeyword('figendum') || checkKeyword('variandum')) {
+            // Destructuring: ex source fixum { ... } or async: ex source figendum { ... }
+            const kind = advance().keyword as 'varia' | 'fixum' | 'figendum' | 'variandum';
             const name = parseObjectPattern();
 
             return { type: 'VariableDeclaration', kind, name, init: source, position };

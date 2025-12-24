@@ -180,6 +180,36 @@ const NORMA_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'va
     E: { type: NUMERUS, kind: 'variable' },
 };
 
+/**
+ * Norma/tempus module exports.
+ *
+ * Time operations: current time, sleeping, duration constants.
+ * When `ex "norma/tempus" importa X` is encountered, these symbols are added to scope.
+ */
+const NORMA_TEMPUS_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'variable' }> = {
+    // Current time functions
+    nunc: { type: functionType([], NUMERUS), kind: 'function' },
+    nunc_nano: { type: functionType([], NUMERUS), kind: 'function' },
+    nunc_secunda: { type: functionType([], NUMERUS), kind: 'function' },
+
+    // Sleep (async)
+    dormi: { type: functionType([NUMERUS], genericType('promissum', [VACUUM])), kind: 'function' },
+
+    // Duration constants (milliseconds)
+    MILLISECUNDUM: { type: NUMERUS, kind: 'variable' },
+    SECUNDUM: { type: NUMERUS, kind: 'variable' },
+    MINUTUM: { type: NUMERUS, kind: 'variable' },
+    HORA: { type: NUMERUS, kind: 'variable' },
+    DIES: { type: NUMERUS, kind: 'variable' },
+};
+
+/**
+ * Map of all norma submodule exports.
+ */
+const NORMA_SUBMODULES: Record<string, Record<string, { type: SemanticType; kind: 'function' | 'variable' }>> = {
+    'norma/tempus': NORMA_TEMPUS_EXPORTS,
+};
+
 // =============================================================================
 // MAIN ANALYZER
 // =============================================================================
@@ -280,18 +310,29 @@ export function analyze(program: Program): SemanticResult {
     /**
      * Analyze import declaration and add symbols to scope.
      *
-     * WHY: Currently only recognizes 'norma' standard library.
+     * WHY: Recognizes 'norma' base library and 'norma/*' submodules.
      *      Other modules pass through without type info for external JS/TS modules.
      */
     function analyzeImportDeclaration(node: ImportDeclaration): void {
-        // Unknown module - imports pass through without type info
-        if (node.source !== 'norma') {
+        // Determine which export map to use
+        let exports: Record<string, { type: SemanticType; kind: 'function' | 'variable' }> | undefined;
+        let moduleName = node.source;
+
+        if (node.source === 'norma') {
+            exports = NORMA_EXPORTS;
+        }
+        else if (node.source in NORMA_SUBMODULES) {
+            exports = NORMA_SUBMODULES[node.source];
+        }
+        else {
+            // Unknown module - imports pass through without type info
+            // WHY: Allows importing from external JS/TS modules
             return;
         }
 
         if (node.wildcard) {
             // ex norma importa * - add all exports to scope
-            for (const [name, { type, kind }] of Object.entries(NORMA_EXPORTS)) {
+            for (const [name, { type, kind }] of Object.entries(exports)) {
                 currentScope.symbols.set(name, {
                     name,
                     type,
@@ -306,12 +347,12 @@ export function analyze(program: Program): SemanticResult {
 
         // ex norma importa scribe, series - add specific exports
         for (const specifier of node.specifiers) {
-            const exportInfo = NORMA_EXPORTS[specifier.name];
+            const exportInfo = exports[specifier.name];
 
             if (!exportInfo) {
                 const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NotExportedFromModule];
 
-                error(`${text(specifier.name, 'norma')}\n${help}`, specifier.position);
+                error(`${text(specifier.name, moduleName)}\n${help}`, specifier.position);
 
                 continue;
             }

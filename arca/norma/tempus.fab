@@ -1,0 +1,103 @@
+// tempus - Time Operations
+//
+// Latin vocabulary for time operations. All functions are compiler intrinsics
+// that translate to target-specific implementations.
+//
+// USAGE
+// =====
+// ex "norma/tempus" importa nunc, dormi, SECUNDUM
+//
+// fixum now = nunc()
+// cede dormi(5 * SECUNDUM)
+//
+// =============================================================================
+// CURRENT TIME
+// =============================================================================
+//
+// nunc() -> numerus
+//   Current time in milliseconds since Unix epoch
+//   nunc()  →  Date.now()
+//
+// nunc_nano() -> numerus
+//   Current time in nanoseconds (where available)
+//   nunc_nano()  →  BigInt(Date.now()) * 1000000n
+//
+// nunc_secunda() -> numerus
+//   Current time in seconds since Unix epoch
+//   nunc_secunda()  →  Math.floor(Date.now() / 1000)
+//
+// =============================================================================
+// SLEEPING
+// =============================================================================
+//
+// dormi(numerus) -> promissum<vacuum>
+//   Pause execution for specified milliseconds (async)
+//   cede dormi(1000)  →  await new Promise(r => setTimeout(r, 1000))
+//
+// =============================================================================
+// DURATION CONSTANTS
+// =============================================================================
+//
+// All constants are in milliseconds:
+//
+// MILLISECUNDUM = 1
+// SECUNDUM = 1000
+// MINUTUM = 60000
+// HORA = 3600000
+// DIES = 86400000
+//
+// Usage:
+//   cede dormi(5 * SECUNDUM)      // sleep 5 seconds
+//   cede dormi(2 * MINUTUM)       // sleep 2 minutes
+//   cede dormi(HORA + 30 * MINUTUM)  // sleep 1.5 hours
+//
+// =============================================================================
+// ETYMOLOGY
+// =============================================================================
+//
+// tempus     - "time, period" (neuter noun)
+// nunc       - "now" (adverb)
+// dormi      - "sleep!" (imperative of dormire)
+// secundum   - "second" (from sequor, to follow)
+// minutum    - "minute" (from minuere, to diminish)
+// hora       - "hour" (Greek loanword)
+// dies       - "day" (fifth declension noun)
+//
+// =============================================================================
+// TARGET MAPPINGS
+// =============================================================================
+//
+// TypeScript:
+//   nunc()           → Date.now()
+//   dormi(ms)        → new Promise(r => setTimeout(r, ms))
+//   SECUNDUM         → 1000
+//
+// Python:
+//   nunc()           → int(time.time() * 1000)
+//   dormi(ms)        → await asyncio.sleep(ms / 1000)
+//   SECUNDUM         → 1000
+//
+// Zig:
+//   nunc()           → std.time.milliTimestamp()
+//   dormi(ms)        → std.time.sleep(ms * 1_000_000)
+//   SECUNDUM         → 1000
+//
+// =============================================================================
+// FUTURE ADDITIONS
+// =============================================================================
+//
+// Date/time objects:
+//   tempus.nunc()    → full datetime object
+//   hodie()          → current date (no time)
+//
+// Formatting:
+//   forma(date, "YYYY-MM-DD")  → date string
+//
+// Parsing:
+//   lege_tempus("2025-12-24", "YYYY-MM-DD")  → datetime
+//
+// Timers:
+//   post(ms, fn)       → one-shot timer
+//   intervallum(ms, fn) → repeating timer
+//
+// See consilia/tempus.md for full design.

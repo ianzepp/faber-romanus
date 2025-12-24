@@ -269,3 +269,99 @@ Options:
 1. Generate Zig async frames directly
 2. Provide runtime promise library
 3. Limit async to TypeScript target initially
+
+---
+
+## Future: Non-Blocking Async Bindings (nexum)
+
+**Status:** Conceptual — not yet implemented.
+
+**Etymology:** *nexum* = "bond, tie" (past participle of *necto*, "to bind")
+
+### The Problem
+
+`figendum` and `variandum` block execution until the promise resolves:
+
+```
+figendum data = loadData()   // execution pauses here
+scribe "loaded"              // runs after loadData() completes
+```
+
+For reactive UIs, you often want non-blocking async — start the operation, continue execution, update the binding when the result arrives.
+
+### Proposed Syntax
+
+| Keyword | Mutability | Async | Blocking |
+|---------|------------|-------|----------|
+| `fixum` | const | no | n/a |
+| `figendum` | const | yes | **blocks** |
+| `nexum` | const | yes | **non-blocking** |
+| `nectendum`? | let | yes | **non-blocking** |
+
+```
+// Non-blocking — execution continues immediately
+// `results` starts as undefined (or default), updates when promise resolves
+nexum results = loadResults()
+scribe "loading started"  // runs immediately
+
+// With default value via `vel` (or)
+nexum results = loadResults() vel []  // starts as [], becomes loaded value
+```
+
+### Codegen Challenge
+
+Non-blocking async that "updates later" requires a reactive runtime. The variable can't be a plain `const` — something must observe the state change.
+
+**Possible outputs:**
+
+```typescript
+// Vanilla TS — fire-and-forget, no reactivity
+let results = undefined;
+loadResults().then(v => { results = v; });
+
+// With signals (SolidJS-style)
+const results = createSignal(undefined);
+loadResults().then(results.set);
+
+// With stores (Svelte-style)
+const results = writable(undefined);
+loadResults().then(v => results.set(v));
+```
+
+### Open Questions
+
+1. **Reactive runtime:** Does Faber ship a minimal Signal class in the preamble, or target specific frameworks (Svelte, Solid, Vue)?
+
+2. **Initial value:** What is the value before resolution?
+   - `undefined` by default?
+   - Require `vel defaultValue` syntax?
+   - Special `pendens` (pending) state?
+
+3. **Error handling:** What happens if the promise rejects?
+   - Silent failure?
+   - Require `cape` clause?
+   - Set to error state?
+
+4. **Re-triggering:** Can `nectendum` be re-assigned to start a new async operation?
+   ```
+   nectendum results = loadResults()
+   // later...
+   results = loadMore()  // re-trigger?
+   ```
+
+5. **Interaction with genus:** How does `nexum` relate to computed fields (`=>`)?
+   ```
+   genus Component {
+       nexum data = loadData()           // async field?
+       numerus count => data.longitudo() // depends on async?
+   }
+   ```
+
+### Recommendation
+
+Defer implementation until:
+1. A clear reactive model is chosen (signals vs stores vs observables)
+2. The primary UI target is determined (web framework integration)
+3. The `vel` default value syntax is validated in other contexts
+
+The existing `figendum`/`variandum` cover blocking async well. `nexum` is valuable for reactive UIs but requires framework-level decisions.

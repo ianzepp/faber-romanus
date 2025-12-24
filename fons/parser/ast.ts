@@ -112,15 +112,16 @@ export type Statement =
  * Import declaration statement.
  *
  * GRAMMAR (in EBNF):
- *   importDecl := 'ex' IDENTIFIER 'importa' (importSpec | '*')
+ *   importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (importSpec | '*')
  *   importSpec := IDENTIFIER (',' IDENTIFIER)*
  *
  * INVARIANT: Either specifiers is non-empty OR wildcard is true.
  * INVARIANT: source is never empty string.
  *
  * Examples:
- *   ex norma importa scribe, lege  -> source="norma", specifiers=[scribe, lege]
- *   ex norma importa *             -> source="norma", wildcard=true
+ *   ex norma importa scribe, lege       -> source="norma", specifiers=[scribe, lege]
+ *   ex "norma/tempus" importa nunc      -> source="norma/tempus", specifiers=[nunc]
+ *   ex norma importa *                  -> source="norma", wildcard=true
  */
 export interface ImportDeclaration extends BaseNode {
     type: 'ImportDeclaration';
@@ -167,22 +168,27 @@ export interface ObjectPatternProperty extends BaseNode {
  * Variable declaration statement.
  *
  * GRAMMAR (in EBNF):
- *   varDecl := ('varia' | 'fixum') (IDENTIFIER | objectPattern) (':' typeAnnotation)? ('=' expression)?
+ *   varDecl := ('varia' | 'fixum' | 'figendum' | 'variandum') (IDENTIFIER | objectPattern) (':' typeAnnotation)? ('=' expression)?
  *
- * INVARIANT: kind is Latin keyword (varia/fixum), not target language (let/const).
+ * INVARIANT: kind is Latin keyword, not target language (let/const).
  * INVARIANT: Either typeAnnotation or init SHOULD be present (but not enforced by parser).
  *
  * WHY: Preserves Latin keywords for semantic phase to map to target semantics.
+ *
+ * Async bindings (figendum/variandum) imply await without explicit cede:
+ *   figendum = "that which will be fixed" (gerundive) -> const x = await ...
+ *   variandum = "that which will be varied" (gerundive) -> let x = await ...
  *
  * Examples:
  *   varia x: numerus = 5
  *   fixum SALVE = "ave"
  *   fixum { nomen, aetas } = persona
- *   fixum { nomen: localName } = persona
+ *   figendum data = fetchData()
+ *   variandum result = fetchInitial()
  */
 export interface VariableDeclaration extends BaseNode {
     type: 'VariableDeclaration';
-    kind: 'varia' | 'fixum';
+    kind: 'varia' | 'fixum' | 'figendum' | 'variandum';
     name: Identifier | ObjectPattern;
     typeAnnotation?: TypeAnnotation;
     init?: Expression;

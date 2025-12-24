@@ -112,6 +112,10 @@ export const keywords: KeywordEntry[] = [
     // WHY: "varia" (be!) and "fixum" (fixed) express mutability in Latin terms
     { latin: 'varia', meaning: 'let', category: 'declaration' },
     { latin: 'fixum', meaning: 'const', category: 'declaration' },
+    // WHY: Gerundive forms for async bindings — "that which will be fixed/varied"
+    //      Implies await without explicit cede keyword
+    { latin: 'figendum', meaning: 'const await', category: 'declaration' },
+    { latin: 'variandum', meaning: 'let await', category: 'declaration' },
     { latin: 'functio', meaning: 'function', category: 'declaration' },
     { latin: 'novum', meaning: 'new', category: 'declaration' },
     { latin: 'importa', meaning: 'import', category: 'declaration' },

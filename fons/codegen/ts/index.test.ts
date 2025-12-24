@@ -32,6 +32,65 @@ describe('codegen', () => {
 
             expect(js).toBe('const PI = 3.14159;');
         });
+
+        test('figendum -> const with await', () => {
+            const js = compile(`
+                futura functio fetchData() -> textus { redde "data" }
+                figendum data = fetchData()
+            `);
+
+            expect(js).toContain('const data = await fetchData()');
+        });
+
+        test('variandum -> let with await', () => {
+            const js = compile(`
+                futura functio getResult() -> numerus { redde 42 }
+                variandum result = getResult()
+            `);
+
+            expect(js).toContain('let result = await getResult()');
+        });
+
+        test('figendum with type annotation', () => {
+            const js = compile(`
+                futura functio fetch() -> textus { redde "x" }
+                figendum textus data = fetch()
+            `);
+
+            expect(js).toContain('const data: string = await fetch()');
+        });
+
+        test('variandum with type annotation', () => {
+            const js = compile(`
+                futura functio getCount() -> numerus { redde 1 }
+                variandum numerus count = getCount()
+            `);
+
+            expect(js).toContain('let count: number = await getCount()');
+        });
+
+        test('multiple async bindings', () => {
+            const js = compile(`
+                futura functio fetchA() -> textus { redde "a" }
+                futura functio fetchB() -> textus { redde "b" }
+                figendum a = fetchA()
+                figendum b = fetchB()
+            `);
+
+            expect(js).toContain('const a = await fetchA()');
+            expect(js).toContain('const b = await fetchB()');
+        });
+
+        test('mixed async and sync bindings', () => {
+            const js = compile(`
+                futura functio fetch() -> textus { redde "x" }
+                fixum sync = "static"
+                figendum async = fetch()
+            `);
+
+            expect(js).toContain('const sync = "static"');
+            expect(js).toContain('const async = await fetch()');
+        });
     });
 
     describe('function declarations', () => {
@@ -1539,6 +1598,71 @@ describe('codegen', () => {
                 const js = compile('items.filtrata(fac x fit x > 0)');
                 expect(js).toBe('items.filter((x) => (x > 0));');
             });
+        });
+    });
+
+    describe('imports', () => {
+        test('norma imports are suppressed (handled via intrinsics)', () => {
+            const js = compile('ex "norma/tempus" importa nunc');
+
+            // norma imports don't emit import statements
+            expect(js).not.toContain('import');
+            expect(js).toBe('');
+        });
+
+        test('external package imports pass through', () => {
+            const js = compile('ex "@hono/hono" importa Hono, Context');
+
+            expect(js).toBe('import { Hono, Context } from "@hono/hono";');
+        });
+
+        test('nunc() compiles to Date.now()', () => {
+            const js = compile(`
+                ex "norma/tempus" importa nunc
+                fixum now = nunc()
+            `);
+
+            expect(js).not.toContain('import');
+            expect(js).toContain('const now = Date.now()');
+        });
+
+        test('SECUNDUM compiles to literal 1000', () => {
+            const js = compile(`
+                ex "norma/tempus" importa SECUNDUM
+                fixum sec = SECUNDUM
+            `);
+
+            expect(js).not.toContain('import');
+            expect(js).toContain('const sec = 1000');
+        });
+
+        test('dormi compiles to Promise with setTimeout', () => {
+            const js = compile(`
+                ex "norma/tempus" importa dormi, SECUNDUM
+                futura functio wait() {
+                    cede dormi(5 * SECUNDUM)
+                }
+            `);
+
+            expect(js).not.toContain('import');
+            expect(js).toContain('await new Promise(r => setTimeout(r, (5 * 1000)))');
+        });
+
+        test('all duration constants compile to literals', () => {
+            const js = compile(`
+                ex "norma/tempus" importa MILLISECUNDUM, SECUNDUM, MINUTUM, HORA, DIES
+                fixum a = MILLISECUNDUM
+                fixum b = SECUNDUM
+                fixum c = MINUTUM
+                fixum d = HORA
+                fixum e = DIES
+            `);
+
+            expect(js).toContain('const a = 1');
+            expect(js).toContain('const b = 1000');
+            expect(js).toContain('const c = 60000');
+            expect(js).toContain('const d = 3600000');
+            expect(js).toContain('const e = 86400000');
         });
     });
 });

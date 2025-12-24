@@ -38,6 +38,63 @@ describe('parser', () => {
             expect(decl.typeAnnotation.name).toBe('lista');
             expect(decl.typeAnnotation.typeParameters[0].name).toBe('numerus');
         });
+
+        test('figendum parses as const-await binding', () => {
+            const { program } = parseCode('figendum data = fetchData()');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('VariableDeclaration');
+            expect(decl.kind).toBe('figendum');
+            expect(decl.name.name).toBe('data');
+            expect(decl.init.type).toBe('CallExpression');
+        });
+
+        test('variandum parses as let-await binding', () => {
+            const { program } = parseCode('variandum result = getResult()');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('VariableDeclaration');
+            expect(decl.kind).toBe('variandum');
+            expect(decl.name.name).toBe('result');
+            expect(decl.init.type).toBe('CallExpression');
+        });
+
+        test('figendum with type annotation', () => {
+            const { program } = parseCode('figendum textus data = fetchData()');
+            const decl = program!.body[0] as any;
+
+            expect(decl.kind).toBe('figendum');
+            expect(decl.typeAnnotation.name).toBe('textus');
+        });
+
+        test('variandum with type annotation', () => {
+            const { program } = parseCode('variandum numerus count = getCount()');
+            const decl = program!.body[0] as any;
+
+            expect(decl.kind).toBe('variandum');
+            expect(decl.typeAnnotation.name).toBe('numerus');
+        });
+
+        test('multiple figendum declarations', () => {
+            const { program } = parseCode(`
+                figendum a = fetchA()
+                figendum b = fetchB()
+            `);
+
+            expect(program!.body).toHaveLength(2);
+            expect((program!.body[0] as any).kind).toBe('figendum');
+            expect((program!.body[1] as any).kind).toBe('figendum');
+        });
+
+        test('mixed async bindings', () => {
+            const { program } = parseCode(`
+                figendum config = loadConfig()
+                variandum state = initState()
+            `);
+
+            expect((program!.body[0] as any).kind).toBe('figendum');
+            expect((program!.body[1] as any).kind).toBe('variandum');
+        });
     });
 
     describe('destructuring', () => {
@@ -1846,6 +1903,46 @@ describe('parser', () => {
                 expect(expr.body.type).toBe('FacExpression');
                 expect(expr.body.body.type).toBe('BinaryExpression');
             });
+        });
+    });
+
+    describe('import declarations', () => {
+        test('string path source', () => {
+            const { program } = parseCode('ex "norma/tempus" importa nunc, dormi');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('ImportDeclaration');
+            expect(decl.source).toBe('norma/tempus');
+            expect(decl.specifiers).toHaveLength(2);
+            expect(decl.specifiers[0].name).toBe('nunc');
+            expect(decl.specifiers[1].name).toBe('dormi');
+        });
+
+        test('wildcard import', () => {
+            const { program } = parseCode('ex "norma/tempus" importa *');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('ImportDeclaration');
+            expect(decl.wildcard).toBe(true);
+            expect(decl.specifiers).toHaveLength(0);
+        });
+
+        test('single import', () => {
+            const { program } = parseCode('ex "norma/tempus" importa nunc');
+            const decl = program!.body[0] as any;
+
+            expect(decl.specifiers).toHaveLength(1);
+            expect(decl.specifiers[0].name).toBe('nunc');
+        });
+
+        test('import with constants', () => {
+            const { program } = parseCode('ex "norma/tempus" importa SECUNDUM, MINUTUM, HORA');
+            const decl = program!.body[0] as any;
+
+            expect(decl.specifiers).toHaveLength(3);
+            expect(decl.specifiers[0].name).toBe('SECUNDUM');
+            expect(decl.specifiers[1].name).toBe('MINUTUM');
+            expect(decl.specifiers[2].name).toBe('HORA');
         });
     });
 });

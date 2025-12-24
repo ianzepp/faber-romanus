@@ -28,8 +28,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 |---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
 | `varia` (mutable) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `fixum` (immutable) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
-| `figendum` (async immutable) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| `variandum` (async mutable) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `figendum` (async immutable) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `variandum` (async mutable) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `nexum` (reactive binding) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Type annotations | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Object destructuring | [x] | [x] | [x] | [ ] | [ ] | [ ] |
@@ -290,9 +290,9 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 
 | Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
 |---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
-| `nunc()` (current epoch) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| `dormi ms` (sleep) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Duration constants | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `nunc()` (current epoch) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `dormi ms` (sleep) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Duration constants | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Stdlib: Crypto
 
