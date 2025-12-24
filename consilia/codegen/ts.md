@@ -32,7 +32,9 @@ TypeScript is the primary compilation target for Faber. The language design was 
 | `iace` | `throw` | Throw exception |
 | `redde` | `return` | Return statement |
 | `textus` | `string` | String type |
-| `numerus` | `number` | Number type |
+| `numerus` | `number` | Integer (JS has single number type) |
+| `fractus` | `number` | Floating point (JS has single number type) |
+| `decimus` | `Decimal` | Arbitrary precision (requires library) |
 | `bivalens` | `boolean` | Boolean type |
 | `nihil` | `null` | Null value |
 | `lista<T>` | `T[]` | Array type |

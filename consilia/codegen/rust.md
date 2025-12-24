@@ -501,7 +501,9 @@ Future enhancement: infer error enums from `iace` usage patterns.
 | Faber | Rust | Notes |
 |-------|------|-------|
 | `textus` | `String` | Owned string |
-| `numerus` | `f64` | Target default (float) |
+| `numerus` | `i64` | Integer |
+| `fractus` | `f64` | Floating point |
+| `decimus` | `BigDecimal` | Arbitrary precision decimal |
 | `bivalens` | `bool` | Boolean |
 | `nihil` | `()` | Unit type |
 | `textus?` | `Option<String>` | Optional |

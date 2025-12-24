@@ -112,7 +112,9 @@ Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works
 | Faber | Zig | Notes |
 |-------|-----|-------|
 | `textus` | `[]const u8` | String slice |
-| `numerus` | `i64` | Target default (integer) |
+| `numerus` | `i64` | Integer |
+| `fractus` | `f64` | Floating point |
+| `decimus` | — | Requires external library |
 | `bivalens` | `bool` | Boolean |
 | `nihil` | `void` | Unit type |
 | `vacuum` | `void` | Void return |

@@ -296,6 +296,38 @@ b.x = 10           // a.x is ALSO 10 (reference semantics)
 
 ---
 
+## Primitive Types
+
+### Numeric Types
+
+| Type | Meaning | TS | Rust | Zig |
+|------|---------|----|----- |-----|
+| `numerus` | Integer | `number` | `i64` | `i64` |
+| `fractus` | Floating point | `number` | `f64` | `f64` |
+| `decimus` | Arbitrary precision | `Decimal` | `BigDecimal` | — |
+
+```
+fixum numerus count = 42
+fixum fractus ratio = 3.14159
+fixum decimus price = 19.99d
+```
+
+**Etymology:**
+- `numerus` — "number, count"
+- `fractus` — "broken, fractional" (root of "fraction")
+- `decimus` — "tenth, decimal"
+
+### Other Primitives
+
+| Type | Meaning | Notes |
+|------|---------|-------|
+| `textus` | String/text | UTF-8 encoded |
+| `bivalens` | Boolean | `verum`/`falsum` |
+| `nihil` | Null | Absence of value |
+| `octeti` | Bytes | Raw byte data (Uint8Array) |
+
+---
+
 ## Type Annotations
 
 ### In Variable Declarations
