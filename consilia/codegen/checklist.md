@@ -39,9 +39,9 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 
 | Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
 |---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
-| `ordo` (enum) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Enum variants | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Enum with values | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `ordo` (enum) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Enum variants | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Enum with values | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Function Declarations
 

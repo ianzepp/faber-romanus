@@ -719,6 +719,66 @@ describe('parser', () => {
         });
     });
 
+    describe('enum declarations (ordo)', () => {
+        test('simple enum', () => {
+            const { program } = parseCode('ordo color { rubrum, viridis, caeruleum }');
+            const enumDecl = program!.body[0] as any;
+
+            expect(enumDecl.type).toBe('EnumDeclaration');
+            expect(enumDecl.name.name).toBe('color');
+            expect(enumDecl.members).toHaveLength(3);
+            expect(enumDecl.members[0].name.name).toBe('rubrum');
+            expect(enumDecl.members[1].name.name).toBe('viridis');
+            expect(enumDecl.members[2].name.name).toBe('caeruleum');
+        });
+
+        test('enum with numeric values', () => {
+            const { program } = parseCode('ordo status { pendens = 0, actum = 1, finitum = 2 }');
+            const enumDecl = program!.body[0] as any;
+
+            expect(enumDecl.type).toBe('EnumDeclaration');
+            expect(enumDecl.name.name).toBe('status');
+            expect(enumDecl.members).toHaveLength(3);
+            expect(enumDecl.members[0].value.value).toBe(0);
+            expect(enumDecl.members[1].value.value).toBe(1);
+            expect(enumDecl.members[2].value.value).toBe(2);
+        });
+
+        test('enum with string values', () => {
+            const { program } = parseCode('ordo direction { north = "N", south = "S" }');
+            const enumDecl = program!.body[0] as any;
+
+            expect(enumDecl.type).toBe('EnumDeclaration');
+            expect(enumDecl.members[0].value.value).toBe('N');
+            expect(enumDecl.members[1].value.value).toBe('S');
+        });
+
+        test('enum with trailing comma', () => {
+            const { program } = parseCode('ordo color { rubrum, viridis, }');
+            const enumDecl = program!.body[0] as any;
+
+            expect(enumDecl.type).toBe('EnumDeclaration');
+            expect(enumDecl.members).toHaveLength(2);
+        });
+
+        test('enum with mixed values', () => {
+            const { program } = parseCode('ordo mixed { a, b = 5, c }');
+            const enumDecl = program!.body[0] as any;
+
+            expect(enumDecl.members[0].value).toBeUndefined();
+            expect(enumDecl.members[1].value.value).toBe(5);
+            expect(enumDecl.members[2].value).toBeUndefined();
+        });
+
+        test('single member enum', () => {
+            const { program } = parseCode('ordo singleton { unum }');
+            const enumDecl = program!.body[0] as any;
+
+            expect(enumDecl.members).toHaveLength(1);
+            expect(enumDecl.members[0].name.name).toBe('unum');
+        });
+    });
+
     describe('nulla/nonnulla operators', () => {
         test('nulla as unary check', () => {
             const { program } = parseCode('si nulla x { scribe "empty" }');

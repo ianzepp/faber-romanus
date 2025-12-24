@@ -65,6 +65,7 @@ import type {
     BreakStatement,
     ContinueStatement,
     BlockStatement,
+    EnumDeclaration,
     ThrowStatement,
     ScribeStatement,
     EmitStatement,
@@ -203,6 +204,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genPactumDeclaration(node);
             case 'TypeAliasDeclaration':
                 return genTypeAliasDeclaration(node);
+            case 'EnumDeclaration':
+                return genEnumDeclaration(node);
             case 'IfStatement':
                 return genIfStatement(node);
             case 'WhileStatement':
@@ -532,6 +535,36 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const typeAnno = genType(node.typeAnnotation);
 
         return `${ind()}type ${name} = ${typeAnno}${semi ? ';' : ''}`;
+    }
+
+    /**
+     * Generate enum declaration.
+     *
+     * TRANSFORMS:
+     *   ordo color { rubrum, viridis } -> enum color { rubrum, viridis }
+     *   ordo status { pendens = 0 } -> enum status { pendens = 0 }
+     *   ordo dir { north = "n" } -> enum dir { north = "n" }
+     *
+     * WHY: TypeScript enums map directly from Latin 'ordo'.
+     */
+    function genEnumDeclaration(node: EnumDeclaration): string {
+        const name = node.name.name;
+
+        const members = node.members.map((member) => {
+            const memberName = member.name.name;
+
+            if (member.value !== undefined) {
+                const value =
+                    typeof member.value.value === 'string'
+                        ? `"${member.value.value}"`
+                        : member.value.value;
+                return `${memberName} = ${value}`;
+            }
+
+            return memberName;
+        });
+
+        return `${ind()}enum ${name} { ${members.join(', ')} }`;
     }
 
     /**

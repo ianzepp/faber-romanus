@@ -139,8 +139,7 @@ The checklist now tracks high-priority stdlib items. These remain untracked:
 
 ### Phase 1: Core Language Gaps (Remaining)
 
-1. `ordo` (enum) — Common need, in checklist but not implemented
-2. `quando` (switch case alt) — In checklist but not implemented
+1. `quando` (switch case alt) — In checklist but not implemented
 
 ### Phase 2: Basic Stdlib
 
@@ -177,7 +176,7 @@ The following items were added to the checklist and are now tracked:
 - `perge` (continue) — TS: implemented
 
 ### Declarations
-- `ordo` (enum) — Not implemented
+- `ordo` (enum) — TS: implemented
 - `figendum` (async immutable) — Not implemented
 - `variandum` (async mutable) — Not implemented
 - `nexum` (reactive binding) — Not implemented

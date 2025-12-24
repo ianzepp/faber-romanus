@@ -460,6 +460,42 @@ describe('codegen', () => {
         });
     });
 
+    describe('enum declarations (ordo)', () => {
+        test('simple enum', () => {
+            const js = compile('ordo color { rubrum, viridis, caeruleum }');
+
+            expect(js).toBe('enum color { rubrum, viridis, caeruleum }');
+        });
+
+        test('enum with numeric values', () => {
+            const js = compile('ordo status { pendens = 0, actum = 1, finitum = 2 }');
+
+            expect(js).toBe('enum status { pendens = 0, actum = 1, finitum = 2 }');
+        });
+
+        test('enum with string values', () => {
+            const js = compile('ordo direction { north = "N", south = "S" }');
+
+            expect(js).toBe('enum direction { north = "N", south = "S" }');
+        });
+
+        test('enum with mixed values', () => {
+            const js = compile('ordo mixed { a, b = 5, c }');
+
+            expect(js).toBe('enum mixed { a, b = 5, c }');
+        });
+
+        test('enum member access', () => {
+            const js = compile(`
+                ordo color { rubrum, viridis }
+                scribe color.rubrum
+            `);
+
+            expect(js).toContain('enum color { rubrum, viridis }');
+            expect(js).toContain('console.log(color.rubrum)');
+        });
+    });
+
     describe('complete programs', () => {
         test('hello world', () => {
             const js = compile(`

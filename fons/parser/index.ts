@@ -115,6 +115,8 @@ import type {
     CatchClause,
     NewExpression,
     TypeAliasDeclaration,
+    EnumDeclaration,
+    EnumMember,
     Literal,
     RangeExpression,
     ConditionalExpression,
@@ -435,6 +437,7 @@ export function parse(tokens: Token[]): ParserResult {
                 checkKeyword('varia') ||
                 checkKeyword('fixum') ||
                 checkKeyword('typus') ||
+                checkKeyword('ordo') ||
                 checkKeyword('si') ||
                 checkKeyword('dum') ||
                 checkKeyword('pro') ||
@@ -485,6 +488,10 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('typus')) {
             return parseTypeAliasDeclaration();
+        }
+
+        if (checkKeyword('ordo')) {
+            return parseEnumDeclaration();
         }
 
         if (checkKeyword('genus')) {
@@ -874,6 +881,85 @@ export function parse(tokens: Token[]): ParserResult {
         const typeAnnotation = parseTypeAnnotation();
 
         return { type: 'TypeAliasDeclaration', name, typeAnnotation, position };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Enum Declarations
+    // ---------------------------------------------------------------------------
+
+    /**
+     * Parse enum declaration.
+     *
+     * GRAMMAR:
+     *   enumDecl := 'ordo' IDENTIFIER '{' enumMember (',' enumMember)* ','? '}'
+     *   enumMember := IDENTIFIER ('=' (NUMBER | STRING))?
+     *
+     * WHY: Latin 'ordo' (order/rank) for enumerated constants.
+     *
+     * Examples:
+     *   ordo color { rubrum, viridis, caeruleum }
+     *   ordo status { pendens = 0, actum = 1, finitum = 2 }
+     */
+    function parseEnumDeclaration(): EnumDeclaration {
+        const position = peek().position;
+
+        expectKeyword('ordo', ParserErrorCode.ExpectedKeywordOrdo);
+
+        const name = parseIdentifier();
+
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
+
+        const members: EnumMember[] = [];
+
+        while (!check('RBRACE') && !isAtEnd()) {
+            const memberPosition = peek().position;
+            const memberName = parseIdentifier();
+
+            let value: Literal | undefined;
+
+            if (match('EQUAL')) {
+                // Expect a literal value (number or string)
+                const valueTok = advance();
+
+                if (valueTok.type === 'NUMBER') {
+                    value = {
+                        type: 'Literal',
+                        value: Number(valueTok.value),
+                        position: valueTok.position,
+                    };
+                }
+                else if (valueTok.type === 'STRING') {
+                    value = {
+                        type: 'Literal',
+                        value: valueTok.value,
+                        position: valueTok.position,
+                    };
+                }
+                else {
+                    errors.push({
+                        code: ParserErrorCode.UnexpectedToken,
+                        message: `Expected number or string for enum value, got ${valueTok.type}`,
+                        position: valueTok.position,
+                    });
+                }
+            }
+
+            members.push({
+                type: 'EnumMember',
+                name: memberName,
+                value,
+                position: memberPosition,
+            });
+
+            // Allow trailing comma
+            if (!check('RBRACE')) {
+                match('COMMA');
+            }
+        }
+
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
+
+        return { type: 'EnumDeclaration', name, members, position };
     }
 
     // ---------------------------------------------------------------------------

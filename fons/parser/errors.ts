@@ -86,6 +86,7 @@ export enum ParserErrorCode {
     ExpectedKeywordSecus = 'P039',
     ExpectedKeywordFac = 'P040',
     ExpectedKeywordFit = 'P041',
+    ExpectedKeywordOrdo = 'P042',
 
     // Module/source errors (P050-P059)
     ExpectedModuleName = 'P050',
@@ -264,6 +265,10 @@ export const PARSER_ERRORS = {
     [ParserErrorCode.ExpectedKeywordFit]: {
         text: "Expected 'fit' or 'fiet'",
         help: "Lambdas require 'fit' (becomes) or 'fiet' (will become) after parameters: fac x fit x * 2",
+    },
+    [ParserErrorCode.ExpectedKeywordOrdo]: {
+        text: "Expected 'ordo'",
+        help: "Enum declarations use 'ordo' (order): ordo color { rubrum, viridis, caeruleum }",
     },
 
     // Module/source errors

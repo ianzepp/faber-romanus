@@ -85,6 +85,7 @@ export type Statement =
     | GenusDeclaration
     | PactumDeclaration
     | TypeAliasDeclaration
+    | EnumDeclaration
     | ExpressionStatement
     | IfStatement
     | WhileStatement
@@ -252,6 +253,51 @@ export interface TypeAliasDeclaration extends BaseNode {
     type: 'TypeAliasDeclaration';
     name: Identifier;
     typeAnnotation: TypeAnnotation;
+}
+
+// ---------------------------------------------------------------------------
+// Enum Declarations
+// ---------------------------------------------------------------------------
+
+/**
+ * Enum member within an ordo declaration.
+ *
+ * GRAMMAR (in EBNF):
+ *   enumMember := IDENTIFIER ('=' (NUMBER | STRING))?
+ *
+ * INVARIANT: name is the member identifier.
+ * INVARIANT: value is optional; if omitted, auto-increments from previous.
+ *
+ * Examples:
+ *   rubrum           -> auto value
+ *   actum = 1        -> explicit numeric
+ *   septentrio = "north"  -> string enum
+ */
+export interface EnumMember extends BaseNode {
+    type: 'EnumMember';
+    name: Identifier;
+    value?: Literal;
+}
+
+/**
+ * Enum declaration statement.
+ *
+ * GRAMMAR (in EBNF):
+ *   enumDecl := 'ordo' IDENTIFIER '{' enumMember (',' enumMember)* ','? '}'
+ *
+ * INVARIANT: name is lowercase (Latin convention).
+ * INVARIANT: members is non-empty array of EnumMember.
+ *
+ * WHY: "ordo" (order/rank) represents enumerated constants.
+ *
+ * Examples:
+ *   ordo color { rubrum, viridis, caeruleum }
+ *   ordo status { pendens = 0, actum = 1, finitum = 2 }
+ */
+export interface EnumDeclaration extends BaseNode {
+    type: 'EnumDeclaration';
+    name: Identifier;
+    members: EnumMember[];
 }
 
 // ---------------------------------------------------------------------------
