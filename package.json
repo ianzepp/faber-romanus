@@ -18,7 +18,8 @@
     "format:check": "./scripta/format --check",
     "release": "./scripta/release",
     "use": "./scripta/use",
-    "check:ast": "bun ./scripta/check-ast-sync.ts"
+    "check:ast": "bun ./scripta/check-ast-sync.ts",
+    "check:tree-sitter": "bun ./scripta/check-tree-sitter.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

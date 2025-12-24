@@ -898,7 +898,23 @@ function printLiteral(
     print: (path: AstPath<AstNode>) => Doc,
 ): Doc {
     const node = path.getValue() as any;
-    return node.raw;
+
+    // Prefer raw representation, fall back to stringified value
+    if (node.raw !== undefined) {
+        return node.raw;
+    }
+
+    // Handle missing raw field (e.g., enum member values)
+    if (node.value === null) {
+        return 'nihil';
+    }
+    if (typeof node.value === 'boolean') {
+        return node.value ? 'verum' : 'falsum';
+    }
+    if (typeof node.value === 'string') {
+        return `"${node.value}"`;
+    }
+    return String(node.value);
 }
 
 function printTemplateLiteral(
@@ -907,7 +923,13 @@ function printTemplateLiteral(
     print: (path: AstPath<AstNode>) => Doc,
 ): Doc {
     const node = path.getValue() as any;
-    return node.raw;
+
+    // Ensure backticks are present (tokenizer may strip them)
+    const raw = node.raw || '';
+    if (raw.startsWith('`') && raw.endsWith('`')) {
+        return raw;
+    }
+    return `\`${raw}\``;
 }
 
 function printArrayExpression(

@@ -47,6 +47,7 @@ module.exports = grammar({
     [$.return_statement],
     [$.primary_expression, $.arrow_function_parameter],
     [$.block_statement, $.object_expression],
+    [$.type_annotation],
   ],
 
   word: $ => $.identifier,
