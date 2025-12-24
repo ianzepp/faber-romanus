@@ -1091,6 +1091,7 @@ export function parse(tokens: Token[]): ParserResult {
         // Parse modifiers
         let isPublic = false;
         let isStatic = false;
+        let isReactive = false;
         let prefixAsync = false;
         let prefixGenerator = false;
 
@@ -1100,6 +1101,10 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (matchKeyword('generis')) {
             isStatic = true;
+        }
+
+        if (matchKeyword('nexum')) {
+            isReactive = true;
         }
 
         // Parse function modifiers (futura = async, cursor = generator)
@@ -1222,6 +1227,7 @@ export function parse(tokens: Token[]): ParserResult {
             init,
             isPublic,
             isStatic,
+            isReactive,
             position,
         };
     }

@@ -757,6 +757,47 @@ describe('parser', () => {
             expect(genus.computedFields).toHaveLength(1);
             expect(genus.computedFields[0].name.name).toBe('area');
         });
+
+        test('genus with nexum reactive field', () => {
+            const { program } = parseCode('genus counter { nexum numerus count: 0 }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields).toHaveLength(1);
+            expect(genus.fields[0].name.name).toBe('count');
+            expect(genus.fields[0].isReactive).toBe(true);
+        });
+
+        test('genus with nexum and publicus modifiers', () => {
+            const { program } = parseCode('genus widget { publicus nexum numerus value: 0 }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields[0].isPublic).toBe(true);
+            expect(genus.fields[0].isReactive).toBe(true);
+        });
+
+        test('genus with nexum and generis modifiers', () => {
+            const { program } = parseCode('genus app { generis nexum numerus instances: 0 }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields[0].isStatic).toBe(true);
+            expect(genus.fields[0].isReactive).toBe(true);
+        });
+
+        test('genus with mixed regular and nexum fields', () => {
+            const { program } = parseCode(`
+                genus widget {
+                    textus id
+                    nexum numerus count: 0
+                    bivalens active: verum
+                }
+            `);
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields).toHaveLength(3);
+            expect(genus.fields[0].isReactive).toBe(false);
+            expect(genus.fields[1].isReactive).toBe(true);
+            expect(genus.fields[2].isReactive).toBe(false);
+        });
     });
 
     describe('pactum declarations', () => {

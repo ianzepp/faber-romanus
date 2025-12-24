@@ -440,12 +440,39 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate field declaration within a class.
+     *
+     * TRANSFORMS:
+     *   textus nomen: "X" -> private nomen: string = "X"
+     *   publicus numerus aetas: 0 -> aetas: number = 0
+     *   nexum numerus count: 0 -> #count = 0; get count() { ... } set count(v) { ... }
+     *
+     * WHY: Reactive (nexum) fields emit getter/setter with invalidation hook.
+     *      This allows libraries to track changes without special proxy magic.
      */
     function genFieldDeclaration(node: FieldDeclaration): string {
-        const visibility = node.isPublic ? '' : 'private ';
-        const staticMod = node.isStatic ? 'static ' : '';
         const name = node.name.name;
         const type = genType(node.fieldType);
+
+        // Reactive fields emit private backing field + getter/setter
+        if (node.isReactive) {
+            const init = node.init ? ` = ${genExpression(node.init)}` : '';
+            const lines: string[] = [];
+
+            // Private backing field with # prefix
+            lines.push(`${ind()}#${name}${init}${semi ? ';' : ''}`);
+
+            // Getter
+            lines.push(`${ind()}get ${name}(): ${type} { return this.#${name}; }`);
+
+            // Setter with invalidation
+            lines.push(`${ind()}set ${name}(v: ${type}) { this.#${name} = v; this.__invalidate?.('${name}'); }`);
+
+            return lines.join('\n');
+        }
+
+        // Regular fields
+        const visibility = node.isPublic ? '' : 'private ';
+        const staticMod = node.isStatic ? 'static ' : '';
         const init = node.init ? ` = ${genExpression(node.init)}` : '';
 
         return `${ind()}${visibility}${staticMod}${name}: ${type}${init}${semi ? ';' : ''}`;

@@ -30,7 +30,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `fixum` (immutable) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `figendum` (async immutable) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `variandum` (async mutable) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| `nexum` (reactive binding) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `nexum` (reactive binding) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Type annotations | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Object destructuring | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Initializer expressions | [x] | [x] | [x] | [ ] | [ ] | [ ] |

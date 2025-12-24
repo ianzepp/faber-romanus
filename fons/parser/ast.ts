@@ -314,12 +314,13 @@ export interface EnumDeclaration extends BaseNode {
  * Field declaration within a genus.
  *
  * GRAMMAR (in EBNF):
- *   fieldDecl := 'publicus'? 'generis'? typeAnnotation IDENTIFIER (':' expression)?
+ *   fieldDecl := 'publicus'? 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
  *   computedField := 'publicus'? 'generis'? typeAnnotation IDENTIFIER '=>' expression
  *
  * INVARIANT: typeAnnotation uses Latin word order (type before name).
  * INVARIANT: isPublic defaults to false (private by default).
  * INVARIANT: isStatic is true when 'generis' modifier present.
+ * INVARIANT: isReactive is true when 'nexum' modifier present.
  *
  * WHY: Latin word order places type before name (e.g., "textus nomen" not "nomen: textus").
  * WHY: Field defaults use ':' (declarative "has value") not '=' (imperative "assign").
@@ -330,6 +331,7 @@ export interface EnumDeclaration extends BaseNode {
  *   publicus textus nomen           -> public field
  *   numerus aetas: 0                -> field with default
  *   generis fixum PI: 3.14159       -> static constant
+ *   nexum numerus count: 0          -> reactive field (triggers pingo on change)
  */
 export interface FieldDeclaration extends BaseNode {
     type: 'FieldDeclaration';
@@ -338,6 +340,7 @@ export interface FieldDeclaration extends BaseNode {
     init?: Expression;
     isPublic: boolean;
     isStatic: boolean;
+    isReactive: boolean;  // nexum fields trigger re-render on change
 }
 
 /**

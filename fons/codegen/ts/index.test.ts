@@ -826,6 +826,69 @@ describe('codegen', () => {
         });
     });
 
+    describe('nexum (reactive fields)', () => {
+        test('nexum field emits private backing field', () => {
+            const js = compile('genus counter { nexum numerus count: 0 }');
+
+            expect(js).toContain('#count = 0;');
+        });
+
+        test('nexum field emits getter', () => {
+            const js = compile('genus counter { nexum numerus count: 0 }');
+
+            expect(js).toContain('get count(): number { return this.#count; }');
+        });
+
+        test('nexum field emits setter with invalidation', () => {
+            const js = compile('genus counter { nexum numerus count: 0 }');
+
+            expect(js).toContain('set count(v: number) { this.#count = v; this.__invalidate?.(\'count\'); }');
+        });
+
+        test('nexum works with different types', () => {
+            const js = compile('genus user { nexum textus name: "anon" }');
+
+            expect(js).toContain('#name = "anon";');
+            expect(js).toContain('get name(): string { return this.#name; }');
+            expect(js).toContain('set name(v: string) { this.#name = v; this.__invalidate?.(\'name\'); }');
+        });
+
+        test('nexum without initial value', () => {
+            const js = compile('genus timer { nexum numerus elapsed }');
+
+            expect(js).toContain('#elapsed;');
+            expect(js).toContain('get elapsed(): number');
+            expect(js).toContain('set elapsed(v: number)');
+        });
+
+        test('mixed nexum and regular fields', () => {
+            const js = compile(`
+                genus widget {
+                    textus id: "x"
+                    nexum numerus count: 0
+                    bivalens active: verum
+                }
+            `);
+
+            // Regular fields - normal declaration
+            expect(js).toContain('private id: string = "x";');
+            expect(js).toContain('private active: boolean = true;');
+
+            // Reactive field - getter/setter pattern
+            expect(js).toContain('#count = 0;');
+            expect(js).toContain('get count(): number');
+            expect(js).toContain('set count(v: number)');
+        });
+
+        test('nexum with publicus modifier', () => {
+            const js = compile('genus counter { nexum numerus count: 0 }');
+
+            // Even without publicus, reactive fields are accessible via getter/setter
+            expect(js).toContain('get count()');
+            expect(js).toContain('set count(');
+        });
+    });
+
     describe('missing features - nulla/nonnulla operators', () => {
         test('nulla generates null check', () => {
             const js = compile('si nulla x { scribe "empty" }');

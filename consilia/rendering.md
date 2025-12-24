@@ -2,6 +2,19 @@
 
 Faber provides reactive component primitives. Rendering vocabulary is external.
 
+## Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `nexum` keyword | Done | Parsed as field modifier |
+| Getter/setter codegen | Done | Private backing field + accessors |
+| `__invalidate?.()` hook | Done | Called on setter, library handles rest |
+| `pingo()` method | Convention | No special compiler treatment needed |
+| `deleo()` method | Convention | No special compiler treatment needed |
+| Batching | **Not done** | Library concern |
+| Diffing | **Not done** | Library concern |
+| Async `pingo()` | **Not done** | Open question |
+
 ## Design Philosophy
 
 Faber is a compiler, like Svelte. But unlike Svelte, Faber doesn't prescribe what you render *to*. The same reactive component model works for:
@@ -155,57 +168,53 @@ A "kit" (like SvelteKit) can be built *with* Faber, not *in* Faber.
 
 ## Compilation
 
-The compiler generates reactive glue:
+The compiler generates minimal reactive hooks. Libraries handle scheduling and reconciliation.
 
 ```
 // Faber source
 genus Counter {
-    nexum count = 0
+    nexum numerus count: 0
 
     functio increment() {
-        count = count + 1
-    }
-
-    functio pingo() {
-        redde div { ego.count }
+        ego.count = ego.count + 1
     }
 }
 ```
 
 ```javascript
-// Compiled output (conceptual)
+// Actual compiled output (TypeScript target)
 class Counter {
     #count = 0;
-    #dirty = false;
-    #target = null;
 
-    get count() { return this.#count; }
-    set count(v) {
+    get count(): number { return this.#count; }
+    set count(v: number) {
         this.#count = v;
-        this.#scheduleUpdate();
+        this.__invalidate?.('count');
+    }
+
+    constructor(overrides: { count?: number } = {}) {
+        if (overrides.count !== undefined) this.count = overrides.count;
     }
 
     increment() {
         this.count = this.count + 1;
     }
-
-    #scheduleUpdate() {
-        if (!this.#dirty) {
-            this.#dirty = true;
-            queueMicrotask(() => this.#update());
-        }
-    }
-
-    #update() {
-        this.#dirty = false;
-        const rendered = this.pingo();
-        // Reconcile with #target
-    }
-
-    pingo() {
-        return div({}, this.count);
-    }
 }
+```
+
+Libraries (like `dominus` for DOM) attach the `__invalidate` handler to schedule updates:
+
+```javascript
+// Library attaches invalidation handler
+counter.__invalidate = (field) => {
+    if (!dirty) {
+        dirty = true;
+        queueMicrotask(() => {
+            dirty = false;
+            reconcile(counter.pingo());
+        });
+    }
+};
 ```
 
 ## Open Questions
