@@ -192,7 +192,7 @@ The following items were added to the checklist and are now tracked:
 - `pingo` (render) — Not implemented
 
 ### Error Handling
-- `mori` (panic) — TS: partial (emits throw with comment)
+- `mori` (panic) — TS: implemented (throws Error with [PANIC] prefix)
 
 ### Collection DSL
 - All items now tracked as "Future"

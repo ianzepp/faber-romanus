@@ -940,15 +940,33 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         return `${ind()}continue${semi ? ';' : ''}`;
     }
 
+    /**
+     * Generate throw/panic statement.
+     *
+     * TRANSFORMS:
+     *   iace "message" -> throw "message"
+     *   iace error     -> throw error
+     *   mori "message" -> throw new Error("[PANIC] message")
+     *   mori error     -> throw new Error("[PANIC] " + String(error))
+     *
+     * WHY: mori indicates unrecoverable errors (like Rust's panic! or Zig's @panic).
+     *      The [PANIC] prefix makes it clear this was supposed to be fatal.
+     *      Always wrapping in Error ensures proper stack traces.
+     */
     function genThrowStatement(node: ThrowStatement): string {
         const expr = genExpression(node.argument);
+
         if (node.fatal) {
-            // mori (panic) - wrap in Error to indicate unrecoverable
+            // mori (panic) - always wrap in Error with [PANIC] prefix
             if (node.argument.type === 'Literal' && typeof node.argument.value === 'string') {
-                return `${ind()}throw new Error(${expr})${semi ? ';' : ''} /* panic */`;
+                // String literal: embed directly with prefix
+                const message = node.argument.value;
+                return `${ind()}throw new Error("[PANIC] ${message.replace(/"/g, '\\"')}")${semi ? ';' : ''}`;
             }
-            return `${ind()}throw ${expr}${semi ? ';' : ''} /* panic */`;
+            // Other expressions: concatenate at runtime
+            return `${ind()}throw new Error("[PANIC] " + String(${expr}))${semi ? ';' : ''}`;
         }
+
         return `${ind()}throw ${expr}${semi ? ';' : ''}`;
     }
 

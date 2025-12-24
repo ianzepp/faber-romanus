@@ -781,6 +781,56 @@ describe('codegen', () => {
         });
     });
 
+    describe('mori (panic)', () => {
+        test('mori string becomes throw new Error with PANIC prefix', () => {
+            const js = compile('mori "something went wrong"');
+
+            expect(js).toContain('throw new Error');
+            expect(js).toContain('[PANIC]');
+            expect(js).toContain('something went wrong');
+        });
+
+        test('mori with variable wraps in Error', () => {
+            const js = compile('mori err');
+
+            expect(js).toContain('throw new Error');
+            expect(js).toContain('[PANIC]');
+            expect(js).toContain('String(err)');
+        });
+
+        test('mori always wraps in Error (unlike iace)', () => {
+            const iaceJs = compile('iace "message"');
+            const moriJs = compile('mori "message"');
+
+            // iace just throws the value directly
+            expect(iaceJs).toBe('throw "message";');
+
+            // mori wraps in Error with prefix
+            expect(moriJs).toContain('throw new Error');
+            expect(moriJs).toContain('[PANIC]');
+        });
+
+        test('mori in conditional', () => {
+            const js = compile('si invalid { mori "impossible state" }');
+
+            expect(js).toContain('if (invalid)');
+            expect(js).toContain('throw new Error("[PANIC] impossible state")');
+        });
+
+        test('mori with expression', () => {
+            const js = compile('mori computeError()');
+
+            expect(js).toContain('throw new Error("[PANIC] " + String(computeError()))');
+        });
+
+        test('mori preserves quotes in message', () => {
+            const js = compile('mori "can\'t do this"');
+
+            expect(js).toContain('[PANIC]');
+            expect(js).toContain("can't do this");
+        });
+    });
+
     describe('missing features - ergo one-liners', () => {
         test('si with ergo generates inline if', () => {
             const js = compile('si x > 5 ergo scribe "big"');
