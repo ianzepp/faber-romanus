@@ -1,55 +1,32 @@
 # Iteration Design
 
-## Overview
+## Implementation Status
 
-Faber provides several iteration constructs:
-
-| Construct | Purpose | Example |
-|-----------|---------|---------|
-| `ex...pro` | Iterate values (sync) | `ex items pro item { }` |
-| `ex...fit` | Iterate values (sync, verb) | `ex items fit item { }` |
-| `ex...fiet` | Iterate values (async) | `ex stream fiet chunk { }` |
-| `in...pro` | Iterate keys | `in object pro key { }` |
-| `dum` | While loop | `dum x > 0 { }` |
-| Range | Numeric sequence | `ex 0..10 fit n { }` |
-
-Plus iterator types:
-- `cursor<T>` — synchronous iterator
-- `fluxus<T>` — async iterator/stream
-
----
-
-## Verb Conjugation in Loops
-
-The binding keyword can use verb conjugation to encode sync/async semantics, consistent with function return types:
-
-| Keyword | Meaning | Compiles to |
-|---------|---------|-------------|
-| `pro` | for (preposition) | `for...of` / `for...in` |
-| `fit` | becomes (sync verb) | `for...of` / `for...in` |
-| `fiet` | will become (async verb) | `for await...of` / `for await...in` |
-
-Examples:
-```
-// Sync iteration (equivalent)
-ex items pro item { scribe item }
-ex items fit item { scribe item }
-
-// Async iteration
-ex stream fiet chunk { scribe chunk }
-```
-
-The verb forms (`fit`/`fiet`) parallel function return types:
-- Functions: `functio f() fit T` (sync) vs `functio f() fiet T` (async)
-- Loops: `ex items fit item` (sync) vs `ex items fiet item` (async)
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `ex...pro/fit/fiet` loops | Done | For-of iteration |
+| `in...pro/fit` loops | Done | For-in iteration |
+| Range `0..10` | Done | Inclusive endpoints |
+| Range step `per` | Done | `0..10 per 2` |
+| `dum` while loop | Done | Basic while |
+| Generators `fiunt/fient` | Done | Verb conjugation |
+| Prefix `cursor/fluxus` | Done | Alternative syntax |
+| `cede` yield | Done | Context-aware (yield/await) |
+| One-liner `ergo` | Done | `ex items pro n ergo scribe n` |
+| Error handling `cape` | Done | `ex items pro n { } cape err { }` |
+| `rumpe` (break) | **Not done** | Designed only |
+| `perge` (continue) | **Not done** | Designed only |
+| Pipeline `per` transforms | **Not done** | Future feature |
+| Indexed iteration | **Not done** | Open question |
+| `cede ex` delegation | **Not done** | yield* equivalent |
 
 ---
 
-## ex...pro (For-Each Values)
+## Basic Loops
 
-**Syntax:** `ex <source> [per <transform>]... (pro | fit | fiet) <variable> { body }`
+### ex...pro (For-Each Values)
 
-Iterates over values, optionally through a transformation pipeline.
+**Syntax:** `ex <iterable> (pro | fit | fiet) <variable> { body }`
 
 ```
 fixum numeri = [1, 2, 3]
@@ -58,105 +35,26 @@ ex numeri pro n {
 }
 ```
 
-### Pipeline Syntax with `per`
+The binding keyword encodes sync/async:
 
-The `per` keyword chains transformations inline:
-
-```
-// From users, through filter, as user
-ex users per filtra({ .activus }) pro user {
-    scribe user.nomen
-}
-
-// Multiple transforms
-ex users per filtra({ .activus }) per ordina(cum nomen) pro user {
-    scribe user.nomen
-}
-
-// Numeric pipeline
-ex 0..100 per filtra({ . % 2 == 0 }) per mappa({ . * 2 }) pro n {
-    scribe n
-}
-```
-
-**Reading:** "from users, through filter, through sort, as user..."
-
-| Keyword | Meaning | Role |
-|---------|---------|------|
-| `ex` | from | source |
-| `per` | through | transformation |
-| `pro` | as/for | variable binding |
-
-Compiles to:
-```typescript
-for (const user of users.filter(u => u.activus).sort((a,b) => a.nomen.localeCompare(b.nomen))) {
-    console.log(user.nomen);
-}
-```
-
-### Custom Functions in Pipeline
-
-Any function that transforms an iterable works in `per`:
+| Keyword | Meaning | Compiles to |
+|---------|---------|-------------|
+| `pro` | for (preposition) | `for...of` |
+| `fit` | becomes (sync verb) | `for...of` |
+| `fiet` | will become (async) | `for await...of` |
 
 ```
-// Custom filter with complex logic
-functio soloActivi(lista<user> users) -> lista<user> {
-    redde users.filtrata({
-        .activus et .verificatus et .aetas >= 18
-    })
-}
+// Sync (equivalent)
+ex items pro item { scribe item }
+ex items fit item { scribe item }
 
-ex users per soloActivi pro user {
-    scribe user.nomen
-}
+// Async
+ex stream fiet chunk { scribe chunk }
 ```
 
-Generators work too — useful for stateful transformations:
+### in...pro (For-Each Keys)
 
-```
-cursor functio dedupe(lista<T> items) -> T {
-    fixum seen = copia.nova()
-    ex items pro item {
-        si non seen.habet(item) {
-            seen.adde(item)
-            cede item
-        }
-    }
-}
-
-ex users per dedupe pro user {
-    scribe user.nomen
-}
-```
-
-The `per` clause accepts:
-- Built-in methods (`filtra`, `ordina`, `mappa`)
-- Custom functions returning iterables
-- Generators (`cursor functio`, `fluxus functio`)
-
-### One-liner Form
-
-```
-ex numeri pro n ergo scribe n
-ex users per filtra({ .activus }) pro u ergo scribe u.nomen
-```
-
-### With Index
-
-Open question: How to access index during iteration?
-
-Options:
-1. Tuple destructuring: `ex numeri pro (i, n) { }`
-2. Separate construct: `ex numeri pro n cum indice i { }`
-3. Method: `ex numeri.cumIndice() pro (i, n) { }`
-
----
-
-## in...pro (For-Each Keys)
-
-**Syntax:** `in <object> pro <key> { body }`
-
-Iterates over keys/properties of an object.
+**Syntax:** `in <object> (pro | fit) <key> { body }`
 
 ```
 fixum persona = { nomen: "Marcus", aetas: 30 }
@@ -165,21 +63,25 @@ in persona pro clavis {
 }
 ```
 
-Compiles to:
-```typescript
-const persona = { nomen: "Marcus", aetas: 30 };
-for (const clavis in persona) {
-    console.log(clavis + ": " + persona[clavis]);
-}
-```
+Compiles to `for...in`.
 
-### Key-Value Iteration
+### One-liner Form
 
-For maps, use `ex` with `.paria()`:
+Use `ergo` instead of block:
 
 ```
-ex tabula.paria() pro (clavis, valor) {
-    scribe clavis + " => " + valor
+ex numeri pro n ergo scribe n
+```
+
+### Error Handling
+
+Attach `cape` clause for error handling within iteration:
+
+```
+ex items pro item {
+    riskyOperation(item)
+} cape err {
+    scribe "Error: " + err
 }
 ```
 
@@ -189,7 +91,7 @@ ex tabula.paria() pro (clavis, valor) {
 
 **Syntax:** `start..end [per step]`
 
-Creates a numeric sequence. **Both endpoints are inclusive.**
+**Both endpoints are inclusive** (natural language semantics).
 
 ```
 ex 0..5 pro n {
@@ -205,16 +107,7 @@ ex 10..1 per -1 pro n {
 }
 ```
 
-### Why Inclusive?
-
-"From 0 to 10" in natural language includes both endpoints. The exclusive convention in other languages exists because of `i < 10` in C-style loops — but Faber doesn't expose `<` or `++` in range syntax, so exclusion would be arbitrary and unintuitive.
-
-```
-ex 0..9 pro n { ... }   // ten digits: 0 through 9
-ex 1..10 pro n { ... }  // ten numbers: 1 through 10
-```
-
-No mental gymnastics. Say what you mean.
+**Why inclusive?** "From 0 to 10" in natural language includes both endpoints. The exclusive convention exists because of `i < 10` in C-style loops, but Faber doesn't expose that, so exclusion would be arbitrary.
 
 ---
 
@@ -230,28 +123,93 @@ dum i < 10 {
 }
 ```
 
-### One-liner Form
-
+One-liner:
 ```
 dum i > 0 ergo i = i - 1
 ```
 
-### Infinite Loop
+---
+
+## Generators
+
+Generators use verb conjugation to encode semantics:
+
+| Declaration | Meaning | JS Output |
+|-------------|---------|-----------|
+| `functio f() fit T` | sync, returns one | `function f(): T` |
+| `functio f() fiet T` | async, returns one | `async function f(): Promise<T>` |
+| `functio f() fiunt T` | sync, yields many | `function* f(): Generator<T>` |
+| `functio f() fient T` | async, yields many | `async function* f(): AsyncGenerator<T>` |
+
+Alternative prefix syntax:
+- `cursor functio f() -> T` — sync generator
+- `fluxus functio f() -> T` — async generator
+
+**Example:**
 
 ```
-dum verum {
-    // forever
-    si done ergo rumpe
+functio numerare(numerus n) fiunt numerus {
+    varia i = 0
+    dum i < n {
+        cede i
+        i = i + 1
+    }
+}
+
+ex numerare(10) fit n {
+    scribe n
+}
+```
+
+### cede (yield/await)
+
+The `cede` keyword is context-aware:
+- In generator: compiles to `yield`
+- In async function: compiles to `await`
+- In async generator: compiles to `yield`
+
+---
+
+## Iterator Types
+
+| Faber | TypeScript | Purpose |
+|-------|------------|---------|
+| `cursor<T>` | `Iterator<T>` | Sync iterator |
+| `fluxus<T>` | `AsyncIterator<T>` | Async iterator |
+
+These are recognized as generic types but don't yet have method implementations (`.proximus()`, etc.).
+
+---
+
+## Future: Pipeline Syntax
+
+**Status: Designed, not implemented**
+
+The `per` keyword is envisioned to chain transformations inline:
+
+```
+// Future syntax
+ex users per filtra({ .activus }) per ordina(cum nomen) pro user {
+    scribe user.nomen
+}
+```
+
+Reading: "from users, through filter, through sort, as user..."
+
+Currently, use method chaining on the iterable instead:
+```
+ex users.filtrata({ .activus }).ordinata(cum nomen) pro user {
+    scribe user.nomen
 }
 ```
 
 ---
 
-## Control Flow
+## Future: Control Flow
+
+**Status: Designed, not implemented**
 
 ### rumpe (break)
-
-Exit loop immediately.
 
 ```
 ex items pro item {
@@ -263,8 +221,6 @@ ex items pro item {
 
 ### perge (continue)
 
-Skip to next iteration.
-
 ```
 ex items pro item {
     si item < 0 {
@@ -274,210 +230,66 @@ ex items pro item {
 }
 ```
 
----
+### Labeled Loops
 
-## cursor<T> — Synchronous Iterator
-
-**Etymology:** "runner" — one who runs through a sequence.
-
-### Protocol
+For breaking outer loops:
 
 ```
-structura cursor<T> {
-    functio proximus() -> { valor: T?, factum: bivalens }
-}
-```
-
-Maps to JavaScript Iterator protocol:
-```typescript
-interface Iterator<T> {
-    next(): { value: T | undefined, done: boolean }
-}
-```
-
-### Creating Iterators
-
-From collections:
-```
-fixum iter = lista.valores()
-```
-
-Custom iterator (requires generator syntax — see Open Questions):
-```
-// Proposed generator syntax
-functio* numerare(numerus n) -> cursor<numerus> {
-    varia i = 0
-    dum i < n {
-        cede i    // yield
-        i = i + 1
+@exterior: ex items pro item {
+    ex subitems pro sub {
+        si found ergo rumpe @exterior
     }
 }
 ```
-
----
-
-## fluxus<T> — Async Iterator
-
-**Etymology:** "flow, stream" — continuous flow of values.
-
-For async iteration over streams, events, etc.
-
-### Async For-Each
-
-Use `fiet` (will become) for async iteration:
-
-```
-ex stream fiet chunk {
-    scribe chunk
-}
-```
-
-Compiles to:
-```typescript
-for await (const chunk of stream) {
-    console.log(chunk);
-}
-```
-
-The `fiet` verb form replaces the older `futura ex...pro` syntax, providing consistency with function return type conjugation.
-
-### Protocol
-
-```
-structura fluxus<T> {
-    futura functio proximus() -> { valor: T?, factum: bivalens }
-}
-```
-
----
-
-## Generators
-
-### Declaration Syntax
-
-Generators use verb conjugation to encode their semantics:
-
-| Declaration | Produces | JS Equivalent |
-|-------------|----------|---------------|
-| `functio f() fiunt T` | `Generator<T>` | `function*` |
-| `functio f() fient T` | `AsyncGenerator<T>` | `async function*` |
-| `cursor functio f() -> T` | `Generator<T>` | `function*` (prefix style) |
-| `fluxus functio f() -> T` | `AsyncGenerator<T>` | `async function*` (prefix style) |
-
-The verb forms (`fiunt`/`fient`) are preferred — they encode semantics grammatically:
-- `fiunt` = "they become" (present plural) → yields many values synchronously
-- `fient` = "they will become" (future plural) → yields many values asynchronously
-
-**Sync generator:**
-
-```
-functio numerare(numerus n) fiunt numerus {
-    varia i = 0
-    dum i < n {
-        cede i
-        i = i + 1
-    }
-}
-
-// Usage
-ex numerare(10) fit n {
-    scribe n
-}
-```
-
-**Async generator:**
-
-```
-functio lege(numerus fd) fient bytes {
-    ex syscall('file:read', fd) fiet r {
-        si r.op == 'data' {
-            cede r.bytes
-        }
-        aliter si r.op == 'done' {
-            redde
-        }
-    }
-}
-
-// Usage
-ex lege(fd) fiet chunk {
-    process(chunk)
-}
-```
-
-### Yield Keyword: `cede`
-
-**Etymology:** "yield, give way, withdraw" — the root of "cede" and "concede."
-
-- `cede value` — yield a single value
-- `cede ex iterator` — delegate to another iterator (yield*)
-
-```
-cursor functio omnia() -> numerus {
-    cede ex numerare(5)    // yields 0,1,2,3,4
-    cede ex numerare(3)    // yields 0,1,2
-}
-```
-
-The `cede ex` pattern mirrors `ex...pro` — "yield from this source."
-
-### Return Type
-
-The return type annotation is the *element* type, not the full iterator type:
-
-```
-cursor functio foo() -> numerus { ... }   // produces cursor<numerus>
-fluxus functio bar() -> textus { ... }    // produces fluxus<textus>
-```
-
-The `cursor` or `fluxus` keyword already indicates the wrapper type.
 
 ---
 
 ## Open Questions
 
 1. **Indexed iteration**: Best syntax for index access?
-   - Proposal: `ex lista.cumIndice() pro (i, val) { }`
+   - `ex numeri pro (i, n) { }` — tuple destructuring
+   - `ex numeri pro n cum indice i { }` — explicit clause
+   - `ex numeri.cumIndice() pro (i, n) { }` — method approach
 
-2. **Early return from iteration**: Allow `redde` inside `ex...pro`?
-   - JS: Yes, returns from enclosing function
-   - Should work the same in Faber
+2. **`cede ex` delegation**: Yield from another iterator (like JS `yield*`)
+   ```
+   cede ex numerare(5)  // yields 0,1,2,3,4
+   ```
 
-3. **Labeled loops**: For breaking outer loops?
-   ```
-   // Proposed
-   @exterior: ex items pro item {
-       ex subitems pro sub {
-           si found ergo rumpe @exterior
-       }
-   }
-   ```
+3. **Early return**: Should `redde` inside loops return from enclosing function? (Yes, like JS)
 
 ---
 
-## Implementation Notes
+## Target Mappings
 
-### TypeScript Target
+### TypeScript
 
 | Faber | TypeScript |
 |-------|------------|
-| `ex...pro` / `ex...fit` | `for...of` |
+| `ex...pro/fit` | `for...of` |
 | `ex...fiet` | `for await...of` |
-| `in...pro` / `in...fit` | `for...in` |
-| `in...fiet` | `for await...in` |
+| `in...pro/fit` | `for...in` |
 | `dum` | `while` |
-| `rumpe` | `break` |
-| `perge` | `continue` |
-| `cursor<T>` | `Iterator<T>` |
-| `fluxus<T>` | `AsyncIterator<T>` |
+| `cede` (generator) | `yield` |
+| `cede` (async) | `await` |
+| `fiunt` | `function*` |
+| `fient` | `async function*` |
 
-### Zig Target
+### Python
+
+| Faber | Python |
+|-------|--------|
+| `ex...pro` | `for x in iterable:` |
+| `ex 0..10` | `for x in range(0, 11):` (note +1 for inclusive) |
+| `dum` | `while` |
+| `cede` | `yield` |
+
+### Zig
 
 | Faber | Zig |
 |-------|-----|
-| `ex...pro` / `ex...fit` | `for` loop over slice/iterator |
+| `ex...pro` | `for (slice) \|item\|` |
+| `ex 0..10` | `while (i <= 10) : (i += 1)` |
 | `dum` | `while` |
-| `rumpe` | `break` |
-| `perge` | `continue` |
 
-Zig iteration is more explicit — may need adapter patterns. Async iteration (`fiet`) will require special handling for Zig's different concurrency model.
+Zig has no async iteration — requires different approach.
