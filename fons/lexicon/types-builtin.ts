@@ -157,6 +157,18 @@ export const builtinTypes: TypeEntry[] = [
         jsType: 'null',
         category: 'primitive',
     },
+    // WHY: octeti (2nd decl masculine plural) - "octets, bytes"
+    //      Raw byte data, no encoding assumptions. Distinct from textus (UTF-8 text).
+    //      Nominative uses plural form since bytes are inherently a collection.
+    {
+        stem: 'octet',
+        nominative: 'octeti',
+        declension: 2,
+        gender: 'masculine',
+        meaning: 'bytes/octets',
+        jsType: 'Uint8Array',
+        category: 'primitive',
+    },
 
     // ---------------------------------------------------------------------------
     // Collections (Generic)

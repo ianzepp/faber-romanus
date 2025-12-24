@@ -15,6 +15,8 @@ Faber provides two tiers of file I/O:
 - `aperi` - "open!" (imperative of aperire)
 - `claude` - "close!" (imperative of claudere)
 - `ut` - "as" (conjunction) - format specifier
+- `octeti` - "octets" (from octo, eight) - raw 8-bit bytes, distinct from textus
+- `lineae` - "lines" (plural of linea) - text split by newlines
 
 ---
 
@@ -50,35 +52,76 @@ ex config fixum { routes, parsers, database }
 | `json` | JSON parsing | object/array |
 | `toml` | TOML parsing | object |
 | `csv` | CSV parsing | `lista<lista<textus>>` or `lista<object>` |
-| `bytes` | Raw bytes | `lista<numerus>` or target-specific buffer |
+| `octeti` | Raw bytes | `octeti` (Uint8Array / []u8) |
 
 ### Formatter Interface
 
-Formats are types implementing the `Formator` interface. All formatters work on bytes - text is just UTF-8 encoded bytes.
+Formats are types implementing the `formator` interface. All formatters work on octets (raw bytes) - text is just UTF-8 encoded octets.
 
 ```
-pactum Formator<T> {
-    functio verte(T data) -> bytes       // turn data into bytes
-    functio reverte(bytes input) -> T    // turn bytes back into data
+pactum formator<T> {
+    functio verte(T data) -> octeti       // turn data into octets
+    functio reverte(octeti input) -> T    // turn octets back into data
 }
 ```
 
 **Etymology:**
-- `verte` - "turn!" (imperative of vertere) - turn data into bytes
-- `reverte` - "turn back!" - turn bytes back into data
+- `verte` - "turn!" (imperative of vertere) - turn data into octets
+- `reverte` - "turn back!" - turn octets back into data
+- `octeti` - "octets" (8-bit bytes) - raw binary data without encoding assumptions
 
 **Standard formatters:**
 
 ```
-// Text formats (UTF-8 bytes)
-genus JSON implet Formator<object> { }
-genus TOML implet Formator<object> { }
-genus CSV implet Formator<lista<object>> { }
+// Encoding formatters (primitive conversions)
+genus Textus implet formator<textus> {
+    functio verte(textus data) -> octeti     // UTF-8 encode
+    functio reverte(octeti input) -> textus  // UTF-8 decode
+}
+
+genus Octeti implet formator<octeti> {
+    functio verte(octeti data) -> octeti     // identity (passthrough)
+    functio reverte(octeti input) -> octeti  // identity (passthrough)
+}
+
+genus Lineae implet formator<lista<textus>> {
+    functio verte(lista<textus> lines) -> octeti   // join with \n, encode
+    functio reverte(octeti input) -> lista<textus> // decode, split on \n
+}
+
+// Structured text formats
+genus JSON implet formator<object> { }
+genus TOML implet formator<object> { }
+genus CSV implet formator<lista<object>> { }
 
 // Binary formats
-genus MessagePack implet Formator<object> { }
-genus PNG implet Formator<Image> { }
-genus ZIP implet Formator<Archivum> { }
+genus MessagePack implet formator<object> { }
+genus PNG implet formator<Image> { }
+genus ZIP implet formator<Archivum> { }
+```
+
+**Usage:**
+```
+// Read file as raw bytes
+fixum raw = lege "image.png" ut octeti
+
+// Read bytes, decode as UTF-8 text
+fixum text = lege "readme.txt" ut textus
+
+// Read file as lines
+fixum lines = lege "data.txt" ut lineae
+pro linea in lines {
+    scribe linea
+}
+
+// Write lines to file
+inscribe "output.txt" ut lineae, ["first", "second", "third"]
+
+// Encode text to bytes for binary protocol
+fixum encoded = textus.verte("hello")  // -> octeti
+
+// Decode bytes from network
+fixum decoded = textus.reverte(buffer)  // -> textus
 ```
 
 **How `ut` expands:**
@@ -86,25 +129,25 @@ genus ZIP implet Formator<Archivum> { }
 ```
 // lege "config.json" ut json
 // expands to:
-fixum raw = lege "config.json" ut bytes
+fixum raw = lege "config.json" ut octeti
 fixum config = json.reverte(raw)
 
 // inscribe "out.json" ut json, data
 // expands to:
 fixum serialized = json.verte(data)
-inscribe "out.json" ut bytes, serialized
+inscribe "out.json" ut octeti, serialized
 ```
 
 **Custom formatters:**
 
 ```
-genus MyFormat implet Formator<MyData> {
-    functio verte(MyData data) -> bytes {
-        // serialize to bytes
+genus MyFormat implet formator<MyData> {
+    functio verte(MyData data) -> octeti {
+        // serialize to octets
     }
 
-    functio reverte(bytes input) -> MyData {
-        // parse from bytes
+    functio reverte(octeti input) -> MyData {
+        // parse from octets
     }
 }
 
@@ -145,40 +188,6 @@ appone <path>, <data>
 ```
 appone "log.txt", "[INFO] Server started\n"
 appone "events.jsonl", JSON.stringify(event) + "\n"
-```
-
-### File Existence
-
-**Syntax:**
-```
-exstat <path>
-```
-
-**Returns:** `bivalens` (true/false)
-
-**Examples:**
-```
-si exstat "config.json" {
-    fixum config = lege "config.json" ut json
-} aliter {
-    fixum config = defaultConfig
-}
-```
-
-### Deletion
-
-**Syntax:**
-```
-dele <path>
-```
-
-**Examples:**
-```
-dele "temp.txt"
-
-si exstat "cache.json" {
-    dele "cache.json"
-}
 ```
 
 ---
@@ -223,7 +232,7 @@ lege <fd>, <count>
 **Examples:**
 ```
 fixum fd = aperi "data.bin"
-fixum buffer = crea bytes(1024)
+faber buffer: octeti = nova octeti(1024)
 fixum n = lege fd, buffer
 
 // Or read into new buffer
@@ -280,12 +289,12 @@ fixum fd = aperi "file.bin"
 claude fd
 ```
 
-### Context Manager Pattern
+### Resource Management
 
-Use `cum` (with) for automatic cleanup:
+Use `cura` (care for) for automatic cleanup:
 
 ```
-cum aperi "data.bin" fit fd {
+cura aperi "data.bin" fit fd {
     fixum data = lege fd, 1024
     process(data)
 }
@@ -294,13 +303,15 @@ cum aperi "data.bin" fit fd {
 
 **With error handling:**
 ```
-cum aperi "data.bin" fit fd {
+cura aperi "data.bin" fit fd {
     inscribe fd, data
 } cape err {
     mone "Write failed:", err
 }
 // fd still closed even on error
 ```
+
+See `consilia/cura.md` for the full resource management design.
 
 ---
 
@@ -408,10 +419,81 @@ Future consideration: `via` (path/way) as a dedicated path type:
 
 ```
 fixum configPath: via = "~/.config/app.json"
-si exstat configPath {
-    fixum config = lege configPath ut json
+fixum config = lege configPath ut json
+```
+
+---
+
+## Standard Library
+
+Local I/O operations beyond core read/write are provided via `norma/solum` (ground — local machine):
+
+```
+ex "norma/solum" importa { exstat, dele, copia, move, inspice, trunca, tange }
+ex "norma/solum" importa { crea, elenca, ambula, vacua }
+```
+
+### Files
+
+| Function | Description | Signature |
+|----------|-------------|-----------|
+| `exstat` | Check if file/dir exists | `exstat(path) -> bivalens` |
+| `dele` | Delete file | `dele(path) -> vacuum` |
+| `copia` | Copy file | `copia(src, dest) -> vacuum` |
+| `move` | Move/rename file | `move(src, dest) -> vacuum` |
+| `inspice` | Get file info | `inspice(path) -> FileInfo` |
+| `trunca` | Truncate to size | `trunca(path, size) -> vacuum` |
+| `tange` | Touch (create/update mtime) | `tange(path) -> vacuum` |
+
+### Directories
+
+| Function | Description | Signature |
+|----------|-------------|-----------|
+| `crea` | Create directory | `crea(path) -> vacuum` |
+| `elenca` | List directory contents | `elenca(path) -> lista<textus>` |
+| `ambula` | Walk directory tree | `ambula(path) -> cursor<textus>` |
+| `vacua` | Remove empty directory | `vacua(path) -> vacuum` |
+
+**Example:**
+```
+ex "norma/solum" importa { exstat, dele, elenca }
+
+si exstat("config.json") {
+    fixum config = lege "config.json" ut json
+} aliter {
+    fixum config = defaultConfig
+}
+
+// List files
+pro file in elenca(".") {
+    scribe file
+}
+
+// Cleanup
+si exstat("temp.cache") {
+    dele("temp.cache")
 }
 ```
+
+### Standard Library Organization
+
+The stdlib maps to concepts with clean target language support:
+
+| Latin | Meaning | Domain |
+|-------|---------|--------|
+| `solum` | ground | Files, directories, local I/O |
+| `caelum` | sky | Network, HTTP, sockets |
+| `tempus` | time | Time, timers, scheduling |
+
+```
+ex "norma/solum" importa { exstat, dele }       // local I/O
+ex "norma/caelum" importa { pete, mitte }       // network
+ex "norma/tempus" importa { nunc, dormi }       // time
+```
+
+See also:
+- `consilia/caelum.md` — network operations
+- `consilia/tempus.md` — time operations
 
 ---
 
@@ -423,14 +505,15 @@ si exstat configPath {
 | `lege` ut format | Not Done | With parsing |
 | `inscribe` | Not Done | High-level write |
 | `appone` | Not Done | Append |
-| `exstat` | Not Done | File existence |
-| `dele` | Not Done | Delete |
 | `aperi`/`claude` | Not Done | Low-level open/close |
 | Low-level `lege` | Not Done | Read to buffer |
 | Low-level `inscribe` | Not Done | Write buffer |
 | `quaere` | Not Done | Seek |
-| `cum` cleanup | Not Done | Context manager pattern |
+| `cura` cleanup | Not Done | Resource management pattern |
 | `~` expansion | Not Done | Home directory |
+| `norma/solum` | Not Done | Local I/O — files, dirs |
+| `norma/caelum` | Not Done | Network — HTTP, sockets |
+| `norma/tempus` | Not Done | Time — timers, scheduling |
 
 ---
 
@@ -438,17 +521,19 @@ si exstat configPath {
 
 ### Why keywords over stdlib?
 
-File I/O is fundamental. Making it keyword-based (like `scribe`):
-1. Keeps operations concise
+Core file I/O (read/write/open/close) is fundamental. Making these keyword-based:
+1. Keeps the most common operations concise
 2. Enables target-specific optimization
 3. Feels natural in Latin syntax
+
+Secondary operations (exists, delete, copy, move, etc.) go to stdlib — they're less frequent and benefit from explicit imports that signal intent.
 
 ### Why `ut` for format?
 
 - Already exists as "as" preposition
 - Natural reading: "read file.json as json"
 - Consistent with destructuring renames
-- Formatters are first-class: `pactum Formator<T>` with `decode`/`encode`
+- Formatters are first-class: `pactum formator<T>` with `verte`/`reverte`
 - Users can define custom formatters, not limited to builtins
 
 ### Why separate high/low level?

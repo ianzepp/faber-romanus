@@ -121,6 +121,7 @@ const typeMap: Record<string, string> = {
     bivalens: 'bool',
     nihil: 'void',
     vacuum: 'void',
+    octeti: '[]u8',
 };
 
 // =============================================================================

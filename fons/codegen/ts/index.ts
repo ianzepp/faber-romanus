@@ -126,6 +126,7 @@ const typeMap: Record<string, string> = {
     numerus: 'number',
     bivalens: 'boolean',
     nihil: 'null',
+    octeti: 'Uint8Array',
     lista: 'Array',
     tabula: 'Map',
     copia: 'Set',
