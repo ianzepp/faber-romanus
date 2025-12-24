@@ -147,7 +147,7 @@ riskyOperation()
 
 // Subscription is done via Eventus methods, not keywords:
 //
-// fixum unsubscribe = Eventus.audi("userLogin", fac data fit {
+// fixum unsubscribe = Eventus.audi("userLogin", pro data {
 //     scribe "User logged in:", data.userId
 // })
 //

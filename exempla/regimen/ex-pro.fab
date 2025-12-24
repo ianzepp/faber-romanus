@@ -41,7 +41,7 @@ ex names pro name {
 // RANGE EXPRESSIONS
 // =============================================================================
 
-// Basic range (0 to 4, inclusive)
+// Basic range (0 to 4, end is exclusive)
 ex 0..5 pro i {
     scribe i
 }

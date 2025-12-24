@@ -1,25 +1,26 @@
 // =============================================================================
-// REGIMEN - Do Block and Lambda (fac)
+// REGIMEN - Blocks (fac) and Lambdas (pro)
 // =============================================================================
 //
-// The fac keyword serves two purposes:
-// 1. Block scope: fac { } creates an explicit scope boundary
-// 2. Lambda: fac x fit expr creates anonymous functions
+// Two keywords serve different purposes:
+// - fac { } creates block scope (for error handling, grouping)
+// - pro x { } creates lambdas/closures (for callbacks, higher-order functions)
 //
 // GRAMMAR:
 // fac { <body> }                          // block scope
 // fac { <body> } cape <id> { <handler> }  // block with error handling
-// fac <params> fit <expr>                 // sync lambda
-// fac <params> fiet <expr>                // async lambda
+// pro <params> fit <expr>                 // expression lambda
+// pro <params> { <body> }                 // block lambda
+// pro { <body> }                          // zero-param lambda
 //
 // ETYMOLOGY:
 // fac: imperative of "facere" (to do/make) - "do!"
+// pro: "for" - same keyword as iteration (ex items pro x { })
 // fit: "becomes" (passive of fieri)
-// fiet: "will become" (future of fieri)
 //
-// WHY "fac fit":
-// Reads naturally: "do x, becoming x times 2"
-// Latin verb forms encode sync/async without symbols
+// WHY "pro" for lambdas:
+// Aligns with iteration: "ex items pro x { }" and "pro x { }" both use pro
+// Reads naturally: "for x, becomes x times 2" or "for x, do { ... }"
 
 // =============================================================================
 // STUBS for examples (would be defined elsewhere in real code)
@@ -38,7 +39,7 @@ varia users = []
 varia items = []
 
 // =============================================================================
-// PART 1: WHAT WORKS
+// PART 1: BLOCK SCOPE (fac)
 // =============================================================================
 
 // -----------------------------------------------------------------------------
@@ -67,169 +68,124 @@ fac {
     scribe "Caught:", error
 }
 
-// -----------------------------------------------------------------------------
-// Lambda Expressions - Anonymous functions
-// -----------------------------------------------------------------------------
+// Scoped setup/teardown
+fac {
+    varia connection = openDatabase()
+    doWork(connection)
+    connection.close()
+}
 
-// Single parameter
-fixum double = fac x fit x * 2
+// =============================================================================
+// PART 2: EXPRESSION LAMBDAS (pro x fit expr)
+// =============================================================================
+
+// Single parameter - expression lambda
+fixum double = pro x fit x * 2
 scribe double(5)  // 10
 
 // Multiple parameters
-fixum add = fac a, b fit a + b
+fixum add = pro a, b fit a + b
 scribe add(3, 4)  // 7
 
-// Zero parameters
-fixum getAnswer = fac fit 42
+// Zero parameters - expression form
+fixum getAnswer = pro fit 42
 scribe getAnswer()  // 42
 
-// Async lambda with fiet
-fixum fetchUser = fac id fiet getData(id)
+// =============================================================================
+// PART 3: BLOCK LAMBDAS (pro x { })
+// =============================================================================
 
-// -----------------------------------------------------------------------------
-// Lambdas with Collections
-// -----------------------------------------------------------------------------
+// Block lambda with single parameter
+fixum processUser = pro user {
+    si user.aetas < 18 {
+        redde falsum
+    }
+    redde user.activus
+}
+
+// Block lambda with multiple parameters
+fixum compare = pro a, b {
+    si a > b { redde 1 }
+    si a < b { redde -1 }
+    redde 0
+}
+
+// Zero-param block lambda
+fixum greet = pro {
+    scribe "Hello!"
+}
+
+// =============================================================================
+// PART 4: LAMBDAS WITH COLLECTIONS
+// =============================================================================
 
 fixum numbers = [1, 2, 3, 4, 5]
 
-// Filter with fac lambda
-fixum evens = numbers.filtrata(fac n fit n % 2 == 0)
+// Expression lambdas - clean for simple transforms
+fixum evens = numbers.filtrata(pro n fit n % 2 == 0)
+fixum doubled = numbers.mappata(pro n fit n * 2)
+fixum sum = numbers.reducta(pro acc, n fit acc + n, 0)
 
-// Map with fac lambda
-fixum doubled = numbers.mappata(fac n fit n * 2)
-
-// Reduce with fac lambda
-fixum sum = numbers.reducta(fac acc, n fit acc + n, 0)
-
-// Sort with fac lambda
-fixum sorted = numbers.ordinata(fac a, b fit b - a)  // descending
+// Block lambdas - for complex logic
+fixum processed = numbers.filtrata(pro n {
+    si n < 0 { redde falsum }
+    si n > 100 { redde falsum }
+    redde n % 2 == 0
+})
 
 // -----------------------------------------------------------------------------
 // Nested Lambdas (Currying)
 // -----------------------------------------------------------------------------
 
 // Curried add function
-fixum curriedAdd = fac x fit fac y fit x + y
+fixum curriedAdd = pro x fit pro y fit x + y
 fixum addFive = curriedAdd(5)
 scribe addFive(3)  // 8
 
-// Triple nesting (please don't)
-fixum triple = fac x fit fac y fit fac z fit x + y + z
-
 // =============================================================================
-// PART 2: WHAT WORKS BUT PROBABLY SHOULDN'T
+// PART 5: EVENT HANDLERS AND CALLBACKS
 // =============================================================================
 
-// -----------------------------------------------------------------------------
-// Deeply nested lambdas that parse but hurt to read
-// -----------------------------------------------------------------------------
+// Zero-param callbacks - block form is cleaner
+button.addEventListener("click", pro {
+    scribe "Button clicked!"
+})
 
-// This parses fine. Reading it is another matter.
-fixum chaos = fac a fit fac b fit fac c fit fac d fit a + b + c + d
-// "do a becoming do b becoming do c becoming do d becoming a plus b plus c plus d"
+// With event parameter
+button.addEventListener("click", pro e {
+    handleClick(e)
+})
 
-// Lambda returning lambda returning lambda
-fixum inception = fac x fit fac fit fac y fit x + y
-// inception(10)()(5) = 15... but why?
+// Promise chains - expression form for one-liners
+fetchData()
+    .then(pro data fit process(data))
+    .then(pro result fit display(result))
+    .catch(pro error fit logError(error))
 
-// -----------------------------------------------------------------------------
-// Ternary inside lambda - CURRENTLY BROKEN
-// -----------------------------------------------------------------------------
-
-// This SHOULD work but doesn't parse correctly yet:
-// fixum sign = fac x fit sic x > 0 1 secum -1
-// Error: Unexpected token 'sic'
-//
-// The lambda body parser needs precedence work to handle ternary.
-// Same issue affects arrow functions:
-// fixum sign = (x) => sic x > 0 1 secum -1
-//
-// Workaround: use full function declaration
-functio sign(x) -> numerus {
-    si x > 0 { redde 1 }
-    redde -1
-}
-
-// -----------------------------------------------------------------------------
-// Lambda as immediate invocation - CURRENTLY BROKEN
-// -----------------------------------------------------------------------------
-
-// IIFE doesn't parse correctly:
-// fixum result = (fac x fit x * x)(5)  // should be 25
-// Parses as: fac x fit (x * x)(5) - lambda body eats the invocation
-//
-// Workaround: use arrow function for IIFE
-fixum result = ((x) => x * x)(5)  // 25
+// Promise with block for complex handling
+fetchData()
+    .then(pro data {
+        si data.error {
+            iace data.error
+        }
+        redde process(data)
+    })
+    .cape(pro error {
+        logError(error)
+        redde nihil
+    })
 
 // =============================================================================
-// PART 3: WHAT UNFORTUNATELY DOESN'T WORK
-// =============================================================================
-
-// -----------------------------------------------------------------------------
-// Keywords as identifiers
-// -----------------------------------------------------------------------------
-
-// This fails - 'fac' is a keyword, not a valid parameter name
-// fac fac fit fac + fac
-// Error: Expected identifier, got 'fac'
-
-// Same with 'fit'
-// fac fit fit fit
-// Error: Multiple parse errors
-
-// 'fit' after expression doesn't chain
-// fac x fit x fit y fit y
-// Parses as: fac x fit (x fit y fit y) - and "x fit" isn't valid
-
-// -----------------------------------------------------------------------------
-// Block body for lambdas
-// -----------------------------------------------------------------------------
-
-// No block body syntax - only expressions
-// fac x fit { redde x * 2 }
-// The { } would be parsed as object literal, not block
-
-// For complex logic, use full function declaration:
-// functio complex(x) -> numerus {
-//     si x < 0 { redde -x }
-//     redde x
-// }
-
-// Or use arrow function with block:
-// (x) => { redde x * 2 }
-
-// -----------------------------------------------------------------------------
-// Type annotations on fac parameters
-// -----------------------------------------------------------------------------
-
-// No type syntax for fac parameters
-// fac numerus x fit x * 2    // doesn't work
-// fac x: numerus fit x * 2   // doesn't work
-
-// For typed lambdas, use arrow function:
-// (numerus x) => x * 2
-
-// -----------------------------------------------------------------------------
-// Implicit return in blocks
-// -----------------------------------------------------------------------------
-
-// fac blocks don't return values
-// fixum x = fac { 42 }  // doesn't assign 42
-
-// Use lambda for expression results:
-// fixum x = (fac fit 42)()  // works but ugly
-
-// =============================================================================
-// PART 4: COMPARISON WITH ARROW FUNCTIONS
+// PART 6: COMPARISON WITH ARROW FUNCTIONS
 // =============================================================================
 
 // Both syntaxes are valid and compile to the same JavaScript:
 
-// Arrow function syntax
+// Arrow function syntax (JS-familiar)
 fixum arrowDouble = (x) => x * 2
 
-// Fac lambda syntax
-fixum facDouble = fac x fit x * 2
+// Pro lambda syntax (Latin-aligned)
+fixum proDouble = pro x fit x * 2
 
 // Arrow with block body
 fixum arrowComplex = (x) => {
@@ -237,39 +193,43 @@ fixum arrowComplex = (x) => {
     redde x
 }
 
-// Fac doesn't support block body - use arrow for complex logic
+// Pro with block body
+fixum proComplex = pro x {
+    si x < 0 { redde -x }
+    redde x
+}
 
 // When to use which:
-// - fac x fit expr: Short, readable lambdas in Latin style
-// - (x) => expr: When you need types or block bodies
-// - fac { } cape: Scoped error handling
-// - (x) => { }: Complex multi-statement functions
+// - pro x fit expr: Short expression lambdas, Latin style
+// - pro x { }: Block lambdas with multiple statements
+// - pro { }: Zero-param callbacks
+// - (x) => expr: JS-familiar alternative
+// - fac { } cape: Block scope with error handling
 
 // =============================================================================
-// PART 5: IDIOMATIC USAGE
+// PART 7: IDIOMATIC USAGE
 // =============================================================================
 
-// Filtering - fac reads well
-users.filtrata(fac u fit u.active)
+// Filtering - expression lambda reads well
+users.filtrata(pro u fit u.active)
 
-// Mapping - fac reads well
-items.mappata(fac i fit i.price * 1.1)
+// Mapping - expression lambda reads well
+items.mappata(pro i fit i.price * 1.1)
 
-// Sorting by property
-items.ordinata(fac a, b fit a.date - b.date)
+// Complex filtering - block lambda for clarity
+users.filtrata(pro user {
+    si user.aetas < 18 { redde falsum }
+    si non user.verified { redde falsum }
+    redde user.active
+})
 
-// Event handlers
-button.addEventListener("click", fac e fit handleClick(e))
+// Event handlers - zero-param block lambda
+button.onClick(pro { scribe "clicked" })
+conn.onClose(pro { cleanup() })
+conn.onError(pro err { logError(err) })
 
-// Promise chains
-fetchData()
-    .then(fac data fit process(data))
-    .then(fac result fit display(result))
-    .catch(fac error fit logError(error))  // .catch not .cape (JS method)
+// Higher-order functions returning lambdas
+fixum multiplier = pro factor fit pro x fit x * factor
+fixum double = multiplier(2)
+fixum triple = multiplier(3)
 
-// Scoped setup/teardown
-fac {
-    varia connection = openDatabase()
-    doWork(connection)
-    connection.close()
-}
