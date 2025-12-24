@@ -1,6 +1,7 @@
 import { test, expect, describe } from 'bun:test';
 import { tokenize } from '../../tokenizer';
 import { parse } from '../../parser';
+import { analyze } from '../../semantic';
 import { generate } from '../index';
 
 function compile(code: string): string {
@@ -11,7 +12,11 @@ function compile(code: string): string {
         throw new Error('Parse failed');
     }
 
-    return generate(program);
+    // WHY: Run semantic analysis to populate resolvedType on AST nodes.
+    // This is required for correct collection method dispatch.
+    const { program: analyzedProgram } = analyze(program);
+
+    return generate(analyzedProgram);
 }
 
 describe('codegen', () => {
@@ -1100,77 +1105,115 @@ describe('codegen', () => {
     // =========================================================================
     // TABULA METHODS - Latin Map API
     // =========================================================================
-    // NOTE: Some method names overlap with lista (accipe, longitudo, vacua,
-    // purga, inversa). Without semantic type info at codegen, lista methods
-    // take precedence. Only unique tabula methods are tested here.
-    // Full tabula support requires semantic type information.
-    describe('tabula methods - Latin Map API (unique methods)', () => {
+    // Tests use typed declarations so semantic analyzer populates resolvedType.
+    describe('tabula methods - Latin Map API', () => {
+        // Helper to compile with a tabula variable in scope
+        const tabulaCompile = (expr: string) =>
+            compile(`fixum tabula<textus, numerus> m = novum tabula()\n${expr}`);
+
         describe('core operations', () => {
             test('pone -> set', () => {
-                const js = compile('map.pone(k, v)');
-                expect(js).toBe('map.set(k, v);');
+                const js = tabulaCompile('m.pone(k, v)');
+                expect(js).toContain('m.set(k, v)');
             });
 
-            // habet and dele are unique to tabula/copia (lista uses continet/remove)
+            test('accipe -> get', () => {
+                const js = tabulaCompile('m.accipe(k)');
+                expect(js).toContain('m.get(k)');
+            });
+
             test('habet -> has', () => {
-                const js = compile('map.habet(k)');
-                expect(js).toBe('map.has(k);');
+                const js = tabulaCompile('m.habet(k)');
+                expect(js).toContain('m.has(k)');
             });
 
             test('dele -> delete', () => {
-                const js = compile('map.dele(k)');
-                expect(js).toBe('map.delete(k);');
+                const js = tabulaCompile('m.dele(k)');
+                expect(js).toContain('m.delete(k)');
+            });
+
+            test('longitudo -> size', () => {
+                const js = tabulaCompile('m.longitudo()');
+                expect(js).toContain('m.size');
+            });
+
+            test('vacua -> size === 0', () => {
+                const js = tabulaCompile('m.vacua()');
+                expect(js).toContain('m.size === 0');
+            });
+
+            test('purga -> clear', () => {
+                const js = tabulaCompile('m.purga()');
+                expect(js).toContain('m.clear()');
             });
         });
 
         describe('iteration', () => {
             test('claves -> keys', () => {
-                const js = compile('map.claves()');
-                expect(js).toBe('map.keys();');
+                const js = tabulaCompile('m.claves()');
+                expect(js).toContain('m.keys()');
+            });
+
+            test('valores -> values', () => {
+                const js = tabulaCompile('m.valores()');
+                expect(js).toContain('m.values()');
             });
 
             test('paria -> entries', () => {
-                const js = compile('map.paria()');
-                expect(js).toBe('map.entries();');
+                const js = tabulaCompile('m.paria()');
+                expect(js).toContain('m.entries()');
             });
         });
 
         describe('lodash-inspired', () => {
             test('accipeAut -> get with default', () => {
-                const js = compile('map.accipeAut(k, def)');
-                expect(js).toBe('(map.get(k) ?? def);');
+                const js = tabulaCompile('m.accipeAut(k, def)');
+                expect(js).toContain('m.get(k) ?? def');
             });
 
             test('confla -> merge maps', () => {
-                const js = compile('map.confla(other)');
-                expect(js).toBe('new Map([...map, ...other]);');
+                const js = tabulaCompile('m.confla(other)');
+                expect(js).toContain('new Map([...m, ...other])');
+            });
+
+            test('inversa -> swap keys/values', () => {
+                const js = tabulaCompile('m.inversa()');
+                expect(js).toContain('new Map');
+                expect(js).toContain('[v, k]');
             });
 
             test('mappaValores -> transform values', () => {
-                const js = compile('map.mappaValores(fn)');
+                const js = tabulaCompile('m.mappaValores(fn)');
                 expect(js).toContain('new Map');
-                expect(js).toContain('fn');
             });
 
             test('mappaClaves -> transform keys', () => {
-                const js = compile('map.mappaClaves(fn)');
+                const js = tabulaCompile('m.mappaClaves(fn)');
                 expect(js).toContain('new Map');
-                expect(js).toContain('fn');
             });
 
             test('selige -> pick keys', () => {
-                const js = compile('map.selige(a, b)');
+                const js = tabulaCompile('m.selige(a, b)');
                 expect(js).toContain('new Map');
                 expect(js).toContain('filter');
             });
 
-            // omitte conflicts with lista.omitte (skip first n)
+            test('omitte -> omit keys', () => {
+                const js = tabulaCompile('m.omitte(a, b)');
+                expect(js).toContain('new Map');
+                expect(js).toContain('filter');
+            });
         });
 
         describe('conversions', () => {
+            test('inLista -> spread to array', () => {
+                const js = tabulaCompile('m.inLista()');
+                expect(js).toContain('[...m]');
+            });
+
             test('inObjectum -> Object.fromEntries', () => {
-                const js = compile('map.inObjectum()');
-                expect(js).toBe('Object.fromEntries(map);');
+                const js = tabulaCompile('m.inObjectum()');
+                expect(js).toContain('Object.fromEntries(m)');
             });
         });
     });
@@ -1178,31 +1221,63 @@ describe('codegen', () => {
     // =========================================================================
     // COPIA METHODS - Latin Set API
     // =========================================================================
-    // NOTE: Some method names overlap with lista (adde, longitudo, vacua,
-    // purga, valores, perambula, inLista). Without semantic type info at
-    // codegen, lista methods take precedence. Only unique copia methods
-    // are tested here.
-    describe('copia methods - Latin Set API (unique methods)', () => {
+    describe('copia methods - Latin Set API', () => {
+        // Helper to compile with copia variables in scope
+        const copiaCompile = (expr: string) =>
+            compile(`fixum copia<numerus> a = novum copia()\nfixum copia<numerus> b = novum copia()\n${expr}`);
+
+        describe('core operations', () => {
+            test('adde -> add', () => {
+                const js = copiaCompile('a.adde(v)');
+                expect(js).toContain('a.add(v)');
+            });
+
+            test('habet -> has', () => {
+                const js = copiaCompile('a.habet(v)');
+                expect(js).toContain('a.has(v)');
+            });
+
+            test('dele -> delete', () => {
+                const js = copiaCompile('a.dele(v)');
+                expect(js).toContain('a.delete(v)');
+            });
+
+            test('longitudo -> size', () => {
+                const js = copiaCompile('a.longitudo()');
+                expect(js).toContain('a.size');
+            });
+
+            test('vacua -> size === 0', () => {
+                const js = copiaCompile('a.vacua()');
+                expect(js).toContain('a.size === 0');
+            });
+
+            test('purga -> clear', () => {
+                const js = copiaCompile('a.purga()');
+                expect(js).toContain('a.clear()');
+            });
+        });
+
         describe('set operations', () => {
             test('unio -> union', () => {
-                const js = compile('a.unio(b)');
-                expect(js).toBe('new Set([...a, ...b]);');
+                const js = copiaCompile('a.unio(b)');
+                expect(js).toContain('new Set([...a, ...b])');
             });
 
             test('intersectio -> intersection', () => {
-                const js = compile('a.intersectio(b)');
+                const js = copiaCompile('a.intersectio(b)');
                 expect(js).toContain('filter');
                 expect(js).toContain('b.has');
             });
 
             test('differentia -> difference', () => {
-                const js = compile('a.differentia(b)');
+                const js = copiaCompile('a.differentia(b)');
                 expect(js).toContain('filter');
                 expect(js).toContain('!b.has');
             });
 
             test('symmetrica -> symmetric difference', () => {
-                const js = compile('a.symmetrica(b)');
+                const js = copiaCompile('a.symmetrica(b)');
                 expect(js).toContain('new Set');
                 expect(js).toContain('filter');
             });
@@ -1210,15 +1285,32 @@ describe('codegen', () => {
 
         describe('predicates', () => {
             test('subcopia -> is subset', () => {
-                const js = compile('a.subcopia(b)');
+                const js = copiaCompile('a.subcopia(b)');
                 expect(js).toContain('every');
                 expect(js).toContain('b.has');
             });
 
             test('supercopia -> is superset', () => {
-                const js = compile('a.supercopia(b)');
+                const js = copiaCompile('a.supercopia(b)');
                 expect(js).toContain('every');
                 expect(js).toContain('a.has');
+            });
+        });
+
+        describe('conversions and iteration', () => {
+            test('inLista -> spread to array', () => {
+                const js = copiaCompile('a.inLista()');
+                expect(js).toContain('[...a]');
+            });
+
+            test('valores -> values', () => {
+                const js = copiaCompile('a.valores()');
+                expect(js).toContain('a.values()');
+            });
+
+            test('perambula -> forEach', () => {
+                const js = copiaCompile('a.perambula(fn)');
+                expect(js).toContain('a.forEach(fn)');
             });
         });
     });

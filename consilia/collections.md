@@ -29,7 +29,7 @@ Method registries implemented in `fons/codegen/ts/norma/`:
 - [-] Closure syntax (`cum property`, `{ .property }`) — requires parser work
 - [-] Tabula/copia literals — no syntax for `tabula { k: v }` or `copia { a, b }`
 
-**Known limitation:** Some method names overlap across collection types (`accipe`, `longitudo`, `vacua`, `purga`, `inversa`, `omitte`, `adde`, `valores`, `inLista`, `perambula`). Without semantic type info at codegen, lista methods take precedence. Unique methods work correctly for all types.
+Method dispatch uses `resolvedType` from semantic analysis to correctly route overlapping method names (e.g., `accipe` on lista vs tabula) to their respective implementations.
 
 ---
 

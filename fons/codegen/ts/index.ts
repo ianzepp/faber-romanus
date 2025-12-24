@@ -1160,37 +1160,52 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         // Check for collection methods (method calls on lista/tabula/copia)
-        // WHY: Without semantic type info at codegen, we check all registries.
-        // Order: lista (most common) -> tabula -> copia -> fall through
         if (node.callee.type === 'MemberExpression' && !node.callee.computed) {
             const methodName = (node.callee.property as Identifier).name;
             const obj = genExpression(node.callee.object);
 
-            // Try lista (Array) methods
+            // WHY: Use semantic type info to dispatch to correct collection registry.
+            // This prevents method name collisions (e.g., accipe means different
+            // things for lista vs tabula).
+            const objType = node.callee.object.resolvedType;
+            const collectionName = objType?.kind === 'generic' ? objType.name : null;
+
+            // Dispatch based on resolved type
+            if (collectionName === 'tabula') {
+                const method = getTabulaMethod(methodName);
+                if (method) {
+                    if (typeof method.ts === 'function') {
+                        return method.ts(obj, args);
+                    }
+                    return `${obj}.${method.ts}(${args})`;
+                }
+            }
+            else if (collectionName === 'copia') {
+                const method = getCopiaMethod(methodName);
+                if (method) {
+                    if (typeof method.ts === 'function') {
+                        return method.ts(obj, args);
+                    }
+                    return `${obj}.${method.ts}(${args})`;
+                }
+            }
+            else if (collectionName === 'lista') {
+                const method = getListaMethod(methodName);
+                if (method) {
+                    if (typeof method.ts === 'function') {
+                        return method.ts(obj, args);
+                    }
+                    return `${obj}.${method.ts}(${args})`;
+                }
+            }
+
+            // Fallback: no type info or unknown type - try lista (most common)
             const listaMethod = getListaMethod(methodName);
             if (listaMethod) {
                 if (typeof listaMethod.ts === 'function') {
                     return listaMethod.ts(obj, args);
                 }
                 return `${obj}.${listaMethod.ts}(${args})`;
-            }
-
-            // Try tabula (Map) methods
-            const tabulaMethod = getTabulaMethod(methodName);
-            if (tabulaMethod) {
-                if (typeof tabulaMethod.ts === 'function') {
-                    return tabulaMethod.ts(obj, args);
-                }
-                return `${obj}.${tabulaMethod.ts}(${args})`;
-            }
-
-            // Try copia (Set) methods
-            const copiaMethod = getCopiaMethod(methodName);
-            if (copiaMethod) {
-                if (typeof copiaMethod.ts === 'function') {
-                    return copiaMethod.ts(obj, args);
-                }
-                return `${obj}.${copiaMethod.ts}(${args})`;
             }
         }
 
