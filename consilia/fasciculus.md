@@ -1,10 +1,14 @@
-# Fasciculus - File I/O
+# Fasciculus - File I/O Statements
 
 ## Overview
 
-Faber provides two tiers of file I/O:
-- **High-level**: Convenience operations for reading/writing files with optional parsing
-- **Low-level**: File descriptors and byte-level operations for systems programming
+This document covers **core file I/O statements** — language-level keywords for reading and writing files.
+
+Faber provides two tiers:
+- **High-level**: `lege`, `inscribe`, `appone` — convenience operations with optional format parsing
+- **Low-level**: `aperi`, `claude`, `quaere` — file descriptors for systems programming
+
+For file/directory utilities (copy, delete, etc.), see `solum.md`.
 
 ## Etymology
 
@@ -424,76 +428,21 @@ fixum config = lege configPath ut json
 
 ---
 
-## Standard Library
+## Related Documentation
 
-Local I/O operations beyond core read/write are provided via `norma/solum` (ground — local machine):
+This document covers core file I/O **statements** (`lege`, `inscribe`, `aperi`, `claude`).
 
-```
-ex "norma/solum" importa { exstat, dele, copia, move, inspice, trunca, tange }
-ex "norma/solum" importa { crea, elenca, ambula, vacua }
-```
+For other functionality, see:
 
-### Files
-
-| Function | Description | Signature |
-|----------|-------------|-----------|
-| `exstat` | Check if file/dir exists | `exstat(path) -> bivalens` |
-| `dele` | Delete file | `dele(path) -> vacuum` |
-| `copia` | Copy file | `copia(src, dest) -> vacuum` |
-| `move` | Move/rename file | `move(src, dest) -> vacuum` |
-| `inspice` | Get file info | `inspice(path) -> FileInfo` |
-| `trunca` | Truncate to size | `trunca(path, size) -> vacuum` |
-| `tange` | Touch (create/update mtime) | `tange(path) -> vacuum` |
-
-### Directories
-
-| Function | Description | Signature |
-|----------|-------------|-----------|
-| `crea` | Create directory | `crea(path) -> vacuum` |
-| `elenca` | List directory contents | `elenca(path) -> lista<textus>` |
-| `ambula` | Walk directory tree | `ambula(path) -> cursor<textus>` |
-| `vacua` | Remove empty directory | `vacua(path) -> vacuum` |
-
-**Example:**
-```
-ex "norma/solum" importa { exstat, dele, elenca }
-
-si exstat("config.json") {
-    fixum config = lege "config.json" ut json
-} aliter {
-    fixum config = defaultConfig
-}
-
-// List files
-pro file in elenca(".") {
-    scribe file
-}
-
-// Cleanup
-si exstat("temp.cache") {
-    dele("temp.cache")
-}
-```
-
-### Standard Library Organization
-
-The stdlib maps to concepts with clean target language support:
-
-| Latin | Meaning | Domain |
-|-------|---------|--------|
-| `solum` | ground | Files, directories, local I/O |
-| `caelum` | sky | Network, HTTP, sockets |
-| `tempus` | time | Time, timers, scheduling |
-
-```
-ex "norma/solum" importa { exstat, dele }       // local I/O
-ex "norma/caelum" importa { pete, mitte }       // network
-ex "norma/tempus" importa { nunc, dormi }       // time
-```
-
-See also:
-- `consilia/caelum.md` — network operations
-- `consilia/tempus.md` — time operations
+| Doc | Module | Content |
+|-----|--------|---------|
+| `cura.md` | — | Resource management (`cura` keyword) |
+| `solum.md` | `norma/solum` | File/dir utilities (exstat, dele, copia, etc.) |
+| `caelum.md` | `norma/caelum` | Network I/O (HTTP, sockets) |
+| `tempus.md` | `norma/tempus` | Time operations (nunc, dormi) |
+| `crypto.md` | `norma/crypto` | Cryptography (digere, cifra, fortuita) |
+| `comprimo.md` | `norma/comprimo` | Compression (comprimo, laxo) |
+| `codex.md` | `norma/codex` | Encoding (coda, decoda) |
 
 ---
 
@@ -509,11 +458,8 @@ See also:
 | Low-level `lege` | Not Done | Read to buffer |
 | Low-level `inscribe` | Not Done | Write buffer |
 | `quaere` | Not Done | Seek |
-| `cura` cleanup | Not Done | Resource management pattern |
 | `~` expansion | Not Done | Home directory |
-| `norma/solum` | Not Done | Local I/O — files, dirs |
-| `norma/caelum` | Not Done | Network — HTTP, sockets |
-| `norma/tempus` | Not Done | Time — timers, scheduling |
+| `formator` interface | Not Done | Custom format parsing |
 
 ---
 
@@ -570,7 +516,3 @@ Secondary operations (exists, delete, copy, move, etc.) go to stdlib — they're
        reloadConfig()
    }
    ```
-
-4. **Permissions**: Mode/permission setting on create
-
-5. **Temporary files**: `crea temporarium` for temp file handling
