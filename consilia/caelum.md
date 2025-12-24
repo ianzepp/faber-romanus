@@ -10,9 +10,9 @@ Network operations for HTTP, WebSocket, and raw sockets. The "sky" to `solum`'s 
 - `pete` - "seek, request" — HTTP request
 - `mitte` - "send" — send data
 - `accipe` - "receive" — receive data
-- `iunge` - "join, connect" — establish connection
+- `aperi` - "open" — open connection (WebSocket, etc.)
 - `finde` - "split, disconnect" — close connection
-- `ausculta` - "listen" — server listening
+- `servi` - "serve" — server listening
 
 ---
 
@@ -88,37 +88,37 @@ cede dele(url)
 ### Client
 
 ```
-ex "norma/caelum" importa { iunge }
+ex "norma/caelum" importa { ws }
 
-cura iunge("wss://echo.example.com") fit ws {
+cura ws.aperi("wss://echo.example.com") fit conn {
     // Send message
-    ws.mitte("Salve!")
+    conn.mitte("Salve!")
 
     // Receive messages
-    ex ausculta ws.accipe() fiet msg {
+    ex conn.accipe() fiet msg {
         scribe "Received:", msg
     }
 }
-// ws closed
+// conn closed
 ```
 
 ### With Events
 
 ```
-cura iunge(url) fit ws {
-    ws.aperi(fac fit {
+cura ws.aperi(url) fit conn {
+    conn.apertum(fac fit {
         scribe "Connected"
     })
 
-    ws.erratum(fac err fit {
+    conn.erratum(fac err fit {
         mone "Error:", err
     })
 
-    ws.claude(fac fit {
+    conn.clausum(fac fit {
         scribe "Disconnected"
     })
 
-    ex ausculta ws.accipe() fiet msg {
+    ex conn.accipe() fiet msg {
         process(msg)
     }
 }
@@ -143,11 +143,11 @@ cura socket("tcp", "example.com", 80) fit sock {
 ### TCP Server
 
 ```
-ex "norma/caelum" importa { ausculta }
+ex "norma/caelum" importa { servi }
 
-fixum server = ausculta("tcp", "0.0.0.0", 8080)
+fixum server = servi("tcp", "0.0.0.0", 8080)
 
-ex ausculta server.accepta() fiet client {
+ex server.accepta() fiet client {
     cura client fit conn {
         fixum request = conn.accipe(1024)
         conn.mitte("HTTP/1.1 200 OK\r\n\r\nSalve!")
@@ -198,7 +198,7 @@ await fetch(url)
 import { createConnection } from 'net';
 const socket = createConnection({ host, port });
 
-// ausculta("tcp", host, port)
+// servi("tcp", host, port)
 import { createServer } from 'net';
 const server = createServer();
 server.listen(port, host);
@@ -223,7 +223,7 @@ async with httpx.AsyncClient() as client:
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((host, port))
 
-# ausculta("tcp", host, port)
+# servi("tcp", host, port)
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 server.listen()
@@ -239,7 +239,7 @@ let response = reqwest::get(url).await?;
 use std::net::TcpStream;
 let stream = TcpStream::connect((host, port))?;
 
-// ausculta("tcp", host, port)
+// servi("tcp", host, port)
 use std::net::TcpListener;
 let listener = TcpListener::bind((host, port))?;
 ```
@@ -254,7 +254,7 @@ const net = std.net;
 const stream = try net.tcpConnectToHost(allocator, host, port);
 defer stream.close();
 
-// ausculta("tcp", host, port)
+// servi("tcp", host, port)
 var server = try net.StreamServer.init(.{});
 try server.listen(address);
 ```
@@ -325,8 +325,9 @@ figendum (users, posts) = promissum.omnes([
 | `pone` (HTTP PUT) | Not Done | PUT requests |
 | `dele` (HTTP DELETE) | Not Done | DELETE requests |
 | Response parsing | Not Done | json, textus, octeti |
-| WebSocket client | Not Done | iunge, mitte, accipe |
-| TCP socket | Not Done | Client and server |
+| WebSocket client | Not Done | ws.aperi, mitte, accipe |
+| TCP client | Not Done | socket() for client |
+| TCP server | Not Done | servi() for server |
 | UDP socket | Not Done | Datagram support |
 | DNS resolve | Not Done | Name resolution |
 | Timeout handling | Not Done | Request timeouts |
@@ -357,7 +358,7 @@ Sockets and WebSockets need cleanup. Using `cura` ensures connections are closed
 
 Both provided:
 - `pete`/`mitte`/`pone`/`dele` — high-level HTTP (90% of use cases)
-- `socket`/`ausculta` — low-level for protocols, games, custom services
+- `socket`/`servi` — low-level for protocols, games, custom services
 
 ### Error handling?
 

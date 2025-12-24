@@ -11,7 +11,7 @@ Note: Core read/write operations (`lege`, `inscribe`, `appone`, `aperi`, `claude
 - `solum` - "ground, floor, foundation" — local storage
 - `exstat` - "it exists" — check existence
 - `dele` - "destroy!" — delete
-- `copia` - "copy!" — duplicate
+- `duplica` - "duplicate!" — copy file
 - `move` - "move!" — relocate
 - `inspice` - "inspect!" — get info
 - `trunca` - "cut short!" — truncate
@@ -60,16 +60,18 @@ Fails if file doesn't exist. For directories, must be empty (use `vacua`).
 ### Copy
 
 ```
-ex "norma/solum" importa { copia }
+ex "norma/solum" importa { duplica }
 
-copia("source.txt", "dest.txt")
-copia("config.json", "/backup/config.json")
+duplica("source.txt", "dest.txt")
+duplica("config.json", "/backup/config.json")
 
 // With options
-copia("source.txt", "dest.txt", {
+duplica("source.txt", "dest.txt", {
     rescribe: verum    // overwrite if exists
 })
 ```
+
+**Etymology:** `duplica` — "duplicate, double" (imperative of duplicare)
 
 ### Move / Rename
 
@@ -416,7 +418,7 @@ defer dir.close();
 |---------|--------|-------|
 | `exstat` | Not Done | Check existence |
 | `dele` | Not Done | Delete file |
-| `copia` | Not Done | Copy file |
+| `duplica` | Not Done | Copy file |
 | `move` | Not Done | Move/rename |
 | `inspice` | Not Done | File info |
 | `trunca` | Not Done | Truncate |

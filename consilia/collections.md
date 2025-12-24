@@ -129,7 +129,7 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 | `pone(K, V)` | `set` | Set key-value |
 | `accipe(K) -> V?` | `get` | Get by key |
 | `habet(K) -> bivalens` | `has` | Key exists |
-| `dele(K) -> bivalens` | `delete` | Remove key |
+| `erade(K) -> bivalens` | `delete` | Erase key |
 | `longitudo() -> numerus` | `size` | Count |
 | `vacua() -> bivalens` | `size === 0` | Is empty |
 | `purgare()` | `clear` | Clear all |
@@ -172,7 +172,7 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 |-------|---------------|-------------|
 | `adde(T)` | `add` | Add element |
 | `habet(T) -> bivalens` | `has` | Contains |
-| `dele(T) -> bivalens` | `delete` | Remove |
+| `erade(T) -> bivalens` | `delete` | Erase |
 | `longitudo() -> numerus` | `size` | Count |
 | `vacua() -> bivalens` | `size === 0` | Is empty |
 | `purgare()` | `clear` | Clear all |
@@ -207,8 +207,8 @@ Functions that operate on multiple collections or don't belong to a single type.
 |-------|--------|-------------|
 | `iunge(lista<T>, lista<U>) -> lista<(T,U)>` | `zip` | Pair up elements |
 | `iungeOmnes(...lista) -> lista<(...)>` | `zipAll` | Zip multiple lists |
-| `intervallum(n) -> lista<numerus>` | `range` | 0 to n-1 |
-| `intervallum(a, b) -> lista<numerus>` | `range` | a to b-1 |
+| `series(n) -> lista<numerus>` | `range` | 0 to n-1 |
+| `series(a, b) -> lista<numerus>` | `range` | a to b-1 |
 | `repete(T, n) -> lista<T>` | `times` | Repeat value n times |
 
 ---
