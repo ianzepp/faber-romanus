@@ -142,7 +142,9 @@ describe('parser', () => {
         });
 
         test('ex destructuring with rename', () => {
-            const { program } = parseCode('ex response fixum { status: responseStatus, data: responseData }');
+            const { program } = parseCode(
+                'ex response fixum { status: responseStatus, data: responseData }',
+            );
             const decl = program!.body[0] as any;
 
             expect(decl.name.properties[0].key.name).toBe('status');

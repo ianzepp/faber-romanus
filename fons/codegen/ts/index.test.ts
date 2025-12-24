@@ -842,7 +842,9 @@ describe('codegen', () => {
         test('nexum field emits setter with invalidation', () => {
             const js = compile('genus counter { nexum numerus count: 0 }');
 
-            expect(js).toContain('set count(v: number) { this.#count = v; this.__invalidate?.(\'count\'); }');
+            expect(js).toContain(
+                "set count(v: number) { this.#count = v; this.__invalidate?.('count'); }",
+            );
         });
 
         test('nexum works with different types', () => {
@@ -850,7 +852,9 @@ describe('codegen', () => {
 
             expect(js).toContain('#name = "anon";');
             expect(js).toContain('get name(): string { return this.#name; }');
-            expect(js).toContain('set name(v: string) { this.#name = v; this.__invalidate?.(\'name\'); }');
+            expect(js).toContain(
+                "set name(v: string) { this.#name = v; this.__invalidate?.('name'); }",
+            );
         });
 
         test('nexum without initial value', () => {
@@ -1528,7 +1532,9 @@ describe('codegen', () => {
     describe('copia methods - Latin Set API', () => {
         // Helper to compile with copia variables in scope
         const copiaCompile = (expr: string) =>
-            compile(`fixum copia<numerus> a = novum copia()\nfixum copia<numerus> b = novum copia()\n${expr}`);
+            compile(
+                `fixum copia<numerus> a = novum copia()\nfixum copia<numerus> b = novum copia()\n${expr}`,
+            );
 
         describe('core operations', () => {
             test('adde -> add', () => {

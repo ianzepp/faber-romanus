@@ -311,7 +311,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     function genVariableDeclaration(node: VariableDeclaration): string {
         // Map kind to JS keyword and determine if async
         const isAsync = node.kind === 'figendum' || node.kind === 'variandum';
-        const kind = (node.kind === 'varia' || node.kind === 'variandum') ? 'let' : 'const';
+        const kind = node.kind === 'varia' || node.kind === 'variandum' ? 'let' : 'const';
 
         let name: string;
 
@@ -488,7 +488,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             lines.push(`${ind()}get ${name}(): ${type} { return this.#${name}; }`);
 
             // Setter with invalidation
-            lines.push(`${ind()}set ${name}(v: ${type}) { this.#${name} = v; this.__invalidate?.('${name}'); }`);
+            lines.push(
+                `${ind()}set ${name}(v: ${type}) { this.#${name} = v; this.__invalidate?.('${name}'); }`,
+            );
 
             return lines.join('\n');
         }
@@ -529,11 +531,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             let baseType = genType(node.returnType);
             if (node.async && node.generator) {
                 baseType = `AsyncGenerator<${baseType}>`;
-            }
-            else if (node.generator) {
+            } else if (node.generator) {
                 baseType = `Generator<${baseType}>`;
-            }
-            else if (node.async) {
+            } else if (node.async) {
                 baseType = `Promise<${baseType}>`;
             }
             returnType = `: ${baseType}`;
@@ -579,11 +579,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         // Wrap return type based on async/generator semantics
         if (node.async && node.generator) {
             returnType = `AsyncGenerator<${returnType}>`;
-        }
-        else if (node.generator) {
+        } else if (node.generator) {
             returnType = `Generator<${returnType}>`;
-        }
-        else if (node.async) {
+        } else if (node.async) {
             returnType = `Promise<${returnType}>`;
         }
 
@@ -619,7 +617,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     function genEnumDeclaration(node: EnumDeclaration): string {
         const name = node.name.name;
 
-        const members = node.members.map((member) => {
+        const members = node.members.map(member => {
             const memberName = member.name.name;
 
             if (member.value !== undefined) {
@@ -723,11 +721,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             let baseType = genType(node.returnType);
             if (node.async && node.generator) {
                 baseType = `AsyncGenerator<${baseType}>`;
-            }
-            else if (node.generator) {
+            } else if (node.generator) {
                 baseType = `Generator<${baseType}>`;
-            }
-            else if (node.async) {
+            } else if (node.async) {
                 baseType = `Promise<${baseType}>`;
             }
             returnType = `: ${baseType}`;
@@ -955,8 +951,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             // Add "else" for default case
             if (node.cases.length > 0) {
                 result += `${ind()}else {\n`;
-            }
-            else {
+            } else {
                 // No cases, just default — emit as bare block
                 result += `${ind()}{\n`;
             }
@@ -1394,8 +1389,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                     }
                     return `${obj}.${method.ts}(${args})`;
                 }
-            }
-            else if (collectionName === 'copia') {
+            } else if (collectionName === 'copia') {
                 const method = getCopiaMethod(methodName);
                 if (method) {
                     if (typeof method.ts === 'function') {
@@ -1403,8 +1397,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                     }
                     return `${obj}.${method.ts}(${args})`;
                 }
-            }
-            else if (collectionName === 'lista') {
+            } else if (collectionName === 'lista') {
                 const method = getListaMethod(methodName);
                 if (method) {
                     if (typeof method.ts === 'function') {

@@ -356,9 +356,7 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             : '';
 
         // Python uses Protocol for interfaces
-        const impl = node.implements
-            ? `(${node.implements.map(i => i.name).join(', ')})`
-            : '';
+        const impl = node.implements ? `(${node.implements.map(i => i.name).join(', ')})` : '';
 
         const lines: string[] = [];
         lines.push(`${ind()}class ${name}${typeParams}${impl}:`);
@@ -377,7 +375,9 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         // Computed fields as properties
         if (node.computedFields.length > 0) {
-            if (hasContent) lines.push('');
+            if (hasContent) {
+                lines.push('');
+            }
             for (const field of node.computedFields) {
                 lines.push(genComputedFieldDeclaration(field));
             }
@@ -386,7 +386,9 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         // Constructor
         if (node.fields.length > 0 || node.constructor) {
-            if (hasContent) lines.push('');
+            if (hasContent) {
+                lines.push('');
+            }
             lines.push(genAutoMergeConstructor(node));
             hasContent = true;
         }
@@ -526,9 +528,8 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         const header = `${ind()}${asyncMod}def ${name}(${params})${returnType}:`;
         depth++;
-        const body = node.body.body.length === 0
-            ? `${ind()}pass`
-            : genBlockStatementContent(node.body);
+        const body =
+            node.body.body.length === 0 ? `${ind()}pass` : genBlockStatementContent(node.body);
         depth--;
 
         inGenerator = prevInGenerator;
@@ -924,8 +925,7 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         const args = node.arguments.map(genExpression);
         if (node.level === 'debug') {
             args.unshift('"[DEBUG]"');
-        }
-        else if (node.level === 'warn') {
+        } else if (node.level === 'warn') {
             args.unshift('"[WARN]"');
         }
         return `${ind()}print(${args.join(', ')})`;
@@ -1070,9 +1070,8 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         }
 
         const props = node.properties.map(prop => {
-            const key = prop.key.type === 'Identifier'
-                ? `"${prop.key.name}"`
-                : genLiteral(prop.key);
+            const key =
+                prop.key.type === 'Identifier' ? `"${prop.key.name}"` : genLiteral(prop.key);
             const value = genExpression(prop.value);
             return `${key}: ${value}`;
         });
@@ -1244,9 +1243,7 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
      * Generate assignment expression.
      */
     function genAssignmentExpression(node: AssignmentExpression): string {
-        const left = node.left.type === 'Identifier'
-            ? node.left.name
-            : genExpression(node.left);
+        const left = node.left.type === 'Identifier' ? node.left.name : genExpression(node.left);
 
         return `${left} ${node.operator} ${genExpression(node.right)}`;
     }

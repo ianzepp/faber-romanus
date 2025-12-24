@@ -100,7 +100,7 @@ export function generateRs(program: Program, options: CodegenOptions = {}): stri
     const indent = options.indent ?? '    ';
 
     // Track indentation depth
-    let depth = 0;
+    const depth = 0;
 
     /**
      * Generate indentation for current depth.

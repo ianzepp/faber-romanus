@@ -186,27 +186,34 @@ const NORMA_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'va
  * Time operations: current time, sleeping, duration constants.
  * When `ex "norma/tempus" importa X` is encountered, these symbols are added to scope.
  */
-const NORMA_TEMPUS_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'variable' }> = {
-    // Current time functions
-    nunc: { type: functionType([], NUMERUS), kind: 'function' },
-    nunc_nano: { type: functionType([], NUMERUS), kind: 'function' },
-    nunc_secunda: { type: functionType([], NUMERUS), kind: 'function' },
+const NORMA_TEMPUS_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'variable' }> =
+    {
+        // Current time functions
+        nunc: { type: functionType([], NUMERUS), kind: 'function' },
+        nunc_nano: { type: functionType([], NUMERUS), kind: 'function' },
+        nunc_secunda: { type: functionType([], NUMERUS), kind: 'function' },
 
-    // Sleep (async)
-    dormi: { type: functionType([NUMERUS], genericType('promissum', [VACUUM])), kind: 'function' },
+        // Sleep (async)
+        dormi: {
+            type: functionType([NUMERUS], genericType('promissum', [VACUUM])),
+            kind: 'function',
+        },
 
-    // Duration constants (milliseconds)
-    MILLISECUNDUM: { type: NUMERUS, kind: 'variable' },
-    SECUNDUM: { type: NUMERUS, kind: 'variable' },
-    MINUTUM: { type: NUMERUS, kind: 'variable' },
-    HORA: { type: NUMERUS, kind: 'variable' },
-    DIES: { type: NUMERUS, kind: 'variable' },
-};
+        // Duration constants (milliseconds)
+        MILLISECUNDUM: { type: NUMERUS, kind: 'variable' },
+        SECUNDUM: { type: NUMERUS, kind: 'variable' },
+        MINUTUM: { type: NUMERUS, kind: 'variable' },
+        HORA: { type: NUMERUS, kind: 'variable' },
+        DIES: { type: NUMERUS, kind: 'variable' },
+    };
 
 /**
  * Map of all norma submodule exports.
  */
-const NORMA_SUBMODULES: Record<string, Record<string, { type: SemanticType; kind: 'function' | 'variable' }>> = {
+const NORMA_SUBMODULES: Record<
+    string,
+    Record<string, { type: SemanticType; kind: 'function' | 'variable' }>
+> = {
     'norma/tempus': NORMA_TEMPUS_EXPORTS,
 };
 
@@ -315,16 +322,16 @@ export function analyze(program: Program): SemanticResult {
      */
     function analyzeImportDeclaration(node: ImportDeclaration): void {
         // Determine which export map to use
-        let exports: Record<string, { type: SemanticType; kind: 'function' | 'variable' }> | undefined;
-        let moduleName = node.source;
+        let exports:
+            | Record<string, { type: SemanticType; kind: 'function' | 'variable' }>
+            | undefined;
+        const moduleName = node.source;
 
         if (node.source === 'norma') {
             exports = NORMA_EXPORTS;
-        }
-        else if (node.source in NORMA_SUBMODULES) {
+        } else if (node.source in NORMA_SUBMODULES) {
             exports = NORMA_SUBMODULES[node.source];
-        }
-        else {
+        } else {
             // Unknown module - imports pass through without type info
             // WHY: Allows importing from external JS/TS modules
             return;
@@ -692,7 +699,8 @@ export function analyze(program: Program): SemanticResult {
             if (leftPrim && rightPrim && leftPrim !== rightPrim) {
                 // Allow unknown types to pass through
                 if (leftPrim !== 'unknown' && rightPrim !== 'unknown') {
-                    const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.IncompatibleComparison];
+                    const { text, help } =
+                        SEMANTIC_ERRORS[SemanticErrorCode.IncompatibleComparison];
 
                     error(
                         `${text(formatType(leftType), formatType(rightType), node.operator)}\n${help}`,

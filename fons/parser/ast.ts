@@ -340,7 +340,7 @@ export interface FieldDeclaration extends BaseNode {
     init?: Expression;
     isPublic: boolean;
     isStatic: boolean;
-    isReactive: boolean;  // nexum fields trigger re-render on change
+    isReactive: boolean; // nexum fields trigger re-render on change
 }
 
 /**

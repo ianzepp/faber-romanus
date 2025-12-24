@@ -102,21 +102,21 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'remota',
         mutates: false,
         async: false,
-        py: (obj) => `${obj}[:-1]`,
+        py: obj => `${obj}[:-1]`,
     },
 
     decapita: {
         latin: 'decapita',
         mutates: true,
         async: false,
-        py: (obj) => `${obj}.pop(0)`,
+        py: obj => `${obj}.pop(0)`,
     },
 
     decapitata: {
         latin: 'decapitata',
         mutates: false,
         async: false,
-        py: (obj) => `${obj}[1:]`,
+        py: obj => `${obj}[1:]`,
     },
 
     purga: {
@@ -134,14 +134,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'primus',
         mutates: false,
         async: false,
-        py: (obj) => `${obj}[0]`,
+        py: obj => `${obj}[0]`,
     },
 
     ultimus: {
         latin: 'ultimus',
         mutates: false,
         async: false,
-        py: (obj) => `${obj}[-1]`,
+        py: obj => `${obj}[-1]`,
     },
 
     accipe: {
@@ -155,14 +155,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'longitudo',
         mutates: false,
         async: false,
-        py: (obj) => `len(${obj})`,
+        py: obj => `len(${obj})`,
     },
 
     vacua: {
         latin: 'vacua',
         mutates: false,
         async: false,
-        py: (obj) => `len(${obj}) == 0`,
+        py: obj => `len(${obj}) == 0`,
     },
 
     // -------------------------------------------------------------------------
@@ -240,14 +240,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'plana',
         mutates: false,
         async: false,
-        py: (obj) => `[y for x in ${obj} for y in x]`,
+        py: obj => `[y for x in ${obj} for y in x]`,
     },
 
     inversa: {
         latin: 'inversa',
         mutates: false,
         async: false,
-        py: (obj) => `${obj}[::-1]`,
+        py: obj => `${obj}[::-1]`,
     },
 
     ordinata: {

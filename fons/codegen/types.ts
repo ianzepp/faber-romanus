@@ -50,22 +50,22 @@ export type CodegenTarget = 'ts' | 'zig' | 'wasm' | 'py' | 'rs' | 'cpp';
  */
 export interface RequiredFeatures {
     // Error handling
-    panic: boolean;             // mori used - needs Panic class (TS) or includes (C++)
+    panic: boolean; // mori used - needs Panic class (TS) or includes (C++)
 
     // Collections (for targets that need imports)
-    lista: boolean;             // lista<T> or array methods
-    tabula: boolean;            // tabula<K,V>
-    copia: boolean;             // copia<T>
+    lista: boolean; // lista<T> or array methods
+    tabula: boolean; // tabula<K,V>
+    copia: boolean; // copia<T>
 
     // Async
-    async: boolean;             // futura, cede, promissum, figendum, variandum
-    asyncIterator: boolean;     // fiet, async for
+    async: boolean; // futura, cede, promissum, figendum, variandum
+    asyncIterator: boolean; // fiet, async for
 
     // Generators
-    generator: boolean;         // cursor, fiunt
+    generator: boolean; // cursor, fiunt
 
     // Events
-    events: boolean;            // emitte, ausculta
+    events: boolean; // emitte, ausculta
 }
 
 /**

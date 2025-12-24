@@ -146,7 +146,7 @@ export const PARSER_ERRORS = {
     },
     [ParserErrorCode.ExpectedColon]: {
         text: "Expected ':'",
-        help: "Use colon to separate keys from values in object literals, default field values, or as the alternate separator in ternary expressions: condition ? truthy : falsy",
+        help: 'Use colon to separate keys from values in object literals, default field values, or as the alternate separator in ternary expressions: condition ? truthy : falsy',
     },
     [ParserErrorCode.ExpectedEqual]: {
         text: "Expected '='",

@@ -390,7 +390,10 @@ export function parse(tokens: Token[]): ParserResult {
      * @returns true if token is a preposition keyword
      */
     function isPreposition(token: Token): boolean {
-        return token.type === 'KEYWORD' && ['ad', 'cum', 'de', 'in', 'ex'].includes(token.keyword ?? '');
+        return (
+            token.type === 'KEYWORD' &&
+            ['ad', 'cum', 'de', 'in', 'ex'].includes(token.keyword ?? '')
+        );
     }
 
     // =============================================================================
@@ -469,7 +472,10 @@ export function parse(tokens: Token[]): ParserResult {
             // Look ahead: ex (IDENTIFIER|STRING) importa -> import
             const nextType = peek(1).type;
 
-            if ((nextType === 'IDENTIFIER' || nextType === 'STRING') && peek(2).keyword === 'importa') {
+            if (
+                (nextType === 'IDENTIFIER' || nextType === 'STRING') &&
+                peek(2).keyword === 'importa'
+            ) {
                 return parseImportDeclaration();
             }
 
@@ -482,7 +488,12 @@ export function parse(tokens: Token[]): ParserResult {
             return parseForStatement();
         }
 
-        if (checkKeyword('varia') || checkKeyword('fixum') || checkKeyword('figendum') || checkKeyword('variandum')) {
+        if (
+            checkKeyword('varia') ||
+            checkKeyword('fixum') ||
+            checkKeyword('figendum') ||
+            checkKeyword('variandum')
+        ) {
             return parseVariableDeclaration();
         }
 
@@ -610,8 +621,7 @@ export function parse(tokens: Token[]): ParserResult {
         if (check('STRING')) {
             const sourceToken = advance();
             source = sourceToken.value;
-        }
-        else {
+        } else {
             const sourceToken = expect('IDENTIFIER', ParserErrorCode.ExpectedModuleName);
             source = sourceToken.value;
         }
@@ -745,8 +755,7 @@ export function parse(tokens: Token[]): ParserResult {
         while (checkKeyword('futura') || checkKeyword('cursor')) {
             if (matchKeyword('futura')) {
                 prefixAsync = true;
-            }
-            else if (matchKeyword('cursor')) {
+            } else if (matchKeyword('cursor')) {
                 prefixGenerator = true;
             }
         }
@@ -770,23 +779,19 @@ export function parse(tokens: Token[]): ParserResult {
         if (match('THIN_ARROW')) {
             returnType = parseTypeAnnotation();
             // Arrow is neutral - semantics from prefix only
-        }
-        else if (matchKeyword('fit')) {
+        } else if (matchKeyword('fit')) {
             returnType = parseTypeAnnotation();
             verbAsync = false;
             verbGenerator = false;
-        }
-        else if (matchKeyword('fiet')) {
+        } else if (matchKeyword('fiet')) {
             returnType = parseTypeAnnotation();
             verbAsync = true;
             verbGenerator = false;
-        }
-        else if (matchKeyword('fiunt')) {
+        } else if (matchKeyword('fiunt')) {
             returnType = parseTypeAnnotation();
             verbAsync = false;
             verbGenerator = true;
-        }
-        else if (matchKeyword('fient')) {
+        } else if (matchKeyword('fient')) {
             returnType = parseTypeAnnotation();
             verbAsync = true;
             verbGenerator = true;
@@ -816,7 +821,16 @@ export function parse(tokens: Token[]): ParserResult {
 
         const body = parseBlockStatement();
 
-        return { type: 'FunctionDeclaration', name, params, returnType, body, async, generator, position };
+        return {
+            type: 'FunctionDeclaration',
+            name,
+            params,
+            returnType,
+            body,
+            async,
+            generator,
+            position,
+        };
     }
 
     /**
@@ -942,15 +956,13 @@ export function parse(tokens: Token[]): ParserResult {
                         value: Number(valueTok.value),
                         position: valueTok.position,
                     };
-                }
-                else if (valueTok.type === 'STRING') {
+                } else if (valueTok.type === 'STRING') {
                     value = {
                         type: 'Literal',
                         value: valueTok.value,
                         position: valueTok.position,
                     };
-                }
-                else {
+                } else {
                     errors.push({
                         code: ParserErrorCode.UnexpectedToken,
                         message: `Expected number or string for enum value, got ${valueTok.type}`,
@@ -1111,8 +1123,7 @@ export function parse(tokens: Token[]): ParserResult {
         while (checkKeyword('futura') || checkKeyword('cursor')) {
             if (matchKeyword('futura')) {
                 prefixAsync = true;
-            }
-            else if (matchKeyword('cursor')) {
+            } else if (matchKeyword('cursor')) {
                 prefixGenerator = true;
             }
         }
@@ -1136,23 +1147,19 @@ export function parse(tokens: Token[]): ParserResult {
             // Parse return type with arrow or verb form
             if (match('THIN_ARROW')) {
                 returnType = parseTypeAnnotation();
-            }
-            else if (matchKeyword('fit')) {
+            } else if (matchKeyword('fit')) {
                 returnType = parseTypeAnnotation();
                 verbAsync = false;
                 verbGenerator = false;
-            }
-            else if (matchKeyword('fiet')) {
+            } else if (matchKeyword('fiet')) {
                 returnType = parseTypeAnnotation();
                 verbAsync = true;
                 verbGenerator = false;
-            }
-            else if (matchKeyword('fiunt')) {
+            } else if (matchKeyword('fiunt')) {
                 returnType = parseTypeAnnotation();
                 verbAsync = false;
                 verbGenerator = true;
-            }
-            else if (matchKeyword('fient')) {
+            } else if (matchKeyword('fient')) {
                 returnType = parseTypeAnnotation();
                 verbAsync = true;
                 verbGenerator = true;
@@ -1281,8 +1288,7 @@ export function parse(tokens: Token[]): ParserResult {
         while (checkKeyword('futura') || checkKeyword('cursor')) {
             if (matchKeyword('futura')) {
                 prefixAsync = true;
-            }
-            else if (matchKeyword('cursor')) {
+            } else if (matchKeyword('cursor')) {
                 prefixGenerator = true;
             }
         }
@@ -1304,23 +1310,19 @@ export function parse(tokens: Token[]): ParserResult {
         // Parse return type with arrow or verb form
         if (match('THIN_ARROW')) {
             returnType = parseTypeAnnotation();
-        }
-        else if (matchKeyword('fit')) {
+        } else if (matchKeyword('fit')) {
             returnType = parseTypeAnnotation();
             verbAsync = false;
             verbGenerator = false;
-        }
-        else if (matchKeyword('fiet')) {
+        } else if (matchKeyword('fiet')) {
             returnType = parseTypeAnnotation();
             verbAsync = true;
             verbGenerator = false;
-        }
-        else if (matchKeyword('fiunt')) {
+        } else if (matchKeyword('fiunt')) {
             returnType = parseTypeAnnotation();
             verbAsync = false;
             verbGenerator = true;
-        }
-        else if (matchKeyword('fient')) {
+        } else if (matchKeyword('fient')) {
             returnType = parseTypeAnnotation();
             verbAsync = true;
             verbGenerator = true;
@@ -1484,7 +1486,12 @@ export function parse(tokens: Token[]): ParserResult {
         const source = parseExpression();
 
         // Dispatch based on what follows the expression
-        if (checkKeyword('fixum') || checkKeyword('varia') || checkKeyword('figendum') || checkKeyword('variandum')) {
+        if (
+            checkKeyword('fixum') ||
+            checkKeyword('varia') ||
+            checkKeyword('figendum') ||
+            checkKeyword('variandum')
+        ) {
             // Destructuring: ex source fixum { ... } or async: ex source figendum { ... }
             const kind = advance().keyword as 'varia' | 'fixum' | 'figendum' | 'variandum';
             const name = parseObjectPattern();
@@ -1521,7 +1528,16 @@ export function parse(tokens: Token[]): ParserResult {
             catchClause = parseCatchClause();
         }
 
-        return { type: 'ForStatement', kind: 'ex', variable, iterable: source, body, async, catchClause, position };
+        return {
+            type: 'ForStatement',
+            kind: 'ex',
+            variable,
+            iterable: source,
+            body,
+            async,
+            catchClause,
+            position,
+        };
     }
 
     /**
@@ -1575,7 +1591,16 @@ export function parse(tokens: Token[]): ParserResult {
             catchClause = parseCatchClause();
         }
 
-        return { type: 'ForStatement', kind: 'in', variable, iterable, body, async, catchClause, position };
+        return {
+            type: 'ForStatement',
+            kind: 'in',
+            variable,
+            iterable,
+            body,
+            async,
+            catchClause,
+            position,
+        };
     }
 
     /**
@@ -2193,20 +2218,21 @@ export function parse(tokens: Token[]): ParserResult {
             if (match('EQUAL_EQUAL', 'BANG_EQUAL')) {
                 operator = tokens[current - 1].value;
                 position = tokens[current - 1].position;
-            }
-            else if (checkKeyword('non') && peek(1)?.type === 'KEYWORD' && peek(1)?.value.toLowerCase() === 'est') {
+            } else if (
+                checkKeyword('non') &&
+                peek(1)?.type === 'KEYWORD' &&
+                peek(1)?.value.toLowerCase() === 'est'
+            ) {
                 // 'non est' maps to strict inequality (!==)
                 position = peek().position;
                 advance(); // consume 'non'
                 advance(); // consume 'est'
                 operator = '!==';
-            }
-            else if (matchKeyword('est')) {
+            } else if (matchKeyword('est')) {
                 // 'est' maps to strict equality (===)
                 operator = '===';
                 position = tokens[current - 1].position;
-            }
-            else {
+            } else {
                 break;
             }
 
@@ -2369,14 +2395,26 @@ export function parse(tokens: Token[]): ParserResult {
             const position = tokens[current - 1].position;
             const argument = parseUnary();
 
-            return { type: 'UnaryExpression', operator: 'negativum', argument, prefix: true, position };
+            return {
+                type: 'UnaryExpression',
+                operator: 'negativum',
+                argument,
+                prefix: true,
+                position,
+            };
         }
 
         if (matchKeyword('positivum')) {
             const position = tokens[current - 1].position;
             const argument = parseUnary();
 
-            return { type: 'UnaryExpression', operator: 'positivum', argument, prefix: true, position };
+            return {
+                type: 'UnaryExpression',
+                operator: 'positivum',
+                argument,
+                prefix: true,
+                position,
+            };
         }
 
         if (matchKeyword('cede')) {

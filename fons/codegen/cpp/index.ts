@@ -108,7 +108,7 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     const indent = options.indent ?? '    ';
 
     // Track indentation depth
-    let depth = 0;
+    const depth = 0;
 
     /**
      * Generate indentation for current depth.

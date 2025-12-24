@@ -593,7 +593,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         // Self type reference (needed for methods)
         if (node.methods.length > 0 || node.constructor || node.computedFields.length > 0) {
-            if (node.fields.length > 0) lines.push('');
+            if (node.fields.length > 0) {
+                lines.push('');
+            }
             lines.push(`${ind()}const Self = @This();`);
         }
 

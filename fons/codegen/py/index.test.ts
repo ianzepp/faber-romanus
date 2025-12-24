@@ -16,7 +16,9 @@ import { generate } from '../index';
 function compile(code: string): string {
     const { tokens } = tokenize(code);
     const { program } = parse(tokens);
-    if (!program) throw new Error('Parse failed');
+    if (!program) {
+        throw new Error('Parse failed');
+    }
     return generate(program, { target: 'py' });
 }
 
@@ -139,7 +141,9 @@ describe('Python codegen', () => {
         });
 
         test('if-elif-else chain', () => {
-            const result = compile('si x == 1 { scribe "one" } aliter si x == 2 { scribe "two" } aliter { scribe "other" }');
+            const result = compile(
+                'si x == 1 { scribe "one" } aliter si x == 2 { scribe "two" } aliter { scribe "other" }',
+            );
             expect(result).toContain('if (x == 1):');
             expect(result).toContain('elif (x == 2):');
             expect(result).toContain('else:');
@@ -250,7 +254,9 @@ describe('Python codegen', () => {
         });
 
         test('try-except-finally', () => {
-            const result = compile('tempta { scribe "try" } cape e { scribe "error" } demum { scribe "finally" }');
+            const result = compile(
+                'tempta { scribe "try" } cape e { scribe "error" } demum { scribe "finally" }',
+            );
             expect(result).toContain('try:');
             expect(result).toContain('except Exception as e:');
             expect(result).toContain('finally:');

@@ -6,6 +6,5 @@
     "trailingComma": "all",
     "bracketSpacing": true,
     "arrowParens": "avoid",
-    "printWidth": 100,
-    "plugins": ["./fons/prettier/index.ts"]
+    "printWidth": 100
 }
