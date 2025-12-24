@@ -187,6 +187,18 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `ex...importa` (named imports) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `ex...importa *` (wildcard) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 
+## Preamble / Prologue
+
+Feature-dependent setup code (imports, includes, class definitions). See `consilia/codegen/preamble.md`.
+
+| Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| Preamble infrastructure | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Panic class/import | [ ] | [-] | [ ] | [ ] | [-] | [ ] |
+| Collection imports | [-] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Async imports | [-] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Arena allocator | [-] | [ ] | [-] | [ ] | [ ] | [ ] |
+
 ## Standard Library Intrinsics
 
 | Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |

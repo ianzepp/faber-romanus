@@ -1,6 +1,6 @@
 # Gap Analysis: Checklist vs Consilia
 
-Comparison of features documented in `consilia/` against `fons/codegen/checklist.md`.
+Comparison of features documented in `consilia/` against `consilia/codegen/checklist.md`.
 
 ## Summary
 
@@ -204,3 +204,6 @@ The following items were added to the checklist and are now tracked:
 - Time (tempus) — High-priority items
 - Crypto — High-priority items
 - Resource Management (cura)
+
+### Infrastructure Added
+- Preamble / Prologue system — Feature-dependent imports/includes (see `consilia/codegen/preamble.md`)
