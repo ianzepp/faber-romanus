@@ -30,6 +30,20 @@ Architecture emerges from decisions, not upfront planning. Features are added wh
 
 No grand design spec. Just small, documented decisions that accumulate into a coherent whole.
 
+### 4. Target-Specific Pragmatism
+
+Faber projects compile to a single target language (TypeScript, Python, Rust, Zig). This isn't "write once, compile anywhere"—it's "write clean Latin syntax for your chosen ecosystem."
+
+**Implications:**
+
+- **Foreign imports work natively.** `ex hono importa Hono, Context` becomes `import { Hono, Context } from 'hono';` in TypeScript. You use your target's libraries directly.
+
+- **Target-specific features are allowed.** Rust requires ownership annotations that make no sense in TypeScript. Rather than force a lowest-common-denominator, Faber allows target-specific keywords like `de` (borrow) and `in` (mutable borrow) for Rust projects. A TypeScript project would reject these as syntax errors.
+
+- **The parser is target-aware.** When you configure a project for Rust, the compiler validates Rust-specific syntax. When targeting TypeScript, it validates TypeScript-compatible constructs.
+
+This approach treats Faber as a syntax layer over existing ecosystems rather than an isolated world. You get Latin's clarity without abandoning your target's libraries and idioms.
+
 ---
 
 ## The Lexicon
@@ -88,6 +102,8 @@ External code can use whatever case the author prefers. The parser doesn't judge
 - **Type-first syntax** — `fixum textus nomen` not `const nomen: string`
 - **Source-first loops** — `ex items pro item` reads like Latin: "out of items, for each item"
 - **Lowercase type convention** — faithful to Latin's case-insensitivity
+- **Single-target compilation** — projects target one language (TS, Python, Rust, Zig) with native library interop
+- **Target-specific syntax** — features like Rust's `de`/`in` ownership annotations are valid only for that target
 
 ## What Was Discarded
 
@@ -96,6 +112,7 @@ External code can use whatever case the author prefers. The parser doesn't judge
 - **Method verbs** (`habere`, `tenere`) — didn't fit Unix philosophy; moved to dot notation
 - **Union types with `|`** — abandoned early; nullable types use `?` suffix instead
 - **TitleCase as requirement** — demoted to optional style preference
+- **Cross-compilation** — "write once, compile anywhere" rejected in favor of single-target with native interop
 
 ---
 
