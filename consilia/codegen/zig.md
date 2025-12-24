@@ -231,10 +231,12 @@ For long-running programs, nested arenas can bound memory lifetime:
 
 ```
 // Faber (future syntax)
-cum arena {
+fac arena {
     // allocations here freed when block exits
 }
 ```
+
+WHY `fac arena` not `cum arena`: The `cum` keyword is already used for context objects (`cum user { nomen = "Marcus" }`). Using `fac arena` extends the existing block syntax with a modifier, avoiding semantic confusion. The word "arena" is genuinely Latin (sand, amphitheater floor) and familiar to systems programmers.
 
 This maps to Zig's pattern of creating child arenas for bounded scopes.
 
@@ -464,4 +466,4 @@ Remaining tensions:
 5. **Iterator pattern** - Manual struct for generators
 6. **Comptime generics** - `fn(comptime T: type)` for generic types
 7. **Build integration** - Generate `build.zig` for projects
-8. **Scope-based arenas** - `cum arena { }` for bounded allocation lifetimes
+8. ~~**Scope-based arenas**~~ - Decided: `fac arena { }` for bounded allocation lifetimes
