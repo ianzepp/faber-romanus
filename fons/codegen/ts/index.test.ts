@@ -969,52 +969,60 @@ describe('codegen', () => {
     });
 
     describe('mori (panic)', () => {
-        test('mori string becomes throw new Error with PANIC prefix', () => {
+        test('mori emits Panic class in preamble', () => {
             const js = compile('mori "something went wrong"');
 
-            expect(js).toContain('throw new Error');
-            expect(js).toContain('[PANIC]');
-            expect(js).toContain('something went wrong');
+            expect(js).toContain('class Panic extends Error { name = "Panic"; }');
         });
 
-        test('mori with variable wraps in Error', () => {
+        test('mori string becomes throw new Panic', () => {
+            const js = compile('mori "something went wrong"');
+
+            expect(js).toContain('throw new Panic("something went wrong")');
+        });
+
+        test('mori with variable wraps in Panic', () => {
             const js = compile('mori err');
 
-            expect(js).toContain('throw new Error');
-            expect(js).toContain('[PANIC]');
-            expect(js).toContain('String(err)');
+            expect(js).toContain('throw new Panic(String(err))');
         });
 
-        test('mori always wraps in Error (unlike iace)', () => {
+        test('mori always wraps in Panic (unlike iace)', () => {
             const iaceJs = compile('iace "message"');
             const moriJs = compile('mori "message"');
 
-            // iace just throws the value directly
+            // iace just throws the value directly (no preamble)
             expect(iaceJs).toBe('throw "message";');
 
-            // mori wraps in Error with prefix
-            expect(moriJs).toContain('throw new Error');
-            expect(moriJs).toContain('[PANIC]');
+            // mori wraps in Panic class
+            expect(moriJs).toContain('throw new Panic("message")');
         });
 
         test('mori in conditional', () => {
             const js = compile('si invalid { mori "impossible state" }');
 
             expect(js).toContain('if (invalid)');
-            expect(js).toContain('throw new Error("[PANIC] impossible state")');
+            expect(js).toContain('throw new Panic("impossible state")');
         });
 
         test('mori with expression', () => {
             const js = compile('mori computeError()');
 
-            expect(js).toContain('throw new Error("[PANIC] " + String(computeError()))');
+            expect(js).toContain('throw new Panic(String(computeError()))');
         });
 
         test('mori preserves quotes in message', () => {
             const js = compile('mori "can\'t do this"');
 
-            expect(js).toContain('[PANIC]');
             expect(js).toContain("can't do this");
+        });
+
+        test('preamble only emitted when mori used', () => {
+            const withoutMori = compile('scribe "hello"');
+            const withMori = compile('mori "error"');
+
+            expect(withoutMori).not.toContain('class Panic');
+            expect(withMori).toContain('class Panic');
         });
     });
 

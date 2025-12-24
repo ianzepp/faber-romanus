@@ -91,7 +91,8 @@ import type {
     FacExpression,
     AuscultaExpression,
 } from '../../parser/ast';
-import type { CodegenOptions } from '../types';
+import type { CodegenOptions, RequiredFeatures } from '../types';
+import { createRequiredFeatures } from '../types';
 import { getListaMethod } from './norma/lista';
 import { getTabulaMethod } from './norma/tabula';
 import { getCopiaMethod } from './norma/copia';
@@ -165,6 +166,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     // Track if we're inside a generator function (for cede -> yield vs await)
     let inGenerator = false;
 
+    // Track which features are used (for preamble generation)
+    const features = createRequiredFeatures();
+
     /**
      * Generate indentation for current depth.
      * WHY: Centralized indentation logic ensures consistent formatting.
@@ -173,13 +177,32 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         return indent.repeat(depth);
     }
 
+    /**
+     * Generate preamble based on features used.
+     * WHY: Only emit setup code for features actually used in the program.
+     */
+    function genPreamble(): string {
+        const lines: string[] = [];
+
+        if (features.panic) {
+            lines.push('class Panic extends Error { name = "Panic"; }');
+        }
+
+        return lines.length > 0 ? lines.join('\n') + '\n\n' : '';
+    }
+
     // ---------------------------------------------------------------------------
     // Top-level
     // ---------------------------------------------------------------------------
 
     function genProgram(node: Program): string {
-        // WHY: Each top-level statement is separated by newline
-        return node.body.map(genStatement).join('\n');
+        // First pass: generate body (this populates features)
+        const body = node.body.map(genStatement).join('\n');
+
+        // Second: prepend preamble based on detected features
+        const preamble = genPreamble();
+
+        return preamble + body;
     }
 
     // ---------------------------------------------------------------------------
@@ -1037,25 +1060,26 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * TRANSFORMS:
      *   iace "message" -> throw "message"
      *   iace error     -> throw error
-     *   mori "message" -> throw new Error("[PANIC] message")
-     *   mori error     -> throw new Error("[PANIC] " + String(error))
+     *   mori "message" -> throw new Panic("message")
+     *   mori error     -> throw new Panic(String(error))
      *
      * WHY: mori indicates unrecoverable errors (like Rust's panic! or Zig's @panic).
-     *      The [PANIC] prefix makes it clear this was supposed to be fatal.
-     *      Always wrapping in Error ensures proper stack traces.
+     *      Using a dedicated Panic class allows catching panics separately from
+     *      regular errors if needed, and makes stack traces clearer.
      */
     function genThrowStatement(node: ThrowStatement): string {
         const expr = genExpression(node.argument);
 
         if (node.fatal) {
-            // mori (panic) - always wrap in Error with [PANIC] prefix
+            // Track that we need the Panic class in preamble
+            features.panic = true;
+
+            // mori (panic) - wrap in Panic class
             if (node.argument.type === 'Literal' && typeof node.argument.value === 'string') {
-                // String literal: embed directly with prefix
-                const message = node.argument.value;
-                return `${ind()}throw new Error("[PANIC] ${message.replace(/"/g, '\\"')}")${semi ? ';' : ''}`;
+                return `${ind()}throw new Panic(${JSON.stringify(node.argument.value)})${semi ? ';' : ''}`;
             }
-            // Other expressions: concatenate at runtime
-            return `${ind()}throw new Error("[PANIC] " + String(${expr}))${semi ? ';' : ''}`;
+            // Other expressions: convert to string
+            return `${ind()}throw new Panic(String(${expr}))${semi ? ';' : ''}`;
         }
 
         return `${ind()}throw ${expr}${semi ? ';' : ''}`;

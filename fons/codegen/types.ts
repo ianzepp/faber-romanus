@@ -39,6 +39,52 @@
 export type CodegenTarget = 'ts' | 'zig' | 'wasm' | 'py' | 'rs' | 'cpp';
 
 /**
+ * Features used in the source code that require preamble setup.
+ *
+ * WHY: Different targets need different setup code (imports, includes, class
+ *      definitions) based on which language features are actually used.
+ *      Tracking usage allows minimal, tree-shakeable preambles.
+ *
+ * DESIGN: Codegen traverses AST and sets flags. After traversal, preamble
+ *         generator emits only what's needed for that specific program.
+ */
+export interface RequiredFeatures {
+    // Error handling
+    panic: boolean;             // mori used - needs Panic class (TS) or includes (C++)
+
+    // Collections (for targets that need imports)
+    lista: boolean;             // lista<T> or array methods
+    tabula: boolean;            // tabula<K,V>
+    copia: boolean;             // copia<T>
+
+    // Async
+    async: boolean;             // futura, cede, promissum, figendum, variandum
+    asyncIterator: boolean;     // fiet, async for
+
+    // Generators
+    generator: boolean;         // cursor, fiunt
+
+    // Events
+    events: boolean;            // emitte, ausculta
+}
+
+/**
+ * Create a RequiredFeatures object with all flags set to false.
+ */
+export function createRequiredFeatures(): RequiredFeatures {
+    return {
+        panic: false,
+        lista: false,
+        tabula: false,
+        copia: false,
+        async: false,
+        asyncIterator: false,
+        generator: false,
+        events: false,
+    };
+}
+
+/**
  * Configuration options for code generation.
  *
  * DESIGN: Optional fields allow sensible defaults in each target generator.

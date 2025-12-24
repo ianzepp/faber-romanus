@@ -2,6 +2,16 @@
 
 Each codegen target needs to emit setup code (imports, includes, class definitions) based on which language features are actually used in the source.
 
+## Implementation Status
+
+| Feature | TypeScript | Zig | Python | Notes |
+|---------|:----------:|:---:|:------:|-------|
+| Infrastructure | Done | - | - | `RequiredFeatures` in types.ts |
+| `panic` tracking | Done | - | - | Emits `Panic` class when `mori` used |
+| `lista/tabula/copia` | - | - | - | TS doesn't need imports |
+| `async` | - | - | - | TS doesn't need imports |
+| `events` | - | - | - | May need EventEmitter polyfill |
+
 ## Problem
 
 Different targets require different setup:

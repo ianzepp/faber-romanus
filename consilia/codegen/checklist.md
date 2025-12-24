@@ -192,8 +192,8 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 
 | Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
 |---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
-| Preamble infrastructure | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Panic class/import | [ ] | [-] | [ ] | [ ] | [-] | [ ] |
+| Preamble infrastructure | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Panic class/import | [x] | [-] | [ ] | [ ] | [-] | [ ] |
 | Collection imports | [-] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Async imports | [-] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Arena allocator | [-] | [ ] | [-] | [ ] | [ ] | [ ] |
