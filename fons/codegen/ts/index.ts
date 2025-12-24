@@ -86,6 +86,7 @@ import type {
     TypeParameter,
     FacBlockStatement,
     FacExpression,
+    AuscultaExpression,
 } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import { getListaMethod } from './norma/lista';
@@ -1024,6 +1025,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             case 'AwaitExpression':
                 // WHY: cede maps to yield in generators, await in async functions
                 return `${inGenerator ? 'yield' : 'await'} ${genExpression(node.argument)}`;
+            case 'AuscultaExpression':
+                return `Eventus.ausculta(${genExpression(node.event)})`;
             case 'NewExpression':
                 return genNewExpression(node);
             case 'ConditionalExpression':

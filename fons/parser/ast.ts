@@ -782,6 +782,7 @@ export type Expression =
     | AwaitExpression
     | NewExpression
     | TemplateLiteral
+    | AuscultaExpression
     | FacExpression;
 
 // ---------------------------------------------------------------------------
@@ -1083,6 +1084,27 @@ export interface ConditionalExpression extends BaseNode {
 export interface AwaitExpression extends BaseNode {
     type: 'AwaitExpression';
     argument: Expression;
+}
+
+/**
+ * Ausculta expression (event stream subscription).
+ *
+ * GRAMMAR (in EBNF):
+ *   auscultaExpr := 'ausculta' expression
+ *
+ * WHY: Latin 'ausculta' (listen!) creates an async iterator from an event stream.
+ *      Complements 'emitte' (push) with pull-based consumption.
+ *
+ * Examples:
+ *   fixum stream = ausculta "userAction"
+ *   ex stream fiet event { scribe event }
+ *
+ * Compiles to stdlib call that returns AsyncIterator:
+ *   const stream = Eventus.ausculta("userAction");
+ */
+export interface AuscultaExpression extends BaseNode {
+    type: 'AuscultaExpression';
+    event: Expression;
 }
 
 /**

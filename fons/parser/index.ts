@@ -122,6 +122,7 @@ import type {
     ObjectProperty,
     FacBlockStatement,
     FacExpression,
+    AuscultaExpression,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
 import { ParserErrorCode, PARSER_ERRORS } from './errors';
@@ -2232,6 +2233,13 @@ export function parse(tokens: Token[]): ParserResult {
             const argument = parseUnary();
 
             return { type: 'AwaitExpression', argument, position };
+        }
+
+        if (matchKeyword('ausculta')) {
+            const position = tokens[current - 1].position;
+            const event = parseUnary();
+
+            return { type: 'AuscultaExpression', event, position };
         }
 
         if (matchKeyword('novum')) {

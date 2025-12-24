@@ -1595,6 +1595,37 @@ describe('parser', () => {
         });
     });
 
+    describe('ausculta expression', () => {
+        test('ausculta with string event name', () => {
+            const { program } = parseCode('fixum stream = ausculta "userAction"');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('VariableDeclaration');
+            expect(decl.init.type).toBe('AuscultaExpression');
+            expect(decl.init.event.type).toBe('Literal');
+            expect(decl.init.event.value).toBe('userAction');
+        });
+
+        test('ausculta with variable event name', () => {
+            const { program } = parseCode('fixum stream = ausculta eventName');
+            const decl = program!.body[0] as any;
+
+            expect(decl.init.type).toBe('AuscultaExpression');
+            expect(decl.init.event.type).toBe('Identifier');
+            expect(decl.init.event.name).toBe('eventName');
+        });
+
+        test('ausculta in for-await loop', () => {
+            const { program } = parseCode('ex ausculta "data" fiet event { scribe event }');
+            const stmt = program!.body[0] as any;
+
+            expect(stmt.type).toBe('ForStatement');
+            expect(stmt.async).toBe(true);
+            expect(stmt.iterable.type).toBe('AuscultaExpression');
+            expect(stmt.iterable.event.value).toBe('data');
+        });
+    });
+
     describe('fac block and lambda', () => {
         describe('fac block statement', () => {
             test('simple fac block', () => {
