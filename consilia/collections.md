@@ -350,16 +350,20 @@ users.mappa({ .nomen + " " + .cognomen })
 
 For complex logic requiring named variable, two syntaxes are supported:
 
-**`fac var fit expr`** (preferred — reduces symbols, aligns with Latin):
+**`pro var { }` block form (preferred — aligns with iteration syntax):**
 ```
-users.filtra(fac user fit user.activus et user.verificatus)
-
-users.filtra(fac user fit {
+users.filtra(pro user {
     si user.aetas < 18 {
         redde falsum
     }
     redde user.activus et user.verificatus
 })
+```
+
+**`pro var fit expr` expression form:**
+```
+users.filtra(pro user fit user.activus et user.verificatus)
+lista.mappa(pro item fit item.nomen)
 ```
 
 **`var => { }` (supported — familiar to JS/TS developers):**
@@ -372,7 +376,7 @@ users.filtra(user => {
 })
 ```
 
-The `fac...fit` pattern reads as "do user, becomes expression" and uses the same `fit`/`fiet` verbs as function returns.
+The `pro` keyword aligns with iteration: `ex items pro x { }` iterates, `pro x { }` is a closure.
 
 ### Summary
 
@@ -383,8 +387,9 @@ The `fac...fit` pattern reads as "do user, becomes expression" and uses the same
 | `cum a descendens` | Sort direction | `ordina(cum aetas descendens)` |
 | `{ .property }` | Expressions | `filtra({ .aetas > 18 })` |
 | `{ redde ... }` | Multi-statement | `mappa({ redde .x + .y })` |
-| `fac v fit expr` | Explicit variable (preferred) | `filtra(fac u fit u.activus)` |
-| `v => { }` | Explicit variable (JS-style) | `filtra(u => { ... })` |
+| `pro v fit expr` | Expression closure | `mappa(pro x fit x * 2)` |
+| `pro v { }` | Block closure (preferred) | `filtra(pro u { ... })` |
+| `v => { }` | Block closure (JS-style) | `filtra(u => { ... })` |
 
 ---
 

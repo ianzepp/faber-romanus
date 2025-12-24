@@ -106,15 +106,15 @@ cura ws.aperi("wss://echo.example.com") fit conn {
 
 ```
 cura ws.aperi(url) fit conn {
-    conn.apertum(fac fit {
+    conn.apertum(pro {
         scribe "Connected"
     })
 
-    conn.erratum(fac err fit {
+    conn.erratum(pro err {
         mone "Error:", err
     })
 
-    conn.clausum(fac fit {
+    conn.clausum(pro {
         scribe "Disconnected"
     })
 

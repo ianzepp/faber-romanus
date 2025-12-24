@@ -112,7 +112,7 @@ si elapsed > duratio.secunda(5) {
 ex "norma/tempus" importa { post }
 
 // Execute after delay
-post(5 * SECUNDUM, fac fit {
+post(5 * SECUNDUM, pro {
     scribe "5 seconds elapsed"
 })
 ```
@@ -123,7 +123,7 @@ post(5 * SECUNDUM, fac fit {
 ex "norma/tempus" importa { intervallum }
 
 // Execute every second
-fixum timer = intervallum(SECUNDUM, fac fit {
+fixum timer = intervallum(SECUNDUM, pro {
     scribe "tick"
 })
 

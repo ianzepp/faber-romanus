@@ -288,50 +288,72 @@ When no annotation is provided:
 
 ## Lambda Syntax
 
-Faber uses `fac` for lambdas/closures, with `fit`/`fiet` as the delimiter between parameters and body.
+Faber uses `pro` for lambdas/closures, aligning with iteration syntax (`ex items pro x { }`).
 
 ### Syntax
 
 ```
-fac <params> fit <expr>   // sync lambda
-fac <params> fiet <expr>  // async lambda
+pro <params> fit <expr>   // expression lambda
+pro <params> { <body> }   // block lambda
 ```
-
-Parameters are comma-separated identifiers, terminated by `fit` (sync) or `fiet` (async).
 
 ### Examples
 
 ```
-fixum double = fac x fit x * 2
-fixum add = fac x, y fit x + y
-fixum fetcher = fac url fiet getData(url)
+// Expression lambdas
+fixum double = pro x fit x * 2
+fixum add = pro x, y fit x + y
+
+// Block lambdas
+lista.filtra(pro user {
+    si user.aetas < 18 { redde falsum }
+    redde user.activus
+})
+
+// Zero-param
+button.onClick(pro { scribe "clicked" })
 
 // With higher-order functions
-lista.mappata(fac item fit item.nomen)
-lista.reducta(fac acc, x fit acc + x, 0)
-lista.filtrata(fac x fit x > 0)
+lista.mappa(pro item fit item.nomen)
+lista.reducta(pro acc, x fit acc + x, 0)
+lista.filtra(pro x fit x > 0)
 ```
 
-Reads as: "do x, becomes x times 2"
+Reads as: "for x, becomes x times 2" — same `pro` as iteration.
 
 ### Rust Output
 
 Rust has native closures with `|params| body` syntax.
 
-**Non-capturing lambda:**
+**Expression lambda:**
 ```
 // Faber
-fac x fit x * 2
+pro x fit x * 2
 
 // Rust
 |x| x * 2
+```
+
+**Block lambda:**
+```
+// Faber
+pro user {
+    si user.aetas < 18 { redde falsum }
+    redde user.activus
+}
+
+// Rust
+|user| {
+    if user.aetas < 18 { return false; }
+    user.activus
+}
 ```
 
 **Capturing lambda:**
 ```
 // Faber
 fixum multiplier = 2
-fac x fit x * multiplier
+pro x fit x * multiplier
 
 // Rust - captures by reference by default
 let multiplier = 2;
@@ -349,7 +371,10 @@ The compiler identifies captures (variables referenced but not in param list). F
 ```
 // Faber - mutable capture
 varia counter = 0
-fixum increment = fac x fit { counter = counter + 1; redde x }
+fixum increment = pro x {
+    counter = counter + 1
+    redde x
+}
 
 // Rust
 let mut counter = 0;
@@ -358,9 +383,14 @@ let mut counter = 0;
 
 ### Async Lambdas
 
+Async is inferred from `cede` usage inside the closure:
+
 ```
 // Faber
-fac url fiet fetchData(url)
+pro url {
+    figendum data = fetchData(url)
+    redde data
+}
 
 // Rust
 |url| async move { fetch_data(url).await }
@@ -521,7 +551,7 @@ Future enhancement: infer error enums from `iace` usage patterns.
 2. ~~**Lifetime inference**~~ - Solved: `de` on return type mirrors Rust elision
 3. ~~**Memory management**~~ - Solved: arena allocator (`bumpalo`) as default
 4. ~~**Error handling**~~ - Solved: `iace`/`mori` split, `fac`/`cape` for blocks
-5. ~~**Lambda syntax**~~ - Solved: `fac x fit expr` maps to native closures
+5. ~~**Lambda syntax**~~ - Solved: `pro x fit expr` / `pro x { }` maps to native closures
 6. **Async runtime** - Tokio vs async-std vs runtime-agnostic
 7. **Derive macros** - Auto-generate `Default`, `Clone`, `Debug`
 8. **Cargo integration** - Generate `Cargo.toml` for projects (include `bumpalo` dep)
