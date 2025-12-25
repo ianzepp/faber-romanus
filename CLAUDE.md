@@ -2,75 +2,50 @@
 
 A Latin programming language compiler. "The Roman Craftsman."
 
-## Project Philosophy
-
-- **Compiler as tutor**: Error messages teach Latin grammar
-- **Accessibility over purity**: Lower barriers, no gatekeeping
-- **Incremental discovery**: Architecture emerges from decisions, not upfront planning
-- **Pragmatic simplicity**: Don't overcomplicate. If codegen can derive something by walking the AST, don't add semantic phase tracking. Prefer straightforward solutions over clever abstractions.
-
-## Stack
-
-- Runtime: Bun
-- Language: TypeScript
-- Targets: TypeScript (default), Zig
-
-## Commands
+## Quick Reference
 
 ```bash
-bun run fons/cli.ts compile <file.fab>          # Compile to TypeScript
-bun run fons/cli.ts compile <file.fab> -t zig   # Compile to Zig
-bun test                                        # Run tests
+bun test                    # Run all tests
+bun run exempla             # Compile all exempla/*.fab to opus/
+bun run grammar             # Regenerate GRAMMAR.md from parser
+bun run format              # Format code
+bun run lint                # Lint code
+bun run fons/cli.ts compile <file.fab>         # Compile to TypeScript
+bun run fons/cli.ts compile <file.fab> -t py   # Compile to Python
+bun run fons/cli.ts compile <file.fab> -t zig  # Compile to Zig
 ```
 
-## Timeouts
+## Grammar
 
-Keep bash timeouts minimal - tests should complete in seconds, not minutes:
-
-- `bun test` commands: 5-10 seconds max
-- Individual file operations: 2-3 seconds
-- If something hangs, it's broken - don't wait for it
-
-## Code Standards
-
-See `DEVELOPER.md` for comprehensive guidelines. Key points:
-
-**Module Headers**: Every file needs a header block documenting:
-
-- Compiler phase (lexical, syntactic, semantic, codegen)
-- Input/output contract
-- Invariants that must hold
-
-**Documentation Tags**:
-
-- `WHY:` - Explain reasoning, not mechanics
-- `EDGE:` - Document edge cases handled
-- `TARGET:` - Note target-specific behavior
-- `GRAMMAR:` - EBNF for parser functions
-
-**Error Handling**:
-
-- Never crash on malformed input
-- Collect errors and continue parsing
-- Error messages should teach Latin syntax
-
-**Testing**:
-
-- Test each compiler phase independently
-- Include error recovery tests
+See `GRAMMAR.md` for the complete syntax reference. It is auto-generated from parser source comments via `bun run grammar`.
 
 ## Directory Structure
 
 - `fons/` — compiler source ("source, spring")
-- `exempla/` — example .fab programs ("examples")
-- `opus/` — build output ("the work") - future
+    - `lexicon/` — keywords, types, nouns, verbs
+    - `tokenizer/` — lexical analysis
+    - `parser/` — syntax analysis, AST
+    - `semantic/` — type checking
+    - `codegen/` — target code generation (ts, py, zig, cpp)
+- `exempla/` — example .fab programs
+- `consilia/` — design documents (not authoritative)
+- `grammatica/` — auto-generated grammar docs by category
+
+## Code Standards
+
+**Documentation Tags** (in comments):
+
+- `WHY:` — reasoning, not mechanics
+- `EDGE:` — edge cases handled
+- `TARGET:` — target-specific behavior
+- `GRAMMAR:` — EBNF for parser functions
+
+**Error Handling**: Never crash on malformed input. Collect errors and continue.
 
 ## Communication Style
 
-Sporadically include Latin phrases with English translations in responses. Examples:
+Sporadically include Latin phrases:
 
 - "Opus perfectum est" (the work is complete)
 - "Bene factum" (well done)
-- "Errare humanum est" (to err is human) - for bugs
-- "Festina lente" (make haste slowly) - for careful refactoring
-- "Faber fit fabricando" (the craftsman is made by crafting) - for learning moments
+- "Errare humanum est" (to err is human)
