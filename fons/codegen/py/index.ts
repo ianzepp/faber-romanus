@@ -323,10 +323,24 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             const awaitPrefix = isAsync ? 'await ' : '';
             const lines: string[] = [];
 
-            for (const prop of node.name.properties) {
+            // Separate regular properties from rest property
+            const regularProps = node.name.properties.filter(p => !p.rest);
+            const restProp = node.name.properties.find(p => p.rest);
+
+            // Generate regular property extractions
+            for (const prop of regularProps) {
                 const key = prop.key.name;
                 const localName = prop.value.name;
-                lines.push(`${ind()}${localName} = ${awaitPrefix}${initExpr}.${key}`);
+                lines.push(`${ind()}${localName} = ${awaitPrefix}${initExpr}["${key}"]`);
+            }
+
+            // Generate rest collection (remaining properties after extracting named ones)
+            // WHY: Python doesn't have native rest destructuring, so we manually collect
+            //      the remaining keys using dict comprehension
+            if (restProp) {
+                const restName = restProp.value.name;
+                const excludeKeys = regularProps.map(p => `"${p.key.name}"`).join(', ');
+                lines.push(`${ind()}${restName} = {k: v for k, v in ${awaitPrefix}${initExpr}.items() if k not in [${excludeKeys}]}`);
             }
 
             return lines.join('\n');
@@ -403,11 +417,15 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
      *
      * TRANSFORMS:
      *   nomen: textus -> nomen: str
+     *   ceteri lista<textus> messages -> *messages: list[str]
+     *
+     * WHY: Python uses * for rest/variadic parameters.
      */
     function genParameter(node: Parameter): string {
         const name = node.name.name;
         const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : '';
-        return `${name}${typeAnno}`;
+        const prefix = node.rest ? '*' : '';
+        return `${prefix}${name}${typeAnno}`;
     }
 
     /**
@@ -424,6 +442,11 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
      *           if 'nomen' in overrides:
      *               self.nomen = overrides['nomen']
      *           ...
+     *
+     *   genus Config { generis textus VERSION: "1.0" }
+     *   ->
+     *   class Config:
+     *       VERSION: str = "1.0"  # Class-level (static)
      */
     function genGenusDeclaration(node: GenusDeclaration): string {
         const name = node.name.name;
@@ -439,12 +462,23 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         // Track if we have any content
         let hasContent = false;
 
-        // Field declarations (separate reactive and regular)
-        const regularFields = node.fields.filter(f => !f.isReactive);
+        // Separate fields by type: static, regular, reactive
+        const staticFields = node.fields.filter(f => f.isStatic);
+        const instanceFields = node.fields.filter(f => !f.isStatic && !f.isReactive);
         const reactiveFields = node.fields.filter(f => f.isReactive);
 
-        if (regularFields.length > 0) {
-            for (const field of regularFields) {
+        // Static fields first (class-level variables in Python)
+        if (staticFields.length > 0) {
+            for (const field of staticFields) {
+                lines.push(genFieldDeclaration(field));
+            }
+            hasContent = true;
+        }
+
+        // Instance fields
+        if (instanceFields.length > 0) {
+            if (hasContent) lines.push('');
+            for (const field of instanceFields) {
                 lines.push(genFieldDeclaration(field));
             }
             hasContent = true;
@@ -452,20 +486,17 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         // Reactive fields as properties with backing field
         if (reactiveFields.length > 0) {
-            if (hasContent) {
-                lines.push('');
-            }
+            if (hasContent) lines.push('');
             for (const field of reactiveFields) {
                 lines.push(genReactiveFieldDeclaration(field));
             }
             hasContent = true;
         }
 
-        // Constructor
-        if (node.fields.length > 0 || node.constructor) {
-            if (hasContent) {
-                lines.push('');
-            }
+        // Constructor (only for non-static instance fields)
+        const nonStaticFields = node.fields.filter(f => !f.isStatic);
+        if (nonStaticFields.length > 0 || node.constructor) {
+            if (hasContent) lines.push('');
             lines.push(genAutoMergeConstructor(node));
             hasContent = true;
         }
@@ -496,17 +527,22 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate auto-merge constructor for genus.
+     *
+     * WHY: Static fields are class-level and not set via __init__.
      */
     function genAutoMergeConstructor(node: GenusDeclaration): string {
         const lines: string[] = [];
         lines.push(`${ind()}def __init__(self, overrides: dict = {}):`);
         depth++;
 
-        if (node.fields.length === 0 && !node.constructor) {
+        // Only process non-static fields in constructor
+        const instanceFields = node.fields.filter(f => !f.isStatic);
+
+        if (instanceFields.length === 0 && !node.constructor) {
             lines.push(`${ind()}pass`);
         } else {
             // Apply each override if provided
-            for (const field of node.fields) {
+            for (const field of instanceFields) {
                 const fieldName = field.name.name;
                 lines.push(`${ind()}if '${fieldName}' in overrides:`);
                 depth++;
@@ -1261,14 +1297,33 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate array literal.
+     *
+     * TRANSFORMS:
+     *   [1, 2, 3] -> [1, 2, 3]
+     *   [sparge a, sparge b] -> [*a, *b]
+     *
+     * WHY: Python uses * for unpacking iterables in list literals.
      */
     function genArrayExpression(node: ArrayExpression): string {
-        const elements = node.elements.map(genExpression).join(', ');
+        const elements = node.elements
+            .map(el => {
+                if (el.type === 'SpreadElement') {
+                    return `*${genExpression(el.argument)}`;
+                }
+                return genExpression(el);
+            })
+            .join(', ');
         return `[${elements}]`;
     }
 
     /**
      * Generate object literal as dict.
+     *
+     * TRANSFORMS:
+     *   { nomen: "Marcus" } -> {"nomen": "Marcus"}
+     *   { sparge defaults, x: 1 } -> {**defaults, "x": 1}
+     *
+     * WHY: Python uses ** for unpacking dicts in dict literals.
      */
     function genObjectExpression(node: ObjectExpression): string {
         if (node.properties.length === 0) {
@@ -1276,6 +1331,9 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         }
 
         const props = node.properties.map(prop => {
+            if (prop.type === 'SpreadElement') {
+                return `**${genExpression(prop.argument)}`;
+            }
             const key = prop.key.type === 'Identifier' ? `"${prop.key.name}"` : genLiteral(prop.key);
             const value = genExpression(prop.value);
             return `${key}: ${value}`;
@@ -1383,9 +1441,19 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
      *   fn()    -> fn()
      *   fn?()   -> (fn() if fn is not None else None)
      *   fn!()   -> fn()  (Python has no assertion, just call)
+     *   f(sparge nums) -> f(*nums)
+     *
+     * WHY: Python uses * for unpacking iterables in function calls.
      */
     function genCallExpression(node: CallExpression): string {
-        const args = node.arguments.map(genExpression).join(', ');
+        const args = node.arguments
+            .map(arg => {
+                if (arg.type === 'SpreadElement') {
+                    return `*${genExpression(arg.argument)}`;
+                }
+                return genExpression(arg);
+            })
+            .join(', ');
 
         // Check for intrinsics
         if (node.callee.type === 'Identifier') {
@@ -1549,13 +1617,21 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate new expression (no 'new' keyword in Python).
+     *
+     * TRANSFORMS:
+     *   novum Persona() -> Persona()
+     *   novum Persona { nomen: "X" } -> Persona({"nomen": "X"})
+     *   novum Persona de props -> Persona(props)
+     *
+     * WHY: Python classes are called directly without `new`.
      */
     function genNewExpression(node: NewExpression): string {
         const callee = node.callee.name;
         const args: string[] = node.arguments.map(genExpression);
 
         if (node.withExpression) {
-            args.push(genObjectExpression(node.withExpression));
+            // withExpression can be ObjectExpression (inline) or any Expression (de X)
+            args.push(genExpression(node.withExpression));
         }
 
         return `${callee}(${args.join(', ')})`;
