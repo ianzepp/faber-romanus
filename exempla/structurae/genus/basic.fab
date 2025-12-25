@@ -168,13 +168,13 @@ fixum addr = novum address {
     city: "Roma"
 }
 
-fixum citizen = novum citizen {
+fixum marcusCitizen = novum citizen {
     name: "Marcus",
     location: addr
 }
 
-scribe citizen.name
-scribe citizen.location.city
+scribe marcusCitizen.name
+scribe marcusCitizen.location.city
 
 // =============================================================================
 // GENUS IN FUNCTIONS

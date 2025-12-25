@@ -247,7 +247,7 @@ export function analyze(program: Program): SemanticResult {
      * They form the foundation that norma.fab builds upon.
      */
     function defineBuiltins(): void {
-        const builtinPos = { line: 0, column: 0 };
+        const builtinPos = { line: 0, column: 0, offset: 0 };
 
         function defFn(name: string, params: SemanticType[], ret: SemanticType): void {
             currentScope.symbols.set(name, {
@@ -586,8 +586,8 @@ export function analyze(program: Program): SemanticResult {
                 // For spread, resolve the argument (should be an array) and use its element type
                 const argType = resolveExpression(element.argument);
                 // If spreading an array, use its element type; otherwise use unknown
-                if (argType.kind === 'generic' && argType.name === 'lista' && argType.typeParams?.length) {
-                    elementTypes.push(argType.typeParams[0]);
+                if (argType.kind === 'generic' && argType.name === 'lista' && argType.typeParameters?.length) {
+                    elementTypes.push(argType.typeParameters[0]);
                 } else {
                     elementTypes.push(UNKNOWN);
                 }
@@ -714,13 +714,12 @@ export function analyze(program: Program): SemanticResult {
             const rightPrim = rightType.kind === 'primitive' ? rightType.name : null;
 
             // Check for incompatible comparison (e.g., numerus > textus)
+            // WHY: leftPrim/rightPrim are null for non-primitives (including unknown),
+            // so this check only fires when both are known primitive types
             if (leftPrim && rightPrim && leftPrim !== rightPrim) {
-                // Allow unknown types to pass through
-                if (leftPrim !== 'unknown' && rightPrim !== 'unknown') {
-                    const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.IncompatibleComparison];
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.IncompatibleComparison];
 
-                    error(`${text(formatType(leftType), formatType(rightType), node.operator)}\n${help}`, node.position);
-                }
+                error(`${text(formatType(leftType), formatType(rightType), node.operator)}\n${help}`, node.position);
             }
 
             node.resolvedType = BIVALENS;

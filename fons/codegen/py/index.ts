@@ -477,7 +477,9 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         // Instance fields
         if (instanceFields.length > 0) {
-            if (hasContent) lines.push('');
+            if (hasContent) {
+                lines.push('');
+            }
             for (const field of instanceFields) {
                 lines.push(genFieldDeclaration(field));
             }
@@ -486,7 +488,9 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         // Reactive fields as properties with backing field
         if (reactiveFields.length > 0) {
-            if (hasContent) lines.push('');
+            if (hasContent) {
+                lines.push('');
+            }
             for (const field of reactiveFields) {
                 lines.push(genReactiveFieldDeclaration(field));
             }
@@ -496,7 +500,9 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         // Constructor (only for non-static instance fields)
         const nonStaticFields = node.fields.filter(f => !f.isStatic);
         if (nonStaticFields.length > 0 || node.constructor) {
-            if (hasContent) lines.push('');
+            if (hasContent) {
+                lines.push('');
+            }
             lines.push(genAutoMergeConstructor(node));
             hasContent = true;
         }
