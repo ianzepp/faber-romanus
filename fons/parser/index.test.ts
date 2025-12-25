@@ -829,14 +829,6 @@ describe('parser', () => {
             expect(genus.methods).toHaveLength(0);
         });
 
-        test('genus with computed field', () => {
-            const { program } = parseCode('genus figura { numerus area => latus * altitudo }');
-            const genus = program!.body[0] as any;
-
-            expect(genus.computedFields).toHaveLength(1);
-            expect(genus.computedFields[0].name.name).toBe('area');
-        });
-
         test('genus with nexum reactive field', () => {
             const { program } = parseCode('genus counter { nexum numerus count: 0 }');
             const genus = program!.body[0] as any;

@@ -57,7 +57,6 @@ import type {
     GenusDeclaration,
     PactumDeclaration,
     FieldDeclaration,
-    ComputedFieldDeclaration,
     PactumMethod,
     TypeAliasDeclaration,
     IfStatement,
@@ -609,21 +608,13 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             lines.push(genFieldDeclaration(field));
         }
 
-        // Self type reference (needed for init, methods, computed fields)
+        // Self type reference (needed for init, methods)
         // WHY: init() uses Self for return type and self variable
-        if (node.fields.length > 0 || node.methods.length > 0 || node.constructor || node.computedFields.length > 0) {
+        if (node.fields.length > 0 || node.methods.length > 0 || node.constructor) {
             if (node.fields.length > 0) {
                 lines.push('');
             }
             lines.push(`${ind()}const Self = @This();`);
-        }
-
-        // Computed fields as getter methods
-        if (node.computedFields.length > 0) {
-            lines.push('');
-            for (const field of node.computedFields) {
-                lines.push(genComputedFieldDeclaration(field));
-            }
         }
 
         // Auto-merge init function
@@ -666,24 +657,6 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         // TARGET: Zig struct fields use = for defaults, end with comma
         return `${ind()}${name}: ${type} = ${init},`;
-    }
-
-    /**
-     * Generate computed field as a getter method.
-     *
-     * TRANSFORMS:
-     *   numerus area => ego.latus * ego.altitudo
-     *   -> pub fn area(self: *const Self) i64 { return self.latus * self.altitudo; }
-     */
-    function genComputedFieldDeclaration(node: ComputedFieldDeclaration): string {
-        const name = node.name.name;
-        const type = genType(node.fieldType);
-        const expr = genExpression(node.expression);
-
-        // Replace ego with self for Zig
-        const zigExpr = expr.replace(/\bego\b/g, 'self');
-
-        return `${ind()}pub fn ${name}(self: *const Self) ${type} { return ${zigExpr}; }`;
     }
 
     /**

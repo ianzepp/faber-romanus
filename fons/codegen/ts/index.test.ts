@@ -1839,53 +1839,6 @@ describe('codegen', () => {
         });
     });
 
-    describe('computed fields (getters)', () => {
-        test('basic computed field', () => {
-            const js = compile(`
-                genus Rectangle {
-                    numerus width: 1
-                    numerus height: 1
-                    publicus numerus area => ego.width * ego.height
-                }
-            `);
-
-            expect(js).toContain('get area(): number { return (this.width * this.height); }');
-        });
-
-        test('computed field with string return', () => {
-            const js = compile(`
-                genus Person {
-                    textus firstName: ""
-                    textus lastName: ""
-                    publicus textus fullName => ego.firstName + " " + ego.lastName
-                }
-            `);
-
-            expect(js).toContain('get fullName(): string');
-        });
-
-        test('private computed field', () => {
-            const js = compile(`
-                genus Counter {
-                    numerus count: 0
-                    privatus numerus doubled => ego.count * 2
-                }
-            `);
-
-            expect(js).toContain('private get doubled(): number');
-        });
-
-        test('static computed field', () => {
-            const js = compile(`
-                genus Config {
-                    generis textus version => "1.0.0"
-                }
-            `);
-
-            expect(js).toContain('static get version(): string { return "1.0.0"; }');
-        });
-    });
-
     describe('method return type wrapping', () => {
         test('async method with return type', () => {
             const js = compile(`

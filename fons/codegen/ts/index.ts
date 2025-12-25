@@ -50,7 +50,6 @@ import type {
     FunctionDeclaration,
     GenusDeclaration,
     FieldDeclaration,
-    ComputedFieldDeclaration,
     PactumDeclaration,
     PactumMethod,
     TypeAliasDeclaration,
@@ -384,10 +383,6 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             sections.push(node.fields.map(genFieldDeclaration));
         }
 
-        if (node.computedFields.length > 0) {
-            sections.push(node.computedFields.map(genComputedFieldDeclaration));
-        }
-
         // Always generate constructor for auto-merge
         sections.push([genAutoMergeConstructor(node)]);
 
@@ -499,20 +494,6 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const init = node.init ? ` = ${genExpression(node.init)}` : '';
 
         return `${ind()}${visibility}${staticMod}${name}: ${type}${init}${semi ? ';' : ''}`;
-    }
-
-    /**
-     * Generate computed field declaration as a getter.
-     */
-    function genComputedFieldDeclaration(node: ComputedFieldDeclaration): string {
-        // Public by default (struct semantics), private with 'privatus'
-        const visibility = node.isPrivate ? 'private ' : '';
-        const staticMod = node.isStatic ? 'static ' : '';
-        const name = node.name.name;
-        const type = genType(node.fieldType);
-        const expression = genExpression(node.expression);
-
-        return `${ind()}${visibility}${staticMod}get ${name}(): ${type} { return ${expression}; }`;
     }
 
     /**

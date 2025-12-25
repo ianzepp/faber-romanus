@@ -358,14 +358,6 @@ function printGenusDeclaration(path: AstPath<AstNode>, options: FaberOptions, pr
         bodyParts.push(print(fieldPath as AstPath<AstNode>));
     }, 'fields');
 
-    // Computed fields
-    path.each((fieldPath, index) => {
-        if (bodyParts.length > 0) {
-            bodyParts.push(hardline);
-        }
-        bodyParts.push(print(fieldPath as AstPath<AstNode>));
-    }, 'computedFields');
-
     // Constructor
     if (node.constructor) {
         if (bodyParts.length > 0) {

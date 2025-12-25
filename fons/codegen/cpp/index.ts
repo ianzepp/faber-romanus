@@ -50,7 +50,6 @@ import type {
     FunctionDeclaration,
     GenusDeclaration,
     FieldDeclaration,
-    ComputedFieldDeclaration,
     PactumDeclaration,
     TypeAliasDeclaration,
     IfStatement,
@@ -503,11 +502,6 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
             lines.push(genFieldDeclaration(field));
         }
 
-        // Computed fields as methods
-        for (const field of node.computedFields) {
-            lines.push(genComputedFieldDeclaration(field, node));
-        }
-
         // Constructor if there's a creo
         if (node.constructor) {
             lines.push('');
@@ -535,20 +529,6 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         const init = node.init ? ` = ${genExpression(node.init)}` : '';
 
         return `${ind()}${type} ${name}${init};`;
-    }
-
-    /**
-     * Generate computed field as getter method.
-     */
-    function genComputedFieldDeclaration(node: ComputedFieldDeclaration, parent: GenusDeclaration): string {
-        const name = node.name.name;
-        const type = genType(node.fieldType);
-        const expr = genExpression(node.expression);
-
-        // Replace ego with this->
-        const cppExpr = expr.replace(/\bego\./g, 'this->');
-
-        return `${ind()}${type} ${name}() const { return ${cppExpr}; }`;
     }
 
     /**

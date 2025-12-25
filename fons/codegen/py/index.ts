@@ -58,7 +58,6 @@ import type {
     FunctionDeclaration,
     GenusDeclaration,
     FieldDeclaration,
-    ComputedFieldDeclaration,
     PactumDeclaration,
     PactumMethod,
     TypeAliasDeclaration,
@@ -459,17 +458,6 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             hasContent = true;
         }
 
-        // Computed fields as properties
-        if (node.computedFields.length > 0) {
-            if (hasContent) {
-                lines.push('');
-            }
-            for (const field of node.computedFields) {
-                lines.push(genComputedFieldDeclaration(field));
-            }
-            hasContent = true;
-        }
-
         // Constructor
         if (node.fields.length > 0 || node.constructor) {
             if (hasContent) {
@@ -610,25 +598,6 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         depth++;
         lines.push(`${ind()}self._pingo()`);
         depth--;
-        depth--;
-
-        return lines.join('\n');
-    }
-
-    /**
-     * Generate computed field declaration as a property.
-     */
-    function genComputedFieldDeclaration(node: ComputedFieldDeclaration): string {
-        const name = node.name.name;
-        const type = genType(node.fieldType);
-        const expression = genExpression(node.expression);
-        const prefix = node.isPrivate ? '_' : '';
-
-        const lines: string[] = [];
-        lines.push(`${ind()}@property`);
-        lines.push(`${ind()}def ${prefix}${name}(self) -> ${type}:`);
-        depth++;
-        lines.push(`${ind()}return ${expression}`);
         depth--;
 
         return lines.join('\n');

@@ -314,7 +314,6 @@ export interface EnumDeclaration extends BaseNode {
  *
  * GRAMMAR (in EBNF):
  *   fieldDecl := 'privatus'? 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
- *   computedField := 'privatus'? 'generis'? typeAnnotation IDENTIFIER '=>' expression
  *
  * INVARIANT: typeAnnotation uses Latin word order (type before name).
  * INVARIANT: isPrivate defaults to false (public by default, struct semantics).
@@ -341,20 +340,6 @@ export interface FieldDeclaration extends BaseNode {
     isPrivate: boolean;
     isStatic: boolean;
     isReactive: boolean; // nexum fields trigger re-render on change
-}
-
-/**
- * Computed field declaration within a genus.
- *
- * WHY: Enables property-like getters (`numerus area => ego.latus * ego.altitudo`).
- */
-export interface ComputedFieldDeclaration extends BaseNode {
-    type: 'ComputedFieldDeclaration';
-    name: Identifier;
-    fieldType: TypeAnnotation;
-    expression: Expression;
-    isPrivate: boolean;
-    isStatic: boolean;
 }
 
 /**
@@ -390,7 +375,6 @@ export interface GenusDeclaration extends BaseNode {
     typeParameters?: Identifier[];
     implements?: Identifier[];
     fields: FieldDeclaration[];
-    computedFields: ComputedFieldDeclaration[];
     constructor?: FunctionDeclaration;
     methods: FunctionDeclaration[];
 }

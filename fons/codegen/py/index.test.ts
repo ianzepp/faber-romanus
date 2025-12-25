@@ -747,17 +747,6 @@ describe('Python codegen', () => {
             expect(result).toContain('print("Created")');
         });
 
-        test('class with computed field', () => {
-            const result = compile(`
-                genus Persona {
-                    textus nomen
-                    publicus textus salutatio => "Salve, " + ego.nomen
-                }
-            `);
-            expect(result).toContain('@property');
-            expect(result).toContain('def salutatio(self) -> str:');
-        });
-
         test('class implements interface', () => {
             const result = compile(`
                 genus Worker implet Runnable {

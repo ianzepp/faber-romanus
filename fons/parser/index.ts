@@ -85,7 +85,6 @@ import type {
     FunctionDeclaration,
     GenusDeclaration,
     FieldDeclaration,
-    ComputedFieldDeclaration,
     PactumDeclaration,
     PactumMethod,
     IfStatement,
@@ -1082,7 +1081,6 @@ export function parse(tokens: Token[]): ParserResult {
         expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const fields: FieldDeclaration[] = [];
-        const computedFields: ComputedFieldDeclaration[] = [];
         const methods: FunctionDeclaration[] = [];
         let constructorMethod: FunctionDeclaration | undefined;
 
@@ -1103,10 +1101,6 @@ export function parse(tokens: Token[]): ParserResult {
             switch (member.type) {
                 case 'FieldDeclaration':
                     fields.push(member);
-                    break;
-
-                case 'ComputedFieldDeclaration':
-                    computedFields.push(member);
                     break;
 
                 case 'FunctionDeclaration':
@@ -1132,7 +1126,6 @@ export function parse(tokens: Token[]): ParserResult {
             typeParameters,
             implements: implementsList,
             fields,
-            computedFields,
             constructor: constructorMethod,
             methods,
             position,
@@ -1150,7 +1143,7 @@ export function parse(tokens: Token[]): ParserResult {
      * WHY: Distinguishes between fields and methods by looking for 'functio' keyword.
      * WHY: Fields are public by default (struct semantics), use 'privatus' for private.
      */
-    function parseGenusMember(): FieldDeclaration | ComputedFieldDeclaration | FunctionDeclaration {
+    function parseGenusMember(): FieldDeclaration | FunctionDeclaration {
         const position = peek().position;
 
         // Parse modifiers
@@ -1257,23 +1250,9 @@ export function parse(tokens: Token[]): ParserResult {
             return method;
         }
 
-        // Otherwise it's a field: type name with ':' default or '=> computed value'
+        // Otherwise it's a field: type name with optional ':' default
         const fieldType = parseTypeAnnotation();
         const fieldName = parseIdentifier();
-
-        if (match('ARROW')) {
-            const expression = parseExpression();
-
-            return {
-                type: 'ComputedFieldDeclaration',
-                name: fieldName,
-                fieldType,
-                expression,
-                isPrivate,
-                isStatic,
-                position,
-            };
-        }
 
         let init: Expression | undefined;
 
