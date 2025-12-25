@@ -99,6 +99,8 @@ import type {
 import type { CodegenOptions, RequiredFeatures } from '../types';
 import { createRequiredFeatures } from '../types';
 import { getListaMethod } from './norma/lista';
+import { getTabulaMethod } from './norma/tabula';
+import { getCopiaMethod } from './norma/copia';
 
 // =============================================================================
 // TYPE MAPPING
@@ -1326,19 +1328,36 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             }
         }
 
-        // Check for lista methods
+        // Check for collection methods (lista, tabula, copia)
         if (node.callee.type === 'MemberExpression' && !node.callee.computed) {
             const methodName = (node.callee.property as Identifier).name;
+            const obj = genExpression(node.callee.object);
+
+            // Try lista methods
             const listaMethod = getListaMethod(methodName);
-
             if (listaMethod) {
-                const obj = genExpression(node.callee.object);
-
                 if (typeof listaMethod.py === 'function') {
                     return listaMethod.py(obj, args);
                 }
-
                 return `${obj}.${listaMethod.py}(${args})`;
+            }
+
+            // Try tabula methods
+            const tabulaMethod = getTabulaMethod(methodName);
+            if (tabulaMethod) {
+                if (typeof tabulaMethod.py === 'function') {
+                    return tabulaMethod.py(obj, args);
+                }
+                return `${obj}.${tabulaMethod.py}(${args})`;
+            }
+
+            // Try copia methods
+            const copiaMethod = getCopiaMethod(methodName);
+            if (copiaMethod) {
+                if (typeof copiaMethod.py === 'function') {
+                    return copiaMethod.py(obj, args);
+                }
+                return `${obj}.${copiaMethod.py}(${args})`;
             }
         }
 
