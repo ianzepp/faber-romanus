@@ -1,0 +1,171 @@
+// Keywords - Latin Reserved Words and Operators
+//
+// COMPILER PHASE: Lexical analysis (keyword recognition)
+//
+// This module defines the reserved Latin keywords for Faber Romanus. Keywords
+// are words with special syntactic meaning that cannot be used as identifiers.
+//
+// Keywords are case-insensitive in Latin (following the historical tradition
+// that Latin had no distinction between upper/lowercase until medieval times).
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+// Category of keyword - determines parsing strategy.
+ordo categoria {
+    regimen,        // control flow (si, dum, redde)
+    declaratio,     // declarations (varia, functio)
+    operator,       // operators (et, aut, non)
+    valor,          // literal values (verum, falsum, nihil)
+    praepositio,    // prepositions (in, ex, de, ad)
+    modificator     // modifiers (futura, privatus)
+}
+
+// Metadata for a Latin keyword.
+genus verbum_clavis {
+    textus latinum
+    textus significatio
+    categoria categoria
+}
+
+// =============================================================================
+// KEYWORD DEFINITIONS
+// =============================================================================
+
+fixum lista<verbum_clavis> verba_clavium = [
+    // -------------------------------------------------------------------------
+    // Control Flow
+    // -------------------------------------------------------------------------
+
+    // Literal: si / aliter si / aliter
+    // Poetic:  si / sin / secus
+    // Ternary: condition sic truthy secus falsy (or ? :)
+    { latinum: "si", significatio: "if", categoria: categoria.regimen },
+    { latinum: "aliter", significatio: "else", categoria: categoria.regimen },
+    { latinum: "sin", significatio: "else if", categoria: categoria.regimen },
+    { latinum: "secus", significatio: "else/:", categoria: categoria.regimen },
+    { latinum: "dum", significatio: "while", categoria: categoria.regimen },
+    { latinum: "fac", significatio: "do", categoria: categoria.regimen },
+    { latinum: "pro", significatio: "for", categoria: categoria.regimen },
+    { latinum: "elige", significatio: "switch", categoria: categoria.regimen },
+    { latinum: "ergo", significatio: "then", categoria: categoria.regimen },
+    { latinum: "nulla", significatio: "none/empty", categoria: categoria.operator },
+    { latinum: "nonnulla", significatio: "some/non-empty", categoria: categoria.operator },
+    { latinum: "negativum", significatio: "< 0", categoria: categoria.operator },
+    { latinum: "positivum", significatio: "> 0", categoria: categoria.operator },
+    { latinum: "rumpe", significatio: "break", categoria: categoria.regimen },
+    { latinum: "perge", significatio: "continue", categoria: categoria.regimen },
+    { latinum: "redde", significatio: "return", categoria: categoria.regimen },
+    { latinum: "custodi", significatio: "guard", categoria: categoria.regimen },
+    { latinum: "adfirma", significatio: "assert", categoria: categoria.regimen },
+    { latinum: "tempta", significatio: "try", categoria: categoria.regimen },
+    { latinum: "cape", significatio: "catch", categoria: categoria.regimen },
+    { latinum: "demum", significatio: "finally", categoria: categoria.regimen },
+    { latinum: "iace", significatio: "throw", categoria: categoria.regimen },
+    { latinum: "mori", significatio: "panic", categoria: categoria.regimen },
+    { latinum: "scribe", significatio: "print", categoria: categoria.regimen },
+    { latinum: "vide", significatio: "debug", categoria: categoria.regimen },
+    { latinum: "mone", significatio: "warn", categoria: categoria.regimen },
+    { latinum: "cede", significatio: "await", categoria: categoria.regimen },
+
+    // -------------------------------------------------------------------------
+    // Declarations
+    // -------------------------------------------------------------------------
+
+    { latinum: "varia", significatio: "let", categoria: categoria.declaratio },
+    { latinum: "fixum", significatio: "const", categoria: categoria.declaratio },
+    { latinum: "nexum", significatio: "reactive", categoria: categoria.modificator },
+    { latinum: "figendum", significatio: "const await", categoria: categoria.declaratio },
+    { latinum: "variandum", significatio: "let await", categoria: categoria.declaratio },
+    { latinum: "functio", significatio: "function", categoria: categoria.declaratio },
+    { latinum: "novum", significatio: "new", categoria: categoria.declaratio },
+    { latinum: "importa", significatio: "import", categoria: categoria.declaratio },
+    { latinum: "exporta", significatio: "export", categoria: categoria.declaratio },
+    { latinum: "typus", significatio: "type", categoria: categoria.declaratio },
+    { latinum: "genus", significatio: "struct/class", categoria: categoria.declaratio },
+    { latinum: "pactum", significatio: "interface/trait", categoria: categoria.declaratio },
+    { latinum: "ordo", significatio: "enum", categoria: categoria.declaratio },
+
+    // -------------------------------------------------------------------------
+    // Modifiers
+    // -------------------------------------------------------------------------
+
+    { latinum: "futura", significatio: "async", categoria: categoria.modificator },
+    { latinum: "cursor", significatio: "generator", categoria: categoria.modificator },
+    { latinum: "publicus", significatio: "public", categoria: categoria.modificator },
+    { latinum: "privatus", significatio: "private", categoria: categoria.modificator },
+    { latinum: "generis", significatio: "static", categoria: categoria.modificator },
+    { latinum: "implet", significatio: "implements", categoria: categoria.modificator },
+
+    // -------------------------------------------------------------------------
+    // Operators
+    // -------------------------------------------------------------------------
+
+    { latinum: "et", significatio: "&&", categoria: categoria.operator },
+    { latinum: "aut", significatio: "||", categoria: categoria.operator },
+    { latinum: "non", significatio: "!", categoria: categoria.operator },
+    { latinum: "est", significatio: "===", categoria: categoria.operator },
+    { latinum: "sic", significatio: "?", categoria: categoria.operator },
+    { latinum: "fit", significatio: "->", categoria: categoria.operator },
+    { latinum: "fiet", significatio: "async ->", categoria: categoria.operator },
+    { latinum: "fiunt", significatio: "yields ->", categoria: categoria.operator },
+    { latinum: "fient", significatio: "async yields ->", categoria: categoria.operator },
+
+    // -------------------------------------------------------------------------
+    // Literal Values
+    // -------------------------------------------------------------------------
+
+    { latinum: "verum", significatio: "true", categoria: categoria.valor },
+    { latinum: "falsum", significatio: "false", categoria: categoria.valor },
+    { latinum: "nihil", significatio: "null", categoria: categoria.valor },
+    { latinum: "ego", significatio: "this/self", categoria: categoria.valor },
+
+    // -------------------------------------------------------------------------
+    // Prepositions
+    // -------------------------------------------------------------------------
+
+    { latinum: "de", significatio: "from/concerning", categoria: categoria.praepositio },
+    { latinum: "in", significatio: "in/into", categoria: categoria.praepositio },
+    { latinum: "ex", significatio: "of", categoria: categoria.praepositio },
+    { latinum: "ad", significatio: "to", categoria: categoria.praepositio },
+    { latinum: "per", significatio: "by/through", categoria: categoria.praepositio },
+    { latinum: "ut", significatio: "as", categoria: categoria.praepositio },
+    { latinum: "vel", significatio: "or", categoria: categoria.operator },
+    { latinum: "ante", significatio: "before (exclusive)", categoria: categoria.operator },
+    { latinum: "usque", significatio: "up to (inclusive)", categoria: categoria.operator },
+
+    // -------------------------------------------------------------------------
+    // Spread/Rest Operators
+    // -------------------------------------------------------------------------
+
+    { latinum: "sparge", significatio: "...", categoria: categoria.operator },
+    { latinum: "ceteri", significatio: "...rest", categoria: categoria.operator }
+]
+
+// =============================================================================
+// LOOKUP MAP
+// =============================================================================
+
+// Pre-computed Map for O(1) keyword lookup.
+fixum tabula<textus, verbum_clavis> mappa_verborum = novum tabula
+
+// Initialize the map from the keyword list.
+ex verba_clavium pro verbum {
+    mappa_verborum.pone(verbum.latinum, verbum)
+}
+
+// =============================================================================
+// LOOKUP FUNCTIONS
+// =============================================================================
+
+// Check if a word is a reserved keyword.
+// Case-insensitive: "SI", "Si", "si" all recognized.
+functio est_verbum_clavis(textus verbum) -> verifex {
+    redde mappa_verborum.habet(verbum.minusculis())
+}
+
+// Get keyword metadata for a word.
+functio accipe_verbum_clavis(textus verbum) -> verbum_clavis? {
+    redde mappa_verborum.accipe(verbum.minusculis())
+}

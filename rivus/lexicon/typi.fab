@@ -1,0 +1,137 @@
+// Types - Latin Grammar Type Definitions
+//
+// COMPILER PHASE: Lexical analysis (type definitions)
+//
+// This module defines types for representing Latin grammatical concepts.
+// These types are used throughout the lexicon module to classify
+// and parse inflected Latin words.
+
+// =============================================================================
+// GRAMMATICAL PRIMITIVES
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Noun Grammar
+// ---------------------------------------------------------------------------
+
+// Latin grammatical cases.
+// WHY: Cases indicate a noun's syntactic role in the sentence.
+// - nominativus: Subject
+// - accusativus: Direct object
+// - genitivus: Possession
+// - dativus: Indirect object
+// - ablativus: Instrument or means
+ordo casus {
+    nominativus,
+    accusativus,
+    genitivus,
+    dativus,
+    ablativus
+}
+
+// Grammatical number (singular or plural).
+// Named 'numerositas' to avoid conflict with built-in 'numerus' type.
+ordo numerositas {
+    singularis,
+    pluralis
+}
+
+// Latin grammatical genders.
+// WHY: Gender is inherent to each noun and determines which endings it takes.
+ordo genera {
+    masculinum,
+    femininum,
+    neutrum
+}
+
+// Latin declensions (1st through 5th).
+// WHY: Declension determines the pattern of case endings a noun follows.
+ordo declinatio {
+    prima = 1,
+    secunda = 2,
+    tertia = 3,
+    quarta = 4,
+    quinta = 5
+}
+
+// ---------------------------------------------------------------------------
+// Verb Grammar
+// ---------------------------------------------------------------------------
+
+// Latin conjugations (1st through 4th).
+// WHY: Conjugation determines the pattern of person/number/tense endings.
+ordo coniugatio {
+    prima = 1,
+    secunda = 2,
+    tertia = 3,
+    quarta = 4
+}
+
+// Verb tenses and moods.
+// WHY: praesens = synchronous action, futurum = asynchronous (Promise),
+//      imperativus = command form (used for statements/expressions).
+ordo tempus {
+    praesens,
+    imperativus,
+    futurum
+}
+
+// Grammatical person (1st, 2nd, 3rd).
+// WHY: Indicates who performs the action.
+// - prima: I/we (ego, nos)
+// - secunda: you (tu, vos)
+// - tertia: he/she/it/they
+ordo persona {
+    prima = 1,
+    secunda = 2,
+    tertia = 3
+}
+
+// =============================================================================
+// LEXICON ENTRY TYPES
+// =============================================================================
+
+// Dictionary entry for a Latin noun.
+// Stores stem (without endings) plus grammatical classification.
+genus nomen_ingressus {
+    textus stirps
+    declinatio declinatio
+    genera forma
+    textus significatio
+}
+
+// Dictionary entry for a Latin verb.
+// Stores stem (without endings) plus conjugation pattern.
+genus verbum_ingressus {
+    textus stirps
+    coniugatio coniugatio
+    textus significatio
+}
+
+// =============================================================================
+// PARSED RESULT TYPES
+// =============================================================================
+
+// Result of parsing an inflected Latin noun.
+// Combines dictionary info (stem, declension, gender) with
+// inflectional info extracted from the ending (case, number).
+genus nomen_resolutum {
+    textus stirps
+    declinatio declinatio
+    genera forma
+    casus casus
+    numerositas numerositas
+}
+
+// Result of parsing an inflected Latin verb.
+// Combines stem and conjugation with extracted tense/person/number.
+// Person and number are optional for imperative forms.
+// WHY: asyncum maps Latin future tense to async functions.
+genus verbum_resolutum {
+    textus stirps
+    coniugatio coniugatio
+    tempus tempus
+    persona? persona
+    numerositas? numerositas
+    verifex asyncum
+}

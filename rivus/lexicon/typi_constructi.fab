@@ -1,0 +1,427 @@
+// Built-in Types - Latin Type System Vocabulary
+//
+// COMPILER PHASE: Lexical analysis (type vocabulary)
+//
+// This module defines the built-in Latin type names that map to target
+// language primitives and standard library types.
+//
+// TYPE CATEGORIES:
+// - primitivum: Basic scalar types (textus, numerus, verifex)
+// - collectio: Container types (lista, tabula, copia)
+// - structura: Complex types (functio, promissum, erratum)
+// - iteratio: Iterator/stream types (cursor, fluxus)
+
+ex "./typi" importa nomen_ingressus, declinatio, genera
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+// Category of built-in type.
+ordo typus_categoria {
+    primitivum,
+    collectio,
+    structura,
+    iteratio
+}
+
+// Extended noun entry with target language mapping.
+// Extends nomen_ingressus with category and generic flag.
+genus typus_ingressus {
+    textus stirps
+    declinatio declinatio
+    genera forma
+    textus significatio
+    typus_categoria categoria
+    verifex? genericum
+    textus? nominativus
+}
+
+// =============================================================================
+// BUILT-IN TYPE DEFINITIONS
+// =============================================================================
+
+fixum lista<typus_ingressus> typi_constructi = [
+    // -------------------------------------------------------------------------
+    // Primitives
+    // -------------------------------------------------------------------------
+
+    // textus (4th decl masculine) - "texture, fabric, text"
+    {
+        stirps: "text",
+        declinatio: declinatio.quarta,
+        forma: genera.masculinum,
+        significatio: "text/string",
+        categoria: typus_categoria.primitivum
+    },
+    // numerus (2nd decl masculine) - "number, count"
+    {
+        stirps: "numer",
+        declinatio: declinatio.secunda,
+        forma: genera.masculinum,
+        significatio: "number",
+        categoria: typus_categoria.primitivum
+    },
+    // verifex (3rd decl masculine) - "truth-maker" (boolean)
+    {
+        stirps: "verifex",
+        declinatio: declinatio.tertia,
+        forma: genera.masculinum,
+        significatio: "boolean",
+        categoria: typus_categoria.primitivum
+    },
+    // fractus (2nd decl masculine) - "broken, fractional" (floating point)
+    {
+        stirps: "fract",
+        declinatio: declinatio.secunda,
+        forma: genera.masculinum,
+        significatio: "floating point",
+        categoria: typus_categoria.primitivum
+    },
+    // decimus (2nd decl masculine) - "tenth, decimal"
+    {
+        stirps: "decim",
+        declinatio: declinatio.secunda,
+        forma: genera.masculinum,
+        significatio: "decimal",
+        categoria: typus_categoria.primitivum
+    },
+    // magnus (2nd decl masculine) - "great, large" (bigint)
+    {
+        stirps: "magn",
+        declinatio: declinatio.secunda,
+        forma: genera.masculinum,
+        significatio: "bigint",
+        categoria: typus_categoria.primitivum
+    },
+    // signum (2nd decl neuter) - "sign, mark, token"
+    {
+        stirps: "sign",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "symbol",
+        categoria: typus_categoria.primitivum
+    },
+    // incertum (2nd decl neuter) - "uncertain, undefined"
+    {
+        stirps: "incert",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "undefined",
+        categoria: typus_categoria.primitivum
+    },
+    // nihil (irregular neuter) - "nothing, null"
+    {
+        stirps: "nihil",
+        declinatio: declinatio.tertia,
+        forma: genera.neutrum,
+        significatio: "null",
+        categoria: typus_categoria.primitivum
+    },
+    // octeti (2nd decl masculine plural) - "octets, bytes"
+    {
+        stirps: "octet",
+        nominativus: "octeti",
+        declinatio: declinatio.secunda,
+        forma: genera.masculinum,
+        significatio: "bytes/octets",
+        categoria: typus_categoria.primitivum
+    },
+    // objectum (2nd decl neuter) - "object, thing"
+    {
+        stirps: "object",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "object",
+        categoria: typus_categoria.primitivum
+    },
+
+    // -------------------------------------------------------------------------
+    // Collections (Generic)
+    // -------------------------------------------------------------------------
+
+    // lista (1st decl feminine) - "list, edge, border"
+    {
+        stirps: "list",
+        declinatio: declinatio.prima,
+        forma: genera.femininum,
+        significatio: "list/array",
+        categoria: typus_categoria.collectio,
+        genericum: verum
+    },
+    // tabula (1st decl feminine) - "board, tablet, table"
+    {
+        stirps: "tabul",
+        declinatio: declinatio.prima,
+        forma: genera.femininum,
+        significatio: "table/map",
+        categoria: typus_categoria.collectio,
+        genericum: verum
+    },
+    // copia (1st decl feminine) - "abundance, supply, collection"
+    {
+        stirps: "copi",
+        declinatio: declinatio.prima,
+        forma: genera.femininum,
+        significatio: "set/collection",
+        categoria: typus_categoria.collectio,
+        genericum: verum
+    },
+
+    // -------------------------------------------------------------------------
+    // Structural Types
+    // -------------------------------------------------------------------------
+
+    // promissum (2nd decl neuter) - "promise, guarantee"
+    {
+        stirps: "promiss",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "promise",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // forsitan (adverb as type) - "perhaps, maybe" (optional)
+    {
+        stirps: "forsitan",
+        declinatio: declinatio.tertia,
+        forma: genera.neutrum,
+        significatio: "optional",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // fors (3rd decl feminine) - "chance, fortune" (result)
+    {
+        stirps: "for",
+        declinatio: declinatio.tertia,
+        forma: genera.femininum,
+        significatio: "result",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // tempus (3rd decl neuter) - "time, period"
+    {
+        stirps: "tempor",
+        nominativus: "tempus",
+        declinatio: declinatio.tertia,
+        forma: genera.neutrum,
+        significatio: "time/date",
+        categoria: typus_categoria.structura
+    },
+    // erratum (2nd decl neuter) - "error, mistake"
+    {
+        stirps: "errat",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "error",
+        categoria: typus_categoria.structura
+    },
+    // vacuum (2nd decl neuter) - "empty space, void"
+    {
+        stirps: "vacu",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "void/empty",
+        categoria: typus_categoria.structura
+    },
+    // quodlibet (3rd decl neuter) - "whatever you please, anything"
+    {
+        stirps: "quodlibet",
+        declinatio: declinatio.tertia,
+        forma: genera.neutrum,
+        significatio: "any",
+        categoria: typus_categoria.structura
+    },
+    // ignotum (2nd decl neuter) - "unknown, unfamiliar"
+    {
+        stirps: "ignot",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "unknown",
+        categoria: typus_categoria.structura
+    },
+    // numquam (adverb as type) - "never"
+    {
+        stirps: "numquam",
+        declinatio: declinatio.tertia,
+        forma: genera.neutrum,
+        significatio: "never",
+        categoria: typus_categoria.structura
+    },
+
+    // -------------------------------------------------------------------------
+    // Iteration & Streaming
+    // -------------------------------------------------------------------------
+
+    // cursor (3rd decl masculine) - "runner, iterator"
+    {
+        stirps: "cursor",
+        declinatio: declinatio.tertia,
+        forma: genera.masculinum,
+        significatio: "cursor/iterator",
+        categoria: typus_categoria.iteratio,
+        genericum: verum
+    },
+    // fluxus (4th decl masculine) - "flow, stream, flux"
+    {
+        stirps: "flux",
+        declinatio: declinatio.quarta,
+        forma: genera.masculinum,
+        significatio: "flow/stream",
+        categoria: typus_categoria.iteratio,
+        genericum: verum
+    },
+
+    // -------------------------------------------------------------------------
+    // Systems Types (Zig/WASM targets)
+    // -------------------------------------------------------------------------
+
+    // indicium (2nd decl neuter) - "indication, pointer"
+    {
+        stirps: "indici",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "pointer",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // refera (1st decl feminine) - "reference"
+    {
+        stirps: "refer",
+        declinatio: declinatio.prima,
+        forma: genera.femininum,
+        significatio: "reference",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+
+    // -------------------------------------------------------------------------
+    // Utility Types (TypeScript only)
+    // -------------------------------------------------------------------------
+
+    // pars (3rd decl feminine) - "part, portion" (Partial<T>)
+    {
+        stirps: "par",
+        declinatio: declinatio.tertia,
+        forma: genera.femininum,
+        significatio: "partial",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // totum (2nd decl neuter) - "whole, total" (Required<T>)
+    {
+        stirps: "tot",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "required",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // lectum (2nd decl neuter) - "read, chosen" (Readonly<T>)
+    {
+        stirps: "lect",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "readonly",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // registrum (2nd decl neuter) - "record, registry"
+    {
+        stirps: "registr",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "record",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // selectum (2nd decl neuter) - "selected, picked"
+    {
+        stirps: "select",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "pick",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // omissum (2nd decl neuter) - "omitted, left out"
+    {
+        stirps: "omiss",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "omit",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // extractum (2nd decl neuter) - "extracted, drawn out"
+    {
+        stirps: "extract",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "extract",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // exclusum (2nd decl neuter) - "excluded, shut out"
+    {
+        stirps: "exclus",
+        declinatio: declinatio.secunda,
+        forma: genera.neutrum,
+        significatio: "exclude",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // nonnihil (compound) - "not null"
+    {
+        stirps: "nonnihil",
+        declinatio: declinatio.tertia,
+        forma: genera.neutrum,
+        significatio: "non-nullable",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // reditus (4th decl masculine) - "return, going back"
+    {
+        stirps: "redit",
+        declinatio: declinatio.quarta,
+        forma: genera.masculinum,
+        significatio: "return type",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    },
+    // parametra (1st decl feminine plural) - "parameters"
+    {
+        stirps: "parametr",
+        declinatio: declinatio.prima,
+        forma: genera.femininum,
+        significatio: "parameters",
+        categoria: typus_categoria.structura,
+        genericum: verum
+    }
+]
+
+// =============================================================================
+// LOOKUP MAP
+// =============================================================================
+
+// Pre-computed Map for O(1) type lookup.
+fixum tabula<textus, typus_ingressus> mappa_typorum = novum tabula
+
+// Initialize the map from the type list.
+ex typi_constructi pro t {
+    mappa_typorum.pone(t.stirps.minusculis(), t)
+}
+
+// =============================================================================
+// LOOKUP FUNCTIONS
+// =============================================================================
+
+// Check if a stem is a built-in type.
+functio est_typus_constructus(textus stirps) -> verifex {
+    redde mappa_typorum.habet(stirps.minusculis())
+}
+
+// Get type metadata for a stem.
+functio accipe_typum_constructum(textus stirps) -> typus_ingressus? {
+    redde mappa_typorum.accipe(stirps.minusculis())
+}
