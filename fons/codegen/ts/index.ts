@@ -191,7 +191,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const definitions: string[] = [];
 
         if (features.decimal) {
-            imports.push("import Decimal from 'decimal.js';");
+            imports.push("import type Decimal from 'decimal.js';");
         }
 
         if (features.panic) {

@@ -527,7 +527,7 @@ describe('codegen', () => {
         test('decimus maps to Decimal with import', () => {
             const js = compile('typus Price = decimus');
 
-            expect(js).toContain("import Decimal from 'decimal.js';");
+            expect(js).toContain("import type Decimal from 'decimal.js';");
             expect(js).toContain('type Price = Decimal;');
         });
 
