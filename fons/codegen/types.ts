@@ -64,9 +64,6 @@ export interface RequiredFeatures {
     // Generators
     generator: boolean; // cursor, fiunt
 
-    // Events
-    events: boolean; // emitte, ausculta
-
     // Numeric types
     decimal: boolean; // decimus - needs decimal.js import
 }
@@ -83,7 +80,6 @@ export function createRequiredFeatures(): RequiredFeatures {
         async: false,
         asyncIterator: false,
         generator: false,
-        events: false,
         decimal: false,
     };
 }

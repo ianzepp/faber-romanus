@@ -231,24 +231,6 @@ describe('prettier plugin', () => {
         });
     });
 
-    describe('events', () => {
-        test('emit statement', async () => {
-            const result = await format('emitte "userLogin"');
-            expect(result).toBe('emitte "userLogin"\n');
-        });
-
-        test('emit with data', async () => {
-            const result = await format('emitte "userLogin", { userId: 42 }');
-            expect(result).toContain('emitte "userLogin"');
-            expect(result).toContain('userId: 42');
-        });
-
-        test('ausculta expression', async () => {
-            const result = await format('fixum stream = ausculta "events"');
-            expect(result).toContain('ausculta "events"');
-        });
-    });
-
     describe('fac blocks and lambdas', () => {
         test('fac block', async () => {
             const result = await format('fac { doSomething() }');

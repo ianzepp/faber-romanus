@@ -103,7 +103,6 @@ import type {
     BlockStatement,
     ThrowStatement,
     ScribeStatement,
-    EmitStatement,
     OutputLevel,
     ExpressionStatement,
     Identifier,
@@ -126,7 +125,6 @@ import type {
     ObjectProperty,
     FacBlockStatement,
     LambdaExpression,
-    AuscultaExpression,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
 import { ParserErrorCode, PARSER_ERRORS } from './errors';
@@ -606,10 +604,6 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('mone')) {
             return parseScribeStatement('warn');
-        }
-
-        if (checkKeyword('emitte')) {
-            return parseEmitStatement();
         }
 
         if (checkKeyword('tempta')) {
@@ -1964,27 +1958,6 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
-     * Parse emit statement.
-     *
-     * GRAMMAR: emitStmt := 'emitte' expression (',' expression)?
-     */
-    function parseEmitStatement(): EmitStatement {
-        const position = peek().position;
-
-        expectKeyword('emitte', ParserErrorCode.ExpectedKeyword);
-
-        const event = parseExpression();
-
-        let data: Expression | undefined;
-
-        if (match('COMMA')) {
-            data = parseExpression();
-        }
-
-        return { type: 'EmitStatement', event, data, position };
-    }
-
-    /**
      * Parse try-catch-finally statement.
      *
      * GRAMMAR:
@@ -2480,13 +2453,6 @@ export function parse(tokens: Token[]): ParserResult {
             const argument = parseUnary();
 
             return { type: 'AwaitExpression', argument, position };
-        }
-
-        if (matchKeyword('ausculta')) {
-            const position = tokens[current - 1].position;
-            const event = parseUnary();
-
-            return { type: 'AuscultaExpression', event, position };
         }
 
         if (matchKeyword('novum')) {

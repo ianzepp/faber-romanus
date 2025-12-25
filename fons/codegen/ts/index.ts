@@ -68,7 +68,6 @@ import type {
     EnumDeclaration,
     ThrowStatement,
     ScribeStatement,
-    EmitStatement,
     TryStatement,
     ExpressionStatement,
     ArrayExpression,
@@ -89,7 +88,6 @@ import type {
     TypeParameter,
     FacBlockStatement,
     LambdaExpression,
-    AuscultaExpression,
 } from '../../parser/ast';
 import type { CodegenOptions, RequiredFeatures } from '../types';
 import { createRequiredFeatures } from '../types';
@@ -264,8 +262,6 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genThrowStatement(node);
             case 'ScribeStatement':
                 return genScribeStatement(node);
-            case 'EmitStatement':
-                return genEmitStatement(node);
             case 'TryStatement':
                 return genTryStatement(node);
             case 'BlockStatement':
@@ -1088,13 +1084,6 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         return `${ind()}console.${method}(${args})${semi ? ';' : ''}`;
     }
 
-    function genEmitStatement(node: EmitStatement): string {
-        const event = genExpression(node.event);
-        const data = node.data ? genExpression(node.data) : undefined;
-        const args = data ? `${event}, ${data}` : event;
-        return `${ind()}Eventus.emitte(${args})${semi ? ';' : ''}`;
-    }
-
     function genTryStatement(node: TryStatement): string {
         let result = `${ind()}try ${genBlockStatement(node.block)}`;
 
@@ -1188,8 +1177,6 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             case 'AwaitExpression':
                 // WHY: cede maps to yield in generators, await in async functions
                 return `${inGenerator ? 'yield' : 'await'} ${genExpression(node.argument)}`;
-            case 'AuscultaExpression':
-                return `Eventus.ausculta(${genExpression(node.event)})`;
             case 'NewExpression':
                 return genNewExpression(node);
             case 'ConditionalExpression':

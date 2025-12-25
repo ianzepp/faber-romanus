@@ -101,7 +101,6 @@ export type Statement =
     | ThrowStatement
     | TryStatement
     | ScribeStatement
-    | EmitStatement
     | FacBlockStatement;
 
 // ---------------------------------------------------------------------------
@@ -738,29 +737,6 @@ export interface ScribeStatement extends BaseNode {
 }
 
 /**
- * Emit (event) statement.
- *
- * GRAMMAR (in EBNF):
- *   emitStmt := 'emitte' expression (',' expression)?
- *
- * WHY: Latin 'emitte' (send out!) for event emission.
- *      First argument is event name (typically string).
- *      Second argument is optional event data payload.
- *
- * Examples:
- *   emitte "userLogin"
- *   emitte "userLogin", { userId: 42 }
- *
- * Compiles to stdlib call:
- *   Eventus.emitte("userLogin", { userId: 42 });
- */
-export interface EmitStatement extends BaseNode {
-    type: 'EmitStatement';
-    event: Expression;
-    data?: Expression;
-}
-
-/**
  * Try-catch-finally statement.
  *
  * GRAMMAR (in EBNF):
@@ -877,7 +853,6 @@ export type Expression =
     | AwaitExpression
     | NewExpression
     | TemplateLiteral
-    | AuscultaExpression
     | LambdaExpression;
 
 // ---------------------------------------------------------------------------
@@ -1179,27 +1154,6 @@ export interface ConditionalExpression extends BaseNode {
 export interface AwaitExpression extends BaseNode {
     type: 'AwaitExpression';
     argument: Expression;
-}
-
-/**
- * Ausculta expression (event stream subscription).
- *
- * GRAMMAR (in EBNF):
- *   auscultaExpr := 'ausculta' expression
- *
- * WHY: Latin 'ausculta' (listen!) creates an async iterator from an event stream.
- *      Complements 'emitte' (push) with pull-based consumption.
- *
- * Examples:
- *   fixum stream = ausculta "userAction"
- *   ex stream fiet event { scribe event }
- *
- * Compiles to stdlib call that returns AsyncIterator:
- *   const stream = Eventus.ausculta("userAction");
- */
-export interface AuscultaExpression extends BaseNode {
-    type: 'AuscultaExpression';
-    event: Expression;
 }
 
 /**

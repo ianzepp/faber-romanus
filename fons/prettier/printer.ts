@@ -39,11 +39,9 @@ import type {
     PactumMethod,
     BreakStatement,
     ContinueStatement,
-    EmitStatement,
     FacBlockStatement,
     LambdaExpression,
     ThisExpression,
-    AuscultaExpression,
 } from '../parser/ast.ts';
 import type { AstNode, PrettierProgram } from './parser.ts';
 
@@ -121,8 +119,6 @@ export function faberPrint(path: AstPath<AstNode>, options: FaberOptions, print:
             return 'rumpe';
         case 'ContinueStatement':
             return 'perge';
-        case 'EmitStatement':
-            return printEmitStatement(path, options, print);
         case 'FacBlockStatement':
             return printFacBlockStatement(path, options, print);
         case 'BlockStatement':
@@ -169,8 +165,6 @@ export function faberPrint(path: AstPath<AstNode>, options: FaberOptions, print:
             return printNewExpression(path, options, print);
         case 'LambdaExpression':
             return printLambdaExpression(path, options, print);
-        case 'AuscultaExpression':
-            return printAuscultaExpression(path, options, print);
 
         // Type nodes
         case 'TypeAnnotation':
@@ -496,17 +490,6 @@ function printPactumMethod(path: AstPath<AstNode>, options: FaberOptions, print:
     return parts;
 }
 
-function printEmitStatement(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
-    const node = path.getValue() as any;
-    const parts: Doc[] = ['emitte ', path.call(print, 'event')];
-
-    if (node.data) {
-        parts.push(', ', path.call(print, 'data'));
-    }
-
-    return parts;
-}
-
 function printFacBlockStatement(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
     const node = path.getValue() as any;
     const parts: Doc[] = ['fac ', path.call(print, 'body')];
@@ -534,10 +517,6 @@ function printLambdaExpression(path: AstPath<AstNode>, options: FaberOptions, pr
     }
 
     return parts;
-}
-
-function printAuscultaExpression(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
-    return ['ausculta ', path.call(print, 'event')];
 }
 
 function printExpressionStatement(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {

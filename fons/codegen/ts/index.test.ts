@@ -2161,32 +2161,4 @@ describe('codegen', () => {
         });
     });
 
-    describe('event system (emitte/ausculta)', () => {
-        test('emitte with event name only', () => {
-            const js = compile('emitte "appStarted"');
-
-            expect(js).toContain('Eventus.emitte("appStarted")');
-        });
-
-        test('emitte with event name and data', () => {
-            const js = compile('emitte "userLogin", { userId: 42 }');
-
-            expect(js).toContain('Eventus.emitte("userLogin", { userId: 42 })');
-        });
-
-        test('emitte with variable event name', () => {
-            const js = compile(`
-                fixum eventName = "notification"
-                emitte eventName, { message: "hi" }
-            `);
-
-            expect(js).toContain('Eventus.emitte(eventName, { message: "hi" })');
-        });
-
-        test('ausculta expression', () => {
-            const js = compile('fixum stream = ausculta "userAction"');
-
-            expect(js).toContain('Eventus.ausculta("userAction")');
-        });
-    });
 });

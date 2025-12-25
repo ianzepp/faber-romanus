@@ -101,8 +101,6 @@ export const keywords: KeywordEntry[] = [
     { latin: 'scribe', meaning: 'print', category: 'control' },
     { latin: 'vide', meaning: 'debug', category: 'control' },
     { latin: 'mone', meaning: 'warn', category: 'control' },
-    { latin: 'emitte', meaning: 'emit', category: 'control' },
-    { latin: 'ausculta', meaning: 'listen', category: 'control' },
     { latin: 'cede', meaning: 'await', category: 'control' },
 
     // ---------------------------------------------------------------------------
