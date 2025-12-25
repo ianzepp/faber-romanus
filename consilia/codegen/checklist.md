@@ -257,6 +257,25 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 | `aliquis` (some) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `coniunge` (join) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `perambula` (forEach) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
+| `filtra` (filter in-place) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `ordina` (sort in-place) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `inverte` (reverse in-place) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `congrega` (groupBy) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `unica` (unique) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `planaOmnia` (flattenDeep) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `fragmenta` (chunk) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `densa` (compact) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `partire` (partition) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `misce` (shuffle) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `specimen` (sample one) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `specimina` (sample n) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `summa` (sum) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `medium` (average) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `minimus` (min) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `maximus` (max) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `minimusPer` (minBy) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `maximusPer` (maxBy) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `numera` (count) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Tabula (Map) Methods
 
@@ -265,7 +284,7 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 | `pone` (set) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `accipe` (get) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `habet` (has) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| `erade` (delete) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `dele` (delete) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `longitudo` (size) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `vacua` (isEmpty) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `purga` (clear) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
@@ -279,6 +298,8 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 | `inversa` (invert) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `mappaValores` (mapValues) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `mappaClaves` (mapKeys) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `inLista` (toArray) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `inObjectum` (toObject) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Copia (Set) Methods
 
@@ -286,7 +307,7 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 |-------|:----------:|:---:|:------:|:----:|:----:|:-----:|
 | `adde` (add) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `habet` (has) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
-| `erade` (delete) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `dele` (delete) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `longitudo` (size) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `vacua` (isEmpty) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `purga` (clear) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
@@ -296,6 +317,9 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 | `symmetrica` (symmetric diff) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `subcopia` (isSubset) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `supercopia` (isSuperset) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `inLista` (toArray) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `valores` (values) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `perambula` (forEach) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Collection DSL (Future)
 
