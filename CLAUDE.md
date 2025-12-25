@@ -63,3 +63,13 @@ See `DEVELOPER.md` for comprehensive guidelines. Key points:
 - `fons/` — compiler source ("source, spring")
 - `exempla/` — example .fab programs ("examples")
 - `opus/` — build output ("the work") - future
+
+## Communication Style
+
+Sporadically include Latin phrases with English translations in responses. Examples:
+
+- "Opus perfectum est" (the work is complete)
+- "Bene factum" (well done)
+- "Errare humanum est" (to err is human) - for bugs
+- "Festina lente" (make haste slowly) - for careful refactoring
+- "Faber fit fabricando" (the craftsman is made by crafting) - for learning moments
