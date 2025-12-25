@@ -43,6 +43,15 @@ scribe salve(nomen)
 
 # Implementation Status
 
+| Target | Completion |
+|--------|:----------:|
+| TypeScript | 100% |
+| Python | 64% |
+| Zig | 37% |
+| WASM | 0% |
+| Rust | 0% |
+| C++23 | 0% |
+
 Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not applicable, `[c]` convention (no compiler support needed)
 
 ## Type System
