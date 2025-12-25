@@ -1,42 +1,43 @@
 {
-  "name": "faber-romanus",
-  "version": "0.5.0",
-  "description": "A Latin-to-JavaScript transpiler - The Roman Craftsman",
-  "module": "index.ts",
-  "type": "module",
-  "bin": {
-    "faber": "./fons/cli.ts"
-  },
-  "scripts": {
-    "build": "./scripta/build",
-    "build:exempla": "bun ./scripta/build-exempla.ts",
-    "test": "./scripta/test",
-    "check": "./scripta/check",
-    "lint": "./scripta/lint",
-    "lint:fix": "./scripta/lint --fix",
-    "format": "./scripta/format",
-    "format:check": "./scripta/format --check",
-    "release": "./scripta/release",
-    "use": "./scripta/use",
-    "check:ast": "bun ./scripta/check-ast-sync.ts",
-    "check:tree-sitter": "bun ./scripta/check-tree-sitter.ts"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.2",
-    "@types/bun": "latest",
-    "eslint": "^9.39.2",
-    "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.7.4",
-    "typescript-eslint": "^8.50.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.9.3"
-  },
-  "keywords": [
-    "latin",
-    "transpiler",
-    "compiler",
-    "javascript"
-  ],
-  "license": "MIT"
+    "name": "faber-romanus",
+    "version": "0.5.0",
+    "description": "A Latin-to-JavaScript transpiler - The Roman Craftsman",
+    "module": "index.ts",
+    "type": "module",
+    "bin": {
+        "faber": "./fons/cli.ts"
+    },
+    "scripts": {
+        "build": "./scripta/build",
+        "build:exempla": "bun ./scripta/build-exempla.ts",
+        "test": "./scripta/test",
+        "check": "./scripta/check",
+        "lint": "./scripta/lint",
+        "lint:fix": "./scripta/lint --fix",
+        "format": "./scripta/format",
+        "format:check": "./scripta/format --check",
+        "release": "./scripta/release",
+        "use": "./scripta/use",
+        "check:ast": "bun ./scripta/check-ast-sync.ts",
+        "check:tree-sitter": "bun ./scripta/check-tree-sitter.ts",
+        "verify:exempla": "bun ./scripta/verify-exempla.ts"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@types/bun": "latest",
+        "eslint": "^9.39.2",
+        "eslint-config-prettier": "^10.1.8",
+        "prettier": "^3.7.4",
+        "typescript-eslint": "^8.50.0"
+    },
+    "peerDependencies": {
+        "typescript": "^5.9.3"
+    },
+    "keywords": [
+        "latin",
+        "transpiler",
+        "compiler",
+        "javascript"
+    ],
+    "license": "MIT"
 }
