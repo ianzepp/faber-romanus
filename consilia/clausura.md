@@ -1,22 +1,22 @@
 # Clausura (Closures/Lambdas) Design
 
-Latin: *clausura* (from *claudere*, to close) — a closure, enclosure.
+Latin: _clausura_ (from _claudere_, to close) — a closure, enclosure.
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `pro x redde expr` expression | Done | Single-expression lambda |
-| `pro x, y redde expr` multi-param | Done | Multiple parameters |
-| `pro redde expr` zero-param | Done | No parameters |
-| `pro x { body }` block | Done | Multi-statement body |
-| `pro { body }` zero-param block | Done | No parameters, block body |
-| Nested lambdas | Done | `pro x redde pro y redde x + y` |
-| Captures | Done | Implicit capture of outer scope |
-| `(x) => expr` JS-style | Done | Alternative syntax |
-| Async lambdas | Done | Use block form with `cede` |
-| Generator lambdas | **Not done** | Use named functions |
-| Typed parameters | **Not done** | Future feature |
+| Feature                           |  TypeScript  |    Python    |     Zig      |     Rust     |              C++23              | Notes                                |
+| --------------------------------- | :----------: | :----------: | :----------: | :----------: | :-----------------------------: | ------------------------------------ |
+| `pro x redde expr` expression     |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Single-expression lambda             |
+| `pro x, y redde expr` multi-param |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Multiple parameters                  |
+| `pro redde expr` zero-param       |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | No parameters                        |
+| `pro x { body }` block            |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Multi-statement body                 |
+| `pro { body }` zero-param block   |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | No parameters, block body            |
+| Nested lambdas                    |   [x] Done   |   [x] Done   | [ ] Not Done | [ ] Not Done |            [x] Done             | `pro x redde pro y redde x + y`      |
+| Captures                          |   [x] Done   |   [x] Done   | [ ] Not Done |   [x] Done   | Implicit capture of outer scope |
+| `(x) => expr` JS-style            |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Alternative syntax                   |
+| Async lambdas                     |   [x] Done   |   [x] Done   | [ ] Not Done | [ ] Not Done |            [x] Done             | Use block form with `cede`           |
+| Generator lambdas                 | [ ] Not Done | [ ] Not Done | [ ] Not Done | [ ] Not Done |          [ ] Not Done           | Use named functions                  |
+| Typed parameters                  | [ ] Not Done | [ ] Not Done | [ ] Not Done | [ ] Not Done |          [ ] Not Done           | Parser rejects `pro x: typus` syntax |
 
 ---
 
@@ -70,10 +70,12 @@ pro {
 ### Why `pro...redde`?
 
 **`pro`** (for) — Aligns with iteration syntax. Both use the same keyword:
+
 - `ex items pro x { }` — iteration binding
 - `pro x { }` — lambda binding
 
 **`redde`** (return, give back) — Explicit about what the lambda produces:
+
 - Reads naturally: "for x, return x times 2"
 - Consistent with function bodies using `redde`
 - No new keyword needed
@@ -81,12 +83,14 @@ pro {
 ### Previous Syntax (Deprecated)
 
 The language previously used `fit` (becomes) for lambdas:
+
 ```
 // Old syntax (no longer valid)
 pro x fit x * 2
 ```
 
 This was changed to `redde` for:
+
 1. Consistency with function return syntax
 2. Clearer semantics (returning vs. becoming)
 3. Simpler mental model
@@ -195,13 +199,13 @@ fixum doubled = numbers.mappata(pro x redde x * factor)
 
 ### Target-Specific Capture Handling
 
-| Target | Capture Strategy |
-|--------|-----------------|
-| TypeScript | Automatic (JS closures) |
-| Python | Automatic (Python closures) |
-| Zig | Context struct with captured values |
-| Rust | Automatic with ownership inference |
-| C++ | Capture clause `[=]` or `[&]` |
+| Target     | Capture Strategy                    |
+| ---------- | ----------------------------------- |
+| TypeScript | Automatic (JS closures)             |
+| Python     | Automatic (Python closures)         |
+| Zig        | Context struct with captured values |
+| Rust       | Automatic with ownership inference  |
+| C++        | Capture clause `[=]` or `[&]`       |
 
 ---
 
@@ -280,19 +284,21 @@ pro x redde x * 2
 ## Open Questions
 
 1. **Typed parameters** — Should lambdas support type annotations?
-   ```
-   pro x: numerus redde x * 2
-   ```
+
+    ```
+    pro x: numerus redde x * 2
+    ```
 
 2. **Generator lambdas** — Worth supporting inline generators?
-   ```
-   pro x fiunt 1..x   // hypothetical
-   ```
+
+    ```
+    pro x fiunt 1..x   // hypothetical
+    ```
 
 3. **Capture annotations** — Explicit control over capture mode?
-   ```
-   pro [in factor] x redde x * factor   // hypothetical
-   ```
+    ```
+    pro [in factor] x redde x * factor   // hypothetical
+    ```
 
 ---
 
