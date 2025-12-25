@@ -268,7 +268,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('string');
+                expect(results[0].meaning).toBe('text/string');
                 expect(results[0].category).toBe('primitive');
             }
         });
@@ -278,7 +278,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('number');
+                expect(results[0].meaning).toBe('number');
             }
         });
 
@@ -288,7 +288,7 @@ describe('parseType', () => {
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
                 expect(results[0].case).toBe('accusative');
-                expect(results[0].jsType).toBe('number');
+                expect(results[0].meaning).toBe('number');
             }
         });
     });
@@ -299,7 +299,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Array');
+                expect(results[0].meaning).toBe('list/array');
                 expect(results[0].category).toBe('collection');
                 expect(results[0].generic).toBe(true);
             }
@@ -319,7 +319,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Map');
+                expect(results[0].meaning).toBe('table/map');
             }
         });
 
@@ -328,7 +328,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Set');
+                expect(results[0].meaning).toBe('set/collection');
             }
         });
     });
@@ -339,7 +339,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Promise');
+                expect(results[0].meaning).toBe('promise');
                 expect(results[0].generic).toBe(true);
             }
         });
@@ -349,7 +349,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Error');
+                expect(results[0].meaning).toBe('error');
             }
         });
 
@@ -358,7 +358,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Iterator');
+                expect(results[0].meaning).toBe('cursor/iterator');
                 expect(results[0].case).toBe('nominative');
             }
         });
@@ -368,7 +368,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Date');
+                expect(results[0].meaning).toBe('time/date');
                 expect(results[0].case).toBe('nominative');
                 expect(results[0].stem).toBe('tempor');
             }
@@ -379,7 +379,7 @@ describe('parseType', () => {
 
             expect(Array.isArray(results)).toBe(true);
             if (Array.isArray(results)) {
-                expect(results[0].jsType).toBe('Date');
+                expect(results[0].meaning).toBe('time/date');
                 expect(results[0].case).toBe('genitive');
             }
         });

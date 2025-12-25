@@ -145,13 +145,13 @@ function findClosestMatch(word: string, candidates: string[], maxDistance = 3): 
 }
 
 /**
- * Parsed type with JavaScript/TypeScript target information.
+ * Parsed type with semantic meaning.
  *
  * DESIGN: Extends ParsedNoun because Latin type names follow noun declension
- *         patterns. jsType maps to target language primitives.
+ *         patterns. Target-specific type mappings live in codegen modules.
  */
 export interface ParsedType extends ParsedNoun {
-    jsType: string;
+    meaning: string;
     category: 'primitive' | 'collection' | 'structural' | 'iteration';
     generic?: boolean;
 }
@@ -273,7 +273,7 @@ export function parseType(word: string): ParsedType[] | LexiconError {
                     gender: typeEntry.gender,
                     case: 'nominative',
                     number: 'singular',
-                    jsType: typeEntry.jsType,
+                    meaning: typeEntry.meaning,
                     category: typeEntry.category,
                     generic: typeEntry.generic,
                 },
@@ -305,7 +305,7 @@ export function parseType(word: string): ParsedType[] | LexiconError {
                     gender: typeEntry.gender,
                     case: 'nominative',
                     number: 'singular',
-                    jsType: typeEntry.jsType,
+                    meaning: typeEntry.meaning,
                     category: typeEntry.category,
                     generic: typeEntry.generic,
                 },
@@ -321,7 +321,7 @@ export function parseType(word: string): ParsedType[] | LexiconError {
                 gender: typeEntry.gender,
                 case: m.case,
                 number: m.number,
-                jsType: typeEntry.jsType,
+                meaning: typeEntry.meaning,
                 category: typeEntry.category,
                 generic: typeEntry.generic,
             }));

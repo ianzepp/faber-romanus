@@ -281,7 +281,7 @@ interface VariableDeclaration {
 // Semantics (after analysis): resolved to target language
 interface ResolvedVariable {
   kind: "let" | "const";  // Target semantics
-  jsType: string;         // Resolved type
+  type: string;           // Resolved type
 }
 ```
 
