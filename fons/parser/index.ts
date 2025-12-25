@@ -476,6 +476,7 @@ export function parse(tokens: Token[]): ParserResult {
             if (
                 checkKeyword('functio') ||
                 checkKeyword('publicus') ||
+                checkKeyword('privatus') ||
                 checkKeyword('generis') ||
                 checkKeyword('nexum') ||
                 checkKeyword('futura') ||
@@ -1156,23 +1157,27 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * GRAMMAR:
      *   genusMember := fieldDecl | methodDecl
-     *   fieldDecl := 'publicus'? 'generis'? typeAnnotation IDENTIFIER (':' expression)?
-     *   methodDecl := 'publicus'? 'generis'? ('futura' | 'cursor')* 'functio' ...
+     *   fieldDecl := 'privatus'? 'generis'? typeAnnotation IDENTIFIER (':' expression)?
+     *   methodDecl := 'privatus'? 'generis'? ('futura' | 'cursor')* 'functio' ...
      *
      * WHY: Distinguishes between fields and methods by looking for 'functio' keyword.
+     * WHY: Fields are public by default (struct semantics), use 'privatus' for private.
      */
     function parseGenusMember(): FieldDeclaration | ComputedFieldDeclaration | FunctionDeclaration {
         const position = peek().position;
 
         // Parse modifiers
-        let isPublic = false;
+        let isPrivate = false;
         let isStatic = false;
         let isReactive = false;
         let prefixAsync = false;
         let prefixGenerator = false;
 
-        if (matchKeyword('publicus')) {
-            isPublic = true;
+        // Skip 'publicus' (no-op, fields are public by default)
+        matchKeyword('publicus');
+
+        if (matchKeyword('privatus')) {
+            isPrivate = true;
         }
 
         if (matchKeyword('generis')) {
@@ -1277,7 +1282,7 @@ export function parse(tokens: Token[]): ParserResult {
                 name: fieldName,
                 fieldType,
                 expression,
-                isPublic,
+                isPrivate,
                 isStatic,
                 position,
             };
@@ -1296,7 +1301,7 @@ export function parse(tokens: Token[]): ParserResult {
             name: fieldName,
             fieldType,
             init,
-            isPublic,
+            isPrivate,
             isStatic,
             isReactive,
             position,

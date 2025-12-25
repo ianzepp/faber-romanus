@@ -452,8 +452,8 @@ function printFieldDeclaration(
     const node = path.getValue() as any;
     const parts: Doc[] = [];
 
-    if (node.isPublic) {
-        parts.push('publicus ');
+    if (node.isPrivate) {
+        parts.push('privatus ');
     }
 
     if (node.isStatic) {
@@ -481,8 +481,8 @@ function printComputedFieldDeclaration(
     const node = path.getValue() as any;
     const parts: Doc[] = [];
 
-    if (node.isPublic) {
-        parts.push('publicus ');
+    if (node.isPrivate) {
+        parts.push('privatus ');
     }
 
     if (node.isStatic) {

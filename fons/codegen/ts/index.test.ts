@@ -778,7 +778,7 @@ describe('codegen', () => {
             expect(js).toContain('class persona');
             expect(js).toContain('nomen: string = "X"');
             expect(js).toContain('constructor(overrides: { nomen?: string } = {})');
-            expect(js).toContain('if (overrides.nomen !== undefined) this.nomen = overrides.nomen');
+            expect(js).toContain('if (overrides.nomen !== undefined) { this.nomen = overrides.nomen; }');
         });
 
         test('genus with creo emits private no-args method', () => {
@@ -874,9 +874,9 @@ describe('codegen', () => {
                 }
             `);
 
-            // Regular fields - normal declaration
-            expect(js).toContain('private id: string = "x";');
-            expect(js).toContain('private active: boolean = true;');
+            // Regular fields - public by default (struct semantics)
+            expect(js).toContain('id: string = "x";');
+            expect(js).toContain('active: boolean = true;');
 
             // Reactive field - getter/setter pattern
             expect(js).toContain('#count = 0;');

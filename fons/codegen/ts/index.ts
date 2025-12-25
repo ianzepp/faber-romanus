@@ -352,8 +352,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      *       nomen: string = "X";
      *       aetas: number = 0;
      *       constructor(overrides: { nomen?: string, aetas?: number } = {}) {
-     *           if (overrides.nomen !== undefined) this.nomen = overrides.nomen;
-     *           if (overrides.aetas !== undefined) this.aetas = overrides.aetas;
+     *           if (overrides.nomen !== undefined) { this.nomen = overrides.nomen; }
+     *           if (overrides.aetas !== undefined) { this.aetas = overrides.aetas; }
      *           this.creo(); // if defined
      *       }
      *       private creo() { ... } // user's creo body, no args
@@ -435,7 +435,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         for (const field of node.fields) {
             const fieldName = field.name.name;
             lines.push(
-                `${ind()}if (overrides.${fieldName} !== undefined) this.${fieldName} = overrides.${fieldName}${semi ? ';' : ''}`,
+                `${ind()}if (overrides.${fieldName} !== undefined) { this.${fieldName} = overrides.${fieldName}${semi ? ';' : ''} }`,
             );
         }
 
@@ -495,8 +495,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             return lines.join('\n');
         }
 
-        // Regular fields
-        const visibility = node.isPublic ? '' : 'private ';
+        // Regular fields - public by default (struct semantics), private with 'privatus'
+        const visibility = node.isPrivate ? 'private ' : '';
         const staticMod = node.isStatic ? 'static ' : '';
         const init = node.init ? ` = ${genExpression(node.init)}` : '';
 
@@ -507,7 +507,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate computed field declaration as a getter.
      */
     function genComputedFieldDeclaration(node: ComputedFieldDeclaration): string {
-        const visibility = node.isPublic ? '' : 'private ';
+        // Public by default (struct semantics), private with 'privatus'
+        const visibility = node.isPrivate ? 'private ' : '';
         const staticMod = node.isStatic ? 'static ' : '';
         const name = node.name.name;
         const type = genType(node.fieldType);

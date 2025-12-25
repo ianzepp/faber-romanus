@@ -6,7 +6,7 @@
 
 - `genus` declaration with fields and methods
 - Field defaults using `:` syntax
-- Field visibility (`publicus`)
+- Field visibility (`privatus` for private, public by default)
 - Static members (`generis`)
 - Type parameters (`genus capsa<T>`)
 - `pactum` declaration
@@ -91,25 +91,25 @@ This aligns field defaults with object literal syntax (`{ nomen: "Marcus" }`) an
 
 ### Field Visibility
 
-- Fields are **private by default**
-- Use `publicus` for public access:
+- Fields are **public by default** (struct semantics)
+- Use `privatus` for private fields:
 
 ```
 genus persona {
-    publicus textus nomen     // accessible from outside
-    numerus aetas             // private
+    textus nomen              // public (default)
+    privatus numerus aetas    // private
 }
 ```
 
 ### Method Visibility
 
-- Methods are **private by default**
-- Use `publicus` for public methods:
+- Methods are **public by default** (struct semantics)
+- Use `privatus` for private methods:
 
 ```
 genus persona {
-    publicus functio saluta() -> textus { ... }
-    functio auxilium() { ... }  // private helper
+    functio saluta() -> textus { ... }      // public (default)
+    privatus functio auxilium() { ... }     // private helper
 }
 ```
 
@@ -157,14 +157,14 @@ fixum m = math.maximus(5, 3)  // 5
 
 - Declare with `type name => expression`
 - Expression runs in the instance context (`ego` is available)
-- Honors `publicus`/`generis` modifiers (public getters vs. type-level constants)
+- Public by default, use `privatus` for private, `generis` for static
 - Currently read-only (no setter syntax yet)
 
 ```
 genus rectangulum {
     numerus latitudo: 1
     numerus altitudo: 1
-    publicus numerus area => ego.latitudo * ego.altitudo
+    numerus area => ego.latitudo * ego.altitudo    // public computed field
 }
 ```
 
@@ -213,7 +213,7 @@ The compiler merges defaults with overrides, then calls `creo()` if defined.
 genus capsa<T> {
     T valor
 
-    publicus functio accipe() -> T {
+    functio accipe() -> T {
         redde ego.valor
     }
 }
@@ -250,7 +250,7 @@ genus cursorem<T> implet iterabilis<T> {
     numerus index
     lista<T> data
 
-    publicus functio sequens() -> T? {
+    functio sequens() -> T? {
         si ego.index >= ego.data.longitudo() {
             redde nihil
         }
@@ -259,7 +259,7 @@ genus cursorem<T> implet iterabilis<T> {
         redde valor
     }
 
-    publicus functio habet() -> bivalens {
+    functio habet() -> bivalens {
         redde ego.index < ego.data.longitudo()
     }
 }

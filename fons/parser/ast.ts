@@ -314,21 +314,22 @@ export interface EnumDeclaration extends BaseNode {
  * Field declaration within a genus.
  *
  * GRAMMAR (in EBNF):
- *   fieldDecl := 'publicus'? 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
- *   computedField := 'publicus'? 'generis'? typeAnnotation IDENTIFIER '=>' expression
+ *   fieldDecl := 'privatus'? 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
+ *   computedField := 'privatus'? 'generis'? typeAnnotation IDENTIFIER '=>' expression
  *
  * INVARIANT: typeAnnotation uses Latin word order (type before name).
- * INVARIANT: isPublic defaults to false (private by default).
+ * INVARIANT: isPrivate defaults to false (public by default, struct semantics).
  * INVARIANT: isStatic is true when 'generis' modifier present.
  * INVARIANT: isReactive is true when 'nexum' modifier present.
  *
  * WHY: Latin word order places type before name (e.g., "textus nomen" not "nomen: textus").
  * WHY: Field defaults use ':' (declarative "has value") not '=' (imperative "assign").
  *      This aligns with object literal syntax: { nomen: "Marcus" }
+ * WHY: Public by default follows struct semantics - genus is a data structure, not a class.
  *
  * Examples:
- *   textus nomen                    -> private field
- *   publicus textus nomen           -> public field
+ *   textus nomen                    -> public field (default)
+ *   privatus textus nomen           -> private field
  *   numerus aetas: 0                -> field with default
  *   generis fixum PI: 3.14159       -> static constant
  *   nexum numerus count: 0          -> reactive field (triggers pingo on change)
@@ -338,7 +339,7 @@ export interface FieldDeclaration extends BaseNode {
     name: Identifier;
     fieldType: TypeAnnotation;
     init?: Expression;
-    isPublic: boolean;
+    isPrivate: boolean;
     isStatic: boolean;
     isReactive: boolean; // nexum fields trigger re-render on change
 }
@@ -353,7 +354,7 @@ export interface ComputedFieldDeclaration extends BaseNode {
     name: Identifier;
     fieldType: TypeAnnotation;
     expression: Expression;
-    isPublic: boolean;
+    isPrivate: boolean;
     isStatic: boolean;
 }
 

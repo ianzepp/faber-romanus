@@ -759,11 +759,18 @@ describe('parser', () => {
             expect(genus.fields[0].init.value).toBe(0);
         });
 
-        test('genus with public field', () => {
-            const { program } = parseCode('genus persona { publicus textus nomen }');
+        test('genus with private field', () => {
+            const { program } = parseCode('genus persona { privatus textus nomen }');
             const genus = program!.body[0] as any;
 
-            expect(genus.fields[0].isPublic).toBe(true);
+            expect(genus.fields[0].isPrivate).toBe(true);
+        });
+
+        test('genus field is public by default', () => {
+            const { program } = parseCode('genus persona { textus nomen }');
+            const genus = program!.body[0] as any;
+
+            expect(genus.fields[0].isPrivate).toBe(false);
         });
 
         test('genus with static field', () => {
@@ -824,11 +831,11 @@ describe('parser', () => {
             expect(genus.fields[0].isReactive).toBe(true);
         });
 
-        test('genus with nexum and publicus modifiers', () => {
-            const { program } = parseCode('genus widget { publicus nexum numerus value: 0 }');
+        test('genus with nexum and privatus modifiers', () => {
+            const { program } = parseCode('genus widget { privatus nexum numerus value: 0 }');
             const genus = program!.body[0] as any;
 
-            expect(genus.fields[0].isPublic).toBe(true);
+            expect(genus.fields[0].isPrivate).toBe(true);
             expect(genus.fields[0].isReactive).toBe(true);
         });
 

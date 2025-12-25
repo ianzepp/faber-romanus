@@ -475,7 +475,7 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         // Python doesn't have private/static modifiers in the same way
         // Use underscore prefix convention for private
-        const prefix = node.isPublic ? '' : '_';
+        const prefix = node.isPrivate ? '_' : '';
 
         return `${ind()}${prefix}${name}: ${type}${init}`;
     }
@@ -487,7 +487,7 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         const name = node.name.name;
         const type = genType(node.fieldType);
         const expression = genExpression(node.expression);
-        const prefix = node.isPublic ? '' : '_';
+        const prefix = node.isPrivate ? '_' : '';
 
         const lines: string[] = [];
         lines.push(`${ind()}@property`);

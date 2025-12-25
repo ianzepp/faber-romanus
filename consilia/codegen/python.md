@@ -233,10 +233,10 @@ Not yet implemented in codegen.
 ### Private Field Convention
 
 Python uses underscore convention rather than access modifiers:
-- `public` field `nomen` -> `nomen`
-- `private` field `nomen` -> `_nomen`
+- Default (public) field `nomen` -> `nomen`
+- `privatus` field `nomen` -> `_nomen`
 
-The codegen adds underscore prefix for non-public fields, but Python doesn't enforce this at runtime.
+The codegen adds underscore prefix for private fields, but Python doesn't enforce this at runtime.
 
 ### No True Constants
 

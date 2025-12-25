@@ -138,8 +138,9 @@ export const keywords: KeywordEntry[] = [
     { latin: 'futura', meaning: 'async', category: 'modifier' },
     // WHY: "cursor" (runner) for generator/iterator functions
     { latin: 'cursor', meaning: 'generator', category: 'modifier' },
-    // WHY: "publicus" for visibility - default is private
+    // WHY: "publicus/privatus" for visibility - default is public (struct semantics)
     { latin: 'publicus', meaning: 'public', category: 'modifier' },
+    { latin: 'privatus', meaning: 'private', category: 'modifier' },
     // WHY: "generis" (of the genus) for type-level/static members
     { latin: 'generis', meaning: 'static', category: 'modifier' },
     // WHY: "implet" (fulfills) for implementing interfaces
