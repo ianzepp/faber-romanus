@@ -106,9 +106,47 @@ export interface UserType extends BaseType {
 }
 
 /**
+ * Enum type with named members.
+ *
+ * WHY: Enums (ordo) have named members that can be accessed via dot notation.
+ *      Members map to their value types (numerus for numeric, textus for string).
+ */
+export interface EnumType extends BaseType {
+    kind: 'enum';
+    name: string;
+    members: Map<string, SemanticType>;
+}
+
+/**
+ * Genus (class/struct) type with fields and methods.
+ *
+ * WHY: Genus declarations create types with named fields and methods.
+ *      Static members are tracked separately for member access resolution.
+ */
+export interface GenusType extends BaseType {
+    kind: 'genus';
+    name: string;
+    fields: Map<string, SemanticType>;
+    methods: Map<string, FunctionType>;
+    staticFields: Map<string, SemanticType>;
+    staticMethods: Map<string, FunctionType>;
+}
+
+/**
+ * Pactum (interface/protocol) type with method signatures.
+ *
+ * WHY: Pactum declarations define contracts that genus types can implement.
+ */
+export interface PactumType extends BaseType {
+    kind: 'pactum';
+    name: string;
+    methods: Map<string, FunctionType>;
+}
+
+/**
  * Discriminated union of all semantic types.
  */
-export type SemanticType = PrimitiveType | GenericType | FunctionType | UnionType | UnknownType | UserType;
+export type SemanticType = PrimitiveType | GenericType | FunctionType | UnionType | UnknownType | UserType | EnumType | GenusType | PactumType;
 
 // =============================================================================
 // TYPE CONSTRUCTORS
@@ -156,6 +194,34 @@ export function userType(name: string, nullable?: boolean): UserType {
     return { kind: 'user', name, nullable };
 }
 
+/**
+ * Create an enum type.
+ */
+export function enumType(name: string, members: Map<string, SemanticType>, nullable?: boolean): EnumType {
+    return { kind: 'enum', name, members, nullable };
+}
+
+/**
+ * Create a genus (class/struct) type.
+ */
+export function genusType(
+    name: string,
+    fields: Map<string, SemanticType>,
+    methods: Map<string, FunctionType>,
+    staticFields: Map<string, SemanticType>,
+    staticMethods: Map<string, FunctionType>,
+    nullable?: boolean,
+): GenusType {
+    return { kind: 'genus', name, fields, methods, staticFields, staticMethods, nullable };
+}
+
+/**
+ * Create a pactum (interface) type.
+ */
+export function pactumType(name: string, methods: Map<string, FunctionType>, nullable?: boolean): PactumType {
+    return { kind: 'pactum', name, methods, nullable };
+}
+
 // =============================================================================
 // COMMON TYPE CONSTANTS
 // =============================================================================
@@ -201,7 +267,7 @@ export function typesEqual(a: SemanticType, b: SemanticType): boolean {
                 return false;
             }
 
-            return a.typeParameters.every((t, i) => typesEqual(t, bg.typeParameters[i]));
+            return a.typeParameters.every((t, i) => typesEqual(t, bg.typeParameters[i]!));
         }
 
         case 'function': {
@@ -219,7 +285,7 @@ export function typesEqual(a: SemanticType, b: SemanticType): boolean {
                 return false;
             }
 
-            return a.parameterTypes.every((t, i) => typesEqual(t, bf.parameterTypes[i]));
+            return a.parameterTypes.every((t, i) => typesEqual(t, bf.parameterTypes[i]!));
         }
 
         case 'union': {
@@ -229,13 +295,19 @@ export function typesEqual(a: SemanticType, b: SemanticType): boolean {
                 return false;
             }
 
-            return a.types.every((t, i) => typesEqual(t, bu.types[i]));
+            return a.types.every((t, i) => typesEqual(t, bu.types[i]!));
         }
 
         case 'unknown':
             return true;
         case 'user':
             return a.name === (b as UserType).name;
+        case 'enum':
+            return a.name === (b as EnumType).name;
+        case 'genus':
+            return a.name === (b as GenusType).name;
+        case 'pactum':
+            return a.name === (b as PactumType).name;
     }
 }
 
@@ -317,5 +389,11 @@ export function formatType(type: SemanticType): string {
             return type.reason ? `unknown(${type.reason})` : 'unknown';
         case 'user':
             return type.name + (type.nullable ? '?' : '');
+        case 'enum':
+            return `ordo ${type.name}` + (type.nullable ? '?' : '');
+        case 'genus':
+            return `genus ${type.name}` + (type.nullable ? '?' : '');
+        case 'pactum':
+            return `pactum ${type.name}` + (type.nullable ? '?' : '');
     }
 }

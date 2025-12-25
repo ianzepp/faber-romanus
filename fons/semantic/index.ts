@@ -47,6 +47,9 @@ import type {
     VariableDeclaration,
     FunctionDeclaration,
     TypeAliasDeclaration,
+    EnumDeclaration,
+    GenusDeclaration,
+    PactumDeclaration,
     IfStatement,
     WhileStatement,
     ForStatement,
@@ -77,12 +80,15 @@ import type {
 import type { Position } from '../tokenizer/types';
 import type { Scope, Symbol } from './scope';
 import { createGlobalScope, createScope, defineSymbol, lookupSymbol } from './scope';
-import type { SemanticType } from './types';
+import type { SemanticType, FunctionType } from './types';
 import {
     genericType,
     functionType,
     unionType,
     userType,
+    enumType,
+    genusType,
+    pactumType,
     TEXTUS,
     NUMERUS,
     FRACTUS,
@@ -807,11 +813,67 @@ export function analyze(program: Program): SemanticResult {
     }
 
     function resolveMemberExpression(node: MemberExpression): SemanticType {
-        resolveExpression(node.object);
+        // Check if accessing a type member (enum, genus static field, etc.)
+        if (node.object.type === 'Identifier' && !node.computed) {
+            const symbol = lookupSymbol(currentScope, node.object.name);
+            const propName = (node.property as Identifier).name;
 
-        // TODO: Property access type depends on the object type
+            if (symbol) {
+                // Enum member access: Status.pending
+                if (symbol.kind === 'enum' && symbol.type.kind === 'enum') {
+                    const memberType = symbol.type.members.get(propName);
+                    if (memberType) {
+                        node.resolvedType = memberType;
+                        node.object.resolvedType = symbol.type;
+                        return memberType;
+                    }
+                    // Unknown enum member
+                    error(`Enum '${symbol.name}' has no member '${propName}'`, node.position);
+                    node.resolvedType = UNKNOWN;
+                    return UNKNOWN;
+                }
+
+                // Genus static field access: Config.VERSION
+                if (symbol.kind === 'genus' && symbol.type.kind === 'genus') {
+                    const staticFieldType = symbol.type.staticFields.get(propName);
+                    if (staticFieldType) {
+                        node.resolvedType = staticFieldType;
+                        node.object.resolvedType = symbol.type;
+                        return staticFieldType;
+                    }
+                    const staticMethodType = symbol.type.staticMethods.get(propName);
+                    if (staticMethodType) {
+                        node.resolvedType = staticMethodType;
+                        node.object.resolvedType = symbol.type;
+                        return staticMethodType;
+                    }
+                    // Fall through to instance member access if this is an instance
+                }
+            }
+        }
+
+        // Regular member access on an instance
+        const objectType = resolveExpression(node.object);
+
+        // If object is a genus instance, check for fields/methods
+        if (objectType.kind === 'genus' && !node.computed) {
+            const propName = (node.property as Identifier).name;
+
+            const fieldType = objectType.fields.get(propName);
+            if (fieldType) {
+                node.resolvedType = fieldType;
+                return fieldType;
+            }
+
+            const methodType = objectType.methods.get(propName);
+            if (methodType) {
+                node.resolvedType = methodType;
+                return methodType;
+            }
+        }
+
+        // Unknown property - return unknown for permissive behavior
         node.resolvedType = UNKNOWN;
-
         return UNKNOWN;
     }
 
@@ -1055,6 +1117,23 @@ export function analyze(program: Program): SemanticResult {
                 analyzeFacBlockStatement(node);
                 break;
 
+            case 'EnumDeclaration':
+                analyzeEnumDeclaration(node);
+                break;
+
+            case 'GenusDeclaration':
+                analyzeGenusDeclaration(node);
+                break;
+
+            case 'PactumDeclaration':
+                analyzePactumDeclaration(node);
+                break;
+
+            case 'BreakStatement':
+            case 'ContinueStatement':
+                // No semantic analysis needed for break/continue
+                break;
+
             default: {
                 const _exhaustive: never = node;
                 break;
@@ -1180,6 +1259,116 @@ export function analyze(program: Program): SemanticResult {
             name: node.name.name,
             type,
             kind: 'type',
+            mutable: false,
+            position: node.position,
+        });
+
+        node.resolvedType = type;
+        node.name.resolvedType = type;
+    }
+
+    /**
+     * Analyze enum (ordo) declaration.
+     *
+     * TRANSFORMS:
+     *   ordo Status { pending, active, done }
+     *   -> EnumType with members { pending: NUMERUS, active: NUMERUS, done: NUMERUS }
+     */
+    function analyzeEnumDeclaration(node: EnumDeclaration): void {
+        const members = new Map<string, SemanticType>();
+
+        for (const member of node.members) {
+            // Determine member type from value or default to numerus
+            let memberType: SemanticType = NUMERUS;
+            if (member.value) {
+                if (typeof member.value.value === 'string') {
+                    memberType = TEXTUS;
+                }
+            }
+            members.set(member.name.name, memberType);
+        }
+
+        const type = enumType(node.name.name, members);
+
+        define({
+            name: node.name.name,
+            type,
+            kind: 'enum',
+            mutable: false,
+            position: node.position,
+        });
+
+        node.resolvedType = type;
+        node.name.resolvedType = type;
+    }
+
+    /**
+     * Analyze genus (class/struct) declaration.
+     *
+     * WHY: Genus declarations create types with fields and methods.
+     *      Static fields are tracked separately for member access resolution.
+     */
+    function analyzeGenusDeclaration(node: GenusDeclaration): void {
+        const fields = new Map<string, SemanticType>();
+        const methods = new Map<string, FunctionType>();
+        const staticFields = new Map<string, SemanticType>();
+        const staticMethods = new Map<string, FunctionType>();
+
+        // Process fields
+        for (const field of node.fields) {
+            const fieldType = resolveTypeAnnotation(field.fieldType);
+            if (field.isStatic) {
+                staticFields.set(field.name.name, fieldType);
+            } else {
+                fields.set(field.name.name, fieldType);
+            }
+        }
+
+        // Process methods (all instance methods for now - static methods not yet in parser)
+        for (const method of node.methods) {
+            const paramTypes = method.params.map(p => (p.typeAnnotation ? resolveTypeAnnotation(p.typeAnnotation) : UNKNOWN));
+            const returnType = method.returnType ? resolveTypeAnnotation(method.returnType) : VACUUM;
+            const fnType = functionType(paramTypes, returnType, method.async);
+
+            methods.set(method.name.name, fnType);
+        }
+
+        const type = genusType(node.name.name, fields, methods, staticFields, staticMethods);
+
+        define({
+            name: node.name.name,
+            type,
+            kind: 'genus',
+            mutable: false,
+            position: node.position,
+        });
+
+        node.resolvedType = type;
+        node.name.resolvedType = type;
+    }
+
+    /**
+     * Analyze pactum (interface) declaration.
+     *
+     * WHY: Pactum declarations define contracts that genus types can implement.
+     */
+    function analyzePactumDeclaration(node: PactumDeclaration): void {
+        const methods = new Map<string, FunctionType>();
+
+        for (const method of node.methods) {
+            const paramTypes = method.params.map(p => (p.typeAnnotation ? resolveTypeAnnotation(p.typeAnnotation) : UNKNOWN));
+            const returnType = method.returnType ? resolveTypeAnnotation(method.returnType) : VACUUM;
+            const fnType = functionType(paramTypes, returnType, method.async);
+
+            methods.set(method.name.name, fnType);
+        }
+
+        const type = pactumType(node.name.name, methods);
+
+        define({
+            name: node.name.name,
+            type,
+            kind: 'pactum',
             mutable: false,
             position: node.position,
         });
