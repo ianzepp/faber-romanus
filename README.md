@@ -248,6 +248,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Async methods             |    [x]     | [~] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Generator methods         |    [x]     | [-] |  [x]   | [ ]  | [ ]  |  [-]  |
 | `implet` (implements)     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `aperit` (index sig)      |    [ ]     | [-] |  [-]   | [-]  | [-]  |  [-]  |
 | Generic classes           |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `pactum` declaration      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Interface methods         |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |

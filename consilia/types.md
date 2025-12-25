@@ -287,6 +287,44 @@ genus foo implet bar, baz {
 }
 ```
 
+### Index Signatures (`aperit`)
+
+Use **`aperit`** ("opens to") to declare that a genus or pactum accepts arbitrary string keys:
+
+```
+// Just aperit — any string key returns textus
+genus config aperit textus { }
+
+// With implet (order: genus → implet → aperit)
+genus persona implet Nominabilis aperit textus {
+    textus id
+    textus nomen
+}
+
+// On pactum
+pactum DynamicRecord aperit textus { }
+```
+
+**Etymology:** `aperire` — "to open, uncover" — the type opens to any key.
+
+**Constraints:**
+- Order is fixed: `implet` before `aperit`
+- Multiple interfaces use comma: `implet A, B aperit T`
+- Only one `aperit` per type (same as TypeScript)
+
+**TypeScript output:**
+```typescript
+class config {
+    [key: string]: string;
+}
+
+interface DynamicRecord {
+    [key: string]: string;
+}
+```
+
+**Note:** This is a TypeScript-specific feature. Other targets (Zig, Rust, C++) don't have equivalent semantics — use `tabula<textus, T>` for dynamic key/value storage on those targets.
+
 ---
 
 ## Value Semantics (Future)

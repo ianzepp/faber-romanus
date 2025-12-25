@@ -123,13 +123,47 @@ Features that would need new Faber syntax to support.
 | Mapped types | `{ [K in T]: V }` | Not done | Type transformation |
 | Conditional types | `T extends U ? A : B` | Not done | Type-level conditionals |
 | Tuple types | `[A, B, C]` | Not done | Fixed-length arrays |
-| Index signatures | `{ [k: string]: T }` | Not done | Dynamic property types |
+| Index signatures | `{ [k: string]: T }` | Designed | `aperit T` on genus/pactum |
 | satisfies | `x satisfies T` | Not done | Type check without widening |
 | infer | `infer R` | Not done | Type inference in conditionals |
 | never type | `never` | Not done | Bottom type |
 | unknown type | `unknown` | Not done | Safe any |
 
 ### Design Notes
+
+**Index Signatures (`aperit`)**: Declared on `genus` or `pactum` to indicate dynamic string key access.
+
+```
+// Just aperit
+genus config aperit textus { }
+
+// With implet (order: implet before aperit)
+genus persona implet Nominabilis aperit textus {
+    textus id
+}
+
+// On pactum
+pactum DynamicRecord aperit textus { }
+```
+
+Generates:
+```typescript
+class config {
+    [key: string]: string;
+}
+
+interface DynamicRecord {
+    [key: string]: string;
+}
+```
+
+Grammar:
+```
+genus_decl := 'genus' identifier type_params? implet_clause? aperit_clause? '{' members '}'
+implet_clause := 'implet' identifier (',' identifier)*
+aperit_clause := 'aperit' type
+pactum_decl := 'pactum' identifier type_params? aperit_clause? '{' members '}'
+```
 
 **Spread/Rest**: Latin `spargere` (to scatter) → `sparge` for spread, `ceteri` (the rest) for rest params.
 
