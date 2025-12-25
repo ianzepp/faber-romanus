@@ -396,6 +396,27 @@ Ownership system, borrowing (`&`/`&mut`), `Option<T>`/`Result<T,E>` instead of n
 
 ---
 
+## Critical Note: Method Handler Architecture
+
+The codegen method handlers (for `lista`, `tabula`, `copia`) receive arguments as a pre-joined string rather than a structured array. This creates a parsing ambiguity when arguments contain commas—such as multi-parameter lambdas like `lambda acc, n: (acc + n)`.
+
+**Current flow (problematic):**
+1. `genCallExpression` generates each argument as a string
+2. Joins them with `", "` into a single string
+3. Passes that string to the method handler
+4. Method handler attempts to parse the string back apart
+
+This is a lossy transformation. Once `["0", "lambda acc, n: (acc + n)"]` becomes `"0, lambda acc, n: (acc + n)"`, the boundary between arguments is lost.
+
+**Required fix:** Pass structured data to method handlers:
+```typescript
+type PyGenerator = (obj: string, args: string[]) => string;
+```
+
+This affects all target languages (TypeScript, Python, Zig) since any language with multi-parameter functions/lambdas will have commas in argument strings that can't be reliably distinguished from argument separators.
+
+---
+
 ## License
 
 MIT

@@ -187,14 +187,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'inveni',
         mutates: false,
         async: false,
-        py: (obj, args) => `next((x for x in ${obj} if ${args}(x)), None)`,
+        py: (obj, args) => `next(filter(${args}, ${obj}), None)`,
     },
 
     inveniIndicem: {
         latin: 'inveniIndicem',
         mutates: false,
         async: false,
-        py: (obj, args) => `next((i for i, x in enumerate(${obj}) if ${args}(x)), -1)`,
+        py: (obj, args) => `next((i for i, x in enumerate(${obj}) if (${args})(x)), -1)`,
     },
 
     // -------------------------------------------------------------------------
@@ -205,14 +205,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'filtrata',
         mutates: false,
         async: false,
-        py: (obj, args) => `[x for x in ${obj} if ${args}(x)]`,
+        py: (obj, args) => `list(filter(${args}, ${obj}))`,
     },
 
     mappata: {
         latin: 'mappata',
         mutates: false,
         async: false,
-        py: (obj, args) => `[${args}(x) for x in ${obj}]`,
+        py: (obj, args) => `list(map(${args}, ${obj}))`,
     },
 
     reducta: {
@@ -220,11 +220,18 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         mutates: false,
         async: false,
         py: (obj, args) => {
-            // args is "fn, init" or just "fn"
-            const parts = args.split(',').map(s => s.trim());
-            if (parts.length >= 2) {
-                return `functools.reduce(${parts[0]}, ${obj}, ${parts[1]})`;
+            // Latin API: reducta(fn, init) - function first, then initial value
+            // Split on LAST comma since init is typically simple (0, "", etc.)
+            // while fn may contain commas in lambda params
+            // NOTE: See README "Critical Note" - this is a workaround for the
+            // architectural issue of receiving args as a joined string
+            const lastComma = args.lastIndexOf(',');
+            if (lastComma !== -1) {
+                const fn = args.slice(0, lastComma).trim();
+                const init = args.slice(lastComma + 1).trim();
+                return `functools.reduce(${fn}, ${obj}, ${init})`;
             }
+            // Just function, no initial value
             return `functools.reduce(${args}, ${obj})`;
         },
     },
@@ -233,7 +240,7 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'explanata',
         mutates: false,
         async: false,
-        py: (obj, args) => `[y for x in ${obj} for y in ${args}(x)]`,
+        py: (obj, args) => `[y for x in ${obj} for y in (${args})(x)]`,
     },
 
     plana: {
@@ -309,14 +316,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'omnes',
         mutates: false,
         async: false,
-        py: (obj, args) => `all(${args}(x) for x in ${obj})`,
+        py: (obj, args) => `all(map(${args}, ${obj}))`,
     },
 
     aliquis: {
         latin: 'aliquis',
         mutates: false,
         async: false,
-        py: (obj, args) => `any(${args}(x) for x in ${obj})`,
+        py: (obj, args) => `any(map(${args}, ${obj}))`,
     },
 
     // -------------------------------------------------------------------------
@@ -346,7 +353,7 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         // forEach doesn't exist in Python; we use a for loop or list comprehension
         // For side effects, we use: [fn(x) for x in list] and discard result
         // Or generate a for loop if in statement context
-        py: (obj, args) => `[${args}(x) for x in ${obj}]`,
+        py: (obj, args) => `[(${args})(x) for x in ${obj}]`,
     },
 };
 

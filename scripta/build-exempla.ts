@@ -20,7 +20,7 @@ const EXEMPLA = join(ROOT, 'exempla');
 const OUTPUT = join(ROOT, 'opus', 'exempla');
 const FABER = join(ROOT, 'opus', 'faber');
 
-type Target = 'ts' | 'zig';
+type Target = 'ts' | 'zig' | 'py';
 
 /**
  * Recursively find all .fab files in a directory
@@ -49,7 +49,7 @@ async function main() {
     const args = process.argv.slice(2);
     const targetArg = args.includes('-t') ? args[args.indexOf('-t') + 1] : 'ts';
 
-    const targets: Target[] = targetArg === 'all' ? ['ts', 'zig'] : [targetArg as Target];
+    const targets: Target[] = targetArg === 'all' ? ['ts', 'zig', 'py'] : [targetArg as Target];
 
     // Always rebuild to avoid stale executable issues
     console.log('Building faber executable...');
@@ -68,7 +68,7 @@ async function main() {
         const subdir = dirname(relativePath);
 
         for (const target of targets) {
-            const ext = target === 'ts' ? 'ts' : 'zig';
+            const ext = target === 'ts' ? 'ts' : target === 'py' ? 'py' : 'zig';
             const outputDir = join(OUTPUT, target, subdir);
             const output = join(outputDir, `${name}.${ext}`);
 
@@ -134,6 +134,52 @@ async function main() {
 
         if (zigFailed > 0) {
             console.log(`\n${zigFailed}/${zigSources.length} Zig file(s) failed to compile.`);
+        }
+    }
+
+    // Verify Python output
+    if (targets.includes('py')) {
+        console.log('Verifying Python...');
+        const pyDir = join(OUTPUT, 'py');
+
+        // Find all .py files
+        const findPyFiles = async (dir: string): Promise<string[]> => {
+            const entries = await readdir(dir);
+            const files: string[] = [];
+            for (const entry of entries) {
+                const fullPath = join(dir, entry);
+                const stat = statSync(fullPath);
+                if (stat.isDirectory()) {
+                    files.push(...await findPyFiles(fullPath));
+                }
+                else if (entry.endsWith('.py')) {
+                    files.push(fullPath);
+                }
+            }
+            return files;
+        };
+
+        const pyFiles = await findPyFiles(pyDir);
+        let pyFailed = 0;
+
+        for (const file of pyFiles) {
+            try {
+                await $`python3 -m py_compile ${file}`.quiet();
+            }
+            catch (err: any) {
+                console.error(`  ${relative(OUTPUT, file)}: FAILED`);
+                const errText = err.stderr?.toString() || '';
+                if (errText) console.error(`    ${errText.trim()}`);
+                pyFailed++;
+            }
+        }
+
+        if (pyFailed === 0) {
+            console.log(`  py_compile: OK (${pyFiles.length} files)`);
+        }
+        else {
+            console.log(`\n${pyFailed}/${pyFiles.length} Python file(s) failed syntax check.`);
+            process.exit(1);
         }
     }
 

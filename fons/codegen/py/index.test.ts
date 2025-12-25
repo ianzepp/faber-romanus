@@ -500,12 +500,12 @@ describe('Python codegen', () => {
         describe('transformations', () => {
             test('filtrata (filter)', () => {
                 const result = compile('varia x = items.filtrata((n) => n > 0)');
-                expect(result).toBe('x = [x for x in items if lambda n: (n > 0)(x)]');
+                expect(result).toBe('x = list(filter(lambda n: (n > 0), items))');
             });
 
             test('mappata (map)', () => {
                 const result = compile('varia x = items.mappata((n) => n * 2)');
-                expect(result).toBe('x = [lambda n: (n * 2)(x) for x in items]');
+                expect(result).toBe('x = list(map(lambda n: (n * 2), items))');
             });
 
             test('inversa (reverse)', () => {
@@ -539,12 +539,12 @@ describe('Python codegen', () => {
         describe('predicates', () => {
             test('omnes (all)', () => {
                 const result = compile('varia x = items.omnes((n) => n > 0)');
-                expect(result).toBe('x = all(lambda n: (n > 0)(x) for x in items)');
+                expect(result).toBe('x = all(map(lambda n: (n > 0), items))');
             });
 
             test('aliquis (any)', () => {
                 const result = compile('varia x = items.aliquis((n) => n > 0)');
-                expect(result).toBe('x = any(lambda n: (n > 0)(x) for x in items)');
+                expect(result).toBe('x = any(map(lambda n: (n > 0), items))');
             });
         });
 

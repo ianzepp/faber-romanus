@@ -374,7 +374,7 @@ for (let i = 2; i < args.length; i++) {
     } else if (args[i] === '-t' || args[i] === '--target') {
         const t = args[++i];
 
-        if (t !== 'ts' && t !== 'zig' && t !== 'wasm') {
+        if (!VALID_TARGETS.includes(t as typeof VALID_TARGETS[number])) {
             console.error(`Error: Unknown target '${t}'. Valid targets: ${VALID_TARGETS.join(', ')}`);
             process.exit(1);
         }

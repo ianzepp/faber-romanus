@@ -74,6 +74,7 @@ import type {
     ThrowStatement,
     ScribeStatement,
     TryStatement,
+    FacBlockStatement,
     ExpressionStatement,
     ArrayExpression,
     ObjectExpression,
@@ -83,6 +84,7 @@ import type {
     CallExpression,
     MemberExpression,
     ArrowFunctionExpression,
+    LambdaExpression,
     AssignmentExpression,
     NewExpression,
     Identifier,
@@ -209,6 +211,8 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
                 return genScribeStatement(node);
             case 'TryStatement':
                 return genTryStatement(node);
+            case 'FacBlockStatement':
+                return genFacBlockStatement(node);
             case 'BlockStatement':
                 return genBlockStatementContent(node);
             case 'ExpressionStatement':
@@ -953,6 +957,34 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
+     * Generate fac block statement (do-catch).
+     *
+     * TRANSFORMS:
+     *   fac { x() } cape e { y() } -> try: x() except Exception as e: y()
+     */
+    function genFacBlockStatement(node: FacBlockStatement): string {
+        const lines: string[] = [];
+
+        // If there's a catch clause, wrap in try-except
+        if (node.catchClause) {
+            lines.push(`${ind()}try:`);
+            depth++;
+            lines.push(genBlockStatementContent(node.body));
+            depth--;
+            lines.push(`${ind()}except Exception as ${node.catchClause.param.name}:`);
+            depth++;
+            lines.push(genBlockStatementContent(node.catchClause.body));
+            depth--;
+        }
+        else {
+            // No catch - just emit the block contents
+            lines.push(genBlockStatementContent(node.body));
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
      * Generate block statement content (without braces).
      */
     function genBlockStatementContent(node: BlockStatement): string {
@@ -996,6 +1028,8 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
                 return genMemberExpression(node);
             case 'ArrowFunctionExpression':
                 return genArrowFunction(node);
+            case 'LambdaExpression':
+                return genLambdaExpression(node);
             case 'AssignmentExpression':
                 return genAssignmentExpression(node);
             case 'AwaitExpression':
@@ -1224,11 +1258,45 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             return `lambda ${params}: ${body}`;
         }
 
-        // Block body is more complex - Python lambdas can't have statements
-        // This is a limitation; for now, generate a comment indicating the issue
-        // In practice, these should be lifted to named functions
-        const body = genExpression(node.body as Expression);
-        return `lambda ${params}: ${body}`;
+        // Block body - extract return expression if simple
+        const block = node.body;
+        if (block.body.length === 1 && block.body[0].type === 'ReturnStatement') {
+            const ret = block.body[0];
+            if (ret.argument) {
+                const body = genExpression(ret.argument);
+                return `lambda ${params}: ${body}`;
+            }
+        }
+
+        // Complex block body - Python lambdas can't have statements
+        // Use None as fallback; these should ideally be lifted to named functions
+        return `lambda ${params}: None`;
+    }
+
+    /**
+     * Generate Latin lambda expression (pro x redde expr).
+     */
+    function genLambdaExpression(node: LambdaExpression): string {
+        const params = node.params.map(p => p.name).join(', ');
+
+        // Simple expression body -> lambda
+        if (node.body.type !== 'BlockStatement') {
+            const body = genExpression(node.body as Expression);
+            return `lambda ${params}: ${body}`;
+        }
+
+        // Block body - extract return expression if simple
+        const block = node.body;
+        if (block.body.length === 1 && block.body[0].type === 'ReturnStatement') {
+            const ret = block.body[0];
+            if (ret.argument) {
+                const body = genExpression(ret.argument);
+                return `lambda ${params}: ${body}`;
+            }
+        }
+
+        // Complex block body - Python lambdas can't have statements
+        return `lambda ${params}: None`;
     }
 
     /**
