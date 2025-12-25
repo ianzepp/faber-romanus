@@ -37,7 +37,6 @@ import type { Program } from '../parser/ast';
 import type { CodegenOptions } from './types';
 import { generateTs } from './ts/index';
 import { generateZig } from './zig/index';
-import { generateWasm } from './wasm/index';
 import { generatePy } from './py/index';
 import { generateRs } from './rs/index';
 import { generateCpp } from './cpp/index';
@@ -49,7 +48,6 @@ import { generateCpp } from './cpp/index';
 export type { CodegenOptions, CodegenTarget } from './types';
 export { generateTs } from './ts/index';
 export { generateZig } from './zig/index';
-export { generateWasm } from './wasm/index';
 export { generatePy } from './py/index';
 export { generateRs } from './rs/index';
 export { generateCpp } from './cpp/index';
@@ -85,8 +83,6 @@ export function generate(program: Program, options: CodegenOptions = {}): string
             return generateTs(program, options);
         case 'zig':
             return generateZig(program, options);
-        case 'wasm':
-            return generateWasm(program, options);
         case 'py':
             return generatePy(program, options);
         case 'rs':

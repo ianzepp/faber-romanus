@@ -31,12 +31,11 @@
  * WHY: Multiple targets are supported for different use cases:
  *      - ts: TypeScript (default) - web-first development
  *      - zig: Systems programming, educational
- *      - wasm: WebAssembly for browser runtime
  *      - py: Python - popular, good for teaching
  *      - rs: Rust - memory safety without garbage collection
  *      - cpp: C++ - systems programming alternative
  */
-export type CodegenTarget = 'ts' | 'zig' | 'wasm' | 'py' | 'rs' | 'cpp';
+export type CodegenTarget = 'ts' | 'zig' | 'py' | 'rs' | 'cpp';
 
 /**
  * Features used in the source code that require preamble setup.

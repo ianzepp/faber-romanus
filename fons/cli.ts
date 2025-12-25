@@ -65,7 +65,7 @@ const DEFAULT_TARGET: CodegenTarget = 'ts';
  * Valid compilation targets.
  * WHY: Defined as array for validation and help text generation.
  */
-const VALID_TARGETS = ['ts', 'zig', 'wasm', 'py', 'rb', 'cpp'] as const;
+const VALID_TARGETS = ['ts', 'zig', 'py', 'rs', 'cpp'] as const;
 
 // =============================================================================
 // ARGUMENT PARSING
@@ -98,7 +98,7 @@ Commands:
   format, forma <file>   Format source file with Prettier
 
 Options:
-  -t, --target <lang>    Target language: ts (default), zig, wasm
+  -t, --target <lang>    Target language: ts (default), zig, py, rs, cpp
   -o, --output <file>    Output file (default: stdout)
   -c, --check            Check formatting without writing (format command)
   -h, --help             Show this help
@@ -108,7 +108,7 @@ Examples:
   faber compile hello.fab                     # Compile to TS (stdout)
   faber compile hello.fab -o hello.ts         # Compile to TS file
   faber compile hello.fab --target zig        # Compile to Zig
-  faber compile hello.fab -t wasm -o hello.wat  # Compile to WASM text format
+  faber compile hello.fab -t py -o hello.py   # Compile to Python
   faber run hello.fab                         # Compile to TS and execute
   faber format hello.fab                      # Format file in place
   faber format hello.fab --check              # Check if file is formatted
@@ -374,7 +374,7 @@ for (let i = 2; i < args.length; i++) {
     } else if (args[i] === '-t' || args[i] === '--target') {
         const t = args[++i];
 
-        if (!VALID_TARGETS.includes(t as typeof VALID_TARGETS[number])) {
+        if (!VALID_TARGETS.includes(t as (typeof VALID_TARGETS)[number])) {
             console.error(`Error: Unknown target '${t}'. Valid targets: ${VALID_TARGETS.join(', ')}`);
             process.exit(1);
         }
