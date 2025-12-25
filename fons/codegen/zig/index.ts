@@ -609,8 +609,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             lines.push(genFieldDeclaration(field));
         }
 
-        // Self type reference (needed for methods)
-        if (node.methods.length > 0 || node.constructor || node.computedFields.length > 0) {
+        // Self type reference (needed for init, methods, computed fields)
+        // WHY: init() uses Self for return type and self variable
+        if (node.fields.length > 0 || node.methods.length > 0 || node.constructor || node.computedFields.length > 0) {
             if (node.fields.length > 0) {
                 lines.push('');
             }
@@ -706,7 +707,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         lines.push(`${ind()}pub fn init(overrides: anytype) Self {`);
         depth++;
 
-        lines.push(`${ind()}var self = Self{`);
+        // WHY: Use 'var' if creo mutates self, otherwise 'const' to satisfy Zig linter
+        const selfKind = node.constructor ? 'var' : 'const';
+        lines.push(`${ind()}${selfKind} self = Self{`);
         depth++;
 
         for (const field of node.fields) {
@@ -1351,12 +1354,15 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      *
      * TRANSFORMS:
      *   x + y -> (x + y) for numbers
-     *   "a" + "b" -> std.mem.concat(allocator, "a", "b") for strings
+     *   "a" + "b" -> (a ++ b) for comptime strings
      *   a && b -> (a and b)
      *   a || b -> (a or b)
+     *   s == "foo" -> std.mem.eql(u8, s, "foo")
+     *   s != "foo" -> !std.mem.eql(u8, s, "foo")
      *
      * TARGET: Zig uses 'and'/'or' keywords not &&/|| operators.
-     *         String concatenation requires std.mem.concat or array operations.
+     *         String concatenation requires ++ operator (comptime only).
+     *         String comparison requires std.mem.eql, not ==.
      */
     function genBinaryExpression(node: BinaryExpression): string {
         const left = genExpression(node.left);
@@ -1368,6 +1374,17 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             // Note: This only works for comptime-known strings in Zig
             // Runtime string concatenation would require an allocator
             return `(${left} ++ ${right})`;
+        }
+
+        // Handle string comparison with == or ===
+        // WHY: Zig cannot compare []const u8 with ==, must use std.mem.eql
+        if ((node.operator === '==' || node.operator === '===') && (isStringType(node.left) || isStringType(node.right))) {
+            return `std.mem.eql(u8, ${left}, ${right})`;
+        }
+
+        // Handle string comparison with != or !==
+        if ((node.operator === '!=' || node.operator === '!==') && (isStringType(node.left) || isStringType(node.right))) {
+            return `!std.mem.eql(u8, ${left}, ${right})`;
         }
 
         const op = mapOperator(node.operator);

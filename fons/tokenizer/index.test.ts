@@ -109,6 +109,14 @@ describe('tokenizer', () => {
             expect(tokens.map(t => t.type)).toEqual(['EQUAL_EQUAL', 'BANG_EQUAL', 'LESS', 'LESS_EQUAL', 'GREATER', 'GREATER_EQUAL', 'EOF']);
         });
 
+        test('strict equality operators', () => {
+            const { tokens } = tokenize('=== !==');
+
+            expect(tokens.map(t => t.type)).toEqual(['TRIPLE_EQUAL', 'BANG_DOUBLE_EQUAL', 'EOF']);
+            expect(tokens[0].value).toBe('===');
+            expect(tokens[1].value).toBe('!==');
+        });
+
         test('logical operators', () => {
             const { tokens } = tokenize('&& || !');
 

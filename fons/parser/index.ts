@@ -2250,7 +2250,7 @@ export function parse(tokens: Token[]): ParserResult {
             let operator: string;
             let position: Position;
 
-            if (match('EQUAL_EQUAL', 'BANG_EQUAL')) {
+            if (match('EQUAL_EQUAL', 'BANG_EQUAL', 'TRIPLE_EQUAL', 'BANG_DOUBLE_EQUAL')) {
                 operator = tokens[current - 1].value;
                 position = tokens[current - 1].position;
             } else if (checkKeyword('non') && peek(1)?.type === 'KEYWORD' && peek(1)?.value.toLowerCase() === 'est') {
@@ -2857,8 +2857,18 @@ export function parse(tokens: Token[]): ParserResult {
             preposition = advance().keyword;
         }
 
-        const token = expect('IDENTIFIER', ParserErrorCode.ExpectedTypeName);
-        const name = token.value;
+        // WHY: Type names can be identifiers OR keywords (nihil, textus, numerus, etc.)
+        //      Keywords like 'nihil' are valid return types but tokenize as KEYWORD
+        let name: string;
+        if (check('IDENTIFIER')) {
+            name = advance().value;
+        } else if (check('KEYWORD')) {
+            name = advance().value;
+        } else {
+            reportError(ParserErrorCode.ExpectedTypeName, `got '${peek().value}'`);
+            name = peek().value;
+            advance(); // Skip to avoid infinite loop
+        }
 
         let typeParameters: TypeParameter[] | undefined;
 

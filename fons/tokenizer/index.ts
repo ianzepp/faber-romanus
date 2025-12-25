@@ -650,9 +650,13 @@ export function tokenize(source: string): TokenizerResult {
                 addToken('PERCENT', char, pos);
                 break;
 
-            // WHY: = can be == (equality), => (fat arrow), or = (assignment)
+            // WHY: = can be === (strict equality), == (equality), => (fat arrow), or = (assignment)
             case '=':
-                if (peek() === '=') {
+                if (peek() === '=' && peek(1) === '=') {
+                    advance();
+                    advance();
+                    addToken('TRIPLE_EQUAL', '===', pos);
+                } else if (peek() === '=') {
                     advance();
                     addToken('EQUAL_EQUAL', '==', pos);
                 } else if (peek() === '>') {
@@ -664,9 +668,13 @@ export function tokenize(source: string): TokenizerResult {
 
                 break;
 
-            // WHY: ! can be != (not equal) or ! (logical not)
+            // WHY: ! can be !== (strict not equal), != (not equal), or ! (logical not)
             case '!':
-                if (peek() === '=') {
+                if (peek() === '=' && peek(1) === '=') {
+                    advance();
+                    advance();
+                    addToken('BANG_DOUBLE_EQUAL', '!==', pos);
+                } else if (peek() === '=') {
                     advance();
                     addToken('BANG_EQUAL', '!=', pos);
                 } else {

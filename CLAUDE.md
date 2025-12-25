@@ -22,27 +22,39 @@ bun run fons/cli.ts compile <file.fab> -t zig   # Compile to Zig
 bun test                                        # Run tests
 ```
 
+## Timeouts
+
+Keep bash timeouts minimal - tests should complete in seconds, not minutes:
+
+- `bun test` commands: 5-10 seconds max
+- Individual file operations: 2-3 seconds
+- If something hangs, it's broken - don't wait for it
+
 ## Code Standards
 
 See `DEVELOPER.md` for comprehensive guidelines. Key points:
 
 **Module Headers**: Every file needs a header block documenting:
+
 - Compiler phase (lexical, syntactic, semantic, codegen)
 - Input/output contract
 - Invariants that must hold
 
 **Documentation Tags**:
+
 - `WHY:` - Explain reasoning, not mechanics
 - `EDGE:` - Document edge cases handled
 - `TARGET:` - Note target-specific behavior
 - `GRAMMAR:` - EBNF for parser functions
 
 **Error Handling**:
+
 - Never crash on malformed input
 - Collect errors and continue parsing
 - Error messages should teach Latin syntax
 
 **Testing**:
+
 - Test each compiler phase independently
 - Include error recovery tests
 

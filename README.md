@@ -43,13 +43,13 @@ scribe salve(nomen)
 
 # Implementation Status
 
-| Target     | Completion |
-| ---------- | :--------: |
-| TypeScript |    100%    |
-| Python     |    95%     |
-| Zig        |    37%     |
-| Rust       |     0%     |
-| C++23      |     0%     |
+| Target     | Code Coverage |
+| ---------- | :-----------: |
+| TypeScript |      97%      |
+| Python     |      86%      |
+| Zig        |      74%      |
+| C++23      |      60%      |
+| Rust       |      0%       |
 
 Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not applicable, `[c]` convention (no compiler support needed)
 
@@ -202,7 +202,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `cede` (await/yield)                |    [x]     | [~] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `novum` (new)                       |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `novum...cum` (new with props)      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `est` (strict equality)             |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `===` / `est` (strict equality)     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `!==` / `non est` (strict ineq.)    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `aut` (logical or)                  |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 
 ## Lambda Syntax

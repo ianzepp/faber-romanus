@@ -75,8 +75,10 @@ export type TokenType =
     | 'PERCENT' // %
     | 'EQUAL' // =
     | 'EQUAL_EQUAL' // ==
+    | 'TRIPLE_EQUAL' // ===
     | 'BANG' // !
     | 'BANG_EQUAL' // !=
+    | 'BANG_DOUBLE_EQUAL' // !==
     | 'LESS' // <
     | 'LESS_EQUAL' // <=
     | 'GREATER' // >

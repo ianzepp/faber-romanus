@@ -353,6 +353,50 @@ describe('zig codegen', () => {
         });
     });
 
+    describe('string comparison', () => {
+        test('string est uses std.mem.eql', () => {
+            // WHY: Latin 'est' maps to ===, Zig requires std.mem.eql for strings
+            const zig = compile('si status est "active" { scribe "ok" }');
+
+            expect(zig).toContain('std.mem.eql(u8, status, "active")');
+            expect(zig).not.toContain('status == "active"');
+        });
+
+        test('string === uses std.mem.eql', () => {
+            // WHY: === is now a first-class operator (est is an alias)
+            const zig = compile('si status === "active" { scribe "ok" }');
+
+            expect(zig).toContain('std.mem.eql(u8, status, "active")');
+        });
+
+        test('string non est uses !std.mem.eql', () => {
+            // WHY: Latin 'non est' maps to !==
+            const zig = compile('si status non est "pending" { scribe "done" }');
+
+            expect(zig).toContain('!std.mem.eql(u8, status, "pending")');
+            expect(zig).not.toContain('status != "pending"');
+        });
+
+        test('string !== uses !std.mem.eql', () => {
+            // WHY: !== is now a first-class operator (non est is an alias)
+            const zig = compile('si status !== "pending" { scribe "done" }');
+
+            expect(zig).toContain('!std.mem.eql(u8, status, "pending")');
+        });
+
+        test('two string literals use std.mem.eql', () => {
+            const zig = compile('si "hello" est "world" { scribe "match" }');
+
+            expect(zig).toContain('std.mem.eql(u8, "hello", "world")');
+        });
+
+        test('string concatenation uses ++', () => {
+            const zig = compile('fixum greeting = "Hello, " + "World"');
+
+            expect(zig).toContain('("Hello, " ++ "World")');
+        });
+    });
+
     describe('missing features - nulla/nonnulla operators', () => {
         test('nulla generates null check', () => {
             const zig = compile('si nulla x { scribe "empty" }');
