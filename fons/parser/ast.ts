@@ -185,6 +185,12 @@ export interface ObjectPatternProperty extends BaseNode {
  *   figendum = "that which will be fixed" (gerundive) -> const x = await ...
  *   variandum = "that which will be varied" (gerundive) -> let x = await ...
  *
+ * Target mappings:
+ *   varia     → let (TS), var (Zig), assignment (Py)
+ *   fixum     → const (TS), const (Zig), assignment (Py)
+ *   figendum  → const x = await (TS), assignment (Py), N/A (Zig)
+ *   variandum → let x = await (TS), assignment (Py), N/A (Zig)
+ *
  * Examples:
  *   varia x: numerus = 5
  *   fixum SALVE = "ave"
@@ -209,6 +215,11 @@ export interface VariableDeclaration extends BaseNode {
  *
  * INVARIANT: async flag set by presence of 'futura' keyword.
  * INVARIANT: params is always an array (empty if no parameters).
+ *
+ * Target mappings:
+ *   functio        → function (TS), def (Py), fn (Zig), fn (Rust)
+ *   futura functio → async function (TS), async def (Py), fn returning !T (Zig)
+ *   cursor functio → function* (TS), generator def (Py), N/A (Zig)
  *
  * Examples:
  *   functio salve(nomen: textus) -> textus { ... }
@@ -238,6 +249,11 @@ export interface FunctionDeclaration extends BaseNode {
  * WHY: Latin prepositions indicate semantic roles that map to different constructs
  *      in target languages. For systems targets (Rust/Zig), 'de' = borrowed/read-only
  *      and 'in' = mutable borrow.
+ *
+ * Target mappings (prepositions):
+ *   de (from)  → param (TS/Py), &T (Rust), []const (Zig) — borrowed/read-only
+ *   in (into)  → param (TS/Py), &mut T (Rust), *T (Zig) — mutable borrow
+ *   ceteri     → ...rest (TS), *args (Py), slice (Zig)
  *
  * Examples:
  *   nomen: textus             -> regular param
@@ -371,6 +387,11 @@ export interface FieldDeclaration extends BaseNode {
  * WHY: Latin 'genus' (kind/type) for data structures with fields and methods.
  *      No inheritance - composition and pactum (interfaces) only.
  *
+ * Target mappings:
+ *   genus  → class (TS), class (Py), struct (Zig), struct (Rust)
+ *   implet → implements (TS), Protocol (Py), comptime duck typing (Zig), impl Trait (Rust)
+ *   ego    → this (TS), self (Py), self (Zig), self (Rust)
+ *
  * Examples:
  *   genus persona {
  *       textus nomen
@@ -493,6 +514,11 @@ export interface WhileStatement extends BaseNode {
  *      'pro' = sync iteration (traditional)
  *      'fit' = sync iteration (verb form: "becomes")
  *      'fiet' = async iteration (verb form: "will become")
+ *
+ * Target mappings:
+ *   ex...pro  → for...of (TS), for...in (Py), for (slice) |x| (Zig)
+ *   de...pro  → for...in (TS), for...in keys (Py), iteration over keys (Zig)
+ *   ex...fiet → for await...of (TS), async for (Py), N/A (Zig)
  */
 export interface ForStatement extends BaseNode {
     type: 'ForStatement';
@@ -718,9 +744,11 @@ export type OutputLevel = 'log' | 'debug' | 'warn';
  *   scribeStmt := ('scribe' | 'vide' | 'mone') expression (',' expression)*
  *
  * WHY: Latin output keywords as statement forms, not function calls.
- *   scribe (write!) → console.log  - normal output
- *   vide (see!)     → console.debug - developer/debug output
- *   mone (warn!)    → console.warn  - warning output
+ *
+ * Target mappings:
+ *   scribe → console.log (TS), print() (Py), std.debug.print (Zig)
+ *   vide   → console.debug (TS), print("[DEBUG]") (Py), std.debug.print (Zig)
+ *   mone   → console.warn (TS), print("[WARN]") (Py), std.debug.print (Zig)
  *
  * Examples:
  *   scribe "hello"
@@ -745,6 +773,11 @@ export interface ScribeStatement extends BaseNode {
  *      tempta = try (attempt)
  *      cape = catch (seize/capture)
  *      demum = finally (at last)
+ *
+ * Target mappings:
+ *   tempta → try (TS/Py), N/A (Zig uses error unions)
+ *   cape   → catch (TS), except (Py), catch |err| (Zig)
+ *   demum  → finally (TS), finally (Py), defer (Zig)
  */
 export interface TryStatement extends BaseNode {
     type: 'TryStatement';
@@ -1007,6 +1040,10 @@ export interface ObjectProperty extends BaseNode {
  *      - '..' and 'ante': exclusive (0..10 / 0 ante 10 = 0-9)
  *      - 'usque': inclusive (0 usque 10 = 0-10)
  *
+ * Target mappings:
+ *   0..10    → Array.from({length: 10}, (_, i) => i) (TS), range(0, 10) (Py), 0..10 (Zig)
+ *   0 usque 10 → Array.from({length: 11}, ...) (TS), range(0, 11) (Py), 0..11 (Zig)
+ *
  * Examples:
  *   0..10           -> exclusive, produces 0-9
  *   0 ante 10       -> exclusive, produces 0-9 (explicit)
@@ -1238,6 +1275,10 @@ export interface ConditionalExpression extends BaseNode {
  * INVARIANT: argument is never null.
  *
  * WHY: Latin 'cede' (to wait for) for async/await.
+ *
+ * Target mappings:
+ *   cede → await (TS), await (Py), try (Zig error union), .await (Rust)
+ *   cede (in cursor) → yield (TS), yield (Py), N/A (Zig)
  */
 export interface AwaitExpression extends BaseNode {
     type: 'AwaitExpression';
@@ -1257,6 +1298,10 @@ export interface AwaitExpression extends BaseNode {
  *      Two forms for overrides:
  *      - Inline: `novum Persona { nomen: "Marcus" }`
  *      - From expression: `novum Persona de props`
+ *
+ * Target mappings:
+ *   novum Type     → new Type() (TS), Type() (Py), Type.init() (Zig)
+ *   novum Type { } → new Type() merged with object (TS/Py), Type{ .field = } (Zig)
  */
 export interface NewExpression extends BaseNode {
     type: 'NewExpression';
