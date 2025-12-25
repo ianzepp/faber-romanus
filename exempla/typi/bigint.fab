@@ -28,7 +28,7 @@ scribe negative
 // =============================================================================
 
 functio factorial(magnus n) -> magnus {
-    si n === 0n {
+    si n == 0n {
         redde 1n
     }
     redde n * factorial(n - 1n)
@@ -39,10 +39,10 @@ scribe factorial(20n)
 
 // BigInt arithmetic
 functio fibonacci(magnus n) -> magnus {
-    si n === 0n {
+    si n == 0n {
         redde 0n
     }
-    si n === 1n {
+    si n == 1n {
         redde 1n
     }
     redde fibonacci(n - 1n) + fibonacci(n - 2n)

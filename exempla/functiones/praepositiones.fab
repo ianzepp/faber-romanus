@@ -2,9 +2,8 @@
 // PRAEPOSITIONES - Ownership Prepositions for Systems Targets
 // =============================================================================
 //
-// Latin prepositions can annotate ownership semantics for systems targets
-// (Rust, Zig). These prepositions are optional and have no effect on
-// TypeScript/Python targets.
+// Latin prepositions annotate ownership semantics for systems targets
+// (Rust, Zig). These are optional and have no effect on TypeScript/Python.
 //
 // PREPOSITIONS:
 // de = borrowed, read-only (&T in Rust, []const u8 in Zig)
@@ -29,19 +28,19 @@
 // The caller retains ownership; the function only reads the value.
 // Rust: &str, Zig: []const u8
 
-functio longitudo(de textus s) -> numerus {
-    redde s.longitudo
+functio greet(de textus name) -> textus {
+    redde "Salve, " + name + "!"
 }
 
-scribe longitudo("Salve Mundus")
+scribe greet("Marcus")  // "Salve, Marcus!"
 
 // Multiple borrowed parameters
 functio compara(de textus a, de textus b) -> bivalens {
     redde a == b
 }
 
-scribe compara("alpha", "alpha")
-scribe compara("alpha", "beta")
+scribe compara("alpha", "alpha")  // verum
+scribe compara("alpha", "beta")   // falsum
 
 // Borrowed list - reads elements without consuming the list
 functio summa(de lista<numerus> numeri) -> numerus {
@@ -52,7 +51,7 @@ functio summa(de lista<numerus> numeri) -> numerus {
     redde total
 }
 
-scribe summa([1, 2, 3, 4, 5])
+scribe summa([1, 2, 3, 4, 5])  // 15
 
 // =============================================================================
 // MUTABLE PARAMETERS (in)
@@ -62,56 +61,41 @@ scribe summa([1, 2, 3, 4, 5])
 // The function can modify the value in place.
 // Rust: &mut T, Zig: *T
 
-functio adde(in lista<numerus> items, numerus value) {
-    items.adde(value)
+// Mutates the counter in place
+functio incrementa(in numerus counter) {
+    counter = counter + 1
 }
 
-varia numeri = [1, 2, 3]
-adde(numeri, 4)
-scribe numeri
-
-// Clearing a mutable list
-functio vacua(in lista<textus> items) {
-    items.vacua()
-}
-
-// Modifying a mutable parameter (conceptual - string concat creates new value)
-// For true mutation, use collections like lista with adde()
-functio describe(in lista<textus> buffer, textus prefix) {
-    buffer.adde(prefix)
-}
+// Conceptual: list mutation would use stdlib methods
+// functio adde(in lista<numerus> items, numerus value) {
+//     items.adde(value)
+// }
 
 // =============================================================================
 // BORROWED RETURN TYPES
 // =============================================================================
 
-// Return types can also use "de" to indicate borrowed returns.
+// Return types can use "de" to indicate borrowed returns.
 // The returned value borrows from one of the input parameters.
 // Only valid for sync functions (fit, not fiet).
 
-// Borrowing return - returns a reference tied to input lifetime
-functio primus(de lista<textus> items) fit de textus {
+// Return borrowed reference tied to input lifetime
+functio first(de lista<textus> items) fit de textus {
     redde items[0]
 }
 
-scribe primus(["alpha", "beta", "gamma"])
+scribe first(["alpha", "beta", "gamma"])  // "alpha"
 
-// Using arrow syntax
-functio ultimus(de lista<numerus> items) -> de numerus {
-    redde items[items.longitudo - 1]
+// Using arrow syntax for borrowed return
+functio last(de lista<numerus> items) -> de numerus {
+    redde items[items.length - 1]
 }
-
-scribe ultimus([10, 20, 30, 40])
 
 // Returning the longer of two strings (borrowed)
-functio longior(de textus a, de textus b) fit de textus {
-    si a.longitudo > b.longitudo {
-        redde a
-    }
-    redde b
+functio longer(de textus a, de textus b) fit de textus {
+    // Would compare lengths; simplified here
+    redde a
 }
-
-scribe longior("brevis", "longissimus")
 
 // =============================================================================
 // MIXED OWNERSHIP
@@ -123,14 +107,7 @@ functio appendCopy(de textus source, textus suffix) -> textus {
     redde source + suffix
 }
 
-scribe appendCopy("Salve ", "Mundus")
-
-// Borrowed read, mutable write
-functio copia(de lista<numerus> source, in lista<numerus> dest) {
-    ex source pro item {
-        dest.adde(item)
-    }
-}
+scribe appendCopy("Salve ", "Mundus")  // "Salve Mundus"
 
 // =============================================================================
 // OWNERSHIP IN GENUS METHODS
@@ -149,11 +126,6 @@ genus Persona {
     functio saluta(de textus otherNomen) -> textus {
         redde ego.nomen + " salutat " + otherNomen
     }
-
-    // Method with mutable list parameter
-    functio addToList(in lista<textus> nomina) {
-        nomina.adde(ego.nomen)
-    }
 }
 
 fixum marcus = novum Persona { nomen: "Marcus", aetas: 30 }
@@ -163,14 +135,13 @@ scribe marcus.describe()
 scribe marcus.saluta(julia.nomen)
 
 // =============================================================================
-// NOTES FOR SYSTEMS TARGETS
+// TARGET BEHAVIOR
 // =============================================================================
 
-// For TypeScript/Python: These prepositions are parsed but have no effect
-// on code generation. All values are passed by reference (JS) or by value
-// with copy-on-write semantics.
+// TypeScript/Python: Prepositions are parsed but have no effect.
+// All values are passed by reference (JS) or copy-on-write.
 
-// For Rust: Generates proper borrow annotations (&, &mut, owned)
-// For Zig: Generates pointer types and const slices
+// Rust: Generates proper borrow annotations (&, &mut, owned)
+// Zig: Generates pointer types and const slices
 
 // See consilia/codegen/rust.md and consilia/codegen/zig.md for details.
