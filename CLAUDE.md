@@ -7,6 +7,7 @@ A Latin programming language compiler. "The Roman Craftsman."
 - **Compiler as tutor**: Error messages teach Latin grammar
 - **Accessibility over purity**: Lower barriers, no gatekeeping
 - **Incremental discovery**: Architecture emerges from decisions, not upfront planning
+- **Pragmatic simplicity**: Don't overcomplicate. If codegen can derive something by walking the AST, don't add semantic phase tracking. Prefer straightforward solutions over clever abstractions.
 
 ## Stack
 
