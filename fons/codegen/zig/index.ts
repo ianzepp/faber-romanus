@@ -355,17 +355,26 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         return lines.join('\n');
     }
 
+    // Track module-level constant names to use prefixed identifiers
+    // WHY: Zig forbids shadowing - function params can't share names with module consts
+    //      Using m_ prefix for module consts avoids collision with param names
+    const moduleConstants = new Set<string>();
+
     /**
      * Generate variable declaration.
      *
      * TRANSFORMS:
      *   varia x: numerus = 5 -> var x: i64 = 5;
-     *   fixum y: textus = "hello" -> const y: []const u8 = "hello";
+     *   fixum y: textus = "hello" -> const m_y: []const u8 = "hello"; (module-level)
      *   fixum { a, b } = obj -> const a = obj.a; const b = obj.b;
      *
      * TARGET: Zig requires explicit types for var (mutable) declarations.
      *         Const can infer but we add type for clarity.
      *         Zig doesn't have destructuring, so we expand to multiple statements.
+     *
+     * WHY: Module-level constants use m_ prefix to avoid shadowing conflicts
+     *      with function parameters. Zig forbids a param named 'x' if there's a
+     *      module const 'x', but m_x doesn't conflict.
      */
     function genVariableDeclaration(node: VariableDeclaration): string {
         const kind = node.kind === 'varia' ? 'var' : 'const';
@@ -392,6 +401,15 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         const name = node.name.name;
 
+        // Check if this is a module-level const (depth 0 means we're at module level)
+        const isModuleLevel = depth === 0 && kind === 'const';
+        const zigName = isModuleLevel ? `m_${name}` : name;
+
+        // Track module constants for reference generation
+        if (isModuleLevel) {
+            moduleConstants.add(name);
+        }
+
         // TARGET: Zig requires explicit types for var, we infer if not provided
         let typeAnno = '';
 
@@ -403,7 +421,7 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         const init = node.init ? ` = ${genExpression(node.init)}` : ' = undefined';
 
-        return `${ind()}${kind} ${name}${typeAnno}${init};`;
+        return `${ind()}${kind} ${zigName}${typeAnno}${init};`;
     }
 
     /**
@@ -1233,6 +1251,10 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             case 'nihil':
                 return 'null';
             default:
+                // Use m_ prefix for module constants to match declaration
+                if (moduleConstants.has(node.name)) {
+                    return `m_${node.name}`;
+                }
                 return node.name;
         }
     }

@@ -23,10 +23,11 @@ describe('zig codegen', () => {
             expect(zig).toContain('= 5');
         });
 
-        test('fixum -> const', () => {
+        test('fixum -> const with m_ prefix at module level', () => {
             const zig = compile('fixum PI = 3.14');
 
-            expect(zig).toContain('const PI');
+            // WHY: Module-level constants use m_ prefix to avoid shadowing with function params
+            expect(zig).toContain('const m_PI');
             expect(zig).toContain('= 3.14');
         });
 
