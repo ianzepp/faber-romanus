@@ -530,10 +530,6 @@
                   },
                   {
                     "type": "STRING",
-                    "value": "cum"
-                  },
-                  {
-                    "type": "STRING",
                     "value": "de"
                   },
                   {
@@ -1484,7 +1480,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "cum"
+          "value": "de"
         },
         {
           "type": "FIELD",
@@ -3190,7 +3186,7 @@
                 "members": [
                   {
                     "type": "STRING",
-                    "value": "cum"
+                    "value": "de"
                   },
                   {
                     "type": "FIELD",

@@ -63,7 +63,6 @@
 ; Keywords - Other
 ; ==============================================================================
 
-"cum" @keyword
 "adfirma" @keyword
 "scribe" @keyword.function
 "cede" @keyword.control

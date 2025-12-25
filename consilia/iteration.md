@@ -189,7 +189,7 @@ The `per` keyword is envisioned to chain transformations inline:
 
 ```
 // Future syntax
-ex users per filtra({ .activus }) per ordina(cum nomen) pro user {
+ex users per filtra({ .activus }) per ordina(ad nomen) pro user {
     scribe user.nomen
 }
 ```
@@ -198,7 +198,7 @@ Reading: "from users, through filter, through sort, as user..."
 
 Currently, use method chaining on the iterable instead:
 ```
-ex users.filtrata({ .activus }).ordinata(cum nomen) pro user {
+ex users.filtrata({ .activus }).ordinata(ad nomen) pro user {
     scribe user.nomen
 }
 ```
@@ -248,7 +248,7 @@ For breaking outer loops:
 
 1. **Indexed iteration**: Best syntax for index access?
    - `ex numeri pro (i, n) { }` — tuple destructuring
-   - `ex numeri pro n cum indice i { }` — explicit clause
+   - `ex numeri pro n ad indice i { }` — explicit clause
    - `ex numeri.cumIndice() pro (i, n) { }` — method approach
 
 2. **`cede ex` delegation**: Yield from another iterator (like JS `yield*`)

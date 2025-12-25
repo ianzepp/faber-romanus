@@ -138,9 +138,6 @@ Today, a new kind of reader has emerged: the large language model. LLMs don't pa
 
 Faber leans into this shift. When choosing between symbolic brevity and linguistic clarity, we favor clarity:
 
-- `et` over `&&`
-- `aut` over `||`
-- `cum aetas descendens et nomen` over `(a, b) => a.age < b.age || a.name > b.name`
 - `ex users pro user` over `for (const user of users)`
 
 The result is code that reads more like natural language—not because it's verbose, but because it uses words where symbols would obscure meaning. An LLM reading Faber code can leverage its training on natural language. The intent is closer to the surface.

@@ -153,7 +153,7 @@ module.exports = grammar({
 
     // Parameter: [preposition] [Type] name
     parameter: $ => seq(
-      optional(field("preposition", choice("ad", "cum", "de", "in", "ex"))),
+      optional(field("preposition", choice("ad", "de", "in", "ex"))),
       optional(field("type", $.type_annotation)),
       field("name", $.identifier),
     ),
@@ -308,13 +308,6 @@ module.exports = grammar({
         "ergo",
         field("body", $._statement),
       ),
-    ),
-
-    // With: cum object { }
-    with_statement: $ => seq(
-      "cum",
-      field("object", $._expression),
-      field("body", $.block_statement),
     ),
 
     // Switch: elige expr { si val ergo/{ } ... aliter { } }
@@ -611,7 +604,7 @@ module.exports = grammar({
       "novum",
       field("callee", $.identifier),
       optional($.arguments),
-      optional(seq("cum", field("with", $.object_expression))),
+      optional(seq("de", field("with", $.object_expression))),
     )),
 
     // Range: start..end [per step]

@@ -31,7 +31,7 @@ genus rectangle {
     publicus numerus area => ego.width * ego.height
 }
 
-fixum rect = novum rectangle cum {
+fixum rect = novum rectangle {
     width: 10,
     height: 5
 }
@@ -54,7 +54,7 @@ genus circle {
     publicus numerus area => 3.14159 * ego.radius * ego.radius
 }
 
-fixum c = novum circle cum {
+fixum c = novum circle {
     radius: 5
 }
 
@@ -77,7 +77,7 @@ genus fullName {
     publicus textus display => ego.firstName + " " + ego.lastName
 }
 
-varia person = novum fullName cum {
+varia person = novum fullName {
     firstName: "Marcus",
     lastName: "Aurelius"
 }
@@ -102,7 +102,7 @@ genus usuario {
     publicus bivalens isValid => nonnulla ego.name et nonnulla ego.email
 }
 
-fixum user = novum usuario cum {
+fixum user = novum usuario {
     name: "Marcus",
     email: "marcus@roma.com",
     age: 30
@@ -135,13 +135,13 @@ genus storedRect {
     }
 }
 
-fixum e = novum efficientRect cum { width: 5, height: 10 }
+fixum e = novum efficientRect { width: 5, height: 10 }
 scribe e.area
 
 e.width = 20
 scribe e.area  // Automatically correct
 
-varia s = novum storedRect cum { width: 5, height: 10 }
+varia s = novum storedRect { width: 5, height: 10 }
 scribe s.area
 
 s.width = 20
@@ -260,7 +260,7 @@ genus comparison {
     }
 }
 
-fixum comp = novum comparison cum { value: 10 }
+fixum comp = novum comparison { value: 10 }
 
 scribe comp.doubled      // Property access
 scribe comp.triple()     // Method call

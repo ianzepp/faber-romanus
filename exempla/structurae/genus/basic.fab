@@ -13,7 +13,7 @@
 //
 // INSTANTIATION:
 // novum <Type>
-// novum <Type> cum { <field>: <value>, ... }
+// novum <Type> { <field>: <value>, ... }
 //
 // ETYMOLOGY:
 // genus: "kind, type, class" (fundamental category)
@@ -34,7 +34,7 @@ genus punctum {
 }
 
 // Must provide values during instantiation
-fixum origin = novum punctum cum {
+fixum origin = novum punctum {
     x: 0,
     y: 0
 }
@@ -42,7 +42,7 @@ fixum origin = novum punctum cum {
 scribe origin.x
 scribe origin.y
 
-fixum point = novum punctum cum {
+fixum point = novum punctum {
     x: 10,
     y: 20
 }
@@ -63,8 +63,8 @@ genus vector {
     numerus y
 }
 
-fixum v1 = novum vector cum { x: 1, y: 0 }
-fixum v2 = novum vector cum { x: 0, y: 1 }
+fixum v1 = novum vector { x: 1, y: 0 }
+fixum v2 = novum vector { x: 0, y: 1 }
 
 scribe v1.x
 scribe v2.y
@@ -85,7 +85,7 @@ genus persona {
     bivalens active
 }
 
-fixum marcus = novum persona cum {
+fixum marcus = novum persona {
     name: "Marcus",
     age: 30,
     active: verum
@@ -94,7 +94,7 @@ fixum marcus = novum persona cum {
 scribe marcus.name
 scribe marcus.age
 
-fixum julia = novum persona cum {
+fixum julia = novum persona {
     name: "Julia",
     age: 25,
     active: verum
@@ -112,7 +112,7 @@ genus usuario {
     numerus? age
 }
 
-fixum user1 = novum usuario cum {
+fixum user1 = novum usuario {
     name: "Gaius",
     email: "gaius@roma.com",
     age: nihil
@@ -121,7 +121,7 @@ fixum user1 = novum usuario cum {
 scribe user1.name
 scribe user1.email
 
-fixum user2 = novum usuario cum {
+fixum user2 = novum usuario {
     name: "Claudia",
     email: nihil,
     age: 28
@@ -139,7 +139,7 @@ genus collection {
     lista<numerus> items
 }
 
-fixum numbers = novum collection cum {
+fixum numbers = novum collection {
     name: "Primes",
     items: [2, 3, 5, 7, 11]
 }
@@ -163,12 +163,12 @@ genus citizen {
     address location
 }
 
-fixum addr = novum address cum {
+fixum addr = novum address {
     street: "Via Appia",
     city: "Roma"
 }
 
-fixum citizen = novum citizen cum {
+fixum citizen = novum citizen {
     name: "Marcus",
     location: addr
 }
@@ -191,14 +191,14 @@ functio distance(coordinate p1, coordinate p2) -> numerus {
     redde dx * dx + dy * dy  // Squared distance
 }
 
-fixum a = novum coordinate cum { x: 0, y: 0 }
-fixum b = novum coordinate cum { x: 3, y: 4 }
+fixum a = novum coordinate { x: 0, y: 0 }
+fixum b = novum coordinate { x: 3, y: 4 }
 
 scribe distance(a, b)
 
 // Return genus from function
 functio createPoint(numerus x, numerus y) -> coordinate {
-    redde novum coordinate cum { x: x, y: y }
+    redde novum coordinate { x: x, y: y }
 }
 
 fixum p = createPoint(10, 20)

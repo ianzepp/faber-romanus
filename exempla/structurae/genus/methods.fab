@@ -36,7 +36,7 @@ genus salutator {
 fixum greeter = novum salutator
 scribe greeter.saluta()
 
-fixum customGreeter = novum salutator cum {
+fixum customGreeter = novum salutator {
     name: "Roma"
 }
 
@@ -58,7 +58,7 @@ genus calculator {
     }
 }
 
-fixum calc = novum calculator cum {
+fixum calc = novum calculator {
     value: 10
 }
 
@@ -127,7 +127,7 @@ genus rectangle {
     }
 }
 
-fixum square = novum rectangle cum {
+fixum square = novum rectangle {
     width: 5,
     height: 5
 }
@@ -136,7 +136,7 @@ scribe square.area()
 scribe square.perimeter()
 scribe square.isSquare()
 
-fixum rect = novum rectangle cum {
+fixum rect = novum rectangle {
     width: 10,
     height: 5
 }
@@ -164,7 +164,7 @@ genus circle {
     }
 }
 
-fixum c1 = novum circle cum {
+fixum c1 = novum circle {
     radius: 5
 }
 
@@ -202,7 +202,7 @@ genus usuario {
     }
 }
 
-fixum user1 = novum usuario cum {
+fixum user1 = novum usuario {
     name: "Marcus",
     email: "marcus@roma.com",
     age: 30
@@ -211,7 +211,7 @@ fixum user1 = novum usuario cum {
 scribe user1.isValid()
 scribe user1.isAdult()
 
-fixum user2 = novum usuario cum {
+fixum user2 = novum usuario {
     name: "Julia",
     email: "julia@roma.com",
     age: 16
@@ -269,7 +269,7 @@ genus persona {
     }
 }
 
-fixum person = novum persona cum {
+fixum person = novum persona {
     firstName: "Marcus",
     lastName: "Aurelius"
 }
@@ -296,9 +296,9 @@ genus point {
     }
 }
 
-fixum p1 = novum point cum { x: 0, y: 0 }
-fixum p2 = novum point cum { x: 3, y: 4 }
-fixum p3 = novum point cum { x: 0, y: 0 }
+fixum p1 = novum point { x: 0, y: 0 }
+fixum p2 = novum point { x: 3, y: 4 }
+fixum p3 = novum point { x: 0, y: 0 }
 
 scribe p1.equals(p2)
 scribe p1.equals(p3)

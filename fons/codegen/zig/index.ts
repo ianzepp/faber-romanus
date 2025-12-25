@@ -1587,15 +1587,16 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      *
      * TRANSFORMS:
      *   novum Foo(x, y) -> Foo.init(x, y)
-     *   novum Foo cum { a: 1 } -> Foo.init(.{ .a = 1 })
+     *   novum Foo { a: 1 } -> Foo.init(.{ .a = 1 })
+     *   novum Foo de props -> Foo.init(props)
      *
      * TARGET: Zig doesn't have 'new' keyword. Idiomatic pattern is Type.init().
-     *         The cum { } overrides are passed as an anonymous struct.
+     *         Property overrides are passed as an anonymous struct.
      */
     function genNewExpression(node: NewExpression): string {
         const callee = node.callee.name;
 
-        // Handle cum { ... } overrides
+        // Handle { ... } or de expr overrides
         if (node.withExpression) {
             const overrides = genExpression(node.withExpression);
             return `${callee}.init(${overrides})`;

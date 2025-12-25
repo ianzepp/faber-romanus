@@ -151,7 +151,7 @@ genus Point implet Stringifiable {
     }
 }
 
-fixum p = novum Point cum { x: 10, y: 20 }
+fixum p = novum Point { x: 10, y: 20 }
 scribe p.toTextus()
 
 // =============================================================================
@@ -185,7 +185,7 @@ genus FileLogger implet Logger {
 
 // Both can be used wherever Logger is expected
 fixum logger1 = novum ConsoleLogger()
-fixum logger2 = novum FileLogger cum { path: "/var/log/app.log" }
+fixum logger2 = novum FileLogger { path: "/var/log/app.log" }
 
 logger1.log("Hello from console")
 logger2.log("Hello from file")

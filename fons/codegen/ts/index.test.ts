@@ -821,14 +821,14 @@ describe('codegen', () => {
             expect(js).not.toContain('private creo()');
         });
 
-        test('novum without cum passes empty object', () => {
+        test('novum without overrides passes empty object', () => {
             const js = compile('fixum p = novum persona');
 
             expect(js).toBe('const p = new persona();');
         });
 
-        test('novum with cum passes overrides', () => {
-            const js = compile('fixum p = novum persona cum { nomen: "Claudia" }');
+        test('novum with property overrides', () => {
+            const js = compile('fixum p = novum persona { nomen: "Claudia" }');
 
             expect(js).toBe('const p = new persona({ nomen: "Claudia" });');
         });

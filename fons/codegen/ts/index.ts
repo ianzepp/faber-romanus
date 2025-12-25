@@ -366,7 +366,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      *       private creo() { ... } // user's creo body, no args
      *   }
      *
-     * WHY: Auto-merge design - field defaults + cum overrides merged before creo runs.
+     * WHY: Auto-merge design - field defaults + property overrides merged before creo runs.
      */
     function genGenusDeclaration(node: GenusDeclaration): string {
         const name = node.name.name;
@@ -416,7 +416,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     /**
      * Generate auto-merge constructor.
      *
-     * WHY: The constructor handles merging field defaults with cum { ... } overrides,
+     * WHY: The constructor handles merging field defaults with { ... } or de expr overrides,
      *      then calls creo() if defined. User never writes merge boilerplate.
      */
     function genAutoMergeConstructor(node: GenusDeclaration): string {

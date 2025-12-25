@@ -23,7 +23,7 @@ Python is a high-priority compilation target for Faber due to its accessibility 
 | `implet` | inheritance | Class implements protocol via `(Protocol)` |
 | `ego` | `self` | Explicit in method signatures |
 | `novum` | direct call | No `new` keyword: `Class()` not `new Class()` |
-| `novum X cum {}` | `Class({})` | Constructor with dict overrides |
+| `novum X {}` | `Class({})` | Constructor with dict overrides |
 | `si`/`aliter` | `if`/`elif`/`else` | Note: `aliter si` -> `elif` |
 | `dum` | `while` | While loop |
 | `ex...pro` | `for...in` | Iteration |
@@ -117,7 +117,7 @@ class persona:
         pass
 ```
 
-This allows: `novum persona cum { nomen: "Marcus" }` -> `persona({"nomen": "Marcus"})`
+This allows: `novum persona { nomen: "Marcus" }` -> `persona({"nomen": "Marcus"})`
 
 ### Protocol for Interfaces
 

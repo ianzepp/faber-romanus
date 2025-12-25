@@ -1155,12 +1155,12 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
      *
      * TRANSFORMS:
      *   novum Foo() -> std::make_unique<Foo>()
-     *   novum Foo cum { x: 1 } -> Foo{.x = 1}
+     *   novum Foo { x: 1 } -> Foo{.x = 1}
      */
     function genNewExpression(node: NewExpression): string {
         const callee = node.callee.name;
 
-        // Handle cum { ... } overrides - use aggregate initialization
+        // Handle { ... } or de expr overrides - use aggregate initialization
         if (node.withExpression) {
             const overrides = genExpression(node.withExpression);
 

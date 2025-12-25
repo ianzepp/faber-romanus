@@ -222,9 +222,9 @@ export interface FunctionDeclaration extends BaseNode {
  * Function parameter.
  *
  * GRAMMAR (in EBNF):
- *   parameter := ('ad' | 'cum' | 'de' | 'in' | 'ex')? IDENTIFIER (':' typeAnnotation)?
+ *   parameter := ('ad' | 'de' | 'in' | 'ex')? IDENTIFIER (':' typeAnnotation)?
  *
- * INVARIANT: preposition is Latin (ad/cum/de/in/ex), not English (to/with/from/in/of).
+ * INVARIANT: preposition is Latin (ad/de/in/ex), not English (to/from/in/of).
  * INVARIANT: case and preposition enable semantic analysis of parameter roles.
  *
  * WHY: Latin prepositions indicate semantic roles that map to different constructs
@@ -1160,18 +1160,21 @@ export interface AwaitExpression extends BaseNode {
  * New expression (object construction).
  *
  * GRAMMAR (in EBNF):
- *   newExpr := 'novum' IDENTIFIER ('(' argumentList ')')? ('cum' objectLiteral)?
+ *   newExpr := 'novum' IDENTIFIER ('(' argumentList ')')? (objectLiteral | 'de' expression)?
  *
  * INVARIANT: callee is Identifier (constructor name).
  * INVARIANT: arguments is always an array.
  *
  * WHY: Latin 'novum' (new) for object construction.
+ *      Two forms for overrides:
+ *      - Inline: `novum Persona { nomen: "Marcus" }`
+ *      - From expression: `novum Persona de props`
  */
 export interface NewExpression extends BaseNode {
     type: 'NewExpression';
     callee: Identifier;
     arguments: Expression[];
-    withExpression?: ObjectExpression;
+    withExpression?: Expression;
 }
 
 // =============================================================================

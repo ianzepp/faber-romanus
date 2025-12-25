@@ -249,10 +249,6 @@ process(data);
 
 ## Design Decisions
 
-### Why `cura` over `cum`?
-
-`cum` (with) was overloaded for multiple purposes. `cura` is dedicated to resource management and reads naturally: "care for this resource."
-
 ### Why `solve` for cleanup?
 
 `solve` means "release, free" — fitting for releasing resources. Alternatives considered:

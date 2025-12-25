@@ -13,15 +13,14 @@
 - `implet` for interface implementation
 - Methods in genus with `ego` self-reference
 - `novum Type` instantiation without parentheses
-- `novum Type cum { ... }` inline field overrides (literal object only)
+- `novum Type { ... }` inline field overrides (literal object only)
 - `creo()` post-initialization hook (no args, `ego` pre-merged)
 - Computed properties (`numerus area => ...`)
-- Auto-merge: constructor merges field defaults + `cum { ... }` overrides
+- Auto-merge: constructor merges field defaults + `{ ... }`
+- `novum Type de dato` construction from existing variable (ablative — "from this source")
 
 ### Not Yet Implemented
 
-- `novum Type ex dato` construction from existing variable (ablative — "from this source")
-- Passing previously declared objects directly to `cum` (inline literal required today)
 - Value semantics (copy on assign)
 
 ---
@@ -70,7 +69,7 @@ genus persona {
 }
 
 fixum p = novum persona  // uses all defaults
-fixum q = novum persona cum { nomen: "Marcus" }  // override nomen only
+fixum q = novum persona { nomen: "Marcus" }  // override nomen only
 ```
 
 **Why `:` not `=`?**
@@ -82,7 +81,7 @@ The colon means "has the value of" — a declarative specification. The equals s
 | `:` | "has value" / "defaults to" | Field defaults, object literals, construction |
 | `=` | "assign value" | Variable binding, reassignment, method bodies |
 
-This aligns field defaults with object literal syntax (`{ nomen: "Marcus" }`) and construction overrides (`cum { nomen: "Marcus" }`), creating a consistent "property specification" form throughout the language.
+This aligns field defaults with object literal syntax (`{ nomen: "Marcus" }`) and construction overrides (`de overrides`), creating a consistent "property specification" form throughout the language.
 
 ### Naming
 
@@ -170,7 +169,7 @@ genus rectangulum {
 
 ### Constructor
 
-The compiler automatically merges field defaults with `cum { ... }` overrides. The optional `creo` hook runs afterward for validation or derived fields — it takes no arguments because `ego` already has the merged values:
+The compiler automatically merges field defaults with `{ ... }` overrides. The optional `creo` hook runs afterward for validation or derived fields — it takes no arguments because `ego` already has the merged values:
 
 ```
 genus persona {
@@ -188,21 +187,25 @@ genus persona {
 
 **Initialization order:**
 1. Field defaults applied
-2. `cum { ... }` overrides merged
+2. `{ ... }` or `de props` overrides merged
 3. `creo()` runs (if defined)
 
 Most types won't need `creo` at all — it's only for invariants, clamping, or computing derived state.
 
 ### Instantiation
 
-Use `novum` with optional `cum` for field values:
+Use `novum` with optional `{ .. }` for field values:
 
 ```
 // With defaults only
 fixum p = novum persona
 
 // Override specific fields
-fixum q = novum persona cum { nomen: "Marcus", aetas: 30 }
+fixum q = novum persona { nomen: "Marcus", aetas: 30 }
+
+// Override specific fields from another source
+fixum props = getPersonaProps()
+fixum q = novum persona de props
 ```
 
 The compiler merges defaults with overrides, then calls `creo()` if defined.
@@ -218,7 +221,7 @@ genus capsa<T> {
     }
 }
 
-fixum c = novum capsa<numerus> cum { valor: 42 }
+fixum c = novum capsa<numerus> { valor: 42 }
 ```
 
 ---
@@ -285,7 +288,7 @@ Goal: genus instances behave like value types (copy on assign, no accidental ali
 
 ```
 // Today
-fixum a = novum punctum cum { x: 1, y: 2 }
+fixum a = novum punctum { x: 1, y: 2 }
 fixum b = a        // b references the same object
 b.x = 10           // a.x is ALSO 10 (reference semantics)
 ```
@@ -358,7 +361,7 @@ For known shapes, prefer defining a `genus` instead.
 ### In Variable Declarations
 
 ```
-fixum persona p = novum persona cum { ... }
+fixum persona p = novum persona { ... }
 varia lista<textus> items = []
 ```
 
@@ -429,7 +432,7 @@ class persona {
     }
 }
 
-// novum persona cum { nomen: "Marcus" }
+// novum persona { nomen: "Marcus" }
 new persona({ nomen: "Marcus" })
 ```
 

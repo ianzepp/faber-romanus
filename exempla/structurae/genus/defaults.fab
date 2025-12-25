@@ -11,9 +11,9 @@
 // }
 //
 // SEMANTICS:
-// - Fields without `:` are required (must be in cum block)
+// - Fields without `:` are required (must be in override block)
 // - Fields with `:` are optional (use default if not provided)
-// - Compiler merges defaults + cum overrides automatically
+// - Compiler merges defaults + overrides automatically
 //
 // WHY DEFAULTS:
 // - Reduce boilerplate in instantiation
@@ -38,7 +38,7 @@ scribe defaultConfig.port
 scribe defaultConfig.secure
 
 // Override some defaults
-fixum customConfig = novum config cum {
+fixum customConfig = novum config {
     port: 3000,
     secure: verum
 }
@@ -59,7 +59,7 @@ genus usuario {
 }
 
 // Must provide name and email
-fixum user1 = novum usuario cum {
+fixum user1 = novum usuario {
     name: "Marcus",
     email: "marcus@roma.com"
 }
@@ -69,7 +69,7 @@ scribe user1.age      // default value
 scribe user1.active   // default value
 
 // Override optional fields
-fixum user2 = novum usuario cum {
+fixum user2 = novum usuario {
     name: "Julia",
     email: "julia@roma.com",
     age: 25,
@@ -96,7 +96,7 @@ fixum defaults = novum settings
 scribe defaults.volume
 scribe defaults.theme
 
-fixum custom = novum settings cum {
+fixum custom = novum settings {
     volume: 100,
     theme: "dark"
 }
@@ -114,14 +114,14 @@ genus collection {
     numerus count: 0
 }
 
-fixum emptyCollection = novum collection cum {
+fixum emptyCollection = novum collection {
     name: "Empty"
 }
 
 scribe emptyCollection.name
 scribe emptyCollection.count
 
-fixum filledCollection = novum collection cum {
+fixum filledCollection = novum collection {
     name: "Numbers",
     items: [1, 2, 3, 4, 5],
     count: 5
@@ -139,7 +139,7 @@ genus optional {
     numerus? age: nihil
 }
 
-fixum minimal = novum optional cum {
+fixum minimal = novum optional {
     name: "Gaius"
 }
 
@@ -147,7 +147,7 @@ scribe minimal.name
 scribe minimal.email  // nihil
 scribe minimal.age    // nihil
 
-fixum complete = novum optional cum {
+fixum complete = novum optional {
     name: "Claudia",
     email: "claudia@roma.com",
     age: 28
@@ -171,17 +171,17 @@ genus address {
 }
 
 // Uses default location
-fixum person1 = novum persona cum {
+fixum person1 = novum persona {
     name: "Marcus"
 }
 
 // Override location
-fixum customAddr = novum address cum {
+fixum customAddr = novum address {
     street: "Via Appia",
     city: "Athens"
 }
 
-fixum person2 = novum persona cum {
+fixum person2 = novum persona {
     name: "Julia",
     location: customAddr
 }
@@ -202,7 +202,7 @@ functio createOrigin() -> point {
 }
 
 functio createPoint(numerus x, numerus y) -> point {
-    redde novum point cum { x: x, y: y }
+    redde novum point { x: x, y: y }
 }
 
 fixum origin = createOrigin()
@@ -226,7 +226,7 @@ genus serverConfig {
 }
 
 // Development config (mostly defaults)
-fixum devConfig = novum serverConfig cum {
+fixum devConfig = novum serverConfig {
     enableLogging: verum
 }
 
@@ -234,7 +234,7 @@ scribe devConfig.host
 scribe devConfig.port
 
 // Production config (override key values)
-fixum prodConfig = novum serverConfig cum {
+fixum prodConfig = novum serverConfig {
     host: "api.example.com",
     port: 443,
     timeout: 30000,

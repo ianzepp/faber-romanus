@@ -201,7 +201,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `sic`/`secus` ternary syntax        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `cede` (await/yield)                |    [x]     | [~] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `novum` (new)                       |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `novum...cum` (new with props)      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| `novum...de` (new with props)       |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | `===` / `est` (strict equality)     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | `!==` / `non est` (strict ineq.)    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | `aut` (logical or)                  |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [x]  |

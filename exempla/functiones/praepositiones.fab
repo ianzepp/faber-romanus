@@ -156,8 +156,8 @@ genus Persona {
     }
 }
 
-fixum marcus = novum Persona cum { nomen: "Marcus", aetas: 30 }
-fixum julia = novum Persona cum { nomen: "Julia", aetas: 25 }
+fixum marcus = novum Persona { nomen: "Marcus", aetas: 30 }
+fixum julia = novum Persona { nomen: "Julia", aetas: 25 }
 
 scribe marcus.describe()
 scribe marcus.saluta(julia.nomen)

@@ -14,7 +14,7 @@ Direct 1:1 mapping. Faber's explicit mutability declaration is exactly what Zig 
 
 Faber treats `ego` as a real expression, not magic syntax sugar. Zig requires explicit `self` parameters in methods - so `ego.nomen` → `self.nomen` is a clean transformation.
 
-### 3. `novum X cum { overrides }`
+### 3. `novum X { overrides }`
 
 Maps beautifully to Zig's comptime capabilities:
 
@@ -101,7 +101,7 @@ Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works
 | `genus` | Done | `struct` with `init()` |
 | `pactum` | Done | Enforced in semantic analyzer; emits doc comment |
 | `ego` | Done | → `self` |
-| `novum cum` | Done | `@hasField` pattern |
+| `novum .. de` | Done | `@hasField` pattern |
 | Async | Partial | Error unions, not real async |
 | Generators | No | Would need iterator struct |
 | Generics | No | Would need comptime params |
@@ -473,7 +473,7 @@ Remaining tensions:
 | `genus` | Done | `struct` with `init()` |
 | `pactum` | Done | Enforced in semantic analyzer; emits doc comment |
 | `ego` | Done | → `self` |
-| `novum cum` | Done | `@hasField` pattern |
+| `novum .. de` | Done | `@hasField` pattern |
 | Async | Partial | Error unions, not real async |
 | Generators | No | Would need iterator struct |
 | Generics | No | Would need comptime params |

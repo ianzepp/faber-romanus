@@ -669,12 +669,31 @@ describe('parser', () => {
             expect(expr.withExpression).toBeUndefined();
         });
 
-        test('novum with cum overrides', () => {
-            const { program } = parseCode('novum persona cum { nomen: "Marcus" }');
+        test('novum with property overrides', () => {
+            const { program } = parseCode('novum persona { nomen: "Marcus" }');
             const expr = (program!.body[0] as any).expression;
 
             expect(expr.withExpression.type).toBe('ObjectExpression');
             expect(expr.withExpression.properties[0].key.name).toBe('nomen');
+        });
+
+        test('novum de variable', () => {
+            const { program } = parseCode('novum persona de props');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('NewExpression');
+            expect(expr.callee.name).toBe('persona');
+            expect(expr.withExpression.type).toBe('Identifier');
+            expect(expr.withExpression.name).toBe('props');
+        });
+
+        test('novum de function call', () => {
+            const { program } = parseCode('novum user de fetchProps()');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('NewExpression');
+            expect(expr.withExpression.type).toBe('CallExpression');
+            expect(expr.withExpression.callee.name).toBe('fetchProps');
         });
     });
 

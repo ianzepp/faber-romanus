@@ -21,7 +21,7 @@
  * - declaration: Variable/function declarations (varia, functio)
  * - operator: Logical operators (et, aut, non)
  * - value: Literal values (verum, falsum, nihil)
- * - preposition: Case-governing prepositions (in, ex, cum, ad)
+ * - preposition: Case-governing prepositions (in, ex, de, ad)
  * - modifier: Function/variable modifiers (futura for async)
  *
  * INPUT/OUTPUT CONTRACT
@@ -188,7 +188,6 @@ export const keywords: KeywordEntry[] = [
     { latin: 'de', meaning: 'from/concerning', category: 'preposition' },
     { latin: 'in', meaning: 'in/into', category: 'preposition' },
     { latin: 'ex', meaning: 'of', category: 'preposition' },
-    { latin: 'cum', meaning: 'with', category: 'preposition' },
     { latin: 'ad', meaning: 'to', category: 'preposition' },
     { latin: 'per', meaning: 'by/through', category: 'preposition' },
     // WHY: "ut" (as) for renaming in destructuring

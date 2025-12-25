@@ -23,7 +23,7 @@ TypeScript is the primary compilation target for Faber. The language design was 
 | `implet` | `implements` | Direct mapping |
 | `ego` | `this` | Self reference |
 | `novum` | `new` | Object construction |
-| `novum X cum {}` | `new X({})` | Constructor with overrides |
+| `novum X {}` | `new X({})` | Constructor with overrides |
 | `si`/`aliter` | `if`/`else` | Conditionals |
 | `dum` | `while` | While loop |
 | `ex...pro` | `for...of` | Iteration |
@@ -60,7 +60,7 @@ TypeScript is the primary compilation target for Faber. The language design was 
 
 ### Auto-merge Constructor
 
-Faber's `genus` generates a constructor that merges field defaults with `cum` overrides:
+Faber's `genus` generates a constructor that merges field defaults with overrides:
 
 ```typescript
 class persona {
@@ -75,7 +75,7 @@ class persona {
 }
 ```
 
-This allows: `novum persona cum { nomen: "Marcus" }` → `new persona({ nomen: "Marcus" })`
+This allows: `novum persona { nomen: "Marcus" }` → `new persona({ nomen: "Marcus" })`
 
 ### `cede` Context Sensitivity
 

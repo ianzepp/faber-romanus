@@ -381,12 +381,12 @@ export function parse(tokens: Token[]): ParserResult {
     /**
      * Check if token is a preposition used in parameters.
      *
-     * WHY: Prepositions indicate semantic roles (ad, cum, in, ex).
+     * WHY: Prepositions indicate semantic roles (ad, de, in, ex).
      *
      * @returns true if token is a preposition keyword
      */
     function isPreposition(token: Token): boolean {
-        return token.type === 'KEYWORD' && ['ad', 'cum', 'de', 'in', 'ex'].includes(token.keyword ?? '');
+        return token.type === 'KEYWORD' && ['ad', 'de', 'in', 'ex'].includes(token.keyword ?? '');
     }
 
     // =============================================================================
@@ -890,11 +890,11 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse single function parameter.
      *
      * GRAMMAR:
-     *   parameter := ('ad' | 'cum' | 'de' | 'in' | 'ex')? (typeAnnotation IDENTIFIER | IDENTIFIER)
+     *   parameter := ('ad' | 'de' | 'in' | 'ex')? (typeAnnotation IDENTIFIER | IDENTIFIER)
      *
      * WHY: Type-first syntax: "textus name" or "ad textus recipientem"
      *      Prepositional prefixes indicate semantic roles:
-     *      ad = toward/to, cum = with, de = from/concerning (borrowed),
+     *      ad = toward/to, de = from/concerning (borrowed),
      *      in = in/into (mutable), ex = from/out of
      *
      * EDGE: Preposition comes first (if present), then type (if present), then identifier.
@@ -2466,7 +2466,13 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse new expression (object construction).
      *
      * GRAMMAR:
-     *   newExpr := 'novum' IDENTIFIER '(' argumentList ')'
+     *   newExpr := 'novum' IDENTIFIER ('(' argumentList ')')? (objectLiteral | 'de' expression)?
+     *
+     * WHY: Two forms for property overrides:
+     *      - Inline literal: `novum Persona { nomen: "Marcus" }`
+     *      - From expression: `novum Persona de props` (props is variable/call/etc.)
+     *
+     *      The `de` (from) form allows dynamic overrides from variables or function results.
      */
     function parseNewExpression(): NewExpression {
         const position = tokens[current - 1].position;
@@ -2480,16 +2486,14 @@ export function parse(tokens: Token[]): ParserResult {
             expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
         }
 
-        let withExpression: ObjectExpression | undefined;
+        let withExpression: Expression | undefined;
 
-        if (matchKeyword('cum')) {
-            const override = parsePrimary();
-
-            if (override.type !== 'ObjectExpression') {
-                error(ParserErrorCode.ExpectedObjectAfterCum);
-            }
-
-            withExpression = override as ObjectExpression;
+        // Check for property overrides: novum X { ... } or novum X de expr
+        if (check('LBRACE')) {
+            withExpression = parsePrimary();
+        }
+        else if (matchKeyword('de')) {
+            withExpression = parseExpression();
         }
 
         return { type: 'NewExpression', callee, arguments: args, withExpression, position };

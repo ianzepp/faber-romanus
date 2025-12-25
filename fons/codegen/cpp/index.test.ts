@@ -271,8 +271,8 @@ describe('cpp codegen', () => {
             expect(cpp).toContain('Persona{}');
         });
 
-        test('novum with cum overrides', () => {
-            const cpp = compile('novum Persona cum { nomen: "Marcus" }');
+        test('novum with property overrides', () => {
+            const cpp = compile('novum Persona { nomen: "Marcus" }');
 
             expect(cpp).toContain('Persona{.nomen = ');
         });

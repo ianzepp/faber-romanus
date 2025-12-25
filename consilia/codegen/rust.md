@@ -71,7 +71,7 @@ Rust has unstable generator syntax, but stable Rust requires manual `Iterator` i
 
 Rust's async is also different from JS. It's lazy (futures don't run until polled), needs a runtime (tokio, async-std), and has `Pin` complexity for self-referential futures. Faber's simple `futura`/`cede` hides all this.
 
-### 6. `novum X cum { overrides }`
+### 6. `novum X { overrides }`
 
 Rust doesn't have Zig's comptime `@hasField`. The auto-merge pattern would need:
 - A builder pattern, or

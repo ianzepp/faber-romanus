@@ -566,8 +566,8 @@ describe('zig codegen', () => {
             expect(zig).toContain('persona.init()');
         });
 
-        test('novum with cum passes overrides', () => {
-            const zig = compile('fixum p = novum persona cum { nomen: "Claudia" }');
+        test('novum with property overrides', () => {
+            const zig = compile('fixum p = novum persona { nomen: "Claudia" }');
 
             expect(zig).toContain('persona.init(.{ .nomen = "Claudia" })');
         });

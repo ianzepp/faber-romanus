@@ -98,7 +98,6 @@ export enum ParserErrorCode {
     InvalidSwitchCaseStart = 'P102',
     InvalidGuardClauseStart = 'P103',
     UnexpectedToken = 'P104',
-    ExpectedObjectAfterCum = 'P105',
 
     // Generic errors (P190-P199)
     GenericError = 'P190',
@@ -302,10 +301,6 @@ export const PARSER_ERRORS = {
     [ParserErrorCode.UnexpectedToken]: {
         text: 'Unexpected token',
         help: 'Token not expected in this context. Check for syntax errors or missing operators/delimiters.',
-    },
-    [ParserErrorCode.ExpectedObjectAfterCum]: {
-        text: "Expected object literal after 'cum'",
-        help: "The 'cum' clause in 'novum' expressions requires an object literal: novum Persona cum { nomen: 'Marcus' }",
     },
 
     // Generic errors

@@ -1415,10 +1415,6 @@
             "named": false
           },
           {
-            "type": "cum",
-            "named": false
-          },
-          {
             "type": "de",
             "named": false
           },
@@ -2232,10 +2228,6 @@
   {
     "type": "continue_statement",
     "named": true
-  },
-  {
-    "type": "cum",
-    "named": false
   },
   {
     "type": "cursor",

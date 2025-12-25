@@ -36,7 +36,7 @@ C++23 shares ownership concerns with Zig and Rust. Faber uses a **unified approa
 | `implet` | `requires` | Concept satisfaction |
 | `ego` | `this->` or `self` | Via reference capture |
 | `novum` | direct construction | No `new` for stack, `std::make_unique` for heap |
-| `novum X cum {}` | Designated initializers | C++20 designated init |
+| `novum X {}` | Designated initializers | C++20 designated init |
 | `si`/`aliter` | `if`/`else` | Direct |
 | `dum` | `while` | Direct |
 | `ex...pro` | range-for | `for (auto x : items)` |
@@ -300,7 +300,7 @@ C++ lambdas are more flexible than Zig's (which require explicit context structs
 
 ## Auto-Merge Constructor
 
-Faber's `novum X cum { overrides }` uses C++20 designated initializers combined with a merge pattern:
+Faber's `novum X { overrides }` uses C++20 designated initializers combined with a merge pattern:
 
 ```cpp
 struct Persona {
@@ -322,7 +322,7 @@ struct Persona {
     void _creo() { /* user initialization */ }
 };
 
-// Usage: novum Persona cum { nomen: "Marcus" }
+// Usage: novum Persona { nomen: "Marcus" }
 auto p = Persona{{.nomen = "Marcus"}};
 ```
 

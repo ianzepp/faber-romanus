@@ -21,7 +21,6 @@ These appear implemented/designed but lack dedicated consilia docs:
 | Feature              | Status      | Notes                         |
 | -------------------- | ----------- | ----------------------------- |
 | `typus` (type alias) | Implemented | Could add to types.md         |
-| `cum` (with/context) | Implemented | Brief mention in iteration.md |
 
 ---
 
