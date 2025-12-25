@@ -71,6 +71,8 @@ import type {
     GuardStatement,
     AssertStatement,
     ReturnStatement,
+    BreakStatement,
+    ContinueStatement,
     BlockStatement,
     ThrowStatement,
     ScribeStatement,
@@ -255,6 +257,10 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
                 return genAssertStatement(node);
             case 'ReturnStatement':
                 return genReturnStatement(node);
+            case 'BreakStatement':
+                return genBreakStatement();
+            case 'ContinueStatement':
+                return genContinueStatement();
             case 'ThrowStatement':
                 return genThrowStatement(node);
             case 'ScribeStatement':
@@ -980,6 +986,26 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             return `${ind()}return ${genExpression(node.argument)}`;
         }
         return `${ind()}return`;
+    }
+
+    /**
+     * Generate break statement.
+     *
+     * TRANSFORMS:
+     *   rumpe -> break
+     */
+    function genBreakStatement(): string {
+        return `${ind()}break`;
+    }
+
+    /**
+     * Generate continue statement.
+     *
+     * TRANSFORMS:
+     *   perge -> continue
+     */
+    function genContinueStatement(): string {
+        return `${ind()}continue`;
     }
 
     /**

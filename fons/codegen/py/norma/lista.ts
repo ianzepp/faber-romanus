@@ -355,6 +355,144 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         // Or generate a for loop if in statement context
         py: (obj, args) => `[(${args})(x) for x in ${obj}]`,
     },
+
+    // -------------------------------------------------------------------------
+    // IN-PLACE MUTATORS
+    // -------------------------------------------------------------------------
+
+    filtra: {
+        latin: 'filtra',
+        mutates: true,
+        async: false,
+        // Python list doesn't have in-place filter; use slice assignment
+        py: (obj, args) => `${obj}[:] = [x for x in ${obj} if (${args})(x)]`,
+    },
+
+    ordina: {
+        latin: 'ordina',
+        mutates: true,
+        async: false,
+        py: (obj, args) => {
+            if (args) {
+                return `${obj}.sort(key=${args})`;
+            }
+            return `${obj}.sort()`;
+        },
+    },
+
+    inverte: {
+        latin: 'inverte',
+        mutates: true,
+        async: false,
+        py: obj => `${obj}.reverse()`,
+    },
+
+    // -------------------------------------------------------------------------
+    // ADVANCED OPERATIONS
+    // -------------------------------------------------------------------------
+
+    congrega: {
+        latin: 'congrega',
+        mutates: false,
+        async: false,
+        // groupBy - returns dict of lists
+        py: (obj, args) => {
+            // Python doesn't have native groupBy; use itertools or inline
+            return `{k: list(g) for k, g in itertools.groupby(sorted(${obj}, key=${args}), key=${args})}`;
+        },
+    },
+
+    unica: {
+        latin: 'unica',
+        mutates: false,
+        async: false,
+        py: obj => `list(dict.fromkeys(${obj}))`,
+    },
+
+    fragmenta: {
+        latin: 'fragmenta',
+        mutates: false,
+        async: false,
+        // chunk into sublists of size n
+        py: (obj, args) => `[${obj}[i:i+${args}] for i in range(0, len(${obj}), ${args})]`,
+    },
+
+    densa: {
+        latin: 'densa',
+        mutates: false,
+        async: false,
+        // compact - remove falsy values
+        py: obj => `[x for x in ${obj} if x]`,
+    },
+
+    partire: {
+        latin: 'partire',
+        mutates: false,
+        async: false,
+        // partition into [matching, non-matching]
+        py: (obj, args) => `[[x for x in ${obj} if (${args})(x)], [x for x in ${obj} if not (${args})(x)]]`,
+    },
+
+    misce: {
+        latin: 'misce',
+        mutates: true,
+        async: false,
+        py: obj => `random.shuffle(${obj})`,
+    },
+
+    specimen: {
+        latin: 'specimen',
+        mutates: false,
+        async: false,
+        py: obj => `random.choice(${obj})`,
+    },
+
+    specimina: {
+        latin: 'specimina',
+        mutates: false,
+        async: false,
+        py: (obj, args) => `random.sample(${obj}, ${args})`,
+    },
+
+    // -------------------------------------------------------------------------
+    // MATH OPERATIONS
+    // -------------------------------------------------------------------------
+
+    summa: {
+        latin: 'summa',
+        mutates: false,
+        async: false,
+        py: obj => `sum(${obj})`,
+    },
+
+    medium: {
+        latin: 'medium',
+        mutates: false,
+        async: false,
+        py: obj => `(sum(${obj}) / len(${obj}))`,
+    },
+
+    minimus: {
+        latin: 'minimus',
+        mutates: false,
+        async: false,
+        py: obj => `min(${obj})`,
+    },
+
+    maximus: {
+        latin: 'maximus',
+        mutates: false,
+        async: false,
+        py: obj => `max(${obj})`,
+    },
+
+    numera: {
+        latin: 'numera',
+        mutates: false,
+        async: false,
+        // count matching predicate
+        py: (obj, args) => `sum(1 for x in ${obj} if (${args})(x))`,
+    },
 };
 
 // =============================================================================

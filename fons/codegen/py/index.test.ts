@@ -233,6 +233,18 @@ describe('Python codegen', () => {
             expect(result).toContain('while True:');
             expect(result).toContain('print("loop")');
         });
+
+        test('break statement', () => {
+            const result = compile('dum verum { rumpe }');
+            expect(result).toContain('while True:');
+            expect(result).toContain('break');
+        });
+
+        test('continue statement', () => {
+            const result = compile('dum verum { perge }');
+            expect(result).toContain('while True:');
+            expect(result).toContain('continue');
+        });
     });
 
     // =========================================================================
