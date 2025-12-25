@@ -229,6 +229,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Feature                         | TypeScript | Zig | Python | WASM | Rust | C++23 |
 | ------------------------------- | :--------: | :-: | :----: | :--: | :--: | :---: |
 | `pro x redde expr` (expression) |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [ ]  |
+| `pro x: expr` (colon shorthand) |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [ ]  |
 | `pro x { body }` (block)        |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [ ]  |
 | `pro redde expr` (zero-param)   |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [ ]  |
 | `(x) => expr` (JS-style)        |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [x]  |
