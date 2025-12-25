@@ -7,10 +7,14 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Feature | TypeScript | Zig | Python | WASM | Rust | C++23 |
 |---------|:----------:|:---:|:------:|:----:|:----:|:-----:|
 | `textus` (string) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
-| `numerus` (number) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `numerus` (integer) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `fractus` (float) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `decimus` (decimal) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `bivalens` (boolean) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `nihil` (null) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | `vacuum` (void) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `octeti` (bytes) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `objectum` (object) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 | `lista<T>` (array) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `tabula<K,V>` (map) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `copia<T>` (set) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
@@ -50,11 +54,15 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Basic functions (`functio`) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Parameters | [x] | [x] | [x] | [ ] | [ ] | [ ] |
 | Parameter type annotations | [x] | [x] | [x] | [ ] | [ ] | [ ] |
-| Return type annotation | [x] | [x] | [x] | [ ] | [ ] | [ ] |
-| `futura` (async) | [x] | [~] | [x] | [ ] | [ ] | [ ] |
-| `cursor` (generator) | [x] | [-] | [x] | [ ] | [ ] | [ ] |
+| Return type annotation (`->`) | [x] | [x] | [x] | [ ] | [ ] | [ ] |
+| `futura` (async prefix) | [x] | [~] | [x] | [ ] | [ ] | [ ] |
+| `cursor` (generator prefix) | [x] | [-] | [x] | [ ] | [ ] | [ ] |
 | Async generator | [x] | [-] | [x] | [ ] | [ ] | [ ] |
 | Arrow functions | [x] | [~] | [x] | [ ] | [ ] | [ ] |
+| `fit T` (sync return) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `fiet T` (async return) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `fiunt T` (generator return) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `fient T` (async generator return) | [ ] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Control Flow Statements
 
@@ -249,6 +257,45 @@ Feature-dependent setup code (imports, includes, class definitions). See `consil
 | `aliquis` (some) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `coniunge` (join) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
 | `perambula` (forEach) | [x] | [ ] | [x] | [ ] | [ ] | [ ] |
+
+## Tabula (Map) Methods
+
+| Latin | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|-------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `pone` (set) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `accipe` (get) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `habet` (has) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `erade` (delete) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `longitudo` (size) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `vacua` (isEmpty) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `purga` (clear) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `claves` (keys) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `valores` (values) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `paria` (entries) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `accipeAut` (getOrDefault) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `selige` (pick) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `omitte` (omit) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `confla` (merge) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `inversa` (invert) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `mappaValores` (mapValues) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `mappaClaves` (mapKeys) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+
+## Copia (Set) Methods
+
+| Latin | TypeScript | Zig | Python | WASM | Rust | C++23 |
+|-------|:----------:|:---:|:------:|:----:|:----:|:-----:|
+| `adde` (add) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `habet` (has) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `erade` (delete) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `longitudo` (size) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `vacua` (isEmpty) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `purga` (clear) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `unio` (union) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `intersectio` (intersection) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `differentia` (difference) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `symmetrica` (symmetric diff) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `subcopia` (isSubset) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
+| `supercopia` (isSuperset) | [x] | [ ] | [ ] | [ ] | [ ] | [ ] |
 
 ## Collection DSL (Future)
 
