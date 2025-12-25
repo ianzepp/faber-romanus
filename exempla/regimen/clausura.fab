@@ -116,28 +116,30 @@ scribe timesThree(7)  // 21
 // CLOSURES (capturing outer scope)
 // =============================================================================
 
-// Counter closure
-functio makeCounter() {
-    varia count = 0
-    redde pro {
-        count = count + 1
-        redde count
-    }
+// Closures capture variables from enclosing scope
+// Note: Returning lambdas requires function type annotations (future feature)
+
+// Immediate closure - captures outer variable
+varia outerCount = 0
+fixum incrementOuter = pro {
+    outerCount = outerCount + 1
+    scribe outerCount
 }
 
-fixum counter = makeCounter()
-scribe counter()  // 1
-scribe counter()  // 2
-scribe counter()  // 3
+incrementOuter()  // 1
+incrementOuter()  // 2
+incrementOuter()  // 3
 
-// Closure capturing parameter
-functio makeAdder(numerus n) {
-    redde pro x: x + n
+// Closure capturing function parameter
+functio createGreeter(textus prefix) {
+    // The lambda captures 'prefix' from the enclosing scope
+    fixum greet = pro name: prefix + ", " + name + "!"
+    scribe greet("Marcus")
+    scribe greet("Julia")
 }
 
-fixum addTen = makeAdder(10)
-scribe addTen(5)   // 15
-scribe addTen(20)  // 30
+createGreeter("Salve")  // "Salve, Marcus!" "Salve, Julia!"
+createGreeter("Ave")    // "Ave, Marcus!" "Ave, Julia!"
 
 // =============================================================================
 // LAMBDAS AS CALLBACKS

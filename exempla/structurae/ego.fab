@@ -89,11 +89,11 @@ genus Builder {
     }
 }
 
-fixum text = novum Builder()
-    .append("Salve, ")
-    .appendLine("Mundus!")
-    .append("Vale!")
-    .build()
+fixum builder = novum Builder()
+builder.append("Salve, ")
+builder.appendLine("Mundus!")
+builder.append("Vale!")
+fixum text = builder.build()
 
 scribe text
 

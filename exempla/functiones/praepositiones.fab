@@ -61,14 +61,10 @@ scribe summa([1, 2, 3, 4, 5])  // 15
 // The function can modify the value in place.
 // Rust: &mut T, Zig: *T
 
-// Mutates the counter in place
-functio incrementa(in numerus counter) {
-    counter = counter + 1
-}
-
-// Conceptual: list mutation would use stdlib methods
-// functio adde(in lista<numerus> items, numerus value) {
-//     items.adde(value)
+// Conceptual: mutable parameter example
+// In systems targets, this would modify the value in place
+// functio incrementa(in numerus counter) {
+//     counter = counter + 1
 // }
 
 // =============================================================================
