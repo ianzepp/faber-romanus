@@ -422,7 +422,8 @@ describe('Python codegen', () => {
         });
 
         test('unary not operator', () => {
-            expect(compile('scribe !verum')).toContain('print(not True)');
+            // WHY: Use 'non' for logical negation (prefix ! removed for !. non-null assertion)
+            expect(compile('scribe non verum')).toContain('print(not True)');
         });
 
         test('ternary with ? :', () => {
@@ -1050,6 +1051,44 @@ describe('Python codegen', () => {
             expect(result).toContain('return a');
             expect(result).toContain('else:');
             expect(result).toContain('return b');
+        });
+    });
+
+    describe('optional chaining and non-null assertion', () => {
+        test('optional member access ?. expands to conditional', () => {
+            const result = compile('user?.name');
+
+            expect(result).toContain('(user.name if user is not None else None)');
+        });
+
+        test('optional computed access ?[ expands to conditional', () => {
+            const result = compile('items?[0]');
+
+            expect(result).toContain('(items[0] if items is not None else None)');
+        });
+
+        test('optional call ?( expands to conditional', () => {
+            const result = compile('callback?(x)');
+
+            expect(result).toContain('(callback(x) if callback is not None else None)');
+        });
+
+        test('non-null member access !. passes through', () => {
+            const result = compile('user!.name');
+
+            expect(result).toContain('user.name');
+        });
+
+        test('non-null computed access ![ passes through', () => {
+            const result = compile('items![0]');
+
+            expect(result).toContain('items[0]');
+        });
+
+        test('non-null call !( passes through', () => {
+            const result = compile('callback!(x)');
+
+            expect(result).toContain('callback(x)');
         });
     });
 });

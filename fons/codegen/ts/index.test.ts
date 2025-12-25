@@ -2229,4 +2229,54 @@ describe('codegen', () => {
             expect(js).toContain('const { x: localX, ...others } = obj');
         });
     });
+
+    describe('optional chaining and non-null assertion', () => {
+        test('optional member access ?.', () => {
+            const js = compile('user?.name');
+
+            expect(js).toContain('user?.name');
+        });
+
+        test('optional computed access ?[', () => {
+            const js = compile('items?[0]');
+
+            expect(js).toContain('items?.[0]');
+        });
+
+        test('optional call ?(', () => {
+            const js = compile('callback?(x)');
+
+            expect(js).toContain('callback?.(x)');
+        });
+
+        test('non-null member access !.', () => {
+            const js = compile('user!.name');
+
+            expect(js).toContain('user!.name');
+        });
+
+        test('non-null computed access ![', () => {
+            const js = compile('items![0]');
+
+            expect(js).toContain('items![0]');
+        });
+
+        test('non-null call !(', () => {
+            const js = compile('callback!(x)');
+
+            expect(js).toContain('callback!(x)');
+        });
+
+        test('chained optional access', () => {
+            const js = compile('user?.address?.city');
+
+            expect(js).toContain('user?.address?.city');
+        });
+
+        test('mixed optional and regular access', () => {
+            const js = compile('user?.address.city');
+
+            expect(js).toContain('user?.address.city');
+        });
+    });
 });

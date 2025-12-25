@@ -205,8 +205,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `negativum` (is negative)           |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `positivum` (is positive)           |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Member access (`.`)                 |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| Optional chaining (`?.`)            |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
-| Non-null assertion (`!.`)           |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| Optional chaining (`?.`)            |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Non-null assertion (`!.`)           |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Computed access (`[]`)              |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Function calls                      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Call spread (`sparge`)              |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |

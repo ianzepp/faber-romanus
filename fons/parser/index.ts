@@ -2413,7 +2413,9 @@ export function parse(tokens: Token[]): ParserResult {
      *      'negativum' (< 0), 'positivum' (> 0), 'cede' (await), 'novum' (new).
      */
     function parseUnary(): Expression {
-        if (match('BANG') || matchKeyword('non')) {
+        // WHY: Prefix ! is removed to make room for non-null assertion (postfix !.)
+        //      Use 'non' for logical not: "si non x" instead of "si !x"
+        if (matchKeyword('non')) {
             const position = tokens[current - 1].position;
             const argument = parseUnary();
 
@@ -2527,25 +2529,110 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse call expression with postfix operators.
      *
      * GRAMMAR:
-     *   call := primary ('(' argumentList ')' | '.' IDENTIFIER | '[' expression ']')*
+     *   call := primary (callSuffix | memberSuffix | optionalSuffix | nonNullSuffix)*
+     *   callSuffix := '(' argumentList ')'
+     *   memberSuffix := '.' IDENTIFIER | '[' expression ']'
+     *   optionalSuffix := '?.' IDENTIFIER | '?[' expression ']' | '?(' argumentList ')'
+     *   nonNullSuffix := '!.' IDENTIFIER | '![' expression ']' | '!(' argumentList ')'
      *
      * PRECEDENCE: Highest (binds tightest after primary).
      *
      * WHY: Handles function calls, member access, and computed member access.
      *      Left-associative via loop (obj.a.b parsed as (obj.a).b).
+     *
+     * OPTIONAL CHAINING: ?. ?[ ?( return nihil if object is nihil
+     * NON-NULL ASSERTION: !. ![ !( assert object is not nihil
      */
     function parseCall(): Expression {
         let expr = parsePrimary();
 
         while (true) {
-            if (match('LPAREN')) {
+            // ---------------------------------------------------------------
+            // Optional chaining: ?. ?[ ?(
+            // WHY: Check for QUESTION followed by accessor token to disambiguate from ternary
+            // ---------------------------------------------------------------
+            if (check('QUESTION') && isChainAccessor(peek(1).type)) {
+                const position = peek().position;
+                advance(); // consume QUESTION
+
+                if (match('DOT')) {
+                    const property = parseIdentifier();
+                    expr = {
+                        type: 'MemberExpression',
+                        object: expr,
+                        property,
+                        computed: false,
+                        optional: true,
+                        position,
+                    };
+                }
+                else if (match('LBRACKET')) {
+                    const property = parseExpression();
+                    expect('RBRACKET', ParserErrorCode.ExpectedClosingBracket);
+                    expr = {
+                        type: 'MemberExpression',
+                        object: expr,
+                        property,
+                        computed: true,
+                        optional: true,
+                        position,
+                    };
+                }
+                else if (match('LPAREN')) {
+                    const args = parseArgumentList();
+                    expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
+                    expr = { type: 'CallExpression', callee: expr, arguments: args, optional: true, position };
+                }
+            }
+            // ---------------------------------------------------------------
+            // Non-null assertion: !. ![ !(
+            // WHY: BANG is no longer used for prefix logical not, so it's unambiguous
+            // ---------------------------------------------------------------
+            else if (check('BANG') && isChainAccessor(peek(1).type)) {
+                const position = peek().position;
+                advance(); // consume BANG
+
+                if (match('DOT')) {
+                    const property = parseIdentifier();
+                    expr = {
+                        type: 'MemberExpression',
+                        object: expr,
+                        property,
+                        computed: false,
+                        nonNull: true,
+                        position,
+                    };
+                }
+                else if (match('LBRACKET')) {
+                    const property = parseExpression();
+                    expect('RBRACKET', ParserErrorCode.ExpectedClosingBracket);
+                    expr = {
+                        type: 'MemberExpression',
+                        object: expr,
+                        property,
+                        computed: true,
+                        nonNull: true,
+                        position,
+                    };
+                }
+                else if (match('LPAREN')) {
+                    const args = parseArgumentList();
+                    expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
+                    expr = { type: 'CallExpression', callee: expr, arguments: args, nonNull: true, position };
+                }
+            }
+            // ---------------------------------------------------------------
+            // Regular accessors
+            // ---------------------------------------------------------------
+            else if (match('LPAREN')) {
                 const position = tokens[current - 1].position;
                 const args = parseArgumentList();
 
                 expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
                 expr = { type: 'CallExpression', callee: expr, arguments: args, position };
-            } else if (match('DOT')) {
+            }
+            else if (match('DOT')) {
                 const position = tokens[current - 1].position;
                 const property = parseIdentifier();
 
@@ -2556,7 +2643,8 @@ export function parse(tokens: Token[]): ParserResult {
                     computed: false,
                     position,
                 };
-            } else if (match('LBRACKET')) {
+            }
+            else if (match('LBRACKET')) {
                 const position = tokens[current - 1].position;
                 const property = parseExpression();
 
@@ -2569,12 +2657,20 @@ export function parse(tokens: Token[]): ParserResult {
                     computed: true,
                     position,
                 };
-            } else {
+            }
+            else {
                 break;
             }
         }
 
         return expr;
+    }
+
+    /**
+     * Check if token type is a chain accessor (for optional chaining / non-null assertion).
+     */
+    function isChainAccessor(type: TokenType): boolean {
+        return type === 'DOT' || type === 'LBRACKET' || type === 'LPAREN';
     }
 
     /**

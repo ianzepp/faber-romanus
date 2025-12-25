@@ -1369,6 +1369,11 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate function call.
+     *
+     * TRANSFORMS:
+     *   fn()    -> fn()
+     *   fn?()   -> (fn() if fn is not None else None)
+     *   fn!()   -> fn()  (Python has no assertion, just call)
      */
     function genCallExpression(node: CallExpression): string {
         const args = node.arguments.map(genExpression).join(', ');
@@ -1416,6 +1421,12 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         }
 
         const callee = genExpression(node.callee);
+
+        // WHY: Python has no native optional chaining; expand to conditional
+        if (node.optional) {
+            return `(${callee}(${args}) if ${callee} is not None else None)`;
+        }
+        // WHY: Python has no non-null assertion; just call directly
         return `${callee}(${args})`;
     }
 
@@ -1436,15 +1447,33 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate member access.
+     *
+     * TRANSFORMS:
+     *   obj.prop      -> obj.prop
+     *   obj?.prop     -> (obj.prop if obj is not None else None)
+     *   obj!.prop     -> obj.prop  (Python has no assertion, just access)
+     *   obj[idx]      -> obj[idx]
+     *   obj?[idx]     -> (obj[idx] if obj is not None else None)
+     *   obj![idx]     -> obj[idx]
      */
     function genMemberExpression(node: MemberExpression): string {
         const obj = genExpression(node.object);
 
         if (node.computed) {
-            return `${obj}[${genExpression(node.property)}]`;
+            const prop = genExpression(node.property);
+            // WHY: Python has no native optional chaining; expand to conditional
+            if (node.optional) {
+                return `(${obj}[${prop}] if ${obj} is not None else None)`;
+            }
+            // WHY: Python has no non-null assertion; just access directly
+            return `${obj}[${prop}]`;
         }
 
-        return `${obj}.${(node.property as Identifier).name}`;
+        const prop = (node.property as Identifier).name;
+        if (node.optional) {
+            return `(${obj}.${prop} if ${obj} is not None else None)`;
+        }
+        return `${obj}.${prop}`;
     }
 
     /**

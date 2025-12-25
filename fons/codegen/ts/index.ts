@@ -1417,6 +1417,16 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
         const callee = genExpression(node.callee);
 
+        // Handle optional call: callback?() -> callback?.()
+        if (node.optional) {
+            return `${callee}?.(${args})`;
+        }
+
+        // Handle non-null assertion call: handler!() -> handler!()
+        if (node.nonNull) {
+            return `${callee}!(${args})`;
+        }
+
         return `${callee}(${args})`;
     }
 
@@ -1469,18 +1479,39 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * Generate member access.
      *
      * TRANSFORMS:
-     *   obj.prop -> obj.prop
-     *   obj[key] -> obj[key]
+     *   obj.prop      -> obj.prop
+     *   obj[key]      -> obj[key]
+     *   obj?.prop     -> obj?.prop
+     *   obj?[key]     -> obj?.[key]   (TS requires dot before bracket)
+     *   obj!.prop     -> obj!.prop
+     *   obj![key]     -> obj![key]
      */
     function genMemberExpression(node: MemberExpression): string {
         const obj = genExpression(node.object);
 
         if (node.computed) {
-            return `${obj}[${genExpression(node.property)}]`;
+            const prop = genExpression(node.property);
+
+            // WHY: TypeScript requires ?. before [ for optional computed access
+            if (node.optional) {
+                return `${obj}?.[${prop}]`;
+            }
+            if (node.nonNull) {
+                return `${obj}![${prop}]`;
+            }
+            return `${obj}[${prop}]`;
         }
 
         // WHY: Non-computed access always has Identifier property by grammar
-        return `${obj}.${(node.property as Identifier).name}`;
+        const prop = (node.property as Identifier).name;
+
+        if (node.optional) {
+            return `${obj}?.${prop}`;
+        }
+        if (node.nonNull) {
+            return `${obj}!.${prop}`;
+        }
+        return `${obj}.${prop}`;
     }
 
     /**

@@ -127,7 +127,8 @@ describe('Semantic Analyzer', () => {
         });
 
         it('resolves negation to bivalens', () => {
-            const { errors, types } = analyzeSource(`varia b = !verum`);
+            // WHY: Use 'non' for logical negation (prefix ! removed for !. non-null assertion)
+            const { errors, types } = analyzeSource(`varia b = non verum`);
 
             expect(errors).toHaveLength(0);
             expect(types.get('b')).toEqual({ kind: 'primitive', name: 'bivalens' });

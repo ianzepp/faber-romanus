@@ -1068,6 +1068,8 @@ export interface UnaryExpression extends BaseNode {
  *
  * GRAMMAR (in EBNF):
  *   callExpr := expression '(' argumentList ')'
+ *            | expression '?(' argumentList ')'   // optional call
+ *            | expression '!(' argumentList ')'   // non-null assert call
  *   argumentList := (argument (',' argument)*)?
  *   argument := 'sparge' expression | expression
  *
@@ -1079,29 +1081,48 @@ export interface UnaryExpression extends BaseNode {
  *   f()              -> args=[]
  *   f(a, b)          -> args=[a, b]
  *   f(sparge nums)   -> args=[SpreadElement]
+ *   callback?()      -> optional=true
+ *   handler!()       -> nonNull=true
  */
 export interface CallExpression extends BaseNode {
     type: 'CallExpression';
     callee: Expression;
     arguments: (Expression | SpreadElement)[];
+    optional?: boolean;
+    nonNull?: boolean;
 }
 
 /**
  * Member access expression.
  *
  * GRAMMAR (in EBNF):
- *   memberExpr := expression '.' IDENTIFIER | expression '[' expression ']'
+ *   memberExpr := expression '.' IDENTIFIER
+ *              | expression '[' expression ']'
+ *              | expression '?.' IDENTIFIER      // optional property
+ *              | expression '?[' expression ']'  // optional computed
+ *              | expression '!.' IDENTIFIER      // non-null property
+ *              | expression '![' expression ']'  // non-null computed
  *
  * INVARIANT: computed=false means dot notation (obj.prop).
  * INVARIANT: computed=true means bracket notation (obj[prop]).
  *
  * WHY: computed flag enables different code generation strategies.
+ *
+ * Examples:
+ *   user.name        -> computed=false
+ *   items[0]         -> computed=true
+ *   user?.name       -> computed=false, optional=true
+ *   items?[0]        -> computed=true, optional=true
+ *   user!.name       -> computed=false, nonNull=true
+ *   items![0]        -> computed=true, nonNull=true
  */
 export interface MemberExpression extends BaseNode {
     type: 'MemberExpression';
     object: Expression;
     property: Expression;
     computed: boolean;
+    optional?: boolean;
+    nonNull?: boolean;
 }
 
 // ---------------------------------------------------------------------------

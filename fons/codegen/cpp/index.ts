@@ -1079,24 +1079,73 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         return node.prefix ? `${node.operator}${arg}` : `${arg}${node.operator}`;
     }
 
+    /**
+     * Generate function call.
+     *
+     * TRANSFORMS:
+     *   fn()    -> fn()
+     *   fn?()   -> (fn ? (*fn)() : std::nullopt)  (for function pointers)
+     *   fn!()   -> (*fn)()  (assert not null)
+     */
     function genCallExpression(node: CallExpression): string {
         const callee = genExpression(node.callee);
         const args = node.arguments.map(genExpression).join(', ');
 
+        // WHY: For optional call, check if function pointer is valid
+        if (node.optional) {
+            includes.add('<optional>');
+            return `(${callee} ? (*${callee})(${args}) : std::nullopt)`;
+        }
+        // WHY: For non-null assertion, dereference and call
+        if (node.nonNull) {
+            return `(*${callee})(${args})`;
+        }
         return `${callee}(${args})`;
     }
 
+    /**
+     * Generate member access.
+     *
+     * TRANSFORMS:
+     *   obj.prop      -> obj.prop
+     *   obj?.prop     -> (obj ? obj->prop : std::nullopt)  (for pointers)
+     *   obj!.prop     -> obj->prop  (assert not null, just dereference)
+     *   obj[idx]      -> obj[idx]
+     *   obj?[idx]     -> (obj ? (*obj)[idx] : std::nullopt)
+     *   obj![idx]     -> (*obj)[idx]
+     */
     function genMemberExpression(node: MemberExpression): string {
         const obj = genExpression(node.object);
 
         if (node.computed) {
-            return `${obj}[${genExpression(node.property)}]`;
+            const prop = genExpression(node.property);
+            // WHY: For optional, use ternary with nullptr check
+            if (node.optional) {
+                includes.add('<optional>');
+                return `(${obj} ? (*${obj})[${prop}] : std::nullopt)`;
+            }
+            // WHY: For non-null assertion, dereference and access
+            if (node.nonNull) {
+                return `(*${obj})[${prop}]`;
+            }
+            return `${obj}[${prop}]`;
         }
 
-        // Handle ego -> this
-        const objStr = obj === 'this' ? 'this->' : `${obj}.`;
+        const prop = (node.property as Identifier).name;
 
-        return `${objStr}${(node.property as Identifier).name}`;
+        // Handle ego -> this
+        if (obj === 'this') {
+            return `this->${prop}`;
+        }
+
+        if (node.optional) {
+            includes.add('<optional>');
+            return `(${obj} ? ${obj}->${prop} : std::nullopt)`;
+        }
+        if (node.nonNull) {
+            return `${obj}->${prop}`;
+        }
+        return `${obj}.${prop}`;
     }
 
     /**

@@ -457,8 +457,10 @@ describe('parser', () => {
             expect(expr.operator).toBe('||');
         });
 
-        test('negation with !', () => {
-            const { program } = parseCode('!active');
+        test('negation with non', () => {
+            // WHY: Prefix ! removed to make room for non-null assertion (!.)
+            //      Use 'non' for logical negation
+            const { program } = parseCode('non active');
             const expr = (program!.body[0] as any).expression;
 
             expect(expr.type).toBe('UnaryExpression');
@@ -620,6 +622,104 @@ describe('parser', () => {
             expect(expr.type).toBe('ConditionalExpression');
             expect(expr.consequent.type).toBe('CallExpression');
             expect(expr.alternate.type).toBe('CallExpression');
+        });
+    });
+
+    describe('optional chaining and non-null assertion', () => {
+        test('optional member access with ?.', () => {
+            const { program } = parseCode('user?.name');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.object.name).toBe('user');
+            expect(expr.property.name).toBe('name');
+            expect(expr.optional).toBe(true);
+            expect(expr.computed).toBe(false);
+        });
+
+        test('optional computed access with ?[', () => {
+            const { program } = parseCode('items?[0]');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.object.name).toBe('items');
+            expect(expr.property.value).toBe(0);
+            expect(expr.optional).toBe(true);
+            expect(expr.computed).toBe(true);
+        });
+
+        test('optional call with ?(', () => {
+            const { program } = parseCode('callback?(x)');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('CallExpression');
+            expect(expr.callee.name).toBe('callback');
+            expect(expr.optional).toBe(true);
+            expect(expr.arguments[0].name).toBe('x');
+        });
+
+        test('non-null member access with !.', () => {
+            const { program } = parseCode('user!.name');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.object.name).toBe('user');
+            expect(expr.property.name).toBe('name');
+            expect(expr.nonNull).toBe(true);
+            expect(expr.computed).toBe(false);
+        });
+
+        test('non-null computed access with ![', () => {
+            const { program } = parseCode('items![0]');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.object.name).toBe('items');
+            expect(expr.property.value).toBe(0);
+            expect(expr.nonNull).toBe(true);
+            expect(expr.computed).toBe(true);
+        });
+
+        test('non-null call with !(', () => {
+            const { program } = parseCode('callback!(x)');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('CallExpression');
+            expect(expr.callee.name).toBe('callback');
+            expect(expr.nonNull).toBe(true);
+            expect(expr.arguments[0].name).toBe('x');
+        });
+
+        test('chained optional access', () => {
+            const { program } = parseCode('user?.address?.city');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.optional).toBe(true);
+            expect(expr.property.name).toBe('city');
+            expect(expr.object.type).toBe('MemberExpression');
+            expect(expr.object.optional).toBe(true);
+        });
+
+        test('mixed optional and regular access', () => {
+            const { program } = parseCode('user?.address.city');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('MemberExpression');
+            expect(expr.optional).toBe(undefined);
+            expect(expr.property.name).toBe('city');
+            expect(expr.object.type).toBe('MemberExpression');
+            expect(expr.object.optional).toBe(true);
+        });
+
+        test('disambiguation: ? followed by expression is ternary', () => {
+            const { program } = parseCode('x ? y : z');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('ConditionalExpression');
+            expect(expr.test.name).toBe('x');
+            expect(expr.consequent.name).toBe('y');
+            expect(expr.alternate.name).toBe('z');
         });
     });
 
@@ -1558,7 +1658,7 @@ describe('parser', () => {
         });
 
         test('negation of logical expression', () => {
-            const { program } = parseCode('!(a et b)');
+            const { program } = parseCode('non (a et b)');
             const expr = (program!.body[0] as any).expression;
 
             expect(expr.type).toBe('UnaryExpression');

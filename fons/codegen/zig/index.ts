@@ -1450,6 +1450,16 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         const callee = genExpression(node.callee);
         const args = node.arguments.map(genExpression).join(', ');
 
+        // WHY: Optional call in Zig requires if-else pattern
+        if (node.optional) {
+            return `(if (${callee}) |_fn| _fn(${args}) else null)`;
+        }
+
+        // WHY: Non-null assertion unwraps optional function before calling
+        if (node.nonNull) {
+            return `${callee}.?(${args})`;
+        }
+
         return `${callee}(${args})`;
     }
 
@@ -1505,18 +1515,32 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate member access.
      *
      * TRANSFORMS:
-     *   obj.prop -> obj.prop
-     *   obj[key] -> obj[key]
+     *   obj.prop  -> obj.prop
+     *   obj[key]  -> obj[key]
+     *   obj?.prop -> if (obj) |o| o.prop else null (simplified)
+     *   obj!.prop -> obj.?.prop (unwrap optional)
      */
     function genMemberExpression(node: MemberExpression): string {
         const obj = genExpression(node.object);
+        const prop = node.computed
+            ? `[${genExpression(node.property)}]`
+            : `.${(node.property as Identifier).name}`;
 
-        if (node.computed) {
-            return `${obj}[${genExpression(node.property)}]`;
+        // WHY: Zig's optional unwrap uses .? syntax
+        if (node.nonNull) {
+            return `${obj}.?${prop}`;
         }
 
-        // WHY: Non-computed access always has Identifier property by grammar
-        return `${obj}.${(node.property as Identifier).name}`;
+        // WHY: Zig's optional chaining requires if-else pattern
+        //      This is a simplified version; full impl would need temp vars
+        if (node.optional) {
+            const propName = node.computed
+                ? `[${genExpression(node.property)}]`
+                : (node.property as Identifier).name;
+            return `(if (${obj}) |_o| _o.${propName} else null)`;
+        }
+
+        return `${obj}${prop}`;
     }
 
     /**
