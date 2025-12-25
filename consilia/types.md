@@ -325,6 +325,31 @@ fixum decimus price = 19.99d
 | `bivalens` | Boolean | `verum`/`falsum` |
 | `nihil` | Null | Absence of value |
 | `octeti` | Bytes | Raw byte data (Uint8Array) |
+| `objectum` | Object | Any non-primitive value |
+
+**Etymology:**
+- `textus` — "woven, texture" (text as woven words)
+- `bivalens` — "two-valued" (true/false)
+- `nihil` — "nothing"
+- `octeti` — "groups of eight" (bytes)
+- `objectum` — "something thrown before" (root of "object")
+
+### Object Type
+
+The `objectum` type represents any non-primitive value (maps to TypeScript's `object`).
+Object literals automatically infer as `objectum`:
+
+```
+functio getUser() -> objectum {
+    redde { name: "Marcus", age: 30 }
+}
+
+fixum user = getUser()
+scribe user.name
+```
+
+Use `objectum` when a function returns an anonymous object structure.
+For known shapes, prefer defining a `genus` instead.
 
 ---
 
