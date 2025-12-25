@@ -56,6 +56,20 @@ export default tseslint.config(
         },
     },
     {
+        // Generated code from .fab files - relaxed rules
+        // These are examples/demos, not production code
+        files: ['opus/exempla/**/*.ts'],
+        rules: {
+            'prefer-const': 'warn',
+            'no-empty': 'warn',
+            'no-constant-condition': 'warn',
+            'no-constant-binary-expression': 'warn',
+            'no-extra-boolean-cast': 'warn',
+            'for-direction': 'warn',
+            '@typescript-eslint/no-wrapper-object-types': 'warn',
+        },
+    },
+    {
         ignores: [
             'node_modules/**',
             'dist/**',
