@@ -26,7 +26,7 @@ Method registries implemented in `fons/codegen/ts/norma/`:
 
 **Not yet implemented:**
 - [-] Collection DSL (`ex items filtra ubi...`) — requires parser work
-- [-] Closure syntax (`ad property`, `{ .property }`) — requires parser work
+- [-] Closure syntax (`per property`, `{ .property }`) — requires parser work
 - [-] Tabula/copia literals — no syntax for `tabula { k: v }` or `copia { a, b }`
 
 Method dispatch uses `resolvedType` from semantic analysis to correctly route overlapping method names (e.g., `accipe` on lista vs tabula) to their respective implementations.
@@ -254,8 +254,8 @@ Latin verb forms distinguish between mutable/immutable and sync/async operations
 lista.adde(x)                  // mutate in place
 fixum nova = lista.addita(x)   // new list with x
 
-lista.ordina(ad aetas)        // sort in place
-fixum nova = lista.ordinata(ad aetas)  // new sorted list
+lista.ordina(per aetas)        // sort in place
+fixum nova = lista.ordinata(per aetas)  // new sorted list
 
 lista.filtra({ .activus })     // filter in place
 fixum nova = lista.filtrata({ .activus })  // new filtered list
@@ -296,7 +296,7 @@ Methods that return collections can be chained:
 ```
 fixum result = users
     .filtra({ redde .activus })
-    .ordina(ad nomen)
+    .ordina(per nomen)
     .mappa({ redde .email })
     .prima(10)
 ```
@@ -307,24 +307,24 @@ fixum result = users
 
 Three levels of expressiveness, from tersest to most powerful:
 
-### Level 1: `ad property` — Property Shorthand
+### Level 1: `per property` — Property Shorthand
 
-For simple property access, use `ad` (to) followed by property name(s):
+For simple property access, use `per` (by) followed by property name(s):
 
 ```
-users.ordina(ad aetas)
-users.congrega(ad civitas)
-users.ordina(ad aetas et nomen)
+users.ordina(per aetas)
+users.congrega(per civitas)
+users.ordina(per aetas et nomen)
 ```
 
-Reads as Latin: "order to age and name."
+Reads as Latin: "order by age and name."
 
 **Sort direction** uses Latin adjectives (default is `ascendens`):
 
 ```
-users.ordina(ad aetas descendens)
-users.ordina(ad aetas descendens et nomen ascendens)
-users.ordina(ad aetas et nomen)  // both ascending
+users.ordina(per aetas descendens)
+users.ordina(per aetas descendens et nomen ascendens)
+users.ordina(per aetas et nomen)  // both ascending
 ```
 
 ### Level 2: `{ redde .property }` — Implicit Subject Block
@@ -382,9 +382,9 @@ The `pro` keyword aligns with iteration: `ex items pro x { }` iterates, `pro x {
 
 | Form | Use Case | Example |
 |------|----------|---------|
-| `ad property` | Property access | `ordina(ad aetas)` |
-| `ad a et b` | Multi-property | `ordina(ad aetas et nomen)` |
-| `ad a descendens` | Sort direction | `ordina(ad aetas descendens)` |
+| `per property` | Property access | `ordina(per aetas)` |
+| `per a et b` | Multi-property | `ordina(per aetas et nomen)` |
+| `per a descendens` | Sort direction | `ordina(per aetas descendens)` |
 | `{ .property }` | Expressions | `filtra({ .aetas > 18 })` |
 | `{ redde ... }` | Multi-statement | `mappa({ redde .x + .y })` |
 | `pro v redde expr` | Expression closure | `mappa(pro x redde x * 2)` |
@@ -478,9 +478,8 @@ The comma acts as an implicit pipe — each operation flows into the next.
 | Latin | Meaning | Use |
 |-------|---------|-----|
 | `ubi` | where | filter condition |
-| `ad` | to | property selector |
-| `per` | by | sort/group field |
-| `ex` | from list | source collection |
+| `per` | by | property selector, sort/group field |
+| `ex` | from | source collection |
 
 ### Examples
 
@@ -501,25 +500,25 @@ fixum adults = ex users filtra ubi aetas >= 18
 
 **Transformation:**
 ```
-fixum names = ex users collige ad nomen
+fixum names = ex users collige per nomen
 fixum sorted = ex items ordina per pretium
 fixum byRole = ex users grupa per role
-fixum indexed = ex users mappa ad id
+fixum indexed = ex users mappa per id
 ```
 
 **Chained with comma:**
 ```
 // Filter active users, extract names, sort
-fixum result = ex users filtra ubi activus, collige ad nomen, ordina
+fixum result = ex users filtra ubi activus, collige per nomen, ordina
 
 // Filter expensive items, sort by price, take top 5
 fixum top5 = ex items filtra ubi pretium > 100, ordina per pretium, prima 5
 
 // Sum prices of active products
-fixum total = ex products filtra ubi activus, collige ad pretium, summa
+fixum total = ex products filtra ubi activus, collige per pretium, summa
 
 // Group users by role, then by department
-fixum nested = ex users grupa per role, mappa ad departmentum
+fixum nested = ex users grupa per role, mappa per departmentum
 ```
 
 **DSL into loop:**
@@ -543,7 +542,7 @@ Both syntaxes are valid and equivalent:
 // Method chaining (OOP style)
 fixum result = users
     .filtrata({ .activus })
-    .ordinata(ad nomen)
+    .ordinata(per nomen)
     .prima(10)
 
 // DSL (Latin sentence style)
@@ -618,7 +617,7 @@ fixum result = ex userList filtra ubi active
 
 **TypeScript:**
 ```typescript
-// ex users filtra ubi activus, collige ad nomen, ordina
+// ex users filtra ubi activus, collige per nomen, ordina
 users.filter(u => u.activus).map(u => u.nomen).sort()
 
 // ex users filtra ubi activus pro user { ... }
@@ -633,7 +632,7 @@ for (const user of users.filter(u => u.activus)) { ... }
 
 **Rust:**
 ```rust
-// ex users filtra ubi activus, collige ad nomen, ordina
+// ex users filtra ubi activus, collige per nomen, ordina
 users.iter()
     .filter(|u| u.activus)
     .map(|u| &u.nomen)
