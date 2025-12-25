@@ -1296,10 +1296,20 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate binary expression.
+     *
+     * WHY: Python doesn't have nullish coalescing (??), so we expand to
+     *      conditional expression. This evaluates left twice, which is
+     *      acceptable for simple expressions.
      */
     function genBinaryExpression(node: BinaryExpression): string {
         const left = genExpression(node.left);
         const right = genExpression(node.right);
+
+        // WHY: Python has no ?? operator; use conditional expression
+        if (node.operator === '??') {
+            return `(${left} if ${left} is not None else ${right})`;
+        }
+
         const op = mapOperator(node.operator);
 
         return `(${left} ${op} ${right})`;

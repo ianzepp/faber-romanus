@@ -104,6 +104,8 @@ Options:
   -h, --help             Show this help
   -v, --version          Show version
 
+Use '-' as filename to read from stdin.
+
 Examples:
   faber compile hello.fab                     # Compile to TS (stdout)
   faber compile hello.fab -o hello.ts         # Compile to TS file
@@ -112,7 +114,41 @@ Examples:
   faber run hello.fab                         # Compile to TS and execute
   faber format hello.fab                      # Format file in place
   faber format hello.fab --check              # Check if file is formatted
+  echo 'scribe "hello"' | faber compile -     # Compile from stdin
 `);
+}
+
+// =============================================================================
+// INPUT HANDLING
+// =============================================================================
+
+/**
+ * Read source code from file or stdin.
+ *
+ * WHY: Unix convention uses '-' to mean stdin, allowing pipeline usage:
+ *      echo 'scribe "hi"' | faber compile -
+ *
+ * @param inputFile - Path to file, or '-' for stdin
+ * @returns Source code as string
+ */
+async function readSource(inputFile: string): Promise<string> {
+    if (inputFile === '-') {
+        // Read from stdin
+        const chunks: Uint8Array[] = [];
+        for await (const chunk of Bun.stdin.stream()) {
+            chunks.push(chunk);
+        }
+        const decoder = new TextDecoder();
+        return chunks.map(c => decoder.decode(c)).join('');
+    }
+    return Bun.file(inputFile).text();
+}
+
+/**
+ * Get display name for error messages.
+ */
+function getDisplayName(inputFile: string): string {
+    return inputFile === '-' ? '<stdin>' : inputFile;
 }
 
 // =============================================================================
@@ -141,7 +177,8 @@ Examples:
  * @returns Generated source code as string
  */
 async function compile(inputFile: string, target: CodegenTarget, outputFile?: string, silent = false): Promise<string> {
-    const source = await Bun.file(inputFile).text();
+    const source = await readSource(inputFile);
+    const displayName = getDisplayName(inputFile);
 
     // ---------------------------------------------------------------------------
     // Lexical Analysis
@@ -152,7 +189,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     if (tokenErrors.length > 0) {
         console.error('Tokenizer errors:');
         for (const err of tokenErrors) {
-            console.error(`  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`);
+            console.error(`  ${displayName}:${err.position.line}:${err.position.column} - ${err.message}`);
         }
 
         process.exit(1);
@@ -167,7 +204,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     if (parseErrors.length > 0) {
         console.error('Parser errors:');
         for (const err of parseErrors) {
-            console.error(`  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`);
+            console.error(`  ${displayName}:${err.position.line}:${err.position.column} - ${err.message}`);
         }
 
         process.exit(1);
@@ -188,7 +225,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     if (semanticErrors.length > 0) {
         console.error('Semantic errors:');
         for (const err of semanticErrors) {
-            console.error(`  ${inputFile}:${err.position.line}:${err.position.column} - ${err.message}`);
+            console.error(`  ${displayName}:${err.position.line}:${err.position.column} - ${err.message}`);
         }
 
         process.exit(1);
@@ -202,7 +239,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
 
     if (outputFile) {
         await Bun.write(outputFile, output);
-        console.log(`Compiled: ${inputFile} -> ${outputFile} (${target})`);
+        console.log(`Compiled: ${displayName} -> ${outputFile} (${target})`);
     } else if (!silent) {
         // WHY: Write to stdout for Unix pipeline compatibility
         console.log(output);
@@ -262,7 +299,8 @@ async function run(inputFile: string): Promise<void> {
  * @param inputFile - Path to .fab source file
  */
 async function check(inputFile: string): Promise<void> {
-    const source = await Bun.file(inputFile).text();
+    const source = await readSource(inputFile);
+    const displayName = getDisplayName(inputFile);
 
     const { tokens, errors: tokenErrors } = tokenize(source);
     const { program, errors: parseErrors } = parse(tokens);
@@ -278,9 +316,9 @@ async function check(inputFile: string): Promise<void> {
     const allErrors = [...tokenErrors, ...parseErrors, ...semanticErrors];
 
     if (allErrors.length === 0) {
-        console.log(`${inputFile}: No errors`);
+        console.log(`${displayName}: No errors`);
     } else {
-        console.log(`${inputFile}: ${allErrors.length} error(s)`);
+        console.log(`${displayName}: ${allErrors.length} error(s)`);
         for (const err of allErrors) {
             console.log(`  ${err.position.line}:${err.position.column} - ${err.message}`);
         }
@@ -303,7 +341,9 @@ async function check(inputFile: string): Promise<void> {
  * @param checkOnly - If true, check formatting without writing
  */
 async function format(inputFile: string, checkOnly: boolean): Promise<void> {
-    const source = await Bun.file(inputFile).text();
+    const source = await readSource(inputFile);
+    const displayName = getDisplayName(inputFile);
+    const isStdin = inputFile === '-';
 
     try {
         const formatted = await prettier.format(source, {
@@ -314,23 +354,27 @@ async function format(inputFile: string, checkOnly: boolean): Promise<void> {
             printWidth: 100,
         });
 
-        if (checkOnly) {
+        if (isStdin) {
+            // For stdin, just output the formatted code
+            console.log(formatted);
+        }
+        else if (checkOnly) {
             if (source === formatted) {
-                console.log(`${inputFile}: Formatted`);
+                console.log(`${displayName}: Formatted`);
             } else {
-                console.log(`${inputFile}: Needs formatting`);
+                console.log(`${displayName}: Needs formatting`);
                 process.exit(1);
             }
         } else {
             if (source === formatted) {
-                console.log(`${inputFile}: Already formatted`);
+                console.log(`${displayName}: Already formatted`);
             } else {
                 await Bun.write(inputFile, formatted);
-                console.log(`${inputFile}: Formatted`);
+                console.log(`${displayName}: Formatted`);
             }
         }
     } catch (err) {
-        console.error(`${inputFile}: Format error`);
+        console.error(`${displayName}: Format error`);
         if (err instanceof Error) {
             console.error(`  ${err.message}`);
         }

@@ -1376,6 +1376,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
                 return 'and';
             case '||':
                 return 'or';
+            case '??':
+                // WHY: Zig's orelse works on optionals: a orelse b
+                return 'orelse';
             case '===':
                 return '==';
             case '!==':

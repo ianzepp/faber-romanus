@@ -1034,6 +1034,13 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     function genBinaryExpression(node: BinaryExpression): string {
         const left = genExpression(node.left);
         const right = genExpression(node.right);
+
+        // WHY: C++ has no ?? operator; use ternary with nullptr check
+        //      For std::optional, would use .value_or() instead
+        if (node.operator === '??') {
+            return `(${left} != nullptr ? ${left} : ${right})`;
+        }
+
         const op = mapOperator(node.operator);
 
         return `(${left} ${op} ${right})`;

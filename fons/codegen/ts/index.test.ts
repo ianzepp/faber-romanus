@@ -363,6 +363,18 @@ describe('codegen', () => {
             expect(js).toBe('(a || b);');
         });
 
+        test('vel becomes ?? (nullish coalescing)', () => {
+            const js = compile('a vel b');
+
+            expect(js).toBe('(a ?? b);');
+        });
+
+        test('vel chains correctly', () => {
+            const js = compile('a vel b vel c');
+
+            expect(js).toBe('((a ?? b) ?? c);');
+        });
+
         test('function call', () => {
             const js = compile('salve(nomen)');
 

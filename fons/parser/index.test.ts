@@ -1646,6 +1646,20 @@ describe('parser', () => {
             expect(errors.length).toBeGreaterThan(0);
         });
 
+        test('mixing vel and aut without parentheses is error', () => {
+            const { errors } = parseCode('a vel b aut c');
+
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0].message).toContain('Cannot mix');
+        });
+
+        test('vel with parentheses around aut is allowed', () => {
+            const { program, errors } = parseCode('a vel (b aut c)');
+
+            expect(errors.length).toBe(0);
+            expect(program!.body[0]).toBeDefined();
+        });
+
         test('missing function body', () => {
             const { errors } = parseCode('functio f()');
 

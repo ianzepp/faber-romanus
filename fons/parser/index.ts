@@ -2181,23 +2181,53 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
-     * Parse logical OR expression.
+     * Parse logical OR and nullish coalescing expressions.
      *
      * GRAMMAR:
-     *   or := and ('||' and | 'aut' and)*
+     *   or := and (('||' | 'aut') and)* | and ('vel' and)*
      *
      * PRECEDENCE: Lower than AND, higher than assignment.
      *
-     * WHY: Latin 'aut' (or) supported alongside '||'.
+     * WHY: Latin 'aut' (or) for logical OR, 'vel' (or) for nullish coalescing.
+     *      Mixing aut/|| with vel without parentheses is a syntax error
+     *      (same as JavaScript's ?? and || restriction).
      */
     function parseOr(): Expression {
         let left = parseAnd();
 
-        while (match('OR') || matchKeyword('aut')) {
+        // Track which operator family we're using to prevent mixing
+        let operatorKind: 'logical' | 'nullish' | null = null;
+
+        while (true) {
+            let isLogicalOr = false;
+            let isNullish = false;
+
+            if (match('OR') || matchKeyword('aut')) {
+                isLogicalOr = true;
+            }
+            else if (matchKeyword('vel')) {
+                isNullish = true;
+            }
+            else {
+                break;
+            }
+
+            const currentKind = isLogicalOr ? 'logical' : 'nullish';
+
+            // WHY: Like JavaScript, mixing ?? and || without parens is ambiguous
+            if (operatorKind !== null && operatorKind !== currentKind) {
+                errors.push({
+                    message: `Cannot mix 'vel' (nullish) and 'aut'/'||' (logical) without parentheses`,
+                    position: peek().position,
+                });
+            }
+
+            operatorKind = currentKind;
             const position = peek().position;
+            const operator = isLogicalOr ? '||' : '??';
             const right = parseAnd();
 
-            left = { type: 'BinaryExpression', operator: '||', left, right, position };
+            left = { type: 'BinaryExpression', operator, left, right, position };
         }
 
         return left;
