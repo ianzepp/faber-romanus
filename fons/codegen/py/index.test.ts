@@ -69,6 +69,12 @@ describe('Python codegen', () => {
             expect(result).toContain('x: Decimal = 99.99');
         });
 
+        test('magnus maps to int', () => {
+            // WHY: Python ints are arbitrary precision, no separate bigint type
+            const result = compile('varia magnus x = 99999999999999999999n');
+            expect(result).toBe('x: int = 99999999999999999999');
+        });
+
         test('octeti maps to bytes', () => {
             const result = compile('varia octeti data = []');
             expect(result).toBe('data: bytes = []');

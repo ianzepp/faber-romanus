@@ -548,6 +548,18 @@ describe('codegen', () => {
 
             expect(js).toBe('type Buffer = Uint8Array;');
         });
+
+        test('magnus maps to bigint', () => {
+            const js = compile('typus BigNum = magnus');
+
+            expect(js).toBe('type BigNum = bigint;');
+        });
+
+        test('magnus variable with bigint literal', () => {
+            const js = compile('fixum magnus huge = 99999999999999999999n');
+
+            expect(js).toBe('const huge: bigint = 99999999999999999999n;');
+        });
     });
 
     describe('enum declarations (ordo)', () => {
