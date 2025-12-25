@@ -2113,5 +2113,4 @@ describe('codegen', () => {
             expect(js).toContain('console.log("always")');
         });
     });
-
 });
