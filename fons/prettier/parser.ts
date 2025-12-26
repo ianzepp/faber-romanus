@@ -9,7 +9,22 @@
  * @module prettier/parser
  */
 
-import type { Program, Statement, Expression } from '../parser/ast.ts';
+import type {
+    Program,
+    Statement,
+    Expression,
+    EnumMember,
+    FieldDeclaration,
+    PactumMethod,
+    TypeAnnotation,
+    Parameter,
+    ObjectPattern,
+    ObjectPatternProperty,
+    ObjectProperty,
+    SwitchCase,
+    GuardClause,
+    CatchClause,
+} from '../parser/ast.ts';
 import type { Token } from '../tokenizer/types.ts';
 import { tokenize } from '../tokenizer/index.ts';
 import { parse } from '../parser/index.ts';
@@ -48,7 +63,22 @@ export interface PrettierProgram extends Program {
 }
 
 // AST node type for Prettier
-export type AstNode = Program | Statement | Expression | CommentNode;
+export type AstNode =
+    | Program
+    | Statement
+    | Expression
+    | EnumMember
+    | FieldDeclaration
+    | PactumMethod
+    | TypeAnnotation
+    | Parameter
+    | ObjectPattern
+    | ObjectPatternProperty
+    | ObjectProperty
+    | SwitchCase
+    | GuardClause
+    | CatchClause
+    | CommentNode;
 
 // =============================================================================
 // COMMENT EXTRACTION
@@ -217,7 +247,7 @@ export function faberParse(text: string): PrettierProgram {
 
     if (lexErrors.length > 0) {
         const err = lexErrors[0];
-        throw new SyntaxError(`Lexical error at ${err.position.line}:${err.position.column}: ${err.message}`);
+        throw new SyntaxError(`Lexical error at ${err?.position.line}:${err?.position.column}: ${(err as any)?.message ?? 'Unknown error'}`);
     }
 
     // Parse

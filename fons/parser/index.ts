@@ -236,7 +236,8 @@ export function parse(tokens: Token[]): ParserResult {
      * INVARIANT: Returns EOF token if offset goes beyond end.
      */
     function peek(offset = 0): Token {
-        return tokens[current + offset] ?? tokens[tokens.length - 1];
+        // EDGE: Tokenizer always produces at least an EOF token
+        return tokens[current + offset] ?? tokens[tokens.length - 1]!;
     }
 
     /**
@@ -256,7 +257,8 @@ export function parse(tokens: Token[]): ParserResult {
             current++;
         }
 
-        return tokens[current - 1];
+        // EDGE: current is at least 1 after advancing, so current-1 is valid
+        return tokens[current - 1]!;
     }
 
     /**
@@ -1172,12 +1174,14 @@ export function parse(tokens: Token[]): ParserResult {
                     value = {
                         type: 'Literal',
                         value: Number(valueTok.value),
+                        raw: valueTok.value,
                         position: valueTok.position,
                     };
                 } else if (valueTok.type === 'STRING') {
                     value = {
                         type: 'Literal',
                         value: valueTok.value,
+                        raw: valueTok.value,
                         position: valueTok.position,
                     };
                 } else {
@@ -2651,6 +2655,7 @@ export function parse(tokens: Token[]): ParserResult {
             // WHY: Like JavaScript, mixing ?? and || without parens is ambiguous
             if (operatorKind !== null && operatorKind !== currentKind) {
                 errors.push({
+                    code: ParserErrorCode.GenericError,
                     message: `Cannot mix 'vel' (nullish) and 'aut'/'||' (logical) without parentheses`,
                     position: peek().position,
                 });
@@ -2710,8 +2715,8 @@ export function parse(tokens: Token[]): ParserResult {
             let position: Position;
 
             if (match('EQUAL_EQUAL', 'BANG_EQUAL', 'TRIPLE_EQUAL', 'BANG_DOUBLE_EQUAL')) {
-                operator = tokens[current - 1].value;
-                position = tokens[current - 1].position;
+                operator = tokens[current - 1]!.value;
+                position = tokens[current - 1]!.position;
             } else if (checkKeyword('non') && peek(1)?.type === 'KEYWORD' && peek(1)?.value.toLowerCase() === 'est') {
                 // 'non est' maps to strict inequality (!==)
                 position = peek().position;
@@ -2721,7 +2726,7 @@ export function parse(tokens: Token[]): ParserResult {
             } else if (matchKeyword('est')) {
                 // 'est' maps to strict equality (===)
                 operator = '===';
-                position = tokens[current - 1].position;
+                position = tokens[current - 1]!.position;
             } else {
                 break;
             }
@@ -2745,8 +2750,8 @@ export function parse(tokens: Token[]): ParserResult {
         let left = parseRange();
 
         while (match('LESS', 'LESS_EQUAL', 'GREATER', 'GREATER_EQUAL')) {
-            const operator = tokens[current - 1].value;
-            const position = tokens[current - 1].position;
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
             const right = parseRange();
 
             left = { type: 'BinaryExpression', operator, left, right, position };
@@ -2791,7 +2796,7 @@ export function parse(tokens: Token[]): ParserResult {
             return start;
         }
 
-        const position = tokens[current - 1].position;
+        const position = tokens[current - 1]!.position;
         const end = parseAdditive();
 
         let step: Expression | undefined;
@@ -2815,8 +2820,8 @@ export function parse(tokens: Token[]): ParserResult {
         let left = parseMultiplicative();
 
         while (match('PLUS', 'MINUS')) {
-            const operator = tokens[current - 1].value;
-            const position = tokens[current - 1].position;
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
             const right = parseMultiplicative();
 
             left = { type: 'BinaryExpression', operator, left, right, position };
@@ -2843,8 +2848,8 @@ export function parse(tokens: Token[]): ParserResult {
         let left = parseUnary();
 
         while (match('STAR', 'SLASH', 'PERCENT')) {
-            const operator = tokens[current - 1].value;
-            const position = tokens[current - 1].position;
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
             const right = parseUnary();
 
             left = { type: 'BinaryExpression', operator, left, right, position };
@@ -2868,28 +2873,28 @@ export function parse(tokens: Token[]): ParserResult {
         // WHY: Prefix ! is removed to make room for non-null assertion (postfix !.)
         //      Use 'non' for logical not: "si non x" instead of "si !x"
         if (matchKeyword('non')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const argument = parseUnary();
 
             return { type: 'UnaryExpression', operator: '!', argument, prefix: true, position };
         }
 
         if (match('MINUS')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const argument = parseUnary();
 
             return { type: 'UnaryExpression', operator: '-', argument, prefix: true, position };
         }
 
         if (matchKeyword('nulla')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const argument = parseUnary();
 
             return { type: 'UnaryExpression', operator: 'nulla', argument, prefix: true, position };
         }
 
         if (matchKeyword('nonnulla')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const argument = parseUnary();
 
             return {
@@ -2902,7 +2907,7 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (matchKeyword('negativum')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const argument = parseUnary();
 
             return {
@@ -2915,7 +2920,7 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (matchKeyword('positivum')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const argument = parseUnary();
 
             return {
@@ -2928,7 +2933,7 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (matchKeyword('cede')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const argument = parseUnary();
 
             return { type: 'AwaitExpression', argument, position };
@@ -2970,7 +2975,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   }
      */
     function parsePraefixumExpression(): PraefixumExpression {
-        const position = tokens[current - 1].position; // Position of 'praefixum' we just consumed
+        const position = tokens[current - 1]!.position; // Position of 'praefixum' we just consumed
 
         let body: Expression | BlockStatement;
 
@@ -3012,7 +3017,7 @@ export function parse(tokens: Token[]): ParserResult {
         let expr = parseCall();
 
         while (matchKeyword('ut')) {
-            const position = tokens[current - 1].position;
+            const position = tokens[current - 1]!.position;
             const targetType = parseTypeAnnotation();
 
             expr = {
@@ -3039,10 +3044,10 @@ export function parse(tokens: Token[]): ParserResult {
      *      The `de` (from) form allows dynamic overrides from variables or function results.
      */
     function parseNewExpression(): NewExpression {
-        const position = tokens[current - 1].position;
+        const position = tokens[current - 1]!.position;
         const callee = parseIdentifier();
 
-        let args: Expression[] = [];
+        let args: (Expression | SpreadElement)[] = [];
 
         if (match('LPAREN')) {
             args = parseArgumentList();
@@ -3160,14 +3165,14 @@ export function parse(tokens: Token[]): ParserResult {
             // Regular accessors
             // ---------------------------------------------------------------
             else if (match('LPAREN')) {
-                const position = tokens[current - 1].position;
+                const position = tokens[current - 1]!.position;
                 const args = parseArgumentList();
 
                 expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
                 expr = { type: 'CallExpression', callee: expr, arguments: args, position };
             } else if (match('DOT')) {
-                const position = tokens[current - 1].position;
+                const position = tokens[current - 1]!.position;
                 // WHY: Allow keywords as property names (e.g., items.omitte)
                 const property = parseIdentifierOrKeyword();
 
@@ -3179,7 +3184,7 @@ export function parse(tokens: Token[]): ParserResult {
                     position,
                 };
             } else if (match('LBRACKET')) {
-                const position = tokens[current - 1].position;
+                const position = tokens[current - 1]!.position;
                 const property = parseExpression();
 
                 expect('RBRACKET', ParserErrorCode.ExpectedClosingBracket);

@@ -1137,7 +1137,10 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         if (node.argument.type === 'NewExpression') {
             const callee = node.argument.callee.name;
             if (callee === 'Error' || callee === 'erratum') {
-                const args = node.argument.arguments.map(genExpression).join(', ');
+                const args = node.argument.arguments
+                    .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
+                    .map(genExpression)
+                    .join(', ');
                 return `${ind()}raise ${exceptionType}(${args})`;
             }
         }
@@ -1674,7 +1677,9 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
      */
     function genNewExpression(node: NewExpression): string {
         const callee = node.callee.name;
-        const args: string[] = node.arguments.map(genExpression);
+        const args: string[] = node.arguments
+            .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
+            .map(genExpression);
 
         if (node.withExpression) {
             // withExpression can be ObjectExpression (inline) or any Expression (de X)

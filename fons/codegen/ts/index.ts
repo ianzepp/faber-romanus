@@ -935,7 +935,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
         // Generate if/else chain
         for (let i = 0; i < node.cases.length; i++) {
-            const caseNode = node.cases[i];
+            const caseNode = node.cases[i]!;
             const test = genExpression(caseNode.test);
             const keyword = i === 0 ? 'if' : 'else if';
 
@@ -1818,10 +1818,12 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
     function genNewExpression(node: NewExpression): string {
         const callee = node.callee.name;
-        const args: string[] = node.arguments.map(genExpression);
+        const args: string[] = node.arguments
+            .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
+            .map(genExpression);
 
         if (node.withExpression) {
-            args.push(genObjectExpression(node.withExpression));
+            args.push(genObjectExpression(node.withExpression as ObjectExpression));
         }
 
         const argsText = args.join(', ');

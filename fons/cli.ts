@@ -189,7 +189,7 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     if (tokenErrors.length > 0) {
         console.error('Tokenizer errors:');
         for (const err of tokenErrors) {
-            console.error(`  ${displayName}:${err.position.line}:${err.position.column} - ${err.message}`);
+            console.error(`  ${displayName}:${err.position.line}:${err.position.column} - ${err.text}`);
         }
 
         process.exit(1);
@@ -313,7 +313,12 @@ async function check(inputFile: string): Promise<void> {
         semanticErrors = result.errors;
     }
 
-    const allErrors = [...tokenErrors, ...parseErrors, ...semanticErrors];
+    // WHY: Normalize error formats - tokenizer uses 'text', others use 'message'
+    const normalizedTokenErrors = tokenErrors.map(e => ({
+        message: e.text,
+        position: e.position,
+    }));
+    const allErrors = [...normalizedTokenErrors, ...parseErrors, ...semanticErrors];
 
     if (allErrors.length === 0) {
         console.log(`${displayName}: No errors`);
@@ -417,12 +422,12 @@ for (let i = 2; i < args.length; i++) {
     } else if (args[i] === '-t' || args[i] === '--target') {
         const t = args[++i];
 
-        if (!VALID_TARGETS.includes(t as (typeof VALID_TARGETS)[number])) {
+        if (!t || !VALID_TARGETS.includes(t as (typeof VALID_TARGETS)[number])) {
             console.error(`Error: Unknown target '${t}'. Valid targets: ${VALID_TARGETS.join(', ')}`);
             process.exit(1);
         }
 
-        target = t;
+        target = t as CodegenTarget;
     } else if (args[i] === '-c' || args[i] === '--check') {
         checkOnly = true;
     }

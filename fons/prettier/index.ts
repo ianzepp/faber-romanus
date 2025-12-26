@@ -35,8 +35,8 @@ const parsers: Record<string, Parser> = {
     faber: {
         parse: faberParse,
         astFormat: 'faber-ast',
-        locStart,
-        locEnd,
+        locStart: locStart as any,
+        locEnd: locEnd as any,
     },
 };
 

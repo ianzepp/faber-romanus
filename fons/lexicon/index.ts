@@ -106,17 +106,18 @@ function levenshtein(a: string, b: string): number {
         for (let i = 1; i <= a.length; i++) {
             const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
+            // EDGE: Array bounds are checked by loop condition (i <= a.length)
             curr[i] = Math.min(
-                prev[i] + 1, // deletion
-                curr[i - 1] + 1, // insertion
-                prev[i - 1] + cost, // substitution
+                prev[i]! + 1, // deletion
+                curr[i - 1]! + 1, // insertion
+                prev[i - 1]! + cost, // substitution
             );
         }
 
         [prev, curr] = [curr, prev];
     }
 
-    return prev[a.length];
+    return prev[a.length]!;
 }
 
 /**

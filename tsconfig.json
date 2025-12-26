@@ -1,4 +1,5 @@
 {
+  "exclude": ["opus", "tmp"],
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],

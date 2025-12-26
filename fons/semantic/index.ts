@@ -76,6 +76,10 @@ import type {
     TryStatement,
     FacBlockStatement,
     LambdaExpression,
+    ProbandumStatement,
+    ProbaStatement,
+    CuraBlock,
+    CuraStatement,
 } from '../parser/ast';
 import type { Position } from '../tokenizer/types';
 import type { Scope, Symbol } from './scope';
@@ -346,7 +350,7 @@ export function analyze(program: Program): SemanticResult {
             return;
         }
 
-        if (node.wildcard) {
+        if (node.wildcard && exports) {
             // ex norma importa * - add all exports to scope
             for (const [name, { type, kind }] of Object.entries(exports)) {
                 currentScope.symbols.set(name, {
@@ -362,6 +366,8 @@ export function analyze(program: Program): SemanticResult {
         }
 
         // ex norma importa scribe, series - add specific exports
+        if (!exports) return;
+
         for (const specifier of node.specifiers) {
             const exportInfo = exports[specifier.name];
 
@@ -548,6 +554,21 @@ export function analyze(program: Program): SemanticResult {
             case 'LambdaExpression':
                 return resolveLambdaExpression(node);
 
+            case 'ThisExpression':
+                // WHY: 'hoc' (this) type depends on enclosing class context
+                return UNKNOWN;
+
+            case 'TypeCastExpression':
+                // WHY: Type cast asserts a type, so return the target type
+                return resolveExpression(node.expression);
+
+            case 'PraefixumExpression':
+                // WHY: praefixum is compile-time evaluated, return underlying type
+                if (node.body.type === 'BlockStatement') {
+                    return UNKNOWN; // Block body requires tracing return
+                }
+                return resolveExpression(node.body);
+
             default: {
                 const _exhaustive: never = node;
 
@@ -592,7 +613,7 @@ export function analyze(program: Program): SemanticResult {
                 // For spread, resolve the argument (should be an array) and use its element type
                 const argType = resolveExpression(element.argument);
                 // If spreading an array, use its element type; otherwise use unknown
-                if (argType.kind === 'generic' && argType.name === 'lista' && argType.typeParameters?.length) {
+                if (argType.kind === 'generic' && argType.name === 'lista' && argType.typeParameters?.[0]) {
                     elementTypes.push(argType.typeParameters[0]);
                 } else {
                     elementTypes.push(UNKNOWN);
@@ -603,16 +624,19 @@ export function analyze(program: Program): SemanticResult {
         }
 
         // Infer element type from first element
-        const inferredElementType = elementTypes[0];
+        const inferredElementType = elementTypes[0] ?? UNKNOWN;
 
         // Validate all elements match the inferred type
         for (let i = 1; i < elementTypes.length; i++) {
-            if (!isAssignableTo(elementTypes[i], inferredElementType)) {
+            const elemType = elementTypes[i];
+            const elemNode = node.elements[i];
+
+            if (elemType && elemNode && !isAssignableTo(elemType, inferredElementType)) {
                 const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.TypeMismatch];
 
                 error(
-                    `${text(formatType(elementTypes[i]), formatType(inferredElementType))} in array element ${i + 1}\n${help}`,
-                    node.elements[i].position,
+                    `${text(formatType(elemType), formatType(inferredElementType))} in array element ${i + 1}\n${help}`,
+                    elemNode.position,
                 );
             }
         }
@@ -1005,7 +1029,11 @@ export function analyze(program: Program): SemanticResult {
     function resolveNew(node: NewExpression): SemanticType {
         // Resolve constructor arguments
         for (const arg of node.arguments) {
-            resolveExpression(arg);
+            if (arg.type === 'SpreadElement') {
+                resolveExpression(arg.argument);
+            } else {
+                resolveExpression(arg);
+            }
         }
 
         const type = userType(node.callee.name);
@@ -1134,6 +1162,26 @@ export function analyze(program: Program): SemanticResult {
                 // No semantic analysis needed for break/continue
                 break;
 
+            case 'ProbandumStatement':
+                // EDGE: Test statements are analyzed within test context
+                analyzeProbandumStatement(node);
+                break;
+
+            case 'ProbaStatement':
+                // Test body is analyzed in test scope
+                analyzeProbaStatement(node);
+                break;
+
+            case 'CuraBlock':
+                // Resource management block
+                analyzeCuraBlock(node);
+                break;
+
+            case 'CuraStatement':
+                // Resource initialization statement
+                analyzeCuraStatement(node);
+                break;
+
             default: {
                 const _exhaustive: never = node;
                 break;
@@ -1232,11 +1280,11 @@ export function analyze(program: Program): SemanticResult {
 
         // Define parameters
         for (let i = 0; i < node.params.length; i++) {
-            const param = node.params[i];
+            const param = node.params[i]!;
 
             define({
                 name: param.name.name,
-                type: paramTypes[i],
+                type: paramTypes[i]!,
                 kind: 'parameter',
                 mutable: false,
                 position: param.position,
@@ -1375,6 +1423,48 @@ export function analyze(program: Program): SemanticResult {
 
         node.resolvedType = type;
         node.name.resolvedType = type;
+    }
+
+    function analyzeProbandumStatement(node: ProbandumStatement): void {
+        // Test suite - analyze all test statements
+        for (const stmt of node.body) {
+            analyzeStatement(stmt);
+        }
+    }
+
+    function analyzeProbaStatement(node: ProbaStatement): void {
+        // Individual test case - analyze test body
+        enterScope();
+        analyzeBlock(node.body);
+        exitScope();
+    }
+
+    function analyzeCuraBlock(node: CuraBlock): void {
+        // Resource management block with cleanup
+        enterScope();
+        analyzeBlock(node.body);
+        exitScope();
+    }
+
+    function analyzeCuraStatement(node: CuraStatement): void {
+        // Resource binding statement - analyze resource and define binding
+        const resourceType = resolveExpression(node.resource);
+
+        define({
+            name: node.binding.name,
+            type: resourceType,
+            kind: 'variable',
+            mutable: false,
+            position: node.position,
+        });
+
+        enterScope();
+        analyzeBlock(node.body);
+        exitScope();
+
+        if (node.catchClause) {
+            analyzeCatchClause(node.catchClause);
+        }
     }
 
     function analyzeIfStatement(node: IfStatement): void {

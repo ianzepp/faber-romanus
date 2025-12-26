@@ -135,7 +135,8 @@ export function tokenize(source: string): TokenizerResult {
      *      line/column/offset always advance together.
      */
     function advance(): string {
-        const char = source[current];
+        // EDGE: Callers must check isAtEnd() before calling advance()
+        const char = source[current]!;
 
         current++;
         column++;

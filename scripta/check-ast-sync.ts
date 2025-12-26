@@ -24,13 +24,13 @@ function extractAstTypes(): Set<string> {
     // Match: type: 'NodeName'
     const typeMatches = content.matchAll(/type:\s*['"](\w+)['"]/g);
     for (const match of typeMatches) {
-        types.add(match[1]);
+        types.add(match[1]!);
     }
 
     // Also match interface names that extend BaseNode
     const interfaceMatches = content.matchAll(/interface\s+(\w+)\s+extends\s+BaseNode/g);
     for (const match of interfaceMatches) {
-        types.add(match[1]);
+        types.add(match[1]!);
     }
 
     return types;

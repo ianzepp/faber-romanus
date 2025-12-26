@@ -1215,7 +1215,7 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         // Handle new Error("msg") - extract message
         if (node.argument.type === 'NewExpression' && node.argument.callee.name === 'Error' && node.argument.arguments.length > 0) {
             const firstArg = node.argument.arguments[0]!;
-            const msg = genExpression(firstArg);
+            const msg = firstArg.type !== 'SpreadElement' ? genExpression(firstArg) : genExpression(node.argument);
             return `${ind()}@panic(${msg});`;
         }
 
@@ -1948,7 +1948,10 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         }
 
         // Regular constructor call
-        const args = node.arguments.map(genExpression).join(', ');
+        const args = node.arguments
+            .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
+            .map(genExpression)
+            .join(', ');
         return `${callee}.init(${args})`;
     }
 

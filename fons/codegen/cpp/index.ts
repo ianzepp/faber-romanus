@@ -817,7 +817,7 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         // Handle new Error("msg")
         if (node.argument.type === 'NewExpression' && node.argument.callee.name === 'Error') {
             const firstArg = node.argument.arguments[0];
-            const msg = firstArg ? genExpression(firstArg) : '""';
+            const msg = firstArg && firstArg.type !== 'SpreadElement' ? genExpression(firstArg) : '""';
 
             return `${ind()}throw std::runtime_error(${msg});`;
         }
@@ -1003,7 +1003,10 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
             return 'std::vector<int>{}';
         }
 
-        const elements = node.elements.map(genExpression).join(', ');
+        const elements = node.elements
+            .filter((el): el is Expression => el.type !== 'SpreadElement')
+            .map(genExpression)
+            .join(', ');
 
         return `std::vector{${elements}}`;
     }
@@ -1014,12 +1017,15 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         }
 
         // For simple structs, use designated initializers (C++20)
-        const props = node.properties.map(prop => {
-            const key = prop.key.type === 'Identifier' ? prop.key.name : String((prop.key as Literal).value);
-            const value = genExpression(prop.value);
+        const props = node.properties
+            .filter((prop) => prop.type !== 'SpreadElement')
+            .map(prop => {
+                const p = prop as any;
+                const key = p.key.type === 'Identifier' ? p.key.name : String((p.key as Literal).value);
+                const value = genExpression(p.value);
 
-            return `.${key} = ${value}`;
-        });
+                return `.${key} = ${value}`;
+            });
 
         return `{${props.join(', ')}}`;
     }
@@ -1093,7 +1099,10 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
      */
     function genCallExpression(node: CallExpression): string {
         const callee = genExpression(node.callee);
-        const args = node.arguments.map(genExpression).join(', ');
+        const args = node.arguments
+            .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
+            .map(genExpression)
+            .join(', ');
 
         // WHY: For optional call, check if function pointer is valid
         if (node.optional) {
@@ -1239,7 +1248,10 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         }
 
         // With arguments - use parentheses
-        const args = node.arguments.map(genExpression).join(', ');
+        const args = node.arguments
+            .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
+            .map(genExpression)
+            .join(', ');
 
         return `${callee}(${args})`;
     }

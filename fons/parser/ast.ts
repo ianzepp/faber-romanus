@@ -1525,7 +1525,7 @@ export interface AwaitExpression extends BaseNode {
 export interface NewExpression extends BaseNode {
     type: 'NewExpression';
     callee: Identifier;
-    arguments: Expression[];
+    arguments: (Expression | SpreadElement)[];
     withExpression?: Expression;
 }
 
