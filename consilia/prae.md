@@ -2,18 +2,49 @@
 
 Compile-time computation for Faber, enabling static evaluation and type-level programming.
 
+## Implementation Status
+
+**Status: Implemented** (December 2024)
+
+### What's Working
+
+| Component          | Status | Notes                                                       |
+| ------------------ | ------ | ----------------------------------------------------------- |
+| Lexicon            | Done   | `prae`, `praefixum` keywords added                          |
+| Parser             | Done   | `TypeParameterDeclaration`, `PraefixumExpression` AST nodes |
+| Zig codegen        | Done   | `comptime T: type`, `comptime blk:`                         |
+| TypeScript codegen | Done   | `<T>` generics; error for `praefixum`                       |
+| Python codegen     | Done   | `TypeVar('T')`; error for `praefixum`                       |
+| Tests              | Done   | Parser tests, Zig codegen tests                             |
+| Example            | Done   | `exempla/functiones/prae.fab`                               |
+| Grammar docs       | Done   | Auto-generated in GRAMMAR.md                                |
+
+### Known Issues
+
+1. **Hex literals not tokenized** - `0xFF` parses incorrectly (tokenizer limitation, not prae-specific)
+2. **Semantic check timing** - `praefixum` target check happens at codegen, not semantic phase
+3. **Type literals as arguments** - `max(numerus, 10, 20)` fails semantic check (types not recognized as values)
+4. **Mutable params in swap** - `in T a` still flagged as immutable by semantic analyzer
+
+### Not Yet Implemented
+
+- C++ codegen (`constexpr`, `template<typename T>`)
+- Rust codegen (`const`, `<T>`)
+- Semantic-phase target language validation for `praefixum`
+- Compile-time constraint checking (I/O, runtime values)
+
 ## Keywords
 
-| Context | Keyword | Meaning |
-|---------|---------|---------|
+| Context          | Keyword     | Meaning                               |
+| ---------------- | ----------- | ------------------------------------- |
 | Block/expression | `praefixum` | "pre-fixed" - compute at compile time |
-| Type parameter | `prae` | "before" - type known at compile time |
+| Type parameter   | `prae`      | "before" - type known at compile time |
 
 ## Etymology
 
 - **praefixum** - past participle of `praefigere` (to fix beforehand)
-  - `prae` (before) + `fixum` (fixed)
-  - Extends `fixum` vocabulary: "fixed" → "pre-fixed"
+    - `prae` (before) + `fixum` (fixed)
+    - Extends `fixum` vocabulary: "fixed" → "pre-fixed"
 - **prae** - preposition meaning "before" (i.e., before runtime)
 
 ## Syntax
@@ -257,41 +288,45 @@ fn max<T: Ord>(a: T, b: T) -> T { ... }
 
 ### TypeScript / Python
 
-For dynamic targets, `praefixum` blocks are evaluated by the Faber compiler and the result is emitted as a literal:
+TypeScript and Python lack native compile-time evaluation. Using `praefixum` when targeting these languages produces a semantic error:
 
-```fab
-fixum table = praefixum {
-    varia result = []
-    ex 0..5 pro i { result.adde(i * i) }
-    redde result
-}
-```
+> "praefixum requires compile-time evaluation which [TypeScript|Python] does not support. Use a literal value or remove praefixum."
 
-```typescript
-const table = [0, 1, 4, 9, 16];
-```
+This is an intentional limitation. Rather than building a full Faber interpreter into the compiler, we delegate compile-time evaluation to target languages that support it natively. Users targeting TypeScript/Python simply don't use `praefixum` — the feature is for static compilation targets (Zig, C++, Rust).
 
-```python
-table = [0, 1, 4, 9, 16]
-```
-
-The computation happens at Faber compile time, not TypeScript/Python runtime.
+**Future consideration:** A Faber interpreter could enable `praefixum` for all targets by evaluating blocks at compile time and emitting the result as a literal. This is deferred until there's concrete demand.
 
 ## Implementation Notes
 
+### Target Language Support
+
+| Target     | `praefixum` | `prae typus`           | Notes                |
+| ---------- | ----------- | ---------------------- | -------------------- |
+| Zig        | `comptime`  | `comptime T: type`     | Full support         |
+| C++        | `constexpr` | `template<typename T>` | Full support         |
+| Rust       | `const`     | `<T>`                  | Full support         |
+| TypeScript | **error**   | `<T>`                  | No compile-time eval |
+| Python     | **error**   | `TypeVar`              | No compile-time eval |
+
 ### Compiler Requirements
 
-1. **Interpreter** - Faber compiler needs to execute `praefixum` blocks
-2. **Purity checker** - Verify no I/O, no runtime dependencies
-3. **Value serialization** - Convert computed values to target literals
-4. **Type inference** - Infer types from `prae typus T` usage
+For `praefixum`:
+
+1. **Parse** - Recognize `praefixum` blocks/expressions as AST nodes
+2. **Semantic check** - Verify target supports compile-time evaluation
+3. **Codegen** - Emit target's native compile-time keyword (e.g., `comptime`)
+
+For `prae typus`:
+
+1. **Parse** - Recognize type parameters in function signatures
+2. **Type inference** - Track generic type usage through function body
+3. **Codegen** - Emit target's generic syntax
 
 ### Phases
 
 1. Parse `praefixum` blocks as special AST nodes
-2. During semantic analysis, verify purity constraints
-3. Before codegen, evaluate `praefixum` blocks via interpreter
-4. Emit results as static constants in target language
+2. During semantic analysis, check target language support
+3. Emit with target's native compile-time keyword (no interpreter needed)
 
 ### Error Handling
 

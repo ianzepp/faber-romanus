@@ -93,6 +93,8 @@ import type {
     FacBlockStatement,
     BreakStatement,
     ContinueStatement,
+    PraefixumExpression,
+    TypeParameterDeclaration,
 } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import type { SemanticType } from '../../semantic/types';
@@ -658,21 +660,32 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * TRANSFORMS:
      *   functio salve(nomen: textus): nihil -> fn salve(nomen: []const u8) void
      *   futura functio f(): numerus -> fn f() !i64
+     *   functio max(prae typus T, T a, T b) -> T -> fn max(comptime T: type, a: T, b: T) T
      *
      * TARGET: Zig uses fn not function. Async becomes error union (!T).
+     *         Type parameters become comptime T: type parameters.
      *
      * EDGE: anytype is not valid as a return type in Zig. If the return type
      *       resolves to anytype (from objectum/ignotum), generate a compile error.
      */
     function genFunctionDeclaration(node: FunctionDeclaration): string {
         const name = node.name.name;
-        const params = node.params.map(genParameter).join(', ');
+
+        // Generate type parameters as comptime T: type
+        const typeParams = node.typeParams?.map(genTypeParameter) ?? [];
+
+        // Generate regular parameters
+        const regularParams = node.params.map(genParameter);
+
+        // Combine: type params first, then regular params
+        const allParams = [...typeParams, ...regularParams].join(', ');
+
         const returnType = node.returnType ? genType(node.returnType) : 'void';
 
         // EDGE: anytype is not valid as return type in Zig
         if (returnType === 'anytype') {
             const body = `{ @compileError("Function '${name}' returns objectum/ignotum which has no Zig equivalent - use a concrete type"); }`;
-            return `${ind()}fn ${name}(${params}) void ${body}`;
+            return `${ind()}fn ${name}(${allParams}) void ${body}`;
         }
 
         // TARGET: Async in Zig uses error unions (!T) not async/await
@@ -680,7 +693,19 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         const body = genBlockStatement(node.body);
 
-        return `${ind()}fn ${name}(${params}) ${retType} ${body}`;
+        return `${ind()}fn ${name}(${allParams}) ${retType} ${body}`;
+    }
+
+    /**
+     * Generate type parameter declaration.
+     *
+     * TRANSFORMS:
+     *   prae typus T -> comptime T: type
+     *
+     * TARGET: Zig uses comptime T: type for compile-time type parameters.
+     */
+    function genTypeParameter(node: TypeParameterDeclaration): string {
+        return `comptime ${node.name.name}: type`;
     }
 
     /**
@@ -1346,6 +1371,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
                 return genTypeCastExpression(node);
             case 'LambdaExpression':
                 return genLambdaExpression(node);
+            case 'PraefixumExpression':
+                return genPraefixumExpression(node);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }
@@ -1822,6 +1849,62 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         const left = node.left.type === 'Identifier' ? node.left.name : genExpression(node.left);
 
         return `${left} ${node.operator} ${genExpression(node.right)}`;
+    }
+
+    /**
+     * Generate compile-time evaluation expression.
+     *
+     * TRANSFORMS:
+     *   praefixum(256 * 4) -> comptime (256 * 4)
+     *   praefixum { ... } -> comptime blk: { ... break :blk result; }
+     *
+     * TARGET: Zig's comptime keyword handles both forms:
+     *         - Expression: comptime (expr)
+     *         - Block: comptime blk: { ... break :blk result; }
+     *
+     * WHY: praefixum delegates compile-time evaluation to Zig's comptime.
+     *      The Faber compiler doesn't interpret the code; Zig's compiler does.
+     */
+    function genPraefixumExpression(node: PraefixumExpression): string {
+        if (node.body.type === 'BlockStatement') {
+            // Block form: comptime blk: { ... }
+            // Note: The block should end with a redde (return) which becomes break :blk value
+            const body = genComptimeBlockStatement(node.body);
+            return `comptime ${body}`;
+        }
+
+        // Expression form: comptime (expr)
+        const expr = genExpression(node.body);
+        return `comptime (${expr})`;
+    }
+
+    /**
+     * Generate a comptime block statement with labeled break.
+     *
+     * WHY: Zig's comptime blocks that return values need labeled breaks.
+     *      We transform redde statements into break :blk value statements.
+     */
+    function genComptimeBlockStatement(node: BlockStatement): string {
+        if (node.body.length === 0) {
+            return 'blk: {}';
+        }
+
+        depth++;
+        const statements: string[] = [];
+
+        for (const stmt of node.body) {
+            if (stmt.type === 'ReturnStatement') {
+                // Transform redde into break :blk
+                const value = stmt.argument ? genExpression(stmt.argument) : 'void{}';
+                statements.push(`${ind()}break :blk ${value};`);
+            } else {
+                statements.push(genStatement(stmt));
+            }
+        }
+
+        depth--;
+
+        return `blk: {\n${statements.join('\n')}\n${ind()}}`;
     }
 
     /**

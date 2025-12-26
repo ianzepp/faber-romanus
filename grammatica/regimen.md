@@ -25,6 +25,24 @@ statement := importDecl | varDecl | funcDecl | typeAliasDecl | ifStmt | whileStm
 
 > Uses lookahead to determine statement type via keyword inspection.
 
+### Type And Parameter List
+
+```ebnf
+paramList := (typeParamDecl ',')* (parameter (',' parameter)*)?
+typeParamDecl := 'prae' 'typus' IDENTIFIER
+```
+
+> Type parameters (prae typus T) must come first, followed by regular params.
+> This matches the conventions of TypeScript, Rust, and Zig.
+
+**Examples:**
+
+```fab
+(prae typus T, T a, T b)     -> typeParams=[T], params=[a, b]
+(prae typus T, prae typus U) -> typeParams=[T, U], params=[]
+(numerus a, numerus b)       -> typeParams=[], params=[a, b]
+```
+
 ### If Statement
 
 ```ebnf
@@ -323,6 +341,32 @@ expression := assignment
 ```
 
 > Top-level expression delegates to assignment (lowest precedence).
+
+### Praefixum Expression
+
+```ebnf
+praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
+```
+
+> Latin 'praefixum' (pre-fixed) extends fixum vocabulary.
+> Block form: praefixum { ... } for multi-statement computation
+> Expression form: praefixum(expr) for simple expressions
+> TARGET SUPPORT:
+> Zig:    comptime { } or comptime (expr)
+> C++:    constexpr
+> Rust:   const (in const context)
+> TS/Py:  Semantic error - not supported
+
+**Examples:**
+
+```fab
+fixum size = praefixum(256 * 4)
+fixum table = praefixum {
+varia result = []
+ex 0..10 pro i { result.adde(i * i) }
+redde result
+}
+```
 
 ### Cast
 

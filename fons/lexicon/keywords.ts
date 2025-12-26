@@ -158,6 +158,13 @@ export const keywords: KeywordEntry[] = [
 
     // WHY: "futura" (future/about to be) naturally expresses async operations
     { latin: 'futura', meaning: 'async', category: 'modifier' },
+    // WHY: "prae" (before) for compile-time type parameters
+    //      Short form used in function parameters: prae typus T
+    { latin: 'prae', meaning: 'comptime', category: 'modifier' },
+    // WHY: "praefixum" (pre-fixed, past participle of praefigere) for compile-time blocks
+    //      Extends fixum vocabulary: "fixed" → "pre-fixed"
+    //      Used for compile-time evaluation: praefixum { ... } or praefixum(expr)
+    { latin: 'praefixum', meaning: 'comptime block', category: 'modifier' },
     // WHY: "cursor" (runner) for generator/iterator functions
     { latin: 'cursor', meaning: 'generator', category: 'modifier' },
     // WHY: "publicus/privatus" for visibility - default is public (struct semantics)

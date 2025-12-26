@@ -219,12 +219,17 @@ Function declarations: basic functions, typed parameters, async, generators, and
 
 ```ebnf
 funcDecl := ('futura' | 'cursor')* 'functio' IDENTIFIER '(' paramList ')' returnClause? blockStmt
+paramList := (typeParamDecl ',')* (parameter (',' parameter)*)?
+typeParamDecl := 'prae' 'typus' IDENTIFIER
 returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 ```
 
 > Arrow syntax for return types: "functio greet(textus name) -> textus"
 > 'futura' prefix marks async functions (future/promise-based).
 > 'cursor' prefix marks generator functions (yield-based).
+> TYPE PARAMETERS: 'prae typus T' declares compile-time type parameters.
+> functio max(prae typus T, T a, T b) -> T { ... }
+> Maps to: <T> (TS/Rust), TypeVar (Py), comptime T: type (Zig)
 > RETURN TYPE VERBS: Latin verb forms encode async/generator semantics directly:
 > '->'    neutral arrow (semantics from prefix only)
 > 'fit'   "it becomes" - sync, returns single value
@@ -310,6 +315,24 @@ statement := importDecl | varDecl | funcDecl | typeAliasDecl | ifStmt | whileStm
 ```
 
 > Uses lookahead to determine statement type via keyword inspection.
+
+### Type And Parameter List
+
+```ebnf
+paramList := (typeParamDecl ',')* (parameter (',' parameter)*)?
+typeParamDecl := 'prae' 'typus' IDENTIFIER
+```
+
+> Type parameters (prae typus T) must come first, followed by regular params.
+> This matches the conventions of TypeScript, Rust, and Zig.
+
+**Examples:**
+
+```fab
+(prae typus T, T a, T b)     -> typeParams=[T], params=[a, b]
+(prae typus T, prae typus U) -> typeParams=[T, U], params=[]
+(numerus a, numerus b)       -> typeParams=[], params=[a, b]
+```
 
 ### If Statement
 
@@ -609,6 +632,32 @@ expression := assignment
 ```
 
 > Top-level expression delegates to assignment (lowest precedence).
+
+### Praefixum Expression
+
+```ebnf
+praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
+```
+
+> Latin 'praefixum' (pre-fixed) extends fixum vocabulary.
+> Block form: praefixum { ... } for multi-statement computation
+> Expression form: praefixum(expr) for simple expressions
+> TARGET SUPPORT:
+> Zig:    comptime { } or comptime (expr)
+> C++:    constexpr
+> Rust:   const (in const context)
+> TS/Py:  Semantic error - not supported
+
+**Examples:**
+
+```fab
+fixum size = praefixum(256 * 4)
+fixum table = praefixum {
+varia result = []
+ex 0..10 pro i { result.adde(i * i) }
+redde result
+}
+```
 
 ### Cast
 

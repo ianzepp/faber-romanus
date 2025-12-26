@@ -110,6 +110,7 @@ import type {
     Parameter,
     TypeAnnotation,
     TypeParameter,
+    TypeParameterDeclaration,
     CatchClause,
     NewExpression,
     TypeAliasDeclaration,
@@ -132,6 +133,7 @@ import type {
     CuraBlock,
     CuraTiming,
     CuraStatement,
+    PraefixumExpression,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
 import { ParserErrorCode, PARSER_ERRORS } from './errors';
@@ -851,11 +853,17 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * GRAMMAR:
      *   funcDecl := ('futura' | 'cursor')* 'functio' IDENTIFIER '(' paramList ')' returnClause? blockStmt
+     *   paramList := (typeParamDecl ',')* (parameter (',' parameter)*)?
+     *   typeParamDecl := 'prae' 'typus' IDENTIFIER
      *   returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
      *
      * WHY: Arrow syntax for return types: "functio greet(textus name) -> textus"
      *      'futura' prefix marks async functions (future/promise-based).
      *      'cursor' prefix marks generator functions (yield-based).
+     *
+     * TYPE PARAMETERS: 'prae typus T' declares compile-time type parameters.
+     *      functio max(prae typus T, T a, T b) -> T { ... }
+     *      Maps to: <T> (TS/Rust), TypeVar (Py), comptime T: type (Zig)
      *
      * RETURN TYPE VERBS: Latin verb forms encode async/generator semantics directly:
      *      '->'    neutral arrow (semantics from prefix only)
@@ -900,7 +908,8 @@ export function parse(tokens: Token[]): ParserResult {
 
         expect('LPAREN', ParserErrorCode.ExpectedOpeningParen);
 
-        const params = parseParameterList();
+        // Parse type parameters and regular parameters
+        const { typeParams, params } = parseTypeAndParameterList();
 
         expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
 
@@ -958,6 +967,7 @@ export function parse(tokens: Token[]): ParserResult {
         return {
             type: 'FunctionDeclaration',
             name,
+            typeParams: typeParams.length > 0 ? typeParams : undefined,
             params,
             returnType,
             body,
@@ -968,7 +978,63 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
-     * Parse function parameter list.
+     * Parse type parameters and regular parameters from function signature.
+     *
+     * GRAMMAR:
+     *   paramList := (typeParamDecl ',')* (parameter (',' parameter)*)?
+     *   typeParamDecl := 'prae' 'typus' IDENTIFIER
+     *
+     * WHY: Type parameters (prae typus T) must come first, followed by regular params.
+     *      This matches the conventions of TypeScript, Rust, and Zig.
+     *
+     * Examples:
+     *   (prae typus T, T a, T b)     -> typeParams=[T], params=[a, b]
+     *   (prae typus T, prae typus U) -> typeParams=[T, U], params=[]
+     *   (numerus a, numerus b)       -> typeParams=[], params=[a, b]
+     */
+    function parseTypeAndParameterList(): { typeParams: TypeParameterDeclaration[]; params: Parameter[] } {
+        const typeParams: TypeParameterDeclaration[] = [];
+        const params: Parameter[] = [];
+
+        if (check('RPAREN')) {
+            return { typeParams, params };
+        }
+
+        // Parse leading type parameters: prae typus T
+        while (checkKeyword('prae')) {
+            const typeParamPos = peek().position;
+            advance(); // consume 'prae'
+            expectKeyword('typus', ParserErrorCode.ExpectedKeywordTypus);
+            const typeParamName = parseIdentifier();
+            typeParams.push({
+                type: 'TypeParameterDeclaration',
+                name: typeParamName,
+                position: typeParamPos,
+            });
+
+            // If no comma after type param, we're done with type params
+            if (!match('COMMA')) {
+                return { typeParams, params };
+            }
+
+            // Check if next is another type param or a regular param
+            if (!checkKeyword('prae')) {
+                break; // Switch to parsing regular params
+            }
+        }
+
+        // Parse remaining regular parameters
+        if (!check('RPAREN')) {
+            do {
+                params.push(parseParameter());
+            } while (match('COMMA'));
+        }
+
+        return { typeParams, params };
+    }
+
+    /**
+     * Parse function parameter list (simple form without type params).
      *
      * GRAMMAR:
      *   paramList := (parameter (',' parameter)*)?
@@ -2872,7 +2938,55 @@ export function parse(tokens: Token[]): ParserResult {
             return parseNewExpression();
         }
 
+        if (matchKeyword('praefixum')) {
+            return parsePraefixumExpression();
+        }
+
         return parseCast();
+    }
+
+    /**
+     * Parse compile-time evaluation expression.
+     *
+     * GRAMMAR:
+     *   praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
+     *
+     * WHY: Latin 'praefixum' (pre-fixed) extends fixum vocabulary.
+     *      Block form: praefixum { ... } for multi-statement computation
+     *      Expression form: praefixum(expr) for simple expressions
+     *
+     * TARGET SUPPORT:
+     *   Zig:    comptime { } or comptime (expr)
+     *   C++:    constexpr
+     *   Rust:   const (in const context)
+     *   TS/Py:  Semantic error - not supported
+     *
+     * Examples:
+     *   fixum size = praefixum(256 * 4)
+     *   fixum table = praefixum {
+     *       varia result = []
+     *       ex 0..10 pro i { result.adde(i * i) }
+     *       redde result
+     *   }
+     */
+    function parsePraefixumExpression(): PraefixumExpression {
+        const position = tokens[current - 1].position; // Position of 'praefixum' we just consumed
+
+        let body: Expression | BlockStatement;
+
+        if (check('LBRACE')) {
+            // Block form: praefixum { ... }
+            body = parseBlockStatement();
+        } else if (match('LPAREN')) {
+            // Expression form: praefixum(expr)
+            body = parseExpression();
+            expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
+        } else {
+            // Error: expected { or (
+            error(ParserErrorCode.ExpectedOpeningBraceOrParen, `got '${peek().value}'`);
+        }
+
+        return { type: 'PraefixumExpression', body, position };
     }
 
     /**

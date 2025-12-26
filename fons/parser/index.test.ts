@@ -2912,4 +2912,113 @@ describe('parser', () => {
             });
         });
     });
+
+    describe('prae (compile-time)', () => {
+        describe('prae typus (type parameters)', () => {
+            test('function with single type parameter', () => {
+                const { program } = parseCode(`
+                    functio identity(prae typus T, T value) -> T {
+                        redde value
+                    }
+                `);
+                const fn = program!.body[0] as any;
+
+                expect(fn.type).toBe('FunctionDeclaration');
+                expect(fn.typeParams).toHaveLength(1);
+                expect(fn.typeParams[0].name.name).toBe('T');
+                expect(fn.params).toHaveLength(1);
+                expect(fn.params[0].typeAnnotation.name).toBe('T');
+            });
+
+            test('function with multiple type parameters', () => {
+                const { program } = parseCode(`
+                    functio pair(prae typus K, prae typus V, K key, V value) -> lista<K> {
+                        redde nihil
+                    }
+                `);
+                const fn = program!.body[0] as any;
+
+                expect(fn.typeParams).toHaveLength(2);
+                expect(fn.typeParams[0].name.name).toBe('K');
+                expect(fn.typeParams[1].name.name).toBe('V');
+                expect(fn.params).toHaveLength(2);
+            });
+
+            test('function with type parameter and preposition', () => {
+                const { program } = parseCode(`
+                    functio swap(prae typus T, in T a, in T b) {
+                        varia temp = a
+                        a = b
+                        b = temp
+                    }
+                `);
+                const fn = program!.body[0] as any;
+
+                expect(fn.typeParams).toHaveLength(1);
+                expect(fn.params[0].preposition).toBe('in');
+                expect(fn.params[1].preposition).toBe('in');
+            });
+
+            test('function with only type parameter, no regular params', () => {
+                const { program } = parseCode(`
+                    functio create(prae typus T) -> T {
+                        redde novum T
+                    }
+                `);
+                const fn = program!.body[0] as any;
+
+                expect(fn.typeParams).toHaveLength(1);
+                expect(fn.typeParams[0].name.name).toBe('T');
+                expect(fn.params).toHaveLength(0);
+            });
+        });
+
+        describe('praefixum (compile-time expressions)', () => {
+            test('praefixum with parenthesized expression', () => {
+                const { program } = parseCode('fixum size = praefixum(256 * 4)');
+                const decl = program!.body[0] as any;
+
+                expect(decl.init.type).toBe('PraefixumExpression');
+                expect(decl.init.body.type).toBe('BinaryExpression');
+            });
+
+            test('praefixum with block', () => {
+                const { program } = parseCode(`
+                    fixum table = praefixum {
+                        varia x = 10
+                        redde x * x
+                    }
+                `);
+                const decl = program!.body[0] as any;
+
+                expect(decl.init.type).toBe('PraefixumExpression');
+                expect(decl.init.body.type).toBe('BlockStatement');
+                expect(decl.init.body.body).toHaveLength(2);
+            });
+
+            test('praefixum in variable initializer', () => {
+                const { program } = parseCode('varia mask = praefixum(0xFF ^ 0xAA)');
+                const decl = program!.body[0] as any;
+
+                expect(decl.init.type).toBe('PraefixumExpression');
+            });
+
+            test('praefixum with simple literal', () => {
+                const { program } = parseCode('fixum greeting = praefixum("Hello")');
+                const decl = program!.body[0] as any;
+
+                expect(decl.init.type).toBe('PraefixumExpression');
+                expect(decl.init.body.type).toBe('Literal');
+                expect(decl.init.body.value).toBe('Hello');
+            });
+
+            test('praefixum nested in expression', () => {
+                const { program } = parseCode('fixum result = praefixum(1 + 2) + 3');
+                const decl = program!.body[0] as any;
+
+                expect(decl.init.type).toBe('BinaryExpression');
+                expect(decl.init.left.type).toBe('PraefixumExpression');
+            });
+        });
+    });
 });

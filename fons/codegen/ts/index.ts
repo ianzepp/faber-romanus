@@ -85,6 +85,7 @@ import type {
     Parameter,
     TypeAnnotation,
     TypeParameter,
+    TypeParameterDeclaration,
     SpreadElement,
     FacBlockStatement,
     LambdaExpression,
@@ -93,6 +94,7 @@ import type {
     ProbaStatement,
     CuraBlock,
     CuraStatement,
+    PraefixumExpression,
 } from '../../parser/ast';
 import type { CodegenOptions, RequiredFeatures } from '../types';
 import { createRequiredFeatures } from '../types';
@@ -715,6 +717,9 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const name = node.name.name;
         const params = node.params.map(genParameter).join(', ');
 
+        // Generate type parameters: prae typus T -> <T>
+        const typeParams = node.typeParams ? `<${node.typeParams.map(tp => tp.name.name).join(', ')}>` : '';
+
         // Wrap return type based on async/generator semantics
         let returnType = '';
         if (node.returnType) {
@@ -735,7 +740,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const body = genBlockStatement(node.body);
         inGenerator = prevInGenerator;
 
-        return `${ind()}${async}function${star} ${name}(${params})${returnType} ${body}`;
+        return `${ind()}${async}function${star} ${name}${typeParams}(${params})${returnType} ${body}`;
     }
 
     /**
@@ -1364,6 +1369,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genLambdaExpression(node);
             case 'TypeCastExpression':
                 return genTypeCastExpression(node);
+            case 'PraefixumExpression':
+                return genPraefixumExpression(node);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }
@@ -1783,6 +1790,24 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const left = node.left.type === 'Identifier' ? node.left.name : genExpression(node.left);
 
         return `${left} ${node.operator} ${genExpression(node.right)}`;
+    }
+
+    /**
+     * Generate compile-time evaluation expression (not supported in TypeScript).
+     *
+     * TRANSFORMS:
+     *   praefixum(...) -> throws error
+     *
+     * TARGET: TypeScript does not support compile-time evaluation.
+     *         Users targeting TypeScript should not use praefixum.
+     */
+    function genPraefixumExpression(_node: PraefixumExpression): string {
+        // WHY: TypeScript has no compile-time evaluation capability.
+        // Rather than silently dropping the praefixum or incorrectly emitting
+        // runtime code, we throw an error to alert the user.
+        throw new Error(
+            'praefixum requires compile-time evaluation which TypeScript does not support. ' + 'Use a literal value or remove praefixum.',
+        );
     }
 
     function genNewExpression(node: NewExpression): string {

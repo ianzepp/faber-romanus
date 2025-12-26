@@ -14,12 +14,17 @@ Function declarations: basic functions, typed parameters, async, generators, and
 
 ```ebnf
 funcDecl := ('futura' | 'cursor')* 'functio' IDENTIFIER '(' paramList ')' returnClause? blockStmt
+paramList := (typeParamDecl ',')* (parameter (',' parameter)*)?
+typeParamDecl := 'prae' 'typus' IDENTIFIER
 returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 ```
 
 > Arrow syntax for return types: "functio greet(textus name) -> textus"
 > 'futura' prefix marks async functions (future/promise-based).
 > 'cursor' prefix marks generator functions (yield-based).
+> TYPE PARAMETERS: 'prae typus T' declares compile-time type parameters.
+> functio max(prae typus T, T a, T b) -> T { ... }
+> Maps to: <T> (TS/Rust), TypeVar (Py), comptime T: type (Zig)
 > RETURN TYPE VERBS: Latin verb forms encode async/generator semantics directly:
 > '->'    neutral arrow (semantics from prefix only)
 > 'fit'   "it becomes" - sync, returns single value

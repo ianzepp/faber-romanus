@@ -628,4 +628,71 @@ describe('zig codegen', () => {
             expect(zig).toContain('requires fn reset');
         });
     });
+
+    describe('prae (compile-time)', () => {
+        describe('prae typus (type parameters)', () => {
+            test('single type parameter becomes comptime T: type', () => {
+                const zig = compile(`
+                    functio identity(prae typus T, T value) -> T {
+                        redde value
+                    }
+                `);
+
+                expect(zig).toContain('fn identity(comptime T: type, value: T) T');
+                expect(zig).toContain('return value');
+            });
+
+            test('multiple type parameters', () => {
+                const zig = compile(`
+                    functio pair(prae typus K, prae typus V, K key, V value) {
+                        redde
+                    }
+                `);
+
+                expect(zig).toContain('comptime K: type');
+                expect(zig).toContain('comptime V: type');
+                expect(zig).toContain('key: K');
+                expect(zig).toContain('value: V');
+            });
+
+            test('type parameter only (no regular params)', () => {
+                const zig = compile(`
+                    functio sizeof(prae typus T) -> numerus {
+                        redde 0
+                    }
+                `);
+
+                expect(zig).toContain('fn sizeof(comptime T: type) i64');
+            });
+        });
+
+        describe('praefixum (compile-time expressions)', () => {
+            test('praefixum expression becomes comptime', () => {
+                const zig = compile('fixum size = praefixum(256 * 4)');
+
+                expect(zig).toContain('comptime ((256 * 4))');
+            });
+
+            test('praefixum block becomes comptime blk', () => {
+                const zig = compile(`
+                    fixum table = praefixum {
+                        varia x = 10
+                        redde x
+                    }
+                `);
+
+                expect(zig).toContain('comptime blk: {');
+                expect(zig).toContain('var x: i64 = 10');
+                expect(zig).toContain('break :blk x');
+            });
+
+            test('praefixum with subtraction', () => {
+                // WHY: Using subtraction instead of XOR because hex literals
+                // are not yet fully supported in the tokenizer
+                const zig = compile('fixum mask = praefixum(255 - 170)');
+
+                expect(zig).toContain('comptime ((255 - 170))');
+            });
+        });
+    });
 });

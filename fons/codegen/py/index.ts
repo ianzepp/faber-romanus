@@ -94,7 +94,9 @@ import type {
     Parameter,
     TypeAnnotation,
     TypeParameter,
+    TypeParameterDeclaration,
     TypeCastExpression,
+    PraefixumExpression,
 } from '../../parser/ast';
 import type { CodegenOptions, RequiredFeatures } from '../types';
 import { createRequiredFeatures } from '../types';
@@ -380,6 +382,15 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         const name = node.name.name;
         const params = node.params.map(genParameter).join(', ');
 
+        // Generate type parameters for generics (Python uses TypeVar)
+        // prae typus T -> requires TypeVar('T') to be defined before function
+        const typeParamDefs: string[] = [];
+        if (node.typeParams && node.typeParams.length > 0) {
+            for (const tp of node.typeParams) {
+                typeParamDefs.push(`${ind()}${tp.name.name} = TypeVar('${tp.name.name}')`);
+            }
+        }
+
         // Build return type with generator/async wrapping
         let returnType = '';
         if (node.returnType) {
@@ -407,10 +418,14 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         // Handle empty body
         if (node.body.body.length === 0) {
-            return `${header}\n${indent.repeat(depth + 1)}pass`;
+            const funcDef = `${header}\n${indent.repeat(depth + 1)}pass`;
+            // Prepend TypeVar definitions if needed
+            return typeParamDefs.length > 0 ? `${typeParamDefs.join('\n')}\n${funcDef}` : funcDef;
         }
 
-        return `${header}\n${body}`;
+        const funcDef = `${header}\n${body}`;
+        // Prepend TypeVar definitions if needed
+        return typeParamDefs.length > 0 ? `${typeParamDefs.join('\n')}\n${funcDef}` : funcDef;
     }
 
     /**
@@ -1266,6 +1281,12 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
                 // WHY: Python is dynamically typed, type casts have no runtime effect.
                 // Just emit the expression — the cast is a compile-time annotation only.
                 return genExpression(node.expression);
+            case 'PraefixumExpression':
+                // WHY: Python has no compile-time evaluation.
+                // Rather than silently dropping praefixum, throw an error.
+                throw new Error(
+                    'praefixum requires compile-time evaluation which Python does not support. ' + 'Use a literal value or remove praefixum.',
+                );
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }

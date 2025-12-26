@@ -211,14 +211,38 @@ export interface VariableDeclaration extends BaseNode {
 }
 
 /**
+ * Compile-time type parameter for generic functions.
+ *
+ * GRAMMAR (in EBNF):
+ *   typeParamDecl := 'prae' 'typus' IDENTIFIER
+ *
+ * INVARIANT: name is the type parameter identifier (e.g., T, U).
+ *
+ * WHY: Latin 'prae' (before) indicates compile-time evaluation.
+ *      Combined with 'typus' (type), creates generic type parameters.
+ *
+ * Target mappings:
+ *   prae typus T → <T> (TS), TypeVar (Py), comptime T: type (Zig), <T> (Rust)
+ *
+ * Examples:
+ *   functio max(prae typus T, T a, T b) -> T
+ *   functio create(prae typus T) -> T
+ */
+export interface TypeParameterDeclaration extends BaseNode {
+    type: 'TypeParameterDeclaration';
+    name: Identifier;
+}
+
+/**
  * Function declaration statement.
  *
  * GRAMMAR (in EBNF):
  *   funcDecl := 'futura'? 'functio' IDENTIFIER '(' paramList ')' ('->' typeAnnotation)? blockStmt
- *   paramList := (parameter (',' parameter)*)?
+ *   paramList := (typeParamDecl ',')* (parameter (',' parameter)*)?
  *
  * INVARIANT: async flag set by presence of 'futura' keyword.
  * INVARIANT: params is always an array (empty if no parameters).
+ * INVARIANT: typeParams contains compile-time type parameters (prae typus T).
  *
  * Target mappings:
  *   functio        → function (TS), def (Py), fn (Zig), fn (Rust)
@@ -228,10 +252,12 @@ export interface VariableDeclaration extends BaseNode {
  * Examples:
  *   functio salve(nomen: textus) -> textus { ... }
  *   futura functio cede() { ... }
+ *   functio max(prae typus T, T a, T b) -> T { ... }
  */
 export interface FunctionDeclaration extends BaseNode {
     type: 'FunctionDeclaration';
     name: Identifier;
+    typeParams?: TypeParameterDeclaration[];
     params: Parameter[];
     returnType?: TypeAnnotation;
     body: BlockStatement;
@@ -1022,6 +1048,33 @@ export interface LambdaExpression extends BaseNode {
     async: boolean;
 }
 
+/**
+ * Compile-time evaluation expression.
+ *
+ * GRAMMAR (in EBNF):
+ *   praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
+ *
+ * INVARIANT: body is either a BlockStatement or an Expression.
+ *
+ * WHY: Latin 'praefixum' (pre-fixed, past participle of praefigere) extends
+ *      the 'fixum' vocabulary. Where 'fixum' means "fixed/constant", 'praefixum'
+ *      means "pre-fixed" — fixed before runtime (at compile time).
+ *
+ * TARGET SUPPORT:
+ *   Zig:    comptime { ... } or comptime (expr)
+ *   C++:    constexpr or template evaluation
+ *   Rust:   const (in const context)
+ *   TS/Py:  ERROR - not supported (no native compile-time evaluation)
+ *
+ * Examples:
+ *   fixum size = praefixum(256 * 4)           // simple expression
+ *   fixum table = praefixum { ... redde x }   // block with computation
+ */
+export interface PraefixumExpression extends BaseNode {
+    type: 'PraefixumExpression';
+    body: Expression | BlockStatement;
+}
+
 // =============================================================================
 // EXPRESSION TYPES
 // =============================================================================
@@ -1049,7 +1102,8 @@ export type Expression =
     | AwaitExpression
     | NewExpression
     | TemplateLiteral
-    | LambdaExpression;
+    | LambdaExpression
+    | PraefixumExpression;
 
 // ---------------------------------------------------------------------------
 // Primary Expressions
