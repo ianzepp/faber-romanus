@@ -504,27 +504,69 @@ describe('zig codegen', () => {
         });
     });
 
-    describe('missing features - iace (throw)', () => {
-        test('iace with string', () => {
-            const zig = compile('iace "error"');
+    describe('error handling - iace and mori', () => {
+        test('iace with string returns error', () => {
+            const zig = compile('iace "timeout"');
 
-            expect(zig).toContain('error');
+            // WHY: iace is recoverable, generates return error.X
+            expect(zig).toContain('return error.Timeout');
         });
 
-        test('iace with Error generates panic', () => {
-            const zig = compile('iace novum Error("msg")');
+        test('iace with Error returns error', () => {
+            const zig = compile('iace novum Error("invalid input")');
 
-            expect(zig).toContain('@panic');
+            // WHY: Error message converted to PascalCase error name
+            expect(zig).toContain('return error.InvalidInput');
         });
 
-        test('iace in function', () => {
+        test('mori generates panic', () => {
+            const zig = compile('mori "fatal crash"');
+
+            // WHY: mori is fatal/unrecoverable, generates @panic
+            expect(zig).toContain('@panic("fatal crash")');
+        });
+
+        test('mori with Error generates panic', () => {
+            const zig = compile('mori novum Error("out of memory")');
+
+            expect(zig).toContain('@panic("out of memory")');
+        });
+
+        test('function with iace has error union return type', () => {
             const zig = compile(`
-                functio validate() {
-                    iace "error"
+                functio validate(numerus x) -> numerus {
+                    si x < 0 { iace "negative value" }
+                    redde x
                 }
             `);
 
-            expect(zig).toContain('fn validate');
+            // WHY: Function containing iace needs !T return type
+            expect(zig).toContain('fn validate(x: i64) !i64');
+            expect(zig).toContain('return error.NegativeValue');
+        });
+
+        test('function with mori does NOT get error union', () => {
+            const zig = compile(`
+                functio crash() {
+                    mori "goodbye"
+                }
+            `);
+
+            // WHY: mori is panic, not recoverable error - no !T needed
+            expect(zig).toContain('fn crash() void');
+            expect(zig).toContain('@panic("goodbye")');
+        });
+
+        test('async function with iace keeps error union', () => {
+            const zig = compile(`
+                futura functio fetch() -> numerus {
+                    iace "network error"
+                }
+            `);
+
+            // WHY: Both async and iace need error union - should still be !T
+            expect(zig).toContain('fn fetch() !i64');
+            expect(zig).toContain('return error.NetworkError');
         });
     });
 
@@ -647,10 +689,11 @@ describe('zig codegen', () => {
             expect(zig).not.toContain('ego');
         });
 
-        test('novum becomes Type.init()', () => {
+        test('novum without overrides passes .{}', () => {
             const zig = compile('fixum p = novum persona');
 
-            expect(zig).toContain('persona.init()');
+            // WHY: init() uses @hasField pattern, needs empty struct when no overrides
+            expect(zig).toContain('persona.init(.{})');
         });
 
         test('novum with property overrides', () => {

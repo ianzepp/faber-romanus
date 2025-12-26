@@ -178,7 +178,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `iace` (throw)       |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | `adfirma` (assert)   |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Assert with message  |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `mori` (panic/fatal) |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `mori` (panic/fatal) |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 
 ## Output/Debug/Events
 

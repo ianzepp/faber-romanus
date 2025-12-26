@@ -190,6 +190,66 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
     let usesCollections = false;
 
     /**
+     * Check if a block contains non-fatal throw statements (iace).
+     *
+     * WHY: Functions containing `iace` need error union return types (!T).
+     *      We recursively search the AST to find any `iace` usage.
+     */
+    function blockContainsIace(node: BlockStatement): boolean {
+        return node.body.some(stmt => statementContainsIace(stmt));
+    }
+
+    function statementContainsIace(stmt: Statement): boolean {
+        switch (stmt.type) {
+            case 'ThrowStatement':
+                return !stmt.fatal; // iace has fatal=false, mori has fatal=true
+
+            case 'IfStatement':
+                if (blockContainsIace(stmt.consequent)) return true;
+                if (stmt.alternate) {
+                    if (stmt.alternate.type === 'BlockStatement') {
+                        if (blockContainsIace(stmt.alternate)) return true;
+                    } else if (stmt.alternate.type === 'IfStatement') {
+                        if (statementContainsIace(stmt.alternate)) return true;
+                    }
+                }
+                return false;
+
+            case 'WhileStatement':
+            case 'ForStatement':
+                return blockContainsIace(stmt.body);
+
+            case 'SwitchStatement':
+                for (const c of stmt.cases) {
+                    if (c.type === 'SwitchCase' && blockContainsIace(c.consequent)) return true;
+                    if (c.type === 'VariantCase' && blockContainsIace(c.consequent)) return true;
+                }
+                if (stmt.defaultCase && blockContainsIace(stmt.defaultCase)) return true;
+                return false;
+
+            case 'TryStatement':
+                if (blockContainsIace(stmt.block)) return true;
+                if (stmt.handler && blockContainsIace(stmt.handler.body)) return true;
+                if (stmt.finalizer && blockContainsIace(stmt.finalizer)) return true;
+                return false;
+
+            case 'FacBlockStatement':
+                if (blockContainsIace(stmt.body)) return true;
+                if (stmt.catchClause && blockContainsIace(stmt.catchClause.body)) return true;
+                return false;
+
+            case 'GuardStatement':
+                return stmt.clauses.some(c => blockContainsIace(c.consequent));
+
+            case 'WithStatement':
+                return blockContainsIace(stmt.body);
+
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Generate top-level program structure.
      *
      * WHY: Zig requires separation between compile-time and runtime code.
@@ -747,8 +807,11 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             return `${ind()}fn ${name}(${allParams}) void ${body}`;
         }
 
-        // TARGET: Async in Zig uses error unions (!T) not async/await
-        const retType = node.async ? `!${returnType}` : returnType;
+        // WHY: Functions containing `iace` need error union return type
+        // TARGET: Async in Zig also uses error unions (!T)
+        const hasIace = blockContainsIace(node.body);
+        const needsErrorUnion = node.async || hasIace;
+        const retType = needsErrorUnion ? `!${returnType}` : returnType;
 
         const body = genBlockStatement(node.body);
 
@@ -1361,28 +1424,108 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate throw/panic statement.
      *
      * TRANSFORMS:
-     *   iace "message" -> @panic("message")  // TODO: should be return error.X
+     *   iace "message" -> return error.Message
      *   mori "message" -> @panic("message")
      *
-     * TARGET: Zig uses @panic for fatal errors. Recoverable errors (iace)
-     *         should ideally use error unions, but that requires function
-     *         signature changes. For now, both use @panic.
+     * TARGET: Zig distinguishes recoverable errors (error unions) from fatal panics.
+     *   - iace (fatal=false) -> return error.X (recoverable, function needs !T return)
+     *   - mori (fatal=true)  -> @panic (unrecoverable crash)
+     *
+     * WHY: iace converts error message to PascalCase error name for Zig's error set.
+     *      Example: "invalid input" -> error.InvalidInput
      */
     function genThrowStatement(node: ThrowStatement): string {
+        // mori (fatal=true) -> @panic
+        if (node.fatal) {
+            return genPanicStatement(node.argument);
+        }
+
+        // iace (fatal=false) -> return error.X
+        return genErrorReturn(node.argument);
+    }
+
+    /**
+     * Generate @panic for fatal errors (mori).
+     */
+    function genPanicStatement(argument: Expression): string {
         // Handle string literals
-        if (node.argument.type === 'Literal' && typeof node.argument.value === 'string') {
-            return `${ind()}@panic("${node.argument.value}");`;
+        if (argument.type === 'Literal' && typeof argument.value === 'string') {
+            return `${ind()}@panic("${argument.value}");`;
         }
 
         // Handle new Error("msg") - extract message
-        if (node.argument.type === 'NewExpression' && node.argument.callee.name === 'Error' && node.argument.arguments.length > 0) {
-            const firstArg = node.argument.arguments[0]!;
-            const msg = firstArg.type !== 'SpreadElement' ? genExpression(firstArg) : genExpression(node.argument);
+        if (argument.type === 'NewExpression' && argument.callee.name === 'Error' && argument.arguments.length > 0) {
+            const firstArg = argument.arguments[0]!;
+            const msg = firstArg.type !== 'SpreadElement' ? genExpression(firstArg) : genExpression(argument);
             return `${ind()}@panic(${msg});`;
         }
 
         // Fallback
-        return `${ind()}@panic(${genExpression(node.argument)});`;
+        return `${ind()}@panic(${genExpression(argument)});`;
+    }
+
+    /**
+     * Generate return error.X for recoverable errors (iace).
+     *
+     * WHY: Zig error names must be valid identifiers. We convert string messages
+     *      to PascalCase error names. For complex expressions, use generic Error.
+     */
+    function genErrorReturn(argument: Expression): string {
+        // Handle string literals -> convert to error name
+        if (argument.type === 'Literal' && typeof argument.value === 'string') {
+            const errorName = stringToErrorName(argument.value);
+            return `${ind()}return error.${errorName};`;
+        }
+
+        // Handle new Error("msg") - extract message and convert
+        if (argument.type === 'NewExpression' && argument.callee.name === 'Error' && argument.arguments.length > 0) {
+            const firstArg = argument.arguments[0]!;
+            if (firstArg.type !== 'SpreadElement' && firstArg.type === 'Literal' && typeof firstArg.value === 'string') {
+                const errorName = stringToErrorName(firstArg.value);
+                return `${ind()}return error.${errorName};`;
+            }
+        }
+
+        // Handle identifier (already an error name)
+        if (argument.type === 'Identifier') {
+            const errorName = toPascalCase(argument.name);
+            return `${ind()}return error.${errorName};`;
+        }
+
+        // Fallback: use generic error
+        return `${ind()}return error.Error;`;
+    }
+
+    /**
+     * Convert an error message string to a valid Zig error name.
+     *
+     * WHY: Zig error names must be valid identifiers (PascalCase by convention).
+     *      We strip non-alphanumeric characters and convert to PascalCase.
+     *
+     * Examples:
+     *   "invalid input" -> InvalidInput
+     *   "timeout" -> Timeout
+     *   "404 not found" -> NotFound
+     */
+    function stringToErrorName(message: string): string {
+        // Remove non-alphanumeric, split on spaces/underscores/hyphens
+        const words = message
+            .replace(/[^a-zA-Z0-9\s_-]/g, '')
+            .split(/[\s_-]+/)
+            .filter(w => w.length > 0);
+
+        if (words.length === 0) {
+            return 'Error';
+        }
+
+        return words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join('');
+    }
+
+    /**
+     * Convert a string to PascalCase.
+     */
+    function toPascalCase(str: string): string {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     /**
@@ -2141,12 +2284,16 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate new expression.
      *
      * TRANSFORMS:
+     *   novum Foo -> Foo.init(.{})
      *   novum Foo(x, y) -> Foo.init(x, y)
      *   novum Foo { a: 1 } -> Foo.init(.{ .a = 1 })
      *   novum Foo de props -> Foo.init(props)
      *
      * TARGET: Zig doesn't have 'new' keyword. Idiomatic pattern is Type.init().
      *         Property overrides are passed as an anonymous struct.
+     *
+     * WHY: When no overrides are provided, we pass .{} (empty struct) so the
+     *      init() function's @hasField checks all return false, using defaults.
      */
     function genNewExpression(node: NewExpression): string {
         const callee = node.callee.name;
@@ -2157,12 +2304,17 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             return `${callee}.init(${overrides})`;
         }
 
-        // Regular constructor call
-        const args = node.arguments
-            .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
-            .map(genExpression)
-            .join(', ');
-        return `${callee}.init(${args})`;
+        // Regular constructor call with arguments
+        if (node.arguments.length > 0) {
+            const args = node.arguments
+                .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
+                .map(genExpression)
+                .join(', ');
+            return `${callee}.init(${args})`;
+        }
+
+        // No arguments and no overrides: pass empty struct for @hasField pattern
+        return `${callee}.init(.{})`;
     }
 
     return genProgram(program);

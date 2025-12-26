@@ -6,24 +6,24 @@ Zig and Rust share similar memory management concerns. Faber uses a **unified ap
 
 ## Implementation Status Summary
 
-| Category               | Status       | Notes                                                        |
-| ---------------------- | ------------ | ------------------------------------------------------------ |
-| Variables              | Done         | `var`/`const` with type inference                            |
-| Functions              | Done         | Parameters, return types, async stubs                        |
-| Control flow           | Done         | `if`, `while`, `for`, `switch`                               |
-| `genus`/struct         | Done         | Fields, methods, `init()` with `@hasField`                   |
-| `pactum`/interface     | Stub         | Emits doc comment only                                       |
-| `ego` → `self`         | Done         | Explicit self parameter                                      |
-| `novum .. de`          | Partial      | `@hasField` pattern, arity issues                            |
-| Lambdas                | Done         | Anonymous struct `.call` pattern                             |
-| Error handling         | Partial      | `mori` → `@panic`, `iace` → `@panic` (should be error union) |
-| Allocators             | Partial      | Arena preamble auto-emitted for collections                  |
-| `de`/`in` prepositions | Not started  | Design complete, not implemented                             |
-| Collections            | Partial      | Core methods implemented, functional methods stubbed         |
-| Comptime               | Not started  | No explicit comptime blocks                                  |
-| Slices                 | Partial      | Type mapping works, runtime building needs allocators        |
-| Tuples                 | Not started  | `series<A,B>` designed but not implemented                   |
-| Tagged unions          | Not designed | Critical gap for self-hosting                                |
+| Category               | Status       | Notes                                                  |
+| ---------------------- | ------------ | ------------------------------------------------------ |
+| Variables              | Done         | `var`/`const` with type inference                      |
+| Functions              | Done         | Parameters, return types, async stubs                  |
+| Control flow           | Done         | `if`, `while`, `for`, `switch`                         |
+| `genus`/struct         | Done         | Fields, methods, `init()` with `@hasField`             |
+| `pactum`/interface     | Stub         | Emits doc comment only                                 |
+| `ego` → `self`         | Done         | Explicit self parameter                                |
+| `novum .. de`          | Done         | `@hasField` pattern with `.{}` default                 |
+| Lambdas                | Done         | Anonymous struct `.call` pattern                       |
+| Error handling         | Done         | `mori` → `@panic`, `iace` → `return error.X` with `!T` |
+| Allocators             | Partial      | Arena preamble auto-emitted for collections            |
+| `de`/`in` prepositions | Not started  | Design complete, not implemented                       |
+| Collections            | Partial      | Core methods implemented, functional methods stubbed   |
+| Comptime               | Not started  | No explicit comptime blocks                            |
+| Slices                 | Partial      | Type mapping works, runtime building needs allocators  |
+| Tuples                 | Not started  | `series<A,B>` designed but not implemented             |
+| Tagged unions          | Not designed | Critical gap for self-hosting                          |
 
 **Exempla Status: 25/45 passing (56%)**
 
@@ -289,47 +289,57 @@ ex items pro x {
 
 ## Error Handling Design
 
-> **Status:** Partially implemented. `mori` works, `iace` does NOT generate proper error unions.
+> **Status:** Implemented. `iace` generates proper error unions, `mori` generates panic.
 
-| Keyword      | Meaning           | Current Output  | Should Be         |
-| ------------ | ----------------- | --------------- | ----------------- |
-| `iace`       | Recoverable error | `@panic("msg")` | `return error.X`  |
-| `mori`       | Fatal/panic       | `@panic("msg")` | `@panic("msg")` ✓ |
-| `fac`/`cape` | Error boundary    | Comment stub    | `catch \|err\|`   |
+| Keyword      | Meaning           | Output           | Status |
+| ------------ | ----------------- | ---------------- | ------ |
+| `iace`       | Recoverable error | `return error.X` | [x]    |
+| `mori`       | Fatal/panic       | `@panic("msg")`  | [x]    |
+| `fac`/`cape` | Error boundary    | Comment stub     | [ ]    |
 
-### Current Implementation (Broken)
+### iace (Recoverable Error)
+
+Functions containing `iace` automatically get error union return types (`!T`).
+Error messages are converted to PascalCase error names.
 
 ```fab
 functio fetch(textus url) -> textus {
-    si timeout { iace "timeout" }
+    si timeout { iace "connection timeout" }
     redde data
 }
 ```
 
-**Currently generates:**
+**Generates:**
 
 ```zig
-fn fetch(url: []const u8) []const u8 {
-    if (timeout) { @panic("timeout"); }  // WRONG - should be return error
+fn fetch(url: []const u8) ![]const u8 {
+    if (timeout) { return error.ConnectionTimeout; }
     return data;
 }
 ```
 
-**Should generate:**
+### mori (Fatal Panic)
+
+Fatal errors generate `@panic` without changing the function signature.
+
+```fab
+functio initialize() {
+    si nihil config { mori "config required" }
+}
+```
+
+**Generates:**
 
 ```zig
-fn fetch(url: []const u8) ![]const u8 {
-    if (timeout) { return error.Timeout; }
-    return data;
+fn initialize() void {
+    if (config == null) { @panic("config required"); }
 }
 ```
 
 ### What's Missing
 
-1. Functions containing `iace` should have `!T` return type
-2. `iace "message"` should become `return error.Message`
-3. Call sites should use `try` or `catch`
-4. `fac`/`cape` blocks need proper error handling codegen
+1. Call sites don't automatically use `try` for error-returning functions
+2. `fac`/`cape` blocks need proper `catch |err|` codegen
 
 ## Lambda Syntax
 
