@@ -68,6 +68,7 @@ newExpr := 'novum' IDENTIFIER ('(' argumentList ')')? (objectLiteral | 'de' expr
 > Two forms for property overrides:
 > - Inline literal: `novum Persona { nomen: "Marcus" }`
 > - From expression: `novum Persona de props` (props is variable/call/etc.)
+> 
 > The `de` (from) form allows dynamic overrides from variables or function results.
 
 ### Call
@@ -82,6 +83,7 @@ nonNullSuffix := '!.' IDENTIFIER | '![' expression ']' | '!(' argumentList ')'
 
 > Handles function calls, member access, and computed member access.
 > Left-associative via loop (obj.a.b parsed as (obj.a).b).
+> 
 > OPTIONAL CHAINING: ?. ?[ ?( return nihil if object is nihil
 > NON-NULL ASSERTION: !. ![ !( assert object is not nihil
 

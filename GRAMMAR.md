@@ -43,7 +43,8 @@ patternProperty := 'ceteri'? IDENTIFIER (':' IDENTIFIER)?
 { nomen, aetas }              // extract nomen and aetas
 { nomen: localName, aetas }   // rename nomen to localName
 { nomen, ceteri rest }        // extract nomen, collect rest
-NOT SUPPORTED (will produce parser errors):
+
+T SUPPORTED (will produce parser errors):
 { ...rest }    // JS spread syntax
 { *rest }      // Python unpack syntax
 { **rest }     // Python kwargs syntax
@@ -229,15 +230,18 @@ returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 > Arrow syntax for return types: "functio greet(textus name) -> textus"
 > 'futura' prefix marks async functions (future/promise-based).
 > 'cursor' prefix marks generator functions (yield-based).
+> 
 > TYPE PARAMETERS: 'prae typus T' declares compile-time type parameters.
 > functio max(prae typus T, T a, T b) -> T { ... }
 > Maps to: <T> (TS/Rust), TypeVar (Py), comptime T: type (Zig)
+> 
 > RETURN TYPE VERBS: Latin verb forms encode async/generator semantics directly:
 > '->'    neutral arrow (semantics from prefix only)
 > 'fit'   "it becomes" - sync, returns single value
 > 'fiet'  "it will become" - async, returns Promise<T>
 > 'fiunt' "they become" - sync generator, yields multiple values
 > 'fient' "they will become" - async generator, yields Promise values
+> 
 > When using verb forms, the futura/cursor prefix is NOT required - the verb
 > itself carries the semantic information. The prefix becomes redundant:
 > functio compute() -> numerus { ... }    // arrow: sync by default
@@ -245,7 +249,9 @@ returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 > functio fetch() fiet textus { ... }     // verb implies async (no futura needed)
 > functio items() fiunt numerus { ... }   // verb implies generator (no cursor needed)
 > functio stream() fient datum { ... }    // verb implies async generator
+> 
 > Prefix is still allowed for emphasis, but verb/prefix conflicts are errors.
+> 
 > NOT SUPPORTED (will produce parser errors):
 > - TS-style param annotation: functio f(x: textus) (use: functio f(textus x))
 > - TS-style return type: functio f(): textus (use: functio f() -> textus)
@@ -286,13 +292,16 @@ params := IDENTIFIER (',' IDENTIFIER)*
 > Latin 'pro' (for) creates lambda syntax with two equivalent forms:
 > - 'pro x redde expr' - explicit return keyword
 > - 'pro x: expr' - colon shorthand (mirrors object literal syntax)
+> 
 > The ':' and 'redde' forms are INTERCHANGEABLE - use whichever reads better:
 > pro x: x * 2        ≡  pro x redde x * 2      -> (x) => x * 2
 > pro: 42             ≡  pro redde 42           -> () => 42
 > pro x, y: x + y     ≡  pro x, y redde x + y   -> (x, y) => x + y
+> 
 > Block form (for multi-statement bodies):
 > pro x { redde x * 2 }     -> (x) => { return x * 2; }
 > pro { scribe "hi" }       -> () => { console.log("hi"); }
+> 
 > Style guidance: Use ':' for short expressions, 'redde' for clarity in complex cases.
 
 ---
@@ -331,7 +340,8 @@ arrayPatternElement := '_' | 'ceteri'? IDENTIFIER
 [a, b, c]                 // extract first three elements
 [first, ceteri rest]     // extract first, collect rest
 [_, second, _]           // skip first and third, extract second
-NOT SUPPORTED:
+
+T SUPPORTED:
 [...rest]                // JS spread syntax
 [*rest]                  // Python unpack syntax
 ```
@@ -369,13 +379,14 @@ variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
 
 ```fab
 discretio Event {
-Click { numerus x, numerus y }
-Keypress { textus key }
-Quit
+    Click { numerus x, numerus y }
+    Keypress { textus key }
+    Quit
 }
+
 discretio Option<T> {
-Some { T value }
-None
+    Some { T value }
+    None
 }
 ```
 
@@ -405,15 +416,19 @@ elseClause := ('aliter' | 'secus') (ifStmt | blockStmt | statement)
 
 > 'cape' (catch/seize) clause allows error handling within conditionals.
 > 'ergo' (therefore) for one-liner consequents.
+> 
 > TWO STYLE OPTIONS (both supported, can be mixed within the same chain):
+> 
 > Literal style: si / aliter si / aliter
 > si x > 0 { positive() }
 > aliter si x < 0 { negative() }
 > aliter { zero() }
+> 
 > Poetic style: si / sin / secus
 > si x > 0 { positive() }
 > sin x < 0 { negative() }    // "sin" = "but if" (classical Latin)
 > secus { zero() }            // "secus" = "otherwise"
+> 
 > Keywords are interchangeable at each branch point:
 > - 'aliter si' ≡ 'sin' (else-if)
 > - 'aliter' ≡ 'secus' (else)
@@ -454,6 +469,7 @@ destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') objectPattern
 > - Iteration: ex items pro item { ... } (for each item from items)
 > - Destructuring: ex response fixum { data } (extract data from response)
 > - Async destructuring: ex promise figendum { result } (await + extract)
+> 
 > The binding keywords encode mutability and async semantics:
 > - fixum: immutable binding (const)
 > - varia: mutable binding (let)
@@ -512,12 +528,14 @@ defaultCase := ('aliter' | 'secus') (blockStmt | statement)
 
 > 'elige' (choose) for switch, 'si' (if) for value cases, 'ex' (from) for variant cases,
 > 'ergo' (therefore) for one-liners, 'aliter'/'secus' (otherwise) for default.
+> 
 > Examples (value matching):
 > elige status {
 > si "pending" ergo scribe("waiting")
 > si "active" { processActive() }
 > aliter iace "Unknown status"
 > }
+> 
 > Examples (variant matching):
 > elige event {
 > ex Click pro x, y { scribe x + ", " + y }
@@ -538,8 +556,8 @@ guardClause := 'si' expression blockStmt
 
 ```fab
 custodi {
-si user == nihil { redde nihil }
-si useri age < 0 { iace "Invalid age" }
+    si user == nihil { redde nihil }
+    si useri age < 0 { iace "Invalid age" }
 }
 ```
 
@@ -615,8 +633,8 @@ probandumBody := (curaBlock | probandumDecl | probaStmt)*
 
 ```fab
 probandum "Tokenizer" {
-cura ante { lexer = init() }
-proba "parses numbers" { ... }
+    cura ante { lexer = init() }
+    proba "parses numbers" { ... }
 }
 ```
 
@@ -734,6 +752,7 @@ praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
 > Latin 'praefixum' (pre-fixed) extends fixum vocabulary.
 > Block form: praefixum { ... } for multi-statement computation
 > Expression form: praefixum(expr) for simple expressions
+> 
 > TARGET SUPPORT:
 > Zig:    comptime { } or comptime (expr)
 > C++:    constexpr
@@ -745,9 +764,9 @@ praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
 ```fab
 fixum size = praefixum(256 * 4)
 fixum table = praefixum {
-varia result = []
-ex 0..10 pro i { result.adde(i * i) }
-redde result
+    varia result = []
+    ex 0..10 pro i { result.adde(i * i) }
+    redde result
 }
 ```
 
@@ -883,6 +902,7 @@ newExpr := 'novum' IDENTIFIER ('(' argumentList ')')? (objectLiteral | 'de' expr
 > Two forms for property overrides:
 > - Inline literal: `novum Persona { nomen: "Marcus" }`
 > - From expression: `novum Persona de props` (props is variable/call/etc.)
+> 
 > The `de` (from) form allows dynamic overrides from variables or function results.
 
 ### Call
@@ -897,6 +917,7 @@ nonNullSuffix := '!.' IDENTIFIER | '![' expression ']' | '!(' argumentList ')'
 
 > Handles function calls, member access, and computed member access.
 > Left-associative via loop (obj.a.b parsed as (obj.a).b).
+> 
 > OPTIONAL CHAINING: ?. ?[ ?( return nihil if object is nihil
 > NON-NULL ASSERTION: !. ![ !( assert object is not nihil
 

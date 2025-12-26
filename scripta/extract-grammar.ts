@@ -136,6 +136,29 @@ interface GrammarBlock {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Remove common leading whitespace from lines.
+ */
+function dedent(lines: string[]): string[] {
+    // Find minimum indent of non-empty lines
+    let minIndent = Infinity;
+    for (const line of lines) {
+        if (line.trim() === '') continue;
+        const match = line.match(/^(\s*)/);
+        if (match?.[1]) {
+            minIndent = Math.min(minIndent, match[1].length);
+        }
+    }
+    if (minIndent === Infinity || minIndent === 0) return lines;
+
+    // Strip the common indent
+    return lines.map(line => (line.trim() === '' ? '' : line.slice(minIndent)));
+}
+
+// ---------------------------------------------------------------------------
 // Extraction
 // ---------------------------------------------------------------------------
 
@@ -168,7 +191,17 @@ function parseGrammarBlock(comment: string, functionName: string | undefined): G
     if (!jsdocMatch?.[1]) return null;
 
     const jsdocContent = jsdocMatch[1];
-    const lines = jsdocContent.split('\n').map(l => l.replace(/^\s*\*\s?/, '').trim());
+    // WHY: Preserve leading whitespace for indented content (lists, code blocks)
+    // Only strip the JSDoc line prefix (* ), not trailing content
+    const lines: string[] = jsdocContent.split('\n').map(l => {
+        // Remove leading whitespace + asterisk + optional single space
+        const match = l.match(/^\s*\*( ?)(.*)/);
+        if (match?.[2] !== undefined) {
+            // match[2] is the content after the asterisk
+            return match[2];
+        }
+        return l.trim();
+    });
 
     const grammar: string[] = [];
     const why: string[] = [];
@@ -177,48 +210,56 @@ function parseGrammarBlock(comment: string, functionName: string | undefined): G
     let section: 'none' | 'grammar' | 'why' | 'examples' = 'none';
 
     for (const line of lines) {
+        const trimmed = line.trim();
+
         // End of comment or start of new section terminates current section
-        if (line.startsWith('GRAMMAR:')) {
+        if (trimmed.startsWith('GRAMMAR:')) {
             section = 'grammar';
             continue;
         }
-        if (line.startsWith('WHY:')) {
+        if (trimmed.startsWith('WHY:')) {
             section = 'why';
-            why.push(line.substring(4).trim());
+            why.push(trimmed.substring(4).trim());
             continue;
         }
-        if (line.startsWith('Examples:') || line.startsWith('Example:')) {
+        if (trimmed.startsWith('Examples:') || trimmed.startsWith('Example:')) {
             section = 'examples';
             continue;
         }
         // These tags end the current section
         if (
-            line.startsWith('EDGE:') ||
-            line.startsWith('ERROR') ||
-            line.startsWith('PRECEDENCE:') ||
-            line.startsWith('INVARIANT:') ||
-            line.startsWith('@') ||
-            line.startsWith('/')
+            trimmed.startsWith('EDGE:') ||
+            trimmed.startsWith('ERROR') ||
+            trimmed.startsWith('PRECEDENCE:') ||
+            trimmed.startsWith('INVARIANT:') ||
+            trimmed.startsWith('@') ||
+            trimmed.startsWith('/')
         ) {
             section = 'none';
             continue;
         }
         // Blank line ends grammar section (but not why/examples which can be multi-paragraph)
-        if (line === '') {
+        if (trimmed === '') {
             if (section === 'grammar' && grammar.length > 0) section = 'none';
+            // Preserve blank lines in why/examples sections
+            if (section === 'why') why.push('');
+            if (section === 'examples') examples.push('');
             continue;
         }
 
         switch (section) {
             case 'grammar':
-                grammar.push(line);
+                grammar.push(trimmed);
                 break;
             case 'why':
-                why.push(line);
+                // WHY: Trim WHY content since it's rendered as blockquotes
+                // JSDoc continuation indentation looks odd in markdown
+                why.push(trimmed);
                 break;
             case 'examples':
                 // Stop at function declarations leaking in
-                if (line.startsWith('function ')) break;
+                if (trimmed.startsWith('function ')) break;
+                // WHY: Preserve indentation for code examples
                 examples.push(line);
                 break;
         }
@@ -228,7 +269,14 @@ function parseGrammarBlock(comment: string, functionName: string | undefined): G
 
     const category = CATEGORY_MAP[functionName] || 'regimen';
 
-    return { functionName, grammar, why, examples, category };
+    // WHY: Trim trailing blank lines from why/examples arrays
+    while (why.length > 0 && why[why.length - 1] === '') why.pop();
+    while (examples.length > 0 && examples[examples.length - 1] === '') examples.pop();
+
+    // WHY: Dedent examples by removing common leading whitespace
+    const dedentedExamples = dedent(examples);
+
+    return { functionName, grammar, why, examples: dedentedExamples, category };
 }
 
 // ---------------------------------------------------------------------------

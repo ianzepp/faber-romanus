@@ -22,15 +22,18 @@ returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 > Arrow syntax for return types: "functio greet(textus name) -> textus"
 > 'futura' prefix marks async functions (future/promise-based).
 > 'cursor' prefix marks generator functions (yield-based).
+> 
 > TYPE PARAMETERS: 'prae typus T' declares compile-time type parameters.
 > functio max(prae typus T, T a, T b) -> T { ... }
 > Maps to: <T> (TS/Rust), TypeVar (Py), comptime T: type (Zig)
+> 
 > RETURN TYPE VERBS: Latin verb forms encode async/generator semantics directly:
 > '->'    neutral arrow (semantics from prefix only)
 > 'fit'   "it becomes" - sync, returns single value
 > 'fiet'  "it will become" - async, returns Promise<T>
 > 'fiunt' "they become" - sync generator, yields multiple values
 > 'fient' "they will become" - async generator, yields Promise values
+> 
 > When using verb forms, the futura/cursor prefix is NOT required - the verb
 > itself carries the semantic information. The prefix becomes redundant:
 > functio compute() -> numerus { ... }    // arrow: sync by default
@@ -38,7 +41,9 @@ returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 > functio fetch() fiet textus { ... }     // verb implies async (no futura needed)
 > functio items() fiunt numerus { ... }   // verb implies generator (no cursor needed)
 > functio stream() fient datum { ... }    // verb implies async generator
+> 
 > Prefix is still allowed for emphasis, but verb/prefix conflicts are errors.
+> 
 > NOT SUPPORTED (will produce parser errors):
 > - TS-style param annotation: functio f(x: textus) (use: functio f(textus x))
 > - TS-style return type: functio f(): textus (use: functio f() -> textus)
@@ -79,13 +84,16 @@ params := IDENTIFIER (',' IDENTIFIER)*
 > Latin 'pro' (for) creates lambda syntax with two equivalent forms:
 > - 'pro x redde expr' - explicit return keyword
 > - 'pro x: expr' - colon shorthand (mirrors object literal syntax)
+> 
 > The ':' and 'redde' forms are INTERCHANGEABLE - use whichever reads better:
 > pro x: x * 2        ≡  pro x redde x * 2      -> (x) => x * 2
 > pro: 42             ≡  pro redde 42           -> () => 42
 > pro x, y: x + y     ≡  pro x, y redde x + y   -> (x, y) => x + y
+> 
 > Block form (for multi-statement bodies):
 > pro x { redde x * 2 }     -> (x) => { return x * 2; }
 > pro { scribe "hi" }       -> () => { console.log("hi"); }
+> 
 > Style guidance: Use ':' for short expressions, 'redde' for clarity in complex cases.
 
 ---

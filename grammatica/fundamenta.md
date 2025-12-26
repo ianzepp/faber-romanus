@@ -32,7 +32,8 @@ patternProperty := 'ceteri'? IDENTIFIER (':' IDENTIFIER)?
 { nomen, aetas }              // extract nomen and aetas
 { nomen: localName, aetas }   // rename nomen to localName
 { nomen, ceteri rest }        // extract nomen, collect rest
-NOT SUPPORTED (will produce parser errors):
+
+T SUPPORTED (will produce parser errors):
 { ...rest }    // JS spread syntax
 { *rest }      // Python unpack syntax
 { **rest }     // Python kwargs syntax

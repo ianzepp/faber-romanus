@@ -38,7 +38,8 @@ arrayPatternElement := '_' | 'ceteri'? IDENTIFIER
 [a, b, c]                 // extract first three elements
 [first, ceteri rest]     // extract first, collect rest
 [_, second, _]           // skip first and third, extract second
-NOT SUPPORTED:
+
+T SUPPORTED:
 [...rest]                // JS spread syntax
 [*rest]                  // Python unpack syntax
 ```
@@ -76,13 +77,14 @@ variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
 
 ```fab
 discretio Event {
-Click { numerus x, numerus y }
-Keypress { textus key }
-Quit
+    Click { numerus x, numerus y }
+    Keypress { textus key }
+    Quit
 }
+
 discretio Option<T> {
-Some { T value }
-None
+    Some { T value }
+    None
 }
 ```
 
@@ -112,15 +114,19 @@ elseClause := ('aliter' | 'secus') (ifStmt | blockStmt | statement)
 
 > 'cape' (catch/seize) clause allows error handling within conditionals.
 > 'ergo' (therefore) for one-liner consequents.
+> 
 > TWO STYLE OPTIONS (both supported, can be mixed within the same chain):
+> 
 > Literal style: si / aliter si / aliter
 > si x > 0 { positive() }
 > aliter si x < 0 { negative() }
 > aliter { zero() }
+> 
 > Poetic style: si / sin / secus
 > si x > 0 { positive() }
 > sin x < 0 { negative() }    // "sin" = "but if" (classical Latin)
 > secus { zero() }            // "secus" = "otherwise"
+> 
 > Keywords are interchangeable at each branch point:
 > - 'aliter si' ≡ 'sin' (else-if)
 > - 'aliter' ≡ 'secus' (else)
@@ -161,6 +167,7 @@ destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') objectPattern
 > - Iteration: ex items pro item { ... } (for each item from items)
 > - Destructuring: ex response fixum { data } (extract data from response)
 > - Async destructuring: ex promise figendum { result } (await + extract)
+> 
 > The binding keywords encode mutability and async semantics:
 > - fixum: immutable binding (const)
 > - varia: mutable binding (let)
@@ -219,12 +226,14 @@ defaultCase := ('aliter' | 'secus') (blockStmt | statement)
 
 > 'elige' (choose) for switch, 'si' (if) for value cases, 'ex' (from) for variant cases,
 > 'ergo' (therefore) for one-liners, 'aliter'/'secus' (otherwise) for default.
+> 
 > Examples (value matching):
 > elige status {
 > si "pending" ergo scribe("waiting")
 > si "active" { processActive() }
 > aliter iace "Unknown status"
 > }
+> 
 > Examples (variant matching):
 > elige event {
 > ex Click pro x, y { scribe x + ", " + y }
@@ -245,8 +254,8 @@ guardClause := 'si' expression blockStmt
 
 ```fab
 custodi {
-si user == nihil { redde nihil }
-si useri age < 0 { iace "Invalid age" }
+    si user == nihil { redde nihil }
+    si useri age < 0 { iace "Invalid age" }
 }
 ```
 
@@ -322,8 +331,8 @@ probandumBody := (curaBlock | probandumDecl | probaStmt)*
 
 ```fab
 probandum "Tokenizer" {
-cura ante { lexer = init() }
-proba "parses numbers" { ... }
+    cura ante { lexer = init() }
+    proba "parses numbers" { ... }
 }
 ```
 
@@ -441,6 +450,7 @@ praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
 > Latin 'praefixum' (pre-fixed) extends fixum vocabulary.
 > Block form: praefixum { ... } for multi-statement computation
 > Expression form: praefixum(expr) for simple expressions
+> 
 > TARGET SUPPORT:
 > Zig:    comptime { } or comptime (expr)
 > C++:    constexpr
@@ -452,9 +462,9 @@ praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
 ```fab
 fixum size = praefixum(256 * 4)
 fixum table = praefixum {
-varia result = []
-ex 0..10 pro i { result.adde(i * i) }
-redde result
+    varia result = []
+    ex 0..10 pro i { result.adde(i * i) }
+    redde result
 }
 ```
 
