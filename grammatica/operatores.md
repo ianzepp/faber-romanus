@@ -64,7 +64,7 @@ equality := comparison (('==' | '!=' | 'est' | 'non' 'est') comparison)*
 ### Comparison
 
 ```ebnf
-comparison := range (('<' | '>' | '<=' | '>=') range)*
+comparison := bitwiseOr (('<' | '>' | '<=' | '>=') bitwiseOr)*
 ```
 
 ### Range

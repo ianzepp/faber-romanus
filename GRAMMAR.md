@@ -162,7 +162,7 @@ equality := comparison (('==' | '!=' | 'est' | 'non' 'est') comparison)*
 ### Comparison
 
 ```ebnf
-comparison := range (('<' | '>' | '<=' | '>=') range)*
+comparison := bitwiseOr (('<' | '>' | '<=' | '>=') bitwiseOr)*
 ```
 
 ### Range
@@ -632,6 +632,33 @@ expression := assignment
 ```
 
 > Top-level expression delegates to assignment (lowest precedence).
+
+### Bitwise Or
+
+```ebnf
+bitwiseOr := bitwiseXor ('|' bitwiseXor)*
+```
+
+> Bitwise precedence is above comparison (unlike C), so
+> `flags & MASK == 0` parses as `(flags & MASK) == 0`.
+
+### Bitwise Xor
+
+```ebnf
+bitwiseXor := bitwiseAnd ('^' bitwiseAnd)*
+```
+
+### Bitwise And
+
+```ebnf
+bitwiseAnd := shift ('&' shift)*
+```
+
+### Shift
+
+```ebnf
+shift := range (('<<' | '>>') range)*
+```
 
 ### Praefixum Expression
 
