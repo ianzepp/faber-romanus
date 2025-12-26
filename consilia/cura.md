@@ -1,5 +1,20 @@
 # Cura - Resource Management
 
+## Implementation Status
+
+| Feature                | Status   | Notes                       |
+| ---------------------- | -------- | --------------------------- |
+| `cura ... fit` syntax  | Done     | Parser + AST                |
+| `cura cede` async      | Done     | Async resource acquisition  |
+| `cura ... cape` errors | Done     | Optional catch clause       |
+| TypeScript codegen     | Done     | try/finally with solve?.()  |
+| `curator` interface    | Not Done | Semantic validation         |
+| `solve` method check   | Not Done | Type system integration     |
+| Built-in curators      | Not Done | File, socket, etc. (stdlib) |
+| Python codegen         | Not Done | with statement              |
+| Rust codegen           | Not Done | RAII / Drop                 |
+| Zig codegen            | Not Done | defer                       |
+
 ## Overview
 
 Automatic resource cleanup via scoped ownership. Any resource that needs cleanup — file handles, database connections, network sockets, locks — can be managed with `cura`.
@@ -132,14 +147,14 @@ pactum curator {
 
 ### Built-in Curators
 
-| Type | `solve` action |
-|------|----------------|
-| File descriptor | Close file |
-| DB connection | Disconnect |
-| Transaction | Rollback (if not committed) |
-| Socket | Close connection |
-| Lock | Release lock |
-| Arena/allocator | Free memory |
+| Type            | `solve` action              |
+| --------------- | --------------------------- |
+| File descriptor | Close file                  |
+| DB connection   | Disconnect                  |
+| Transaction     | Rollback (if not committed) |
+| Socket          | Close connection            |
+| Lock            | Release lock                |
+| Arena/allocator | Free memory                 |
 
 ### Custom Curator
 
@@ -182,7 +197,7 @@ Cleanup is always sync (no `cede` in `solve`). Async cleanup would complicate th
 Uses explicit try/finally:
 
 ```typescript
-const fd = await open("data.bin");
+const fd = await open('data.bin');
 try {
     const data = await read(fd, 1024);
     process(data);
@@ -194,7 +209,7 @@ try {
 Or with `using` (Stage 3 proposal / TypeScript 5.2+):
 
 ```typescript
-await using fd = await open("data.bin");
+await using fd = await open('data.bin');
 const data = await read(fd, 1024);
 process(data);
 // auto-disposed
@@ -252,6 +267,7 @@ process(data);
 ### Why `solve` for cleanup?
 
 `solve` means "release, free" — fitting for releasing resources. Alternatives considered:
+
 - `claude` — already used for file close
 - `purga` — "clean" feels like scrubbing, not releasing
 - `libera` — "free" works but `solve` is shorter
@@ -263,6 +279,7 @@ The `curator` interface allows any type to be managed with `cura`. This is more 
 ### Why sync-only cleanup?
 
 Async cleanup creates ordering problems:
+
 - What if cleanup awaits something that fails?
 - Nested async cleanup order is undefined
 - Most resources have sync close anyway
@@ -272,19 +289,3 @@ If async cleanup is truly needed, do it explicitly before scope exit.
 ### Error during cleanup?
 
 If `solve()` fails, the error propagates. The resource may be in an undefined state. This matches Rust's Drop behavior (panics on drop failure are usually fatal).
-
----
-
-## Implementation Status
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `cura` keyword | Not Done | Parser support |
-| `curator` interface | Not Done | Semantic analysis |
-| `solve` method | Not Done | Codegen |
-| Built-in curators | Not Done | File, socket, etc. |
-| Error handling | Not Done | cape integration |
-| TypeScript codegen | Not Done | try/finally or using |
-| Python codegen | Not Done | with statement |
-| Rust codegen | Not Done | RAII / Drop |
-| Zig codegen | Not Done | defer |

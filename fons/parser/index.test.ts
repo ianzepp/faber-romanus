@@ -2826,5 +2826,90 @@ describe('parser', () => {
                 expect(fn.name.name).toBe('post');
             });
         });
+
+        describe('cura statement (resource management)', () => {
+            test('simple cura fit', () => {
+                const { program } = parseCode('cura aperi("file.txt") fit fd { lege(fd) }');
+                const stmt = program!.body[0] as any;
+
+                expect(stmt.type).toBe('CuraStatement');
+                expect(stmt.resource.type).toBe('CallExpression');
+                expect(stmt.resource.callee.name).toBe('aperi');
+                expect(stmt.binding.name).toBe('fd');
+                expect(stmt.async).toBe(false);
+                expect(stmt.body.type).toBe('BlockStatement');
+                expect(stmt.catchClause).toBeUndefined();
+            });
+
+            test('cura with async acquisition', () => {
+                const { program } = parseCode('cura cede connect(url) fit conn { cede query(conn) }');
+                const stmt = program!.body[0] as any;
+
+                expect(stmt.type).toBe('CuraStatement');
+                expect(stmt.async).toBe(true);
+                expect(stmt.resource.callee.name).toBe('connect');
+                expect(stmt.binding.name).toBe('conn');
+            });
+
+            test('cura with cape (catch)', () => {
+                const { program } = parseCode('cura lock() fit guard { work() } cape err { mone(err) }');
+                const stmt = program!.body[0] as any;
+
+                expect(stmt.type).toBe('CuraStatement');
+                expect(stmt.catchClause).not.toBeUndefined();
+                expect(stmt.catchClause.param.name).toBe('err');
+            });
+
+            test('cura with method call resource', () => {
+                const { program } = parseCode('cura mutex.lock() fit guard { counter = counter + 1 }');
+                const stmt = program!.body[0] as any;
+
+                expect(stmt.type).toBe('CuraStatement');
+                expect(stmt.resource.type).toBe('CallExpression');
+                expect(stmt.resource.callee.type).toBe('MemberExpression');
+            });
+
+            test('nested cura statements', () => {
+                const { program } = parseCode(`
+                    cura aperi("input.txt") fit input {
+                        cura aperi("output.txt") fit output {
+                            copy(input, output)
+                        }
+                    }
+                `);
+                const outer = program!.body[0] as any;
+                const inner = outer.body.body[0] as any;
+
+                expect(outer.type).toBe('CuraStatement');
+                expect(outer.binding.name).toBe('input');
+                expect(inner.type).toBe('CuraStatement');
+                expect(inner.binding.name).toBe('output');
+            });
+
+            test('cura with async and cape', () => {
+                const { program } = parseCode(`
+                    cura cede connect(db_url) fit conn {
+                        cede conn.query(sql)
+                    } cape err {
+                        scribe "Error:", err
+                    }
+                `);
+                const stmt = program!.body[0] as any;
+
+                expect(stmt.type).toBe('CuraStatement');
+                expect(stmt.async).toBe(true);
+                expect(stmt.catchClause).not.toBeUndefined();
+            });
+
+            test('distinguishes cura ante (test) from cura fit (resource)', () => {
+                const { program } = parseCode(`
+                    cura ante { setup() }
+                    cura resource() fit r { use(r) }
+                `);
+
+                expect(program!.body[0].type).toBe('CuraBlock');
+                expect(program!.body[1].type).toBe('CuraStatement');
+            });
+        });
     });
 });

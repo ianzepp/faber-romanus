@@ -556,7 +556,7 @@ proba futurum "needs async support" { ... }
 curaBlock := 'cura' ('ante' | 'post') 'omnia'? blockStmt
 ```
 
-> Latin "cura" (care, concern) for resource management.
+> Latin "cura" (care, concern) for test resource management.
 > In test context:
 > cura ante { } = beforeEach (care before each test)
 > cura ante omnia { } = beforeAll (care before all tests)
@@ -570,6 +570,24 @@ cura ante { lexer = init() }
 cura ante omnia { db = connect() }
 cura post { cleanup() }
 cura post omnia { db.close() }
+```
+
+### Cura Statement
+
+```ebnf
+curaStmt := 'cura' 'cede'? expression 'fit' IDENTIFIER blockStmt catchClause?
+```
+
+> Latin "cura" (care) + "fit" (it becomes) for scoped resources.
+> Reads as: "Care for [resource] as [name] { use it }"
+> Guarantees cleanup via solve() on scope exit.
+
+**Examples:**
+
+```fab
+cura aperi("data.bin") fit fd { lege(fd) }
+cura cede connect(url) fit conn { cede conn.query(sql) }
+cura mutex.lock() fit guard { counter += 1 } cape err { mone(err) }
 ```
 
 ### Block Statement

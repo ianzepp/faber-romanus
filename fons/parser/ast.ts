@@ -104,7 +104,8 @@ export type Statement =
     | FacBlockStatement
     | ProbandumStatement
     | ProbaStatement
-    | CuraBlock;
+    | CuraBlock
+    | CuraStatement;
 
 // ---------------------------------------------------------------------------
 // Import/Export Declarations
@@ -950,6 +951,42 @@ export interface CuraBlock extends BaseNode {
     timing: CuraTiming;
     omnia: boolean;
     body: BlockStatement;
+}
+
+/**
+ * Resource management statement.
+ *
+ * GRAMMAR (in EBNF):
+ *   curaStmt := 'cura' 'cede'? expression 'fit' IDENTIFIER blockStmt catchClause?
+ *
+ * INVARIANT: resource is the acquisition expression.
+ * INVARIANT: binding is the identifier that receives the resource.
+ * INVARIANT: async flag indicates whether acquisition uses cede (await).
+ * INVARIANT: body is the scoped block where resource is used.
+ * INVARIANT: catchClause is optional error handling.
+ *
+ * WHY: Latin "cura" (care, concern) + "fit" (it becomes) for scoped resources.
+ *      Reads as: "Care for [resource] as [name] { use it }"
+ *      Guarantees cleanup via solve() on scope exit.
+ *
+ * Target mappings:
+ *   TypeScript: try { } finally { binding.solve?.(); }
+ *   Python:     with expr as binding: ...
+ *   Zig:        defer binding.solve();
+ *   Rust:       RAII / Drop at scope end
+ *
+ * Examples:
+ *   cura aperi("data.bin") fit fd { lege(fd) }
+ *   cura cede connect(url) fit conn { cede conn.query(sql) }
+ *   cura mutex.lock() fit guard { counter += 1 } cape err { mone(err) }
+ */
+export interface CuraStatement extends BaseNode {
+    type: 'CuraStatement';
+    resource: Expression;
+    binding: Identifier;
+    async: boolean;
+    body: BlockStatement;
+    catchClause?: CatchClause;
 }
 
 /**

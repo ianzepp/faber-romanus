@@ -2654,4 +2654,84 @@ describe('codegen', () => {
             });
         });
     });
+
+    describe('cura statement - resource management codegen', () => {
+        test('simple cura fit -> try/finally', () => {
+            const js = compile('cura aperi("file.txt") fit fd { lege(fd) }');
+
+            expect(js).toContain('const fd = aperi("file.txt")');
+            expect(js).toContain('try {');
+            expect(js).toContain('lege(fd)');
+            expect(js).toContain('finally {');
+            expect(js).toContain('fd.solve?.()');
+        });
+
+        test('cura with async acquisition', () => {
+            const js = compile('cura cede connect(url) fit conn { query(conn) }');
+
+            expect(js).toContain('const conn = await connect(url)');
+            expect(js).toContain('try {');
+            expect(js).toContain('finally {');
+            expect(js).toContain('conn.solve?.()');
+        });
+
+        test('cura with cape -> try/catch/finally', () => {
+            const js = compile('cura lock() fit guard { work() } cape err { mone(err) }');
+
+            expect(js).toContain('const guard = lock()');
+            expect(js).toContain('try {');
+            expect(js).toContain('work()');
+            expect(js).toContain('catch (err) {');
+            expect(js).toContain('console.warn(err)');
+            expect(js).toContain('finally {');
+            expect(js).toContain('guard.solve?.()');
+        });
+
+        test('cura with method call resource', () => {
+            const js = compile('cura mutex.lock() fit guard { counter = counter + 1 }');
+
+            expect(js).toContain('const guard = mutex.lock()');
+            expect(js).toContain('guard.solve?.()');
+        });
+
+        test('nested cura statements', () => {
+            const js = compile(`
+                cura aperi("input.txt") fit input {
+                    cura aperi("output.txt") fit output {
+                        copy(input, output)
+                    }
+                }
+            `);
+
+            expect(js).toContain('const input = aperi("input.txt")');
+            expect(js).toContain('const output = aperi("output.txt")');
+            expect(js).toContain('input.solve?.()');
+            expect(js).toContain('output.solve?.()');
+        });
+
+        test('cura with async and cape', () => {
+            const js = compile(`
+                cura cede connect(db_url) fit conn {
+                    cede conn.query(sql)
+                } cape err {
+                    scribe "Error:", err
+                }
+            `);
+
+            expect(js).toContain('const conn = await connect(db_url)');
+            expect(js).toContain('await conn.query(sql)');
+            expect(js).toContain('catch (err) {');
+            expect(js).toContain('console.log("Error:", err)');
+            expect(js).toContain('finally {');
+            expect(js).toContain('conn.solve?.()');
+        });
+
+        test('cura emits block scope', () => {
+            const js = compile('cura resource() fit r { use(r) }');
+
+            // Should start and end with block braces for scoping
+            expect(js.trim().startsWith('{')).toBe(true);
+            expect(js.trim().endsWith('}')).toBe(true);
+        });
+    });
 });

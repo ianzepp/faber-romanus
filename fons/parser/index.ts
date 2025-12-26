@@ -131,6 +131,7 @@ import type {
     ProbaModifier,
     CuraBlock,
     CuraTiming,
+    CuraStatement,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
 import { ParserErrorCode, PARSER_ERRORS } from './errors';
@@ -652,9 +653,12 @@ export function parse(tokens: Token[]): ParserResult {
             return parseProbaStatement();
         }
 
-        // Resource management / test setup-teardown: cura ante/post [omnia]? { }
+        // Resource management / test setup-teardown
+        // Two forms:
+        //   cura ante/post [omnia]? { } - test setup/teardown (CuraBlock)
+        //   cura [cede]? <expr> fit <id> { } [cape]? - resource management (CuraStatement)
         if (checkKeyword('cura')) {
-            return parseCuraBlock();
+            return parseCura();
         }
 
         if (check('LBRACE')) {
@@ -2273,12 +2277,39 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
-     * Parse cura block (resource management / test setup-teardown).
+     * Parse cura - dispatches to block (test) or statement (resource) form.
+     *
+     * Two forms:
+     *   cura ante/post [omnia]? { } - test setup/teardown (CuraBlock)
+     *   cura [cede]? <expr> fit <id> { } [cape]? - resource management (CuraStatement)
+     *
+     * WHY: 'cura' is unified keyword for resource management.
+     *      Test form uses ante/post timing modifiers.
+     *      Resource form uses 'fit' binding syntax.
+     */
+    function parseCura(): CuraBlock | CuraStatement {
+        // Lookahead to determine which form
+        // cura ante ... or cura post ... -> CuraBlock (test)
+        // cura <anything else> -> CuraStatement (resource)
+        if (checkKeyword('cura')) {
+            const next = peek(1);
+            if (next.keyword === 'ante' || (next.type === 'IDENTIFIER' && next.value === 'post')) {
+                return parseCuraBlock();
+            }
+            return parseCuraStatement();
+        }
+
+        // Should not reach here, but handle gracefully
+        return parseCuraStatement();
+    }
+
+    /**
+     * Parse cura block (test setup-teardown).
      *
      * GRAMMAR:
      *   curaBlock := 'cura' ('ante' | 'post') 'omnia'? blockStmt
      *
-     * WHY: Latin "cura" (care, concern) for resource management.
+     * WHY: Latin "cura" (care, concern) for test resource management.
      *      In test context:
      *        cura ante { } = beforeEach (care before each test)
      *        cura ante omnia { } = beforeAll (care before all tests)
@@ -2316,6 +2347,50 @@ export function parse(tokens: Token[]): ParserResult {
         const body = parseBlockStatement();
 
         return { type: 'CuraBlock', timing, omnia, body, position };
+    }
+
+    /**
+     * Parse cura statement (resource management).
+     *
+     * GRAMMAR:
+     *   curaStmt := 'cura' 'cede'? expression 'fit' IDENTIFIER blockStmt catchClause?
+     *
+     * WHY: Latin "cura" (care) + "fit" (it becomes) for scoped resources.
+     *      Reads as: "Care for [resource] as [name] { use it }"
+     *      Guarantees cleanup via solve() on scope exit.
+     *
+     * Examples:
+     *   cura aperi("data.bin") fit fd { lege(fd) }
+     *   cura cede connect(url) fit conn { cede conn.query(sql) }
+     *   cura mutex.lock() fit guard { counter += 1 } cape err { mone(err) }
+     */
+    function parseCuraStatement(): CuraStatement {
+        const position = peek().position;
+
+        expectKeyword('cura', ParserErrorCode.ExpectedKeywordCura);
+
+        // Check for async acquisition: cura cede <expr>
+        const async = matchKeyword('cede');
+
+        // Parse resource acquisition expression
+        const resource = parseExpression();
+
+        // Expect 'fit' keyword for binding
+        expectKeyword('fit', ParserErrorCode.ExpectedKeywordFit);
+
+        // Parse binding identifier
+        const binding = parseIdentifier();
+
+        // Parse body block
+        const body = parseBlockStatement();
+
+        // Optional catch clause
+        let catchClause: CatchClause | undefined;
+        if (checkKeyword('cape')) {
+            catchClause = parseCatchClause();
+        }
+
+        return { type: 'CuraStatement', resource, binding, async, body, catchClause, position };
     }
 
     /**

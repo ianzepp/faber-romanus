@@ -92,6 +92,7 @@ import type {
     ProbandumStatement,
     ProbaStatement,
     CuraBlock,
+    CuraStatement,
 } from '../../parser/ast';
 import type { CodegenOptions, RequiredFeatures } from '../types';
 import { createRequiredFeatures } from '../types';
@@ -283,6 +284,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genProbaStatement(node);
             case 'CuraBlock':
                 return genCuraBlock(node);
+            case 'CuraStatement':
+                return genCuraStatement(node);
             default:
                 throw new Error(`Unknown statement type: ${(node as any).type}`);
         }
@@ -1229,6 +1232,66 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
         const body = genBlockStatement(node.body);
         return `${ind()}${hook}(() => ${body})${semi ? ';' : ''}`;
+    }
+
+    /**
+     * Generate cura statement (resource management).
+     *
+     * TRANSFORMS:
+     *   cura aperi("file.txt") fit fd { lege(fd) }
+     *   -> {
+     *        const fd = aperi("file.txt");
+     *        try {
+     *          lege(fd);
+     *        } finally {
+     *          fd.solve?.();
+     *        }
+     *      }
+     *
+     *   cura cede connect(url) fit conn { ... }
+     *   -> { const conn = await connect(url); try { ... } finally { conn.solve?.(); } }
+     *
+     *   cura resource() fit r { ... } cape err { ... }
+     *   -> { const r = resource(); try { ... } catch (err) { ... } finally { r.solve?.(); } }
+     *
+     * WHY: Wraps in try/finally to guarantee cleanup via solve().
+     *      Uses optional chaining (?.) so it works even if object doesn't implement curator.
+     */
+    function genCuraStatement(node: CuraStatement): string {
+        const lines: string[] = [];
+        const binding = node.binding.name;
+        const resource = genExpression(node.resource);
+        const awaitPrefix = node.async ? 'await ' : '';
+
+        // Opening block scope
+        lines.push(`${ind()}{`);
+        depth++;
+
+        // Resource acquisition: const <binding> = [await] <resource>;
+        lines.push(`${ind()}const ${binding} = ${awaitPrefix}${resource}${semi ? ';' : ''}`);
+
+        // Try block
+        lines.push(`${ind()}try ${genBlockStatement(node.body)}`);
+
+        // Optional catch clause
+        if (node.catchClause) {
+            const catchParam = node.catchClause.param.name;
+            const catchBody = genBlockStatement(node.catchClause.body);
+            lines.push(`${ind()}catch (${catchParam}) ${catchBody}`);
+        }
+
+        // Finally block with solve?.()
+        lines.push(`${ind()}finally {`);
+        depth++;
+        lines.push(`${ind()}${binding}.solve?.()${semi ? ';' : ''}`);
+        depth--;
+        lines.push(`${ind()}}`);
+
+        // Close block scope
+        depth--;
+        lines.push(`${ind()}}`);
+
+        return lines.join('\n');
     }
 
     function genBlockStatement(node: BlockStatement): string {
