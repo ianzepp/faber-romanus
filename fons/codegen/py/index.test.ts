@@ -1226,12 +1226,6 @@ describe('Python codegen', () => {
 
             expect(errors.length).toBeGreaterThan(0);
         });
-
-        test('Fail when using compound assignment', () => {
-            const errors = getParseErrors('x += 1');
-
-            expect(errors.length).toBeGreaterThan(0);
-        });
     });
 
     // =========================================================================

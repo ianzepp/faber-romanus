@@ -2200,28 +2200,58 @@ describe('parser', () => {
         // WHY: --x parses as -(-x) which is valid double negation
         // Only postfix forms (x++, x--) produce errors
 
-        test('Fail when using compound assignment +=', () => {
-            const { errors } = parseCode('x += 1');
+        test('compound assignment += parses correctly', () => {
+            const { program, errors } = parseCode('x += 1');
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(errors.length).toBe(0);
+            const expr = (program!.body[0] as any).expression;
+            expect(expr.type).toBe('AssignmentExpression');
+            expect(expr.operator).toBe('+=');
         });
 
-        test('Fail when using compound assignment -=', () => {
-            const { errors } = parseCode('x -= 1');
+        test('compound assignment -= parses correctly', () => {
+            const { program, errors } = parseCode('x -= 1');
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(errors.length).toBe(0);
+            const expr = (program!.body[0] as any).expression;
+            expect(expr.type).toBe('AssignmentExpression');
+            expect(expr.operator).toBe('-=');
         });
 
-        test('Fail when using compound assignment *=', () => {
-            const { errors } = parseCode('x *= 2');
+        test('compound assignment *= parses correctly', () => {
+            const { program, errors } = parseCode('x *= 2');
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(errors.length).toBe(0);
+            const expr = (program!.body[0] as any).expression;
+            expect(expr.type).toBe('AssignmentExpression');
+            expect(expr.operator).toBe('*=');
         });
 
-        test('Fail when using compound assignment /=', () => {
-            const { errors } = parseCode('x /= 2');
+        test('compound assignment /= parses correctly', () => {
+            const { program, errors } = parseCode('x /= 2');
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(errors.length).toBe(0);
+            const expr = (program!.body[0] as any).expression;
+            expect(expr.type).toBe('AssignmentExpression');
+            expect(expr.operator).toBe('/=');
+        });
+
+        test('compound assignment &= parses correctly', () => {
+            const { program, errors } = parseCode('x &= 0xFF');
+
+            expect(errors.length).toBe(0);
+            const expr = (program!.body[0] as any).expression;
+            expect(expr.type).toBe('AssignmentExpression');
+            expect(expr.operator).toBe('&=');
+        });
+
+        test('compound assignment |= parses correctly', () => {
+            const { program, errors } = parseCode('x |= 0x01');
+
+            expect(errors.length).toBe(0);
+            const expr = (program!.body[0] as any).expression;
+            expect(expr.type).toBe('AssignmentExpression');
+            expect(expr.operator).toBe('|=');
         });
 
         test('Fail when using exponentiation operator **', () => {

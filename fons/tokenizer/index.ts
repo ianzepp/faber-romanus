@@ -645,22 +645,28 @@ export function tokenize(source: string): TokenizerResult {
                 addToken('QUESTION', char, pos);
                 break;
 
-            // WHY: | can be || (logical OR) or | (union type operator)
+            // WHY: | can be || (logical OR), |= (compound), or | (bitwise OR)
             case '|':
                 if (peek() === '|') {
                     advance();
                     addToken('OR', '||', pos);
+                } else if (peek() === '=') {
+                    advance();
+                    addToken('PIPE_EQUAL', '|=', pos);
                 } else {
                     addToken('PIPE', char, pos);
                 }
 
                 break;
 
-            // WHY: & can be && (logical AND) or & (bitwise AND)
+            // WHY: & can be && (logical AND), &= (compound), or & (bitwise AND)
             case '&':
                 if (peek() === '&') {
                     advance();
                     addToken('AND', '&&', pos);
+                } else if (peek() === '=') {
+                    advance();
+                    addToken('AMPERSAND_EQUAL', '&=', pos);
                 } else {
                     addToken('AMPERSAND', char, pos);
                 }
@@ -679,14 +685,22 @@ export function tokenize(source: string): TokenizerResult {
 
             // Single-character arithmetic operators
             case '+':
-                addToken('PLUS', char, pos);
+                if (peek() === '=') {
+                    advance();
+                    addToken('PLUS_EQUAL', '+=', pos);
+                } else {
+                    addToken('PLUS', char, pos);
+                }
                 break;
 
-            // WHY: - can be -> (type arrow) or - (minus/subtract)
+            // WHY: - can be -> (type arrow), -= (compound), or - (minus/subtract)
             case '-':
                 if (peek() === '>') {
                     advance();
                     addToken('THIN_ARROW', '->', pos);
+                } else if (peek() === '=') {
+                    advance();
+                    addToken('MINUS_EQUAL', '-=', pos);
                 } else {
                     addToken('MINUS', char, pos);
                 }
@@ -694,12 +708,22 @@ export function tokenize(source: string): TokenizerResult {
                 break;
 
             case '*':
-                addToken('STAR', char, pos);
+                if (peek() === '=') {
+                    advance();
+                    addToken('STAR_EQUAL', '*=', pos);
+                } else {
+                    addToken('STAR', char, pos);
+                }
                 break;
 
-            // WHY: / handled separately - already consumed by comment scanner
+            // WHY: / can be /= (compound) or / (divide)
             case '/':
-                addToken('SLASH', char, pos);
+                if (peek() === '=') {
+                    advance();
+                    addToken('SLASH_EQUAL', '/=', pos);
+                } else {
+                    addToken('SLASH', char, pos);
+                }
                 break;
 
             case '%':

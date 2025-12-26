@@ -143,6 +143,20 @@ describe('tokenizer', () => {
             expect(tokens.map(t => t.type)).toEqual(['IDENTIFIER', 'AMPERSAND', 'IDENTIFIER', 'AND', 'IDENTIFIER', 'EOF']);
         });
 
+        test('compound assignment operators', () => {
+            const { tokens } = tokenize('+= -= *= /= &= |=');
+
+            expect(tokens.map(t => t.type)).toEqual([
+                'PLUS_EQUAL',
+                'MINUS_EQUAL',
+                'STAR_EQUAL',
+                'SLASH_EQUAL',
+                'AMPERSAND_EQUAL',
+                'PIPE_EQUAL',
+                'EOF',
+            ]);
+        });
+
         test('shift vs comparison distinction', () => {
             const { tokens } = tokenize('a << b < c');
 

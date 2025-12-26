@@ -433,6 +433,30 @@ describe('codegen', () => {
             expect(js).toBe('((flags & MASK) == 0);');
         });
 
+        test('compound assignment +=', () => {
+            const js = compile('varia x = 0\nx += 1');
+
+            expect(js).toContain('x += 1');
+        });
+
+        test('compound assignment -=', () => {
+            const js = compile('varia x = 10\nx -= 1');
+
+            expect(js).toContain('x -= 1');
+        });
+
+        test('compound assignment &=', () => {
+            const js = compile('varia flags = 0xFF\nflags &= 0x0F');
+
+            expect(js).toContain('flags &= 0x0F');
+        });
+
+        test('compound assignment |=', () => {
+            const js = compile('varia flags = 0\nflags |= 0x01');
+
+            expect(js).toContain('flags |= 0x01');
+        });
+
         test('function call', () => {
             const js = compile('salve(nomen)');
 
@@ -948,12 +972,6 @@ describe('codegen', () => {
 
         test('Fail when using increment operator', () => {
             const errors = getParseErrors('x++');
-
-            expect(errors.length).toBeGreaterThan(0);
-        });
-
-        test('Fail when using compound assignment', () => {
-            const errors = getParseErrors('x += 1');
 
             expect(errors.length).toBeGreaterThan(0);
         });

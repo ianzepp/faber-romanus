@@ -2530,7 +2530,7 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse assignment expression.
      *
      * GRAMMAR:
-     *   assignment := ternary ('=' assignment)?
+     *   assignment := ternary (('=' | '+=' | '-=' | '*=' | '/=' | '&=' | '|=') assignment)?
      *
      * PRECEDENCE: Lowest (right-associative via recursion).
      *
@@ -2539,14 +2539,15 @@ export function parse(tokens: Token[]): ParserResult {
     function parseAssignment(): Expression {
         const expr = parseTernary();
 
-        if (match('EQUAL')) {
-            const position = peek().position;
+        if (match('EQUAL', 'PLUS_EQUAL', 'MINUS_EQUAL', 'STAR_EQUAL', 'SLASH_EQUAL', 'AMPERSAND_EQUAL', 'PIPE_EQUAL')) {
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
             const value = parseAssignment();
 
             if (expr.type === 'Identifier' || expr.type === 'MemberExpression') {
                 return {
                     type: 'AssignmentExpression',
-                    operator: '=',
+                    operator,
                     left: expr,
                     right: value,
                     position,

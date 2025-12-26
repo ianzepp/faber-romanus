@@ -98,6 +98,12 @@ export type TokenType =
     | 'TILDE' // ~ (bitwise NOT)
     | 'LEFT_SHIFT' // <<
     | 'RIGHT_SHIFT' // >>
+    | 'PLUS_EQUAL' // +=
+    | 'MINUS_EQUAL' // -=
+    | 'STAR_EQUAL' // *=
+    | 'SLASH_EQUAL' // /=
+    | 'AMPERSAND_EQUAL' // &=
+    | 'PIPE_EQUAL' // |=
 
     // ---------------------------------------------------------------------------
     // Delimiters
