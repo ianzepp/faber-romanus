@@ -3558,18 +3558,19 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse type annotation.
      *
      * GRAMMAR:
-     *   typeAnnotation := ('de' | 'in')? IDENTIFIER typeParams? '?'? arrayBrackets* ('|' typeAnnotation)*
+     *   typeAnnotation := ('de' | 'in')? IDENTIFIER typeParams? '?'? arrayBrackets*
      *   typeParams := '<' typeParameter (',' typeParameter)* '>'
      *   typeParameter := typeAnnotation | NUMBER | MODIFIER
      *   arrayBrackets := '[]' '?'?
      *
-     * WHY: Supports generics (lista<textus>), nullable (?), union types (A | B),
+     * WHY: Supports generics (lista<textus>), nullable (?), union types (unio<A, B>),
      *      and array shorthand (numerus[] desugars to lista<numerus>).
      *
      * EDGE: Numeric parameters for sized types (numerus<32>).
      *       Modifier parameters for ownership/signedness (numerus<Naturalis>).
      *       Array shorthand preserves source form via arrayShorthand flag.
      *       Borrow prepositions (de/in) for systems targets (Rust/Zig).
+     *       Union types use unio<A, B> syntax (pipe reserved for bitwise OR).
      */
     function parseTypeAnnotation(): TypeAnnotation {
         const position = peek().position;
@@ -3625,6 +3626,24 @@ export function parse(tokens: Token[]): ParserResult {
             nullable = true;
         }
 
+        // Handle unio<A, B> -> union type with type parameters as union members
+        // WHY: unio<A, B> syntax frees pipe for bitwise OR
+        if (name === 'unio' && typeParameters && typeParameters.length > 0) {
+            // Convert type parameters to union members (must all be TypeAnnotations)
+            const union: TypeAnnotation[] = typeParameters.filter(
+                (p): p is TypeAnnotation => p.type === 'TypeAnnotation'
+            );
+
+            return {
+                type: 'TypeAnnotation',
+                name: 'union',
+                union,
+                nullable,
+                preposition,
+                position,
+            };
+        }
+
         // Build the base type
         let result: TypeAnnotation = {
             type: 'TypeAnnotation',
@@ -3654,16 +3673,6 @@ export function parse(tokens: Token[]): ParserResult {
                 arrayShorthand: true,
                 position,
             };
-        }
-
-        // Handle union types
-        if (check('PIPE')) {
-            const union: TypeAnnotation[] = [result];
-            while (match('PIPE')) {
-                union.push(parseTypeAnnotation());
-            }
-
-            return { type: 'TypeAnnotation', name: 'union', union, position };
         }
 
         return result;

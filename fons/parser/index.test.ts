@@ -898,12 +898,14 @@ describe('parser', () => {
             expect(decl.typeAnnotation.nullable).toBe(true);
         });
 
-        test('union type', () => {
-            const { program } = parseCode('fixum textus | nihil x = nihil');
+        test('union type with unio<A, B>', () => {
+            const { program } = parseCode('fixum unio<textus, nihil> x = nihil');
             const decl = program!.body[0] as any;
 
             expect(decl.typeAnnotation.name).toBe('union');
             expect(decl.typeAnnotation.union).toHaveLength(2);
+            expect(decl.typeAnnotation.union[0].name).toBe('textus');
+            expect(decl.typeAnnotation.union[1].name).toBe('nihil');
         });
 
         // Invalid type annotation patterns

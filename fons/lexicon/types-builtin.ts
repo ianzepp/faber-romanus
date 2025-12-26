@@ -213,6 +213,16 @@ export const builtinTypes: TypeEntry[] = [
     // Structural Types
     // ---------------------------------------------------------------------------
 
+    // WHY: unio (3rd decl feminine) - "union, oneness" (type union)
+    {
+        stem: 'union',
+        nominative: 'unio',
+        declension: 3,
+        gender: 'feminine',
+        meaning: 'union',
+        category: 'structural',
+        generic: true,
+    },
     // WHY: promissum (2nd decl neuter) - "promise, guarantee" (neuter for abstract concepts)
     {
         stem: 'promiss',

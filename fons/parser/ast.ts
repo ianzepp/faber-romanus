@@ -1552,12 +1552,12 @@ export type TypeParameter = TypeAnnotation | Literal;
  * Type annotation for variables, parameters, and return types.
  *
  * GRAMMAR (in EBNF):
- *   typeAnnotation := ('de' | 'in')? IDENTIFIER typeParams? '?'? ('|' typeAnnotation)*
+ *   typeAnnotation := ('de' | 'in')? IDENTIFIER typeParams? '?'? arrayBrackets*
  *   typeParams := '<' typeParameter (',' typeParameter)* '>'
  *
  * INVARIANT: name is the base type name (textus, numerus, etc.).
  * INVARIANT: nullable indicates optional type with '?'.
- * INVARIANT: union contains multiple types for union types (A | B).
+ * INVARIANT: union contains multiple types for union types (unio<A, B>).
  * INVARIANT: typeParameters can contain types or literals.
  * INVARIANT: preposition encodes ownership for systems targets (Rust/Zig):
  *            de = borrowed/read-only (&T, []const u8)
@@ -1569,7 +1569,7 @@ export type TypeParameter = TypeAnnotation | Literal;
  *   lista<textus> -> name="lista", typeParameters=[TypeAnnotation]
  *   numerus<32> -> name="numerus", typeParameters=[Literal{value=32}]
  *   numerus<i32> -> name="numerus", typeParameters=[TypeAnnotation{name="i32"}]
- *   textus | numerus -> name="union", union=[{name="textus"}, {name="numerus"}]
+ *   unio<textus, numerus> -> name="union", union=[{name="textus"}, {name="numerus"}]
  *   de textus -> name="textus", preposition="de" (borrowed)
  *   in textus -> name="textus", preposition="in" (mutable borrow)
  */
