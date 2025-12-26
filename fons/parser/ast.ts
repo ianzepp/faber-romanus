@@ -176,6 +176,44 @@ export interface ObjectPatternProperty extends BaseNode {
 }
 
 /**
+ * Array destructuring pattern.
+ *
+ * GRAMMAR (in EBNF):
+ *   arrayPattern := '[' arrayPatternElement (',' arrayPatternElement)* ']'
+ *   arrayPatternElement := '_' | 'ceteri'? IDENTIFIER
+ *
+ * WHY: Allows unpacking array elements into variables by position.
+ *
+ * Examples:
+ *   [a, b, c]               -> extract first three elements
+ *   [first, ceteri rest]    -> extract first, collect rest
+ *   [_, second, _]          -> skip first and third, extract second
+ */
+export interface ArrayPattern extends BaseNode {
+    type: 'ArrayPattern';
+    elements: ArrayPatternElement[];
+}
+
+/**
+ * Single element in an array pattern.
+ *
+ * name: the variable name to bind (or '_' pseudo-identifier for skip)
+ * rest: if true, collects all remaining elements (ceteri pattern)
+ * skip: if true, this position is skipped (underscore)
+ *
+ * Examples:
+ *   [a]                      -> name=a, rest=false, skip=false
+ *   [_, b]                   -> first: skip=true, second: name=b
+ *   [first, ceteri tail]     -> second: name=tail, rest=true
+ */
+export interface ArrayPatternElement extends BaseNode {
+    type: 'ArrayPatternElement';
+    name: Identifier;
+    rest?: boolean;
+    skip?: boolean;
+}
+
+/**
  * Variable declaration statement.
  *
  * GRAMMAR (in EBNF):
@@ -200,13 +238,14 @@ export interface ObjectPatternProperty extends BaseNode {
  *   varia x: numerus = 5
  *   fixum SALVE = "ave"
  *   fixum { nomen, aetas } = persona
+ *   fixum [a, b, c] = coords
  *   figendum data = fetchData()
  *   variandum result = fetchInitial()
  */
 export interface VariableDeclaration extends BaseNode {
     type: 'VariableDeclaration';
     kind: 'varia' | 'fixum' | 'figendum' | 'variandum';
-    name: Identifier | ObjectPattern;
+    name: Identifier | ObjectPattern | ArrayPattern;
     typeAnnotation?: TypeAnnotation;
     init?: Expression;
 }

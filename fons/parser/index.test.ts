@@ -183,10 +183,73 @@ describe('parser', () => {
             expect(errors.length).toBeGreaterThan(0);
         });
 
-        test('Fail when using array destructuring', () => {
-            const { errors } = parseCode('fixum [a, b] = arr');
+        // Array destructuring is now supported
+        test('basic array destructuring with fixum', () => {
+            const { program } = parseCode('fixum [a, b, c] = coords');
+            const decl = program!.body[0] as any;
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(decl.type).toBe('VariableDeclaration');
+            expect(decl.kind).toBe('fixum');
+            expect(decl.name.type).toBe('ArrayPattern');
+            expect(decl.name.elements).toHaveLength(3);
+            expect(decl.name.elements[0].name.name).toBe('a');
+            expect(decl.name.elements[1].name.name).toBe('b');
+            expect(decl.name.elements[2].name.name).toBe('c');
+        });
+
+        test('array destructuring with rest pattern', () => {
+            const { program } = parseCode('fixum [first, ceteri rest] = items');
+            const decl = program!.body[0] as any;
+
+            expect(decl.name.type).toBe('ArrayPattern');
+            expect(decl.name.elements).toHaveLength(2);
+            expect(decl.name.elements[0].name.name).toBe('first');
+            expect(decl.name.elements[0].rest).toBeFalsy();
+            expect(decl.name.elements[1].name.name).toBe('rest');
+            expect(decl.name.elements[1].rest).toBe(true);
+        });
+
+        test('array destructuring with skip (underscore)', () => {
+            const { program } = parseCode('fixum [_, second, _] = data');
+            const decl = program!.body[0] as any;
+
+            expect(decl.name.type).toBe('ArrayPattern');
+            expect(decl.name.elements).toHaveLength(3);
+            expect(decl.name.elements[0].skip).toBe(true);
+            expect(decl.name.elements[1].name.name).toBe('second');
+            expect(decl.name.elements[1].skip).toBeFalsy();
+            expect(decl.name.elements[2].skip).toBe(true);
+        });
+
+        test('ex array destructuring with fixum', () => {
+            const { program } = parseCode('ex coords fixum [x, y, z]');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('VariableDeclaration');
+            expect(decl.kind).toBe('fixum');
+            expect(decl.name.type).toBe('ArrayPattern');
+            expect(decl.name.elements).toHaveLength(3);
+            expect(decl.init.name).toBe('coords');
+        });
+
+        test('ex array destructuring with varia', () => {
+            const { program } = parseCode('ex coords varia [x, y]');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('VariableDeclaration');
+            expect(decl.kind).toBe('varia');
+            expect(decl.name.type).toBe('ArrayPattern');
+        });
+
+        test('ex array destructuring from function call', () => {
+            const { program } = parseCode('ex divide(17, 5) fixum [quotient, remainder]');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('VariableDeclaration');
+            expect(decl.init.type).toBe('CallExpression');
+            expect(decl.init.callee.name).toBe('divide');
+            expect(decl.name.type).toBe('ArrayPattern');
+            expect(decl.name.elements).toHaveLength(2);
         });
 
         test('Fail when using computed property in destructure', () => {

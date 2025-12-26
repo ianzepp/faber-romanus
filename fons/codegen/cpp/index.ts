@@ -375,7 +375,12 @@ struct _ScopeGuard {
 
         // Handle destructuring (not directly supported in C++, expand it)
         if (node.name.type === 'ObjectPattern') {
-            return genDestructuringDeclaration(node);
+            return genObjectDestructuringDeclaration(node);
+        }
+
+        // Handle array destructuring (expand to indexed access)
+        if (node.name.type === 'ArrayPattern') {
+            return genArrayDestructuringDeclaration(node);
         }
 
         const name = node.name.name;
@@ -395,12 +400,12 @@ struct _ScopeGuard {
     }
 
     /**
-     * Generate destructuring as multiple declarations.
+     * Generate object destructuring as multiple declarations.
      *
      * TRANSFORMS:
      *   fixum { a, b } = obj -> const auto& a = obj.a; const auto& b = obj.b;
      */
-    function genDestructuringDeclaration(node: VariableDeclaration): string {
+    function genObjectDestructuringDeclaration(node: VariableDeclaration): string {
         if (node.name.type !== 'ObjectPattern') {
             throw new Error('Expected ObjectPattern');
         }
@@ -419,6 +424,50 @@ struct _ScopeGuard {
             const localName = prop.value.name;
 
             lines.push(`${ind()}${constPrefix}auto& ${localName} = _tmp.${key};`);
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Generate array destructuring as multiple declarations.
+     *
+     * TRANSFORMS:
+     *   fixum [a, b, c] = arr -> const auto& _tmp = arr; const auto& a = _tmp[0]; ...
+     *   [a, ceteri rest] = arr -> const auto& a = _tmp[0]; const auto rest = std::vector(_tmp.begin() + 1, _tmp.end());
+     */
+    function genArrayDestructuringDeclaration(node: VariableDeclaration): string {
+        if (node.name.type !== 'ArrayPattern') {
+            throw new Error('Expected ArrayPattern');
+        }
+
+        const lines: string[] = [];
+        const isConst = node.kind === 'fixum';
+        const constPrefix = isConst ? 'const ' : '';
+        const initExpr = node.init ? genExpression(node.init) : 'undefined';
+
+        // Create temp variable
+        lines.push(`${ind()}${constPrefix}auto& _tmp = ${initExpr};`);
+
+        let idx = 0;
+        for (const elem of node.name.elements) {
+            if (elem.skip) {
+                // Skip this position
+                idx++;
+                continue;
+            }
+
+            const localName = elem.name.name;
+
+            if (elem.rest) {
+                // Rest pattern: collect remaining elements
+                // Use vector constructor with iterators
+                lines.push(`${ind()}${constPrefix}auto ${localName} = std::vector<decltype(_tmp)::value_type>(_tmp.begin() + ${idx}, _tmp.end());`);
+            } else {
+                // Regular element: indexed access
+                lines.push(`${ind()}${constPrefix}auto& ${localName} = _tmp[${idx}];`);
+                idx++;
+            }
         }
 
         return lines.join('\n');

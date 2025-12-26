@@ -442,6 +442,52 @@ describe('zig codegen', () => {
         });
     });
 
+    describe('array destructuring', () => {
+        test('destructuring expands to temp + indexed access', () => {
+            const zig = compile('fixum [a, b, c] = coords');
+
+            expect(zig).toContain('const _tmp = coords');
+            expect(zig).toContain('const a = _tmp[0]');
+            expect(zig).toContain('const b = _tmp[1]');
+            expect(zig).toContain('const c = _tmp[2]');
+        });
+
+        test('array destructuring with rest uses slice', () => {
+            const zig = compile('fixum [first, ceteri rest] = items');
+
+            expect(zig).toContain('const _tmp = items');
+            expect(zig).toContain('const first = _tmp[0]');
+            expect(zig).toContain('const rest = _tmp[1..]');
+        });
+
+        test('array destructuring with skip', () => {
+            const zig = compile('fixum [_, second, _] = data');
+
+            expect(zig).toContain('const _tmp = data');
+            expect(zig).toContain('const second = _tmp[1]');
+            // Skip positions should not appear
+            expect(zig).not.toContain('_ = _tmp[0]');
+            expect(zig).not.toContain('_ = _tmp[2]');
+        });
+
+        test('mutable array destructuring uses var', () => {
+            const zig = compile('varia [x, y] = coords');
+
+            expect(zig).toContain('const _tmp = coords');
+            expect(zig).toContain('var x = _tmp[0]');
+            expect(zig).toContain('var y = _tmp[1]');
+        });
+
+        test('ex array destructuring', () => {
+            const zig = compile('ex coords fixum [x, y, z]');
+
+            expect(zig).toContain('const _tmp = coords');
+            expect(zig).toContain('const x = _tmp[0]');
+            expect(zig).toContain('const y = _tmp[1]');
+            expect(zig).toContain('const z = _tmp[2]');
+        });
+    });
+
     describe('object literals', () => {
         test('empty object', () => {
             const zig = compile('fixum x = {}');

@@ -372,6 +372,26 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             return lines.join('\n');
         }
 
+        // Handle array pattern destructuring
+        // Python supports tuple unpacking: a, b, *rest = arr
+        if (node.name.type === 'ArrayPattern') {
+            const initExpr = node.init ? genExpression(node.init) : '[]';
+            const awaitPrefix = isAsync ? 'await ' : '';
+
+            // Build the pattern: a, b, *rest or _, b, _ for skips
+            const parts = node.name.elements.map(elem => {
+                if (elem.skip) {
+                    return '_'; // Python uses _ for ignored elements
+                }
+                if (elem.rest) {
+                    return `*${elem.name.name}`; // Python rest syntax
+                }
+                return elem.name.name;
+            });
+
+            return `${ind()}${parts.join(', ')} = ${awaitPrefix}${initExpr}`;
+        }
+
         const name = node.name.name;
         const typeAnno = node.typeAnnotation ? `: ${genType(node.typeAnnotation)}` : '';
 

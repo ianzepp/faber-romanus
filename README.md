@@ -94,9 +94,9 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `variandum` (async mutable)  |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `nexum` (reactive binding)   |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Type annotations             |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| Object destructuring         |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| Array destructuring          |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
-| Rest in destructuring        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Object destructuring         |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Array destructuring          |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Rest in destructuring        |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Initializer expressions      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 
 ## Enum & Tagged Union Declarations

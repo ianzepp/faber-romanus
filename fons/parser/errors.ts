@@ -58,6 +58,7 @@ export enum ParserErrorCode {
     ExpectedEqual = 'P007',
     ExpectedOpeningBrace = 'P008',
     ExpectedOpeningParen = 'P009',
+    ExpectedOpeningBracket = 'P014',
     ExpectedIdentifier = 'P010',
     ExpectedTypeName = 'P011',
     ExpectedThinArrow = 'P012',
@@ -166,6 +167,10 @@ export const PARSER_ERRORS = {
     [ParserErrorCode.ExpectedOpeningParen]: {
         text: "Expected '('",
         help: 'Function declarations and calls require opening parenthesis for parameters/arguments.',
+    },
+    [ParserErrorCode.ExpectedOpeningBracket]: {
+        text: "Expected '['",
+        help: 'Array destructuring patterns require opening bracket: fixum [a, b] = arr',
     },
     [ParserErrorCode.ExpectedIdentifier]: {
         text: 'Expected identifier',

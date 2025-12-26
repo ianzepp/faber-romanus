@@ -1220,8 +1220,32 @@ export function analyze(program: Program): SemanticResult {
                     name: prop.value.name,
                     type: UNKNOWN,
                     kind: 'variable',
-                    mutable: node.kind === 'varia',
+                    mutable: node.kind === 'varia' || node.kind === 'variandum',
                     position: prop.position,
+                });
+            }
+
+            return;
+        }
+
+        // Handle array destructuring pattern
+        if (node.name.type === 'ArrayPattern') {
+            if (node.init) {
+                resolveExpression(node.init);
+            }
+
+            // Define each element as a variable (skip underscore elements)
+            for (const elem of node.name.elements) {
+                if (elem.skip) {
+                    continue; // underscore means skip, no binding
+                }
+
+                define({
+                    name: elem.name.name,
+                    type: UNKNOWN,
+                    kind: 'variable',
+                    mutable: node.kind === 'varia' || node.kind === 'variandum',
+                    position: elem.position,
                 });
             }
 

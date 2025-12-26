@@ -125,6 +125,8 @@ import type {
     ConditionalExpression,
     ObjectPattern,
     ObjectPatternProperty,
+    ArrayPattern,
+    ArrayPatternElement,
     ObjectExpression,
     ObjectProperty,
     SpreadElement,
@@ -770,11 +772,14 @@ export function parse(tokens: Token[]): ParserResult {
         advance(); // varia, fixum, figendum, or variandum
 
         let typeAnnotation: TypeAnnotation | undefined;
-        let name: Identifier | ObjectPattern;
+        let name: Identifier | ObjectPattern | ArrayPattern;
 
         // Check for object destructuring pattern: fixum { a, b } = obj
         if (check('LBRACE')) {
             name = parseObjectPattern();
+        } else if (check('LBRACKET')) {
+            // Array destructuring pattern: fixum [a, b] = arr
+            name = parseArrayPattern();
         } else if (isTypeName(peek())) {
             typeAnnotation = parseTypeAnnotation();
             name = parseIdentifier();
@@ -857,6 +862,78 @@ export function parse(tokens: Token[]): ParserResult {
         expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         return { type: 'ObjectPattern', properties, position };
+    }
+
+    /**
+     * Parse array destructuring pattern.
+     *
+     * GRAMMAR:
+     *   arrayPattern := '[' arrayPatternElement (',' arrayPatternElement)* ']'
+     *   arrayPatternElement := '_' | 'ceteri'? IDENTIFIER
+     *
+     * Used by two destructuring syntaxes:
+     *   1. Direct assignment: fixum [a, b, c] = coords
+     *   2. Ex-prefix (Latin): ex coords fixum [a, b, c]
+     *
+     * Examples:
+     *   [a, b, c]                 // extract first three elements
+     *   [first, ceteri rest]     // extract first, collect rest
+     *   [_, second, _]           // skip first and third, extract second
+     *
+     * NOT SUPPORTED:
+     *   [...rest]                // JS spread syntax
+     *   [*rest]                  // Python unpack syntax
+     */
+    function parseArrayPattern(): ArrayPattern {
+        const position = peek().position;
+
+        expect('LBRACKET', ParserErrorCode.ExpectedOpeningBracket);
+
+        const elements: ArrayPatternElement[] = [];
+
+        // True while there are unparsed elements (not at ']' or EOF)
+        const hasMoreElements = () => !check('RBRACKET') && !isAtEnd();
+
+        while (hasMoreElements()) {
+            const elemPosition = peek().position;
+
+            // Check for rest pattern: ceteri restName
+            let rest = false;
+            if (checkKeyword('ceteri')) {
+                advance(); // consume 'ceteri'
+                rest = true;
+            }
+
+            // Check for skip pattern: _
+            let skip = false;
+            if (!rest && check('IDENTIFIER') && peek().value === '_') {
+                advance(); // consume '_'
+                skip = true;
+                elements.push({
+                    type: 'ArrayPatternElement',
+                    name: { type: 'Identifier', name: '_', position: elemPosition },
+                    skip: true,
+                    position: elemPosition,
+                });
+            } else {
+                // Regular binding or rest binding
+                const name = parseIdentifier();
+                elements.push({
+                    type: 'ArrayPatternElement',
+                    name,
+                    rest,
+                    position: elemPosition,
+                });
+            }
+
+            if (!check('RBRACKET')) {
+                expect('COMMA', ParserErrorCode.ExpectedComma);
+            }
+        }
+
+        expect('RBRACKET', ParserErrorCode.ExpectedClosingBracket);
+
+        return { type: 'ArrayPattern', elements, position };
     }
 
     /**
@@ -1889,9 +1966,16 @@ export function parse(tokens: Token[]): ParserResult {
 
         // Dispatch based on what follows the expression
         if (checkKeyword('fixum') || checkKeyword('varia') || checkKeyword('figendum') || checkKeyword('variandum')) {
-            // Destructuring: ex source fixum { ... } or async: ex source figendum { ... }
+            // Destructuring: ex source fixum { ... } or ex source fixum [ ... ]
+            // async variants: ex source figendum { ... } or ex source figendum [ ... ]
             const kind = advance().keyword as 'varia' | 'fixum' | 'figendum' | 'variandum';
-            const name = parseObjectPattern();
+
+            let name: ObjectPattern | ArrayPattern;
+            if (check('LBRACKET')) {
+                name = parseArrayPattern();
+            } else {
+                name = parseObjectPattern();
+            }
 
             return { type: 'VariableDeclaration', kind, name, init: source, position };
         }

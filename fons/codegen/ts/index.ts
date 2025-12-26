@@ -361,6 +361,21 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             });
 
             name = `{ ${props.join(', ')} }`;
+        } else if (node.name.type === 'ArrayPattern') {
+            // Generate array destructuring pattern with rest support
+            // [a, b, ceteri rest] -> [a, b, ...rest]
+            // [_, b, _] -> [, b, ]
+            const elems = node.name.elements.map(elem => {
+                if (elem.skip) {
+                    return ''; // skip position (underscore becomes empty slot)
+                }
+                if (elem.rest) {
+                    return `...${elem.name.name}`;
+                }
+                return elem.name.name;
+            });
+
+            name = `[${elems.join(', ')}]`;
         } else {
             name = node.name.name;
         }

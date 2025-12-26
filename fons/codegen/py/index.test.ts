@@ -1249,6 +1249,43 @@ describe('Python codegen', () => {
         });
     });
 
+    describe('array pattern destructuring', () => {
+        test('simple array destructuring', () => {
+            const result = compile('fixum [a, b, c] = coords');
+            expect(result).toBe('a, b, c = coords');
+        });
+
+        test('array destructuring with rest', () => {
+            const result = compile('fixum [first, ceteri rest] = items');
+            expect(result).toBe('first, *rest = items');
+        });
+
+        test('array destructuring with skip', () => {
+            const result = compile('fixum [_, second, _] = data');
+            expect(result).toBe('_, second, _ = data');
+        });
+
+        test('mutable array destructuring', () => {
+            const result = compile('varia [x, y] = coords');
+            expect(result).toBe('x, y = coords');
+        });
+
+        test('ex array destructuring', () => {
+            const result = compile('ex coords fixum [x, y, z]');
+            expect(result).toBe('x, y, z = coords');
+        });
+
+        test('ex array destructuring with rest', () => {
+            const result = compile('ex items fixum [first, ceteri tail]');
+            expect(result).toBe('first, *tail = items');
+        });
+
+        test('async array destructuring with figendum', () => {
+            const result = compile('ex fetchData() figendum [result, status]');
+            expect(result).toBe('result, status = await fetchData()');
+        });
+    });
+
     describe('Python patterns not valid in Faber', () => {
         test('Fail when using Python star unpack', () => {
             const errors = getParseErrors('fixum { *rest } = obj');

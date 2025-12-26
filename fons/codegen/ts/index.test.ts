@@ -960,12 +960,44 @@ describe('codegen', () => {
 
                 expect(errors.length).toBeGreaterThan(0);
             });
+        });
+    });
 
-            test('Fail when using array destructuring', () => {
-                const errors = getParseErrors('fixum [a, b] = arr');
+    describe('array destructuring', () => {
+        test('simple array destructuring', () => {
+            const js = compile('fixum [a, b, c] = coords');
 
-                expect(errors.length).toBeGreaterThan(0);
-            });
+            expect(js).toBe('const [a, b, c] = coords;');
+        });
+
+        test('array destructuring with rest', () => {
+            const js = compile('fixum [first, ceteri rest] = items');
+
+            expect(js).toBe('const [first, ...rest] = items;');
+        });
+
+        test('array destructuring with skip', () => {
+            const js = compile('fixum [_, second, _] = data');
+
+            expect(js).toBe('const [, second, ] = data;');
+        });
+
+        test('mutable array destructuring', () => {
+            const js = compile('varia [x, y] = coords');
+
+            expect(js).toBe('let [x, y] = coords;');
+        });
+
+        test('ex array destructuring', () => {
+            const js = compile('ex coords fixum [x, y, z]');
+
+            expect(js).toBe('const [x, y, z] = coords;');
+        });
+
+        test('ex array destructuring with rest', () => {
+            const js = compile('ex items fixum [first, ceteri tail]');
+
+            expect(js).toBe('const [first, ...tail] = items;');
         });
     });
 

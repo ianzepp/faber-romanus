@@ -557,6 +557,40 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             return lines.join('\n');
         }
 
+        // Handle array pattern destructuring
+        // Zig doesn't have native destructuring, so we expand to indexed access
+        // [a, b, ceteri rest] -> const a = arr[0]; const b = arr[1]; const rest = arr[2..];
+        if (node.name.type === 'ArrayPattern') {
+            const initExpr = node.init ? genExpression(node.init) : 'undefined';
+            const lines: string[] = [];
+
+            // Create a temp var to hold the array
+            const tempVar = `_tmp`;
+            lines.push(`${ind()}const ${tempVar} = ${initExpr};`);
+
+            let idx = 0;
+            for (const elem of node.name.elements) {
+                if (elem.skip) {
+                    // Skip this position
+                    idx++;
+                    continue;
+                }
+
+                const localName = elem.name.name;
+
+                if (elem.rest) {
+                    // Rest pattern: collect remaining elements as slice
+                    lines.push(`${ind()}${kind} ${localName} = ${tempVar}[${idx}..];`);
+                } else {
+                    // Regular element: indexed access
+                    lines.push(`${ind()}${kind} ${localName} = ${tempVar}[${idx}];`);
+                    idx++;
+                }
+            }
+
+            return lines.join('\n');
+        }
+
         const name = node.name.name;
 
         // Check if this is a module-level const (depth 0 means we're at module level)

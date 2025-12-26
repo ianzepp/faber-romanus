@@ -318,6 +318,24 @@ statement := importDecl | varDecl | funcDecl | typeAliasDecl | ifStmt | whileStm
 
 > Uses lookahead to determine statement type via keyword inspection.
 
+### Array Pattern
+
+```ebnf
+arrayPattern := '[' arrayPatternElement (',' arrayPatternElement)* ']'
+arrayPatternElement := '_' | 'ceteri'? IDENTIFIER
+```
+
+**Examples:**
+
+```fab
+[a, b, c]                 // extract first three elements
+[first, ceteri rest]     // extract first, collect rest
+[_, second, _]           // skip first and third, extract second
+NOT SUPPORTED:
+[...rest]                // JS spread syntax
+[*rest]                  // Python unpack syntax
+```
+
 ### Type And Parameter List
 
 ```ebnf
