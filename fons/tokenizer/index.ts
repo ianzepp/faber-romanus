@@ -54,14 +54,16 @@
  * KEYWORD:         IDENTIFIER matching lexicon entry
  *
  * OPERATOR LOOKAHEAD:
- * '=' -> '==' | '=>' | '='
- * '!' -> '!=' | '!'
- * '<' -> '<=' | '<'
- * '>' -> '>=' | '>'
- * '&' -> '&&' (single '&' is invalid)
+ * '=' -> '===' | '==' | '=>' | '='
+ * '!' -> '!==' | '!=' | '!'
+ * '<' -> '<<' | '<=' | '<'
+ * '>' -> '>>' | '>=' | '>'
+ * '&' -> '&&' | '&'
  * '|' -> '||' | '|'
  * '-' -> '->' | '-'
  * '/' -> '//' comment | '/*' comment | '/'
+ * '^' -> '^'
+ * '~' -> '~'
  *
  * @module tokenizer
  */
@@ -654,15 +656,25 @@ export function tokenize(source: string): TokenizerResult {
 
                 break;
 
-            // WHY: & must be && (logical AND), single & is reserved/invalid
+            // WHY: & can be && (logical AND) or & (bitwise AND)
             case '&':
                 if (peek() === '&') {
                     advance();
                     addToken('AND', '&&', pos);
                 } else {
-                    addError(TokenizerErrorCode.UnexpectedCharacter, pos);
+                    addToken('AMPERSAND', char, pos);
                 }
 
+                break;
+
+            // Bitwise XOR
+            case '^':
+                addToken('CARET', char, pos);
+                break;
+
+            // Bitwise NOT (unary)
+            case '~':
+                addToken('TILDE', char, pos);
                 break;
 
             // Single-character arithmetic operators
@@ -727,9 +739,12 @@ export function tokenize(source: string): TokenizerResult {
 
                 break;
 
-            // WHY: < can be <= (less or equal) or < (less than)
+            // WHY: < can be << (left shift), <= (less or equal), or < (less than)
             case '<':
-                if (peek() === '=') {
+                if (peek() === '<') {
+                    advance();
+                    addToken('LEFT_SHIFT', '<<', pos);
+                } else if (peek() === '=') {
                     advance();
                     addToken('LESS_EQUAL', '<=', pos);
                 } else {
@@ -738,9 +753,12 @@ export function tokenize(source: string): TokenizerResult {
 
                 break;
 
-            // WHY: > can be >= (greater or equal) or > (greater than)
+            // WHY: > can be >> (right shift), >= (greater or equal), or > (greater than)
             case '>':
-                if (peek() === '=') {
+                if (peek() === '>') {
+                    advance();
+                    addToken('RIGHT_SHIFT', '>>', pos);
+                } else if (peek() === '=') {
                     advance();
                     addToken('GREATER_EQUAL', '>=', pos);
                 } else {

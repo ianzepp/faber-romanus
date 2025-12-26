@@ -516,6 +516,81 @@ describe('parser', () => {
             expect(expr.operator).toBe('||');
         });
 
+        test('bitwise AND', () => {
+            const { program } = parseCode('a & b');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('BinaryExpression');
+            expect(expr.operator).toBe('&');
+        });
+
+        test('bitwise OR', () => {
+            const { program } = parseCode('a | b');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('BinaryExpression');
+            expect(expr.operator).toBe('|');
+        });
+
+        test('bitwise XOR', () => {
+            const { program } = parseCode('a ^ b');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('BinaryExpression');
+            expect(expr.operator).toBe('^');
+        });
+
+        test('bitwise NOT', () => {
+            const { program } = parseCode('~a');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('UnaryExpression');
+            expect(expr.operator).toBe('~');
+        });
+
+        test('left shift', () => {
+            const { program } = parseCode('a << 2');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('BinaryExpression');
+            expect(expr.operator).toBe('<<');
+        });
+
+        test('right shift', () => {
+            const { program } = parseCode('a >> 2');
+            const expr = (program!.body[0] as any).expression;
+
+            expect(expr.type).toBe('BinaryExpression');
+            expect(expr.operator).toBe('>>');
+        });
+
+        test('bitwise precedence: & binds tighter than |', () => {
+            const { program } = parseCode('a | b & c');
+            const expr = (program!.body[0] as any).expression;
+
+            // Should parse as: a | (b & c)
+            expect(expr.operator).toBe('|');
+            expect(expr.right.operator).toBe('&');
+        });
+
+        test('bitwise precedence: << binds tighter than &', () => {
+            const { program } = parseCode('a & b << 2');
+            const expr = (program!.body[0] as any).expression;
+
+            // Should parse as: a & (b << 2)
+            expect(expr.operator).toBe('&');
+            expect(expr.right.operator).toBe('<<');
+        });
+
+        test('bitwise precedence: bitwise binds tighter than comparison', () => {
+            const { program } = parseCode('flags & MASK == 0');
+            const expr = (program!.body[0] as any).expression;
+
+            // Should parse as: (flags & MASK) == 0 (unlike C!)
+            expect(expr.operator).toBe('==');
+            expect(expr.left.operator).toBe('&');
+        });
+
         test('negation with non', () => {
             // WHY: Prefix ! removed to make room for non-null assertion (!.)
             //      Use 'non' for logical negation

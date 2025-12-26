@@ -188,7 +188,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 ## Expressions
 
 | Feature                             | TypeScript | Zig | Python | WASM | Rust | C++23 |
-| ----------------------------------- | :--------: | :-: | :----: | :--: | :--: | :---: |
+| ----------------------------------- | :--------: | :-: | :----: | :--: | :--: | :---: | --- |
 | Identifiers                         |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | `ego` (this/self)                   |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Boolean literals (`verum`/`falsum`) |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
@@ -206,7 +206,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Binary operators                    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Comparison operators                |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Logical operators                   |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| Bitwise operators (`&\|^~<<>>`)     |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| Bitwise operators (`&               |  ^~<<>>`)  | [x] |  [x]   | [x]  | [ ]  |  [ ]  | [x] |
 | Unary operators                     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | `nulla` (is empty)                  |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `nonnulla` (has content)            |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |

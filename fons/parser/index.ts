@@ -2742,14 +2742,105 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse comparison expression.
      *
      * GRAMMAR:
-     *   comparison := range (('<' | '>' | '<=' | '>=') range)*
+     *   comparison := bitwiseOr (('<' | '>' | '<=' | '>=') bitwiseOr)*
      *
-     * PRECEDENCE: Lower than range, higher than equality.
+     * PRECEDENCE: Lower than bitwise OR, higher than equality.
      */
     function parseComparison(): Expression {
-        let left = parseRange();
+        let left = parseBitwiseOr();
 
         while (match('LESS', 'LESS_EQUAL', 'GREATER', 'GREATER_EQUAL')) {
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
+            const right = parseBitwiseOr();
+
+            left = { type: 'BinaryExpression', operator, left, right, position };
+        }
+
+        return left;
+    }
+
+    /**
+     * Parse bitwise OR expression.
+     *
+     * GRAMMAR:
+     *   bitwiseOr := bitwiseXor ('|' bitwiseXor)*
+     *
+     * PRECEDENCE: Lower than bitwise XOR, higher than comparison.
+     *
+     * WHY: Bitwise precedence is above comparison (unlike C), so
+     *      `flags & MASK == 0` parses as `(flags & MASK) == 0`.
+     */
+    function parseBitwiseOr(): Expression {
+        let left = parseBitwiseXor();
+
+        while (match('PIPE')) {
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
+            const right = parseBitwiseXor();
+
+            left = { type: 'BinaryExpression', operator, left, right, position };
+        }
+
+        return left;
+    }
+
+    /**
+     * Parse bitwise XOR expression.
+     *
+     * GRAMMAR:
+     *   bitwiseXor := bitwiseAnd ('^' bitwiseAnd)*
+     *
+     * PRECEDENCE: Lower than bitwise AND, higher than bitwise OR.
+     */
+    function parseBitwiseXor(): Expression {
+        let left = parseBitwiseAnd();
+
+        while (match('CARET')) {
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
+            const right = parseBitwiseAnd();
+
+            left = { type: 'BinaryExpression', operator, left, right, position };
+        }
+
+        return left;
+    }
+
+    /**
+     * Parse bitwise AND expression.
+     *
+     * GRAMMAR:
+     *   bitwiseAnd := shift ('&' shift)*
+     *
+     * PRECEDENCE: Lower than shift, higher than bitwise XOR.
+     */
+    function parseBitwiseAnd(): Expression {
+        let left = parseShift();
+
+        while (match('AMPERSAND')) {
+            const operator = tokens[current - 1]!.value;
+            const position = tokens[current - 1]!.position;
+            const right = parseShift();
+
+            left = { type: 'BinaryExpression', operator, left, right, position };
+        }
+
+        return left;
+    }
+
+    /**
+     * Parse shift expression.
+     *
+     * GRAMMAR:
+     *   shift := range (('<<' | '>>') range)*
+     *
+     * PRECEDENCE: Lower than range, higher than bitwise AND.
+     */
+    function parseShift(): Expression {
+        let left = parseRange();
+
+        while (match('LEFT_SHIFT', 'RIGHT_SHIFT')) {
             const operator = tokens[current - 1]!.value;
             const position = tokens[current - 1]!.position;
             const right = parseRange();
@@ -2884,6 +2975,13 @@ export function parse(tokens: Token[]): ParserResult {
             const argument = parseUnary();
 
             return { type: 'UnaryExpression', operator: '-', argument, prefix: true, position };
+        }
+
+        if (match('TILDE')) {
+            const position = tokens[current - 1]!.position;
+            const argument = parseUnary();
+
+            return { type: 'UnaryExpression', operator: '~', argument, prefix: true, position };
         }
 
         if (matchKeyword('nulla')) {
@@ -3638,9 +3736,7 @@ export function parse(tokens: Token[]): ParserResult {
         // WHY: unio<A, B> syntax frees pipe for bitwise OR
         if (name === 'unio' && typeParameters && typeParameters.length > 0) {
             // Convert type parameters to union members (must all be TypeAnnotations)
-            const union: TypeAnnotation[] = typeParameters.filter(
-                (p): p is TypeAnnotation => p.type === 'TypeAnnotation'
-            );
+            const union: TypeAnnotation[] = typeParameters.filter((p): p is TypeAnnotation => p.type === 'TypeAnnotation');
 
             return {
                 type: 'TypeAnnotation',

@@ -92,7 +92,12 @@ export type TokenType =
     | 'DOT_DOT' // .. (range operator)
     | 'QUESTION' // ?
     | 'COLON' // :
-    | 'PIPE' // | (single pipe for union types)
+    | 'PIPE' // | (bitwise OR)
+    | 'AMPERSAND' // & (bitwise AND)
+    | 'CARET' // ^ (bitwise XOR)
+    | 'TILDE' // ~ (bitwise NOT)
+    | 'LEFT_SHIFT' // <<
+    | 'RIGHT_SHIFT' // >>
 
     // ---------------------------------------------------------------------------
     // Delimiters

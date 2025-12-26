@@ -384,6 +384,55 @@ describe('codegen', () => {
             expect(js).toBe('((a ?? b) ?? c);');
         });
 
+        test('bitwise AND', () => {
+            const js = compile('5 & 3');
+
+            expect(js).toBe('(5 & 3);');
+        });
+
+        test('bitwise OR', () => {
+            const js = compile('5 | 3');
+
+            expect(js).toBe('(5 | 3);');
+        });
+
+        test('bitwise XOR', () => {
+            const js = compile('5 ^ 3');
+
+            expect(js).toBe('(5 ^ 3);');
+        });
+
+        test('bitwise NOT', () => {
+            const js = compile('~5');
+
+            expect(js).toBe('~5;');
+        });
+
+        test('left shift', () => {
+            const js = compile('1 << 4');
+
+            expect(js).toBe('(1 << 4);');
+        });
+
+        test('right shift', () => {
+            const js = compile('16 >> 2');
+
+            expect(js).toBe('(16 >> 2);');
+        });
+
+        test('bitwise expression with hex literals', () => {
+            const js = compile('0xFF & 0x0F');
+
+            expect(js).toBe('(0xFF & 0x0F);');
+        });
+
+        test('bitwise precedence preserved', () => {
+            const js = compile('flags & MASK == 0');
+
+            // Should parse as (flags & MASK) == 0
+            expect(js).toBe('((flags & MASK) == 0);');
+        });
+
         test('function call', () => {
             const js = compile('salve(nomen)');
 

@@ -382,6 +382,42 @@ describe('zig codegen', () => {
             expect(zig).toContain('or');
             expect(zig).not.toContain('||');
         });
+
+        test('bitwise AND', () => {
+            const zig = compile('fixum x = 5 & 3');
+
+            expect(zig).toContain('(5 & 3)');
+        });
+
+        test('bitwise OR', () => {
+            const zig = compile('fixum x = 5 | 3');
+
+            expect(zig).toContain('(5 | 3)');
+        });
+
+        test('bitwise XOR', () => {
+            const zig = compile('fixum x = 5 ^ 3');
+
+            expect(zig).toContain('(5 ^ 3)');
+        });
+
+        test('bitwise NOT', () => {
+            const zig = compile('fixum x = ~5');
+
+            expect(zig).toContain('~5');
+        });
+
+        test('left shift', () => {
+            const zig = compile('fixum x = 1 << 4');
+
+            expect(zig).toContain('(1 << 4)');
+        });
+
+        test('right shift', () => {
+            const zig = compile('fixum x = 16 >> 2');
+
+            expect(zig).toContain('(16 >> 2)');
+        });
     });
 
     describe('string comparison', () => {

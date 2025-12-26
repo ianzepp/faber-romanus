@@ -123,6 +123,32 @@ describe('tokenizer', () => {
             expect(tokens.map(t => t.type)).toEqual(['AND', 'OR', 'BANG', 'EOF']);
         });
 
+        test('bitwise operators', () => {
+            const { tokens } = tokenize('& | ^ ~');
+
+            expect(tokens.map(t => t.type)).toEqual(['AMPERSAND', 'PIPE', 'CARET', 'TILDE', 'EOF']);
+        });
+
+        test('shift operators', () => {
+            const { tokens } = tokenize('<< >>');
+
+            expect(tokens.map(t => t.type)).toEqual(['LEFT_SHIFT', 'RIGHT_SHIFT', 'EOF']);
+            expect(tokens[0].value).toBe('<<');
+            expect(tokens[1].value).toBe('>>');
+        });
+
+        test('bitwise vs logical distinction', () => {
+            const { tokens } = tokenize('a & b && c');
+
+            expect(tokens.map(t => t.type)).toEqual(['IDENTIFIER', 'AMPERSAND', 'IDENTIFIER', 'AND', 'IDENTIFIER', 'EOF']);
+        });
+
+        test('shift vs comparison distinction', () => {
+            const { tokens } = tokenize('a << b < c');
+
+            expect(tokens.map(t => t.type)).toEqual(['IDENTIFIER', 'LEFT_SHIFT', 'IDENTIFIER', 'LESS', 'IDENTIFIER', 'EOF']);
+        });
+
         test('arrow operator', () => {
             const { tokens } = tokenize('=>');
 

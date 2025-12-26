@@ -467,6 +467,34 @@ describe('Python codegen', () => {
             expect(compile('scribe non verum')).toContain('print(not True)');
         });
 
+        test('bitwise AND', () => {
+            expect(compile('scribe 5 & 3')).toContain('(5 & 3)');
+        });
+
+        test('bitwise OR', () => {
+            expect(compile('scribe 5 | 3')).toContain('(5 | 3)');
+        });
+
+        test('bitwise XOR', () => {
+            expect(compile('scribe 5 ^ 3')).toContain('(5 ^ 3)');
+        });
+
+        test('bitwise NOT', () => {
+            expect(compile('scribe ~5')).toContain('~5');
+        });
+
+        test('left shift', () => {
+            expect(compile('scribe 1 << 4')).toContain('(1 << 4)');
+        });
+
+        test('right shift', () => {
+            expect(compile('scribe 16 >> 2')).toContain('(16 >> 2)');
+        });
+
+        test('bitwise with hex literals', () => {
+            expect(compile('scribe 0xFF & 0x0F')).toContain('(0xFF & 0x0F)');
+        });
+
         test('ternary with ? :', () => {
             const result = compile('verum ? 1 : 0');
             expect(result).toBe('1 if True else 0');
