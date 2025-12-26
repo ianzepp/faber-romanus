@@ -54,7 +54,6 @@ Functional methods (`filtrata`, `mappata`, `reducta`, etc.) emit `@compileError`
 
 **Not yet implemented (any target):**
 
-- [-] Array destructuring (`ex arr fixum [a, b, ceteri rest]`) — requires parser work
 - [-] Collection DSL (`ex items filtra ubi...`) — requires parser work
 - [-] Closure syntax (`per property`, `{ .property }`) — requires parser work
 - [-] Tabula/copia literals — no syntax for `tabula { k: v }` or `copia { a, b }`
@@ -231,6 +230,8 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 
 ## Array Destructuring
 
+**Status:** Implemented for all targets (TS, Py, Zig, C++).
+
 Positional extraction from arrays, using the same `ex` syntax as object destructuring.
 
 ### Why Array Destructuring?
@@ -364,18 +365,19 @@ scribe x  // 20
 
 ### Target Mappings
 
-| Target     | Syntax                            |
-| ---------- | --------------------------------- |
-| TypeScript | `const [a, b, ...rest] = arr`     |
-| Python     | `a, b, *rest = arr`               |
-| Zig        | Manual indexing or slice patterns |
-| Rust       | `let [a, b, rest @ ..] = arr`     |
+| Target     | Syntax                                              |
+| ---------- | --------------------------------------------------- |
+| TypeScript | `const [a, b, ...rest] = arr`                       |
+| Python     | `a, b, *rest = arr`                                 |
+| Zig        | Expanded to indexed access: `_tmp[0]`, `_tmp[1..]`  |
+| C++        | Expanded to indexed access with iterators           |
+| Rust       | `let [a, b, rest @ ..] = arr` (not yet implemented) |
 
-### Open Questions
+### Design Decisions
 
-1. **Nested destructuring**: Allow `ex arr fixum [[a, b], c]` for nested arrays?
-2. **Default values**: Allow `ex arr fixum [a, b = 0]` for missing elements?
-3. **Length mismatch**: Error or silent `nihil` for missing positions?
+1. **Nested destructuring**: Not supported. Keep patterns flat.
+2. **Default values**: Not supported. No `ex arr fixum [a, b = 0]` syntax.
+3. **Length mismatch**: Runtime behavior depends on target (undefined/nil for missing positions).
 
 ---
 
