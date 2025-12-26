@@ -260,7 +260,7 @@ describe('zig codegen', () => {
     });
 
     describe('switch statements', () => {
-        test('elige generates switch', () => {
+        test('elige generates if-else chain', () => {
             const zig = compile(`
         elige x {
           si 1 { a() }
@@ -268,9 +268,8 @@ describe('zig codegen', () => {
         }
       `);
 
-            expect(zig).toContain('switch (x)');
-            expect(zig).toContain('1 =>');
-            expect(zig).toContain('2 =>');
+            expect(zig).toContain('if ((x == 1))');
+            expect(zig).toContain('else if ((x == 2))');
         });
 
         test('elige with default', () => {
@@ -281,8 +280,20 @@ describe('zig codegen', () => {
         }
       `);
 
-            expect(zig).toContain('switch (x)');
-            expect(zig).toContain('else =>');
+            expect(zig).toContain('if ((x == 1))');
+            expect(zig).toContain('else {');
+        });
+
+        test('elige with strings uses std.mem.eql', () => {
+            const zig = compile(`
+        elige status {
+          si "active" { a() }
+          si "pending" { b() }
+        }
+      `);
+
+            expect(zig).toContain('std.mem.eql(u8, status, "active")');
+            expect(zig).toContain('std.mem.eql(u8, status, "pending")');
         });
     });
 

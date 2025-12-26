@@ -991,74 +991,26 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
     }
 
     /**
-     * Generate switch statement.
+     * Generate switch statement as if-else chain.
      *
      * TRANSFORMS:
      *   elige x { si 1 { a() } si 2 { b() } aliter { c() } }
-     *   -> switch (x) { 1 => a(), 2 => b(), else => c() }
+     *   -> if (x == 1) { a(); } else if (x == 2) { b(); } else { c(); }
      *
-     * TARGET: Zig uses switch (x) { value => expr, ... } syntax.
-     *         However, Zig cannot switch on strings, so we convert to if-else chain.
+     *   elige status { si "pending" { ... } aliter { ... } }
+     *   -> if (std.mem.eql(u8, status, "pending")) { ... } else { ... }
+     *
+     * WHY: Always use if-else chains instead of switch statements.
+     *      Switch is outdated, Zig can't switch on strings, and if-else
+     *      is more consistent across all target languages.
      */
     function genSwitchStatement(node: SwitchStatement): string {
         const discriminant = genExpression(node.discriminant);
 
-        // Check if discriminant is a string type - need if-else chain instead
-        // Also check if any case test is a string literal (fallback when type info unavailable)
+        // Check if comparing strings (need std.mem.eql)
         const hasStringCase = node.cases.some(c => c.test.type === 'Literal' && typeof c.test.value === 'string');
+        const isString = isStringType(node.discriminant) || hasStringCase;
 
-        if (isStringType(node.discriminant) || hasStringCase) {
-            return genStringSwitchStatement(node, discriminant);
-        }
-
-        let result = `${ind()}switch (${discriminant}) {\n`;
-
-        depth++;
-
-        for (const caseNode of node.cases) {
-            const test = genExpression(caseNode.test);
-
-            result += `${ind()}${test} => {\n`;
-            depth++;
-
-            for (const stmt of caseNode.consequent.body) {
-                result += genStatement(stmt) + '\n';
-            }
-
-            depth--;
-            result += `${ind()}},\n`;
-        }
-
-        if (node.defaultCase) {
-            result += `${ind()}else => {\n`;
-            depth++;
-
-            for (const stmt of node.defaultCase.body) {
-                result += genStatement(stmt) + '\n';
-            }
-
-            depth--;
-            result += `${ind()}},\n`;
-        }
-
-        depth--;
-        result += `${ind()}}`;
-
-        return result;
-    }
-
-    /**
-     * Generate string switch as if-else chain with std.mem.eql.
-     *
-     * TRANSFORMS:
-     *   elige status { si "pending" { ... } si "active" { ... } aliter { ... } }
-     *   -> if (std.mem.eql(u8, status, "pending")) { ... }
-     *      else if (std.mem.eql(u8, status, "active")) { ... }
-     *      else { ... }
-     *
-     * TARGET: Zig cannot switch on []const u8, must use std.mem.eql for comparison.
-     */
-    function genStringSwitchStatement(node: SwitchStatement, discriminant: string): string {
         let result = '';
         let first = true;
 
@@ -1067,7 +1019,10 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             const prefix = first ? '' : ' else ';
             first = false;
 
-            result += `${ind()}${prefix}if (std.mem.eql(u8, ${discriminant}, ${test})) {\n`;
+            // Use std.mem.eql for strings, == for everything else
+            const condition = isString ? `std.mem.eql(u8, ${discriminant}, ${test})` : `(${discriminant} == ${test})`;
+
+            result += `${ind()}${prefix}if (${condition}) {\n`;
             depth++;
 
             for (const stmt of caseNode.consequent.body) {
