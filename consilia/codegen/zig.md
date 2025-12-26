@@ -46,6 +46,7 @@ Faber has nominal interfaces (`pactum`). Zig uses structural/duck typing with no
 **Key insight:** Interface enforcement happens in Faber's semantic analyzer, not Zig. This is analogous to TypeScript → JavaScript: TypeScript enforces types at compile time, then emits untyped JavaScript. By the time JS runs, the types are already validated.
 
 Similarly:
+
 1. Faber checks that `genus X implet Y` has all methods declared in `pactum Y`
 2. Errors are raised during Faber compilation if methods are missing
 3. Zig receives already-validated code — no interface info needed
@@ -93,32 +94,32 @@ Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works
 
 ## Current Implementation
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Variables | Done | `var`/`const` |
-| Functions | Done | `fn` with params and return type |
-| Control flow | Done | `if`, `while`, `for`, `switch` |
-| `genus` | Done | `struct` with `init()` |
-| `pactum` | Done | Enforced in semantic analyzer; emits doc comment |
-| `ego` | Done | → `self` |
-| `novum .. de` | Done | `@hasField` pattern |
-| Async | Partial | Error unions, not real async |
-| Generators | No | Would need iterator struct |
-| Generics | No | Would need comptime params |
-| Collections | No | `lista` methods not mapped |
+| Feature       | Status  | Notes                                            |
+| ------------- | ------- | ------------------------------------------------ |
+| Variables     | Done    | `var`/`const`                                    |
+| Functions     | Done    | `fn` with params and return type                 |
+| Control flow  | Done    | `if`, `while`, `for`, `switch`                   |
+| `genus`       | Done    | `struct` with `init()`                           |
+| `pactum`      | Done    | Enforced in semantic analyzer; emits doc comment |
+| `ego`         | Done    | → `self`                                         |
+| `novum .. de` | Done    | `@hasField` pattern                              |
+| Async         | Partial | Error unions, not real async                     |
+| Generators    | No      | Would need iterator struct                       |
+| Generics      | No      | Would need comptime params                       |
+| Collections   | No      | `lista` methods not mapped                       |
 
 ## Type Mappings
 
-| Faber | Zig | Notes |
-|-------|-----|-------|
-| `textus` | `[]const u8` | String slice |
-| `numerus` | `i64` | Integer |
-| `fractus` | `f64` | Floating point |
-| `decimus` | — | Requires external library |
-| `bivalens` | `bool` | Boolean |
-| `nihil` | `void` | Unit type |
-| `vacuum` | `void` | Void return |
-| `textus?` | `?[]const u8` | Optional |
+| Faber      | Zig           | Notes                     |
+| ---------- | ------------- | ------------------------- |
+| `textus`   | `[]const u8`  | String slice              |
+| `numerus`  | `i64`         | Integer                   |
+| `fractus`  | `f64`         | Floating point            |
+| `decimus`  | —             | Requires external library |
+| `bivalens` | `bool`        | Boolean                   |
+| `nihil`    | `void`        | Unit type                 |
+| `vacuum`   | `void`        | Void return               |
+| `textus?`  | `?[]const u8` | Optional                  |
 
 ## Ownership Design: Latin Prepositions
 
@@ -126,11 +127,11 @@ Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works
 
 Faber uses Latin prepositions to annotate borrowing semantics. This design is shared with the Rust target (see rust.md for full rationale).
 
-| Preposition | Meaning | Zig Output |
-|-------------|---------|------------|
-| (none) | Owned, may allocate | Allocator-managed value |
-| `de` | Borrowed, read-only | `[]const u8`, `*const T` |
-| `in` | Mutable borrow | `*T`, `*[]u8` |
+| Preposition | Meaning             | Zig Output               |
+| ----------- | ------------------- | ------------------------ |
+| (none)      | Owned, may allocate | Allocator-managed value  |
+| `de`        | Borrowed, read-only | `[]const u8`, `*const T` |
+| `in`        | Mutable borrow      | `*T`, `*[]u8`            |
 
 ### Examples
 
@@ -152,6 +153,7 @@ functio append(in lista<textus> items, textus value) {
 ```
 
 **Zig output:**
+
 ```zig
 fn greet(alloc: Allocator, name: []const u8) []const u8 {
     return std.fmt.allocPrint(alloc, "Hello, {s}!", .{name}) catch @panic("OOM");
@@ -168,14 +170,14 @@ fn append(alloc: Allocator, items: *std.ArrayList([]const u8), value: []const u8
 
 ### Type Mappings with Prepositions
 
-| Faber | Zig | Notes |
-|-------|-----|-------|
-| `textus` | arena-allocated `[]const u8` | Owned string |
-| `de textus` | `[]const u8` | Borrowed slice (no alloc needed) |
-| `in textus` | `*std.ArrayList(u8)` | Mutable string buffer |
-| `lista<T>` | `std.ArrayList(T)` | Arena-managed list |
-| `de lista<T>` | `[]const T` | Borrowed slice view |
-| `in lista<T>` | `*std.ArrayList(T)` | Mutable list pointer |
+| Faber         | Zig                          | Notes                            |
+| ------------- | ---------------------------- | -------------------------------- |
+| `textus`      | arena-allocated `[]const u8` | Owned string                     |
+| `de textus`   | `[]const u8`                 | Borrowed slice (no alloc needed) |
+| `in textus`   | `*std.ArrayList(u8)`         | Mutable string buffer            |
+| `lista<T>`    | `std.ArrayList(T)`           | Arena-managed list               |
+| `de lista<T>` | `[]const T`                  | Borrowed slice view              |
+| `in lista<T>` | `*std.ArrayList(T)`          | Mutable list pointer             |
 
 ## Memory Management: Arena Allocator
 
@@ -211,6 +213,7 @@ pub fn main() void {
 ### Allocator Threading
 
 Functions that may allocate receive `alloc: std.mem.Allocator` as a hidden first parameter. The codegen inserts this automatically for:
+
 - Functions returning owned values (no `de` on return type)
 - Functions that concatenate strings
 - Functions that build collections
@@ -282,6 +285,7 @@ Reads as: "for x, return x times 2" — same `pro` as iteration.
 Zig doesn't have closures. Lambdas compile to function pointers with explicit context.
 
 **Expression lambda:**
+
 ```
 // Faber
 pro x redde x * 2
@@ -291,6 +295,7 @@ struct { fn call(x: i64) i64 { return x * 2; } }.call
 ```
 
 **Block lambda:**
+
 ```
 // Faber
 pro user {
@@ -308,6 +313,7 @@ struct {
 ```
 
 **Capturing lambda:**
+
 ```
 // Faber
 fixum multiplier = 2
@@ -333,14 +339,15 @@ Faber uses a simplified error model that maps cleanly to Zig's error unions. Thi
 
 ### Keywords
 
-| Keyword | Meaning | Zig Output |
-|---------|---------|------------|
-| `iace` | Expected failure, recoverable | `return error.X` |
-| `mori` | Fatal, unrecoverable | `@panic("msg")` |
-| `fac` | Block scope (like `{}`) | scoped block |
-| `cape` | Catch errors on block | `catch \|err\|` |
+| Keyword | Meaning                       | Zig Output       |
+| ------- | ----------------------------- | ---------------- |
+| `iace`  | Expected failure, recoverable | `return error.X` |
+| `mori`  | Fatal, unrecoverable          | `@panic("msg")`  |
+| `fac`   | Block scope (like `{}`)       | scoped block     |
+| `cape`  | Catch errors on block         | `catch \|err\|`  |
 
 **Target-specific keywords:**
+
 - `tempta`/`demum` - Available for TS/Python (maps to try/finally), but **not valid for Zig** because `demum` has no equivalent. Use `fac`/`cape` instead.
 
 ### `fac` vs `tempta`
@@ -370,6 +377,7 @@ For Zig, `tempta` is rejected because it implies `demum` which cannot be impleme
 ### `iace` - Recoverable Errors
 
 `iace` (throw) becomes an error return. The compiler automatically:
+
 1. Marks functions containing `iace` as failable
 2. Changes return type from `T` to `!T`
 3. Inserts `try` at call sites of failable functions
@@ -386,6 +394,7 @@ fixum result = fetch(url)
 ```
 
 **Zig output:**
+
 ```zig
 fn fetch(alloc: Allocator, url: []const u8) ![]const u8 {
     if (timeout) { return error.Timeout; }
@@ -428,6 +437,7 @@ si needsData {
 ```
 
 **Zig output:**
+
 ```zig
 if (riskyCall()) |_| {
     // success path
@@ -460,28 +470,199 @@ Functions that can fail get an inferred error set based on all possible errors i
 The core tension: **Faber leans toward dynamic/high-level semantics** while **Zig is explicitly low-level**. The ownership prepositions and arena allocator bridge this gap, giving Zig users familiar semantics without sacrificing Faber's accessibility.
 
 Remaining tensions:
+
 - **Comptime vs runtime** - Faber doesn't distinguish; may generate runtime code where comptime would work
 - **Generics** - Faber's runtime-style generics vs Zig's comptime monomorphization
 
 ## Current Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Variables | Done | `var`/`const` |
-| Functions | Done | `fn` with params and return type |
-| Control flow | Done | `if`, `while`, `for`, `switch` |
-| `genus` | Done | `struct` with `init()` |
-| `pactum` | Done | Enforced in semantic analyzer; emits doc comment |
-| `ego` | Done | → `self` |
-| `novum .. de` | Done | `@hasField` pattern |
-| Async | Partial | Error unions, not real async |
-| Generators | No | Would need iterator struct |
-| Generics | No | Would need comptime params |
-| Collections | No | `lista` methods not mapped |
-| `de`/`in` prepositions | No | Design complete, not implemented |
-| Arena allocator | No | Design complete, not implemented |
-| `iace`/`mori` errors | No | Design complete, not implemented |
-| `fac` lambdas | No | Design complete, not implemented |
+| Feature                | Status  | Notes                                            |
+| ---------------------- | ------- | ------------------------------------------------ |
+| Variables              | Done    | `var`/`const`                                    |
+| Functions              | Done    | `fn` with params and return type                 |
+| Control flow           | Done    | `if`, `while`, `for`; `switch` → if-else chain   |
+| `genus`                | Done    | `struct` with `init()`                           |
+| `pactum`               | Done    | Enforced in semantic analyzer; emits doc comment |
+| `ego`                  | Done    | → `self`                                         |
+| `novum .. de`          | Partial | `@hasField` pattern; init() arity issues         |
+| Async                  | Partial | Error unions, not real async                     |
+| Generators             | No      | Would need iterator struct                       |
+| Generics               | Partial | `lista<T>` → `[]T`, but runtime issues           |
+| Collections            | No      | `lista` methods not mapped                       |
+| `de`/`in` prepositions | No      | Design complete, not implemented                 |
+| Arena allocator        | No      | Design complete, not implemented                 |
+| `iace`/`mori` errors   | No      | Design complete, not implemented                 |
+| Lambdas                | Done    | Anonymous struct pattern                         |
+
+## Exempla Test Results
+
+Testing exempla files against Zig compiler. Status: **10/45 passing**.
+
+### Passing Files (10)
+
+- functiones/basic
+- fundamenta/fixum, litterae, salve, scribe, varia
+- regimen/si-ergo, elige
+- typi/bigint
+
+### Failure Categories
+
+#### 1. `anytype` in Variable/Return Position (8 files)
+
+Zig only allows `anytype` in function parameters, not in variable declarations or return types.
+
+| File                     | Issue                         |
+| ------------------------ | ----------------------------- |
+| regimen/adfirma          | `var result: anytype = value` |
+| regimen/clausura         | Lambda return type `anytype`  |
+| regimen/de-pro           | Function return `anytype`     |
+| regimen/dum              | `var current: anytype = n`    |
+| regimen/errores          | Function return `anytype`     |
+| regimen/ex-pro           | `var element: anytype`        |
+| structurae/destructuring | Function return `anytype`     |
+| structurae/in            | Function return `anytype`     |
+| structurae/objecta       | Function return `anytype`     |
+
+**Fix needed:** Infer concrete types or use comptime generics.
+
+#### 2. Unused Function Parameters (6 files)
+
+Zig strictly enforces parameter usage.
+
+| File                 | Issue                    |
+| -------------------- | ------------------------ |
+| errores/tempta-cape  | Unused param in function |
+| fundamenta/primitivi | Unused param in function |
+| operatores/logici    | Unused param in function |
+| operatores/nulla     | Unused param in function |
+| regimen/si-aliter    | Unused param in function |
+| structurae/pactum    | Multiple unused params   |
+
+**Fix needed:** Update exempla to use parameters, or prefix with `_`.
+
+#### 3. Comptime Value Resolution (4 files)
+
+Runtime string operations where Zig expects comptime.
+
+| File                      | Issue                     |
+| ------------------------- | ------------------------- |
+| functiones/praepositiones | String concat at runtime  |
+| functiones/typed          | String concat at runtime  |
+| functiones/verba          | String concat at runtime  |
+| operatores/ternarius      | Integer in string context |
+
+**Fix needed:** Arena allocator for runtime string building.
+
+#### 4. No Main Function (2 files)
+
+Library-only files with no top-level statements.
+
+| File             | Issue                      |
+| ---------------- | -------------------------- |
+| functiones/async | Only function declarations |
+| typi/aliases     | Only type aliases          |
+
+**Fix needed:** Skip these in executable tests, or add main.
+
+#### 5. Init Arity Mismatch (3 files)
+
+Generated `init()` expects argument but called with none.
+
+| File                      | Issue                     |
+| ------------------------- | ------------------------- |
+| structurae/genus/creo     | `Type.init()` missing arg |
+| structurae/genus/defaults | `Type.init()` missing arg |
+| structurae/genus/methods  | `Type.init()` missing arg |
+
+**Fix needed:** Generate `init()` with optional parameter, or `init(.{})`.
+
+#### 6. Array Literal Type Mismatch (2 files)
+
+Zig anonymous struct vs explicit slice type.
+
+| File                   | Issue                                |
+| ---------------------- | ------------------------------------ |
+| structurae/genus/basic | `.{1,2,3}` not assignable to `[]i64` |
+| typi/collectiones      | Array init syntax on slice type      |
+
+**Fix needed:** Use `&[_]i64{1,2,3}` or ArrayList.
+
+#### 7. Spread Not Supported (1 file)
+
+Object spread generates `@compileError`.
+
+| File              | Issue                      |
+| ----------------- | -------------------------- |
+| operatores/sparge | `{ sparge defaults, ... }` |
+
+**Status:** Known limitation, documented.
+
+#### 8. Loop Variable Redeclaration (1 file)
+
+Multiple loops with same variable name.
+
+| File                  | Issue                  |
+| --------------------- | ---------------------- |
+| operatores/intervalla | `var i` declared twice |
+
+**Fix needed:** Generate unique loop variable names.
+
+#### 9. Null Comparison on Non-Optional (1 file)
+
+Comparing string pointer with null.
+
+| File            | Issue                                     |
+| --------------- | ----------------------------------------- |
+| regimen/custodi | `name == null` where name is `[]const u8` |
+
+**Fix needed:** `nulla`/`nonnulla` should check resolved type.
+
+#### 10. String in Template Literal (1 file)
+
+Newline in string literal.
+
+| File           | Issue                         |
+| -------------- | ----------------------------- |
+| structurae/ego | Template literal with newline |
+
+**Fix needed:** Escape or use multi-line string syntax.
+
+#### 11. Duplicate Import (1 file)
+
+Same module imported twice.
+
+| File          | Issue                       |
+| ------------- | --------------------------- |
+| importa/basic | `_utilities` declared twice |
+
+**Fix needed:** Deduplicate imports in codegen.
+
+#### 12. Optional Print Format (1 file)
+
+Printing optional without specifier.
+
+| File          | Issue                     |
+| ------------- | ------------------------- |
+| typi/nullable | `{s}` for optional string |
+
+**Fix needed:** Use `{?}` or `{any}` for optionals.
+
+#### 13. Vel on Non-Optional (1 file)
+
+Nullish coalescing on non-optional type.
+
+| File           | Issue                                |
+| -------------- | ------------------------------------ |
+| operatores/vel | `zero orelse 99` where zero is `i64` |
+
+**Fix needed:** Only use `orelse` on optional types.
+
+#### 14. Other (2 files)
+
+| File                | Issue                                      |
+| ------------------- | ------------------------------------------ |
+| errores/cape-inline | Variable mutation tracking                 |
+| errores/iace        | Forward reference to undeclared identifier |
 
 ## Future Considerations
 
