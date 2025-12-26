@@ -1004,7 +1004,10 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         const discriminant = genExpression(node.discriminant);
 
         // Check if discriminant is a string type - need if-else chain instead
-        if (isStringType(node.discriminant)) {
+        // Also check if any case test is a string literal (fallback when type info unavailable)
+        const hasStringCase = node.cases.some(c => c.test.type === 'Literal' && typeof c.test.value === 'string');
+
+        if (isStringType(node.discriminant) || hasStringCase) {
             return genStringSwitchStatement(node, discriminant);
         }
 
