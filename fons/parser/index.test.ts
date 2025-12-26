@@ -2246,6 +2246,87 @@ describe('parser', () => {
                 expect(expr.body.type).toBe('LambdaExpression');
             });
         });
+
+        describe('pro expression with return type annotation', () => {
+            test('lambda with return type and : shorthand', () => {
+                const { program } = parseCode('pro x -> numerus: x * 2');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.params).toHaveLength(1);
+                expect(expr.params[0].name).toBe('x');
+                expect(expr.returnType).toBeDefined();
+                expect(expr.returnType.name).toBe('numerus');
+                expect(expr.body.type).toBe('BinaryExpression');
+            });
+
+            test('lambda with return type and redde', () => {
+                const { program } = parseCode('pro x -> numerus redde x * 2');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.returnType).toBeDefined();
+                expect(expr.returnType.name).toBe('numerus');
+            });
+
+            test('lambda with return type and block body', () => {
+                const { program } = parseCode('pro x -> textus { redde "hello" }');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.returnType).toBeDefined();
+                expect(expr.returnType.name).toBe('textus');
+                expect(expr.body.type).toBe('BlockStatement');
+            });
+
+            test('zero-param lambda with return type', () => {
+                const { program } = parseCode('pro -> numerus: 42');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.params).toHaveLength(0);
+                expect(expr.returnType).toBeDefined();
+                expect(expr.returnType.name).toBe('numerus');
+            });
+
+            test('multi-param lambda with return type', () => {
+                const { program } = parseCode('pro a, b -> numerus: a + b');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.params).toHaveLength(2);
+                expect(expr.returnType).toBeDefined();
+                expect(expr.returnType.name).toBe('numerus');
+            });
+
+            test('lambda without return type has undefined returnType', () => {
+                const { program } = parseCode('pro x: x * 2');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.returnType).toBeUndefined();
+            });
+
+            test('lambda with nullable return type', () => {
+                const { program } = parseCode('pro x -> textus?: nihil');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.returnType).toBeDefined();
+                expect(expr.returnType.name).toBe('textus');
+                expect(expr.returnType.nullable).toBe(true);
+            });
+
+            test('lambda with generic return type', () => {
+                const { program } = parseCode('pro x -> lista<numerus>: [x]');
+                const expr = (program!.body[0] as any).expression;
+
+                expect(expr.type).toBe('LambdaExpression');
+                expect(expr.returnType).toBeDefined();
+                expect(expr.returnType.name).toBe('lista');
+                expect(expr.returnType.typeParameters).toHaveLength(1);
+            });
+        });
     });
 
     describe('import declarations', () => {

@@ -1593,8 +1593,12 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate Latin lambda expression (pro x redde expr).
+     *
+     * TARGET: Python lambdas don't support type annotations, so returnType
+     *         is ignored. Use def with type hints for typed functions.
      */
     function genLambdaExpression(node: LambdaExpression): string {
+        // Note: node.returnType is ignored in Python - lambdas can't have type hints
         const params = node.params.map(p => p.name).join(', ');
 
         // Simple expression body -> lambda

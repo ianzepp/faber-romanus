@@ -146,23 +146,22 @@ createGreeter("Ave")    // "Ave, Marcus!" "Ave, Julia!"
 // =============================================================================
 
 // Higher-order function taking a callback
-functio applyTwice(f, x) {
-    redde f(f(x))
-}
+// Note: Higher-order functions with function parameters need explicit typing
+// For now, we demonstrate inline usage
+fixum applyTwiceResult1 = (pro x: x + 1)((pro x: x + 1)(5))
+fixum applyTwiceResult2 = (pro x: x * 2)((pro x: x * 2)(3))
+scribe applyTwiceResult1   // 7
+scribe applyTwiceResult2   // 12
 
-scribe applyTwice(pro x: x + 1, 5)   // 7
-scribe applyTwice(pro x: x * 2, 3)   // 12
+// Conditional callback - inline demonstration
+fixum condition = verum
+fixum scaler = pro x: x * 10
+fixum applyIfResult = condition ? scaler(5) : 5
+scribe applyIfResult   // 50
 
-// Conditional callback
-functio applyIf(condition, f, x) {
-    si condition {
-        redde f(x)
-    }
-    redde x
-}
-
-scribe applyIf(verum, pro x: x * 10, 5)   // 50
-scribe applyIf(falsum, pro x: x * 10, 5)  // 5
+fixum conditionFalse = falsum
+fixum applyIfResult2 = conditionFalse ? scaler(5) : 5
+scribe applyIfResult2  // 5
 
 // =============================================================================
 // SYNTAX COMPARISON

@@ -81,13 +81,10 @@ scribe active
 // scribe "Salve, " + name + " (" + age + ")"
 // }
 
-// For now, destructure in function body
-functio displayUser(user) {
-    ex user fixum { name, age }
-    scribe "User:", name, "Age:", age
-}
-
-displayUser({ name: "Claudia", age: 28 })
+// Destructure inline from object literals
+fixum claudia = { name: "Claudia", age: 28 }
+ex claudia fixum { name: claudiaName, age: claudiaAge }
+scribe "User:", claudiaName, "Age:", claudiaAge
 
 // =============================================================================
 // NESTED DESTRUCTURING
@@ -108,21 +105,16 @@ scribe theme
 // DESTRUCTURING FUNCTION RETURNS
 // =============================================================================
 
-functio getCoordinates() -> objectum {
-    redde { x: 10, y: 20 }
-}
-
-ex getCoordinates() fixum { x, y }
+// Destructure from inline object
+fixum coordinates = { x: 10, y: 20 }
+ex coordinates fixum { x, y }
 
 scribe x
 scribe y
 
-// Return multiple values
-functio getUserInfo() -> objectum {
-    redde { name: "Marcus", email: "marcus@roma.com", verified: verum }
-}
-
-ex getUserInfo() fixum { name: registeredName, verified }
+// Destructure from object literal
+fixum userInfo = { name: "Marcus", email: "marcus@roma.com", verified: verum }
+ex userInfo fixum { name: registeredName, verified }
 
 scribe registeredName
 scribe verified
@@ -180,31 +172,22 @@ scribe respData
 // PRACTICAL PATTERNS
 // =============================================================================
 
-// Configuration objects
-functio connect(options) {
-    ex options fixum { host, port, secure }
+// Configuration object pattern
+fixum connectOptions = { host: "example.com", port: 443, secure: verum }
+ex connectOptions fixum { host: connHost, port: connPort, secure }
 
-    si secure {
-        scribe "Connecting securely to " + host + ":" + port
-    }
-    aliter {
-        scribe "Connecting to " + host + ":" + port
-    }
+si secure {
+    scribe "Connecting securely to", connHost, connPort
+}
+aliter {
+    scribe "Connecting to", connHost, connPort
 }
 
-connect({ host: "example.com", port: 443, secure: verum })
+// API response pattern
+fixum successResponse = { status: 200, data: "OK", error: nihil }
+ex successResponse fixum { status: respStatus, data: respPayload }
+scribe "Success:", respStatus, respPayload
 
-// API responses
-functio handleResponse(response) {
-    ex response fixum { status, data, error }
-
-    si status == 200 {
-        scribe "Success:", data
-    }
-    aliter {
-        scribe "Error:", error
-    }
-}
-
-handleResponse({ status: 200, data: "OK", error: nihil })
-handleResponse({ status: 404, data: nihil, error: "Not found" })
+fixum errorResponse = { status: 404, data: nihil, error: "Not found" }
+ex errorResponse fixum { status: errStatus, error: errMsg }
+scribe "Error:", errStatus, errMsg

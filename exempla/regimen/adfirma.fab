@@ -34,7 +34,7 @@ scribe "Assertions passed"
 // ASSERTIONS IN FUNCTIONS
 // =============================================================================
 
-functio divide(a, b) -> numerus {
+functio divide(numerus a, numerus b) -> numerus {
     adfirma b != 0, "divisor cannot be zero"
     redde a / b
 }
@@ -42,7 +42,7 @@ functio divide(a, b) -> numerus {
 scribe divide(10, 2)
 
 // Assert preconditions
-functio sqrt(n) -> numerus {
+functio sqrt(numerus n) -> numerus {
     adfirma n >= 0, "cannot take square root of negative number"
     redde n
 }
@@ -53,7 +53,7 @@ scribe sqrt(16)
 // MULTIPLE ASSERTIONS
 // =============================================================================
 
-functio processRange(start, end, step) -> numerus {
+functio processRange(numerus start, numerus end, numerus step) -> numerus {
     adfirma start >= 0, "start must be non-negative"
     adfirma end > start, "end must be greater than start"
     adfirma step > 0, "step must be positive"
@@ -68,7 +68,7 @@ scribe processRange(0, 100, 10)
 // INVARIANT CHECKS
 // =============================================================================
 
-functio calculatePercentage(part, whole) -> numerus {
+functio calculatePercentage(numerus part, numerus whole) -> numerus {
     adfirma whole > 0, "whole must be positive"
     adfirma part >= 0, "part must be non-negative"
     adfirma part <= whole, "part cannot exceed whole"
@@ -88,10 +88,10 @@ scribe calculatePercentage(50, 200)
 // POST-CONDITION ASSERTIONS
 // =============================================================================
 
-functio clamp(value, min, max) -> numerus {
+functio clamp(numerus value, numerus min, numerus max) -> numerus {
     adfirma min <= max, "min must be <= max"
 
-    varia result = value
+    varia numerus result = value
 
     si result < min {
         result = min
@@ -128,15 +128,15 @@ scribe getFirst([1, 2, 3])
 // =============================================================================
 
 // GOOD: Check invariants and preconditions during development
-functio factorial(n) -> numerus {
+functio factorial(numerus n) -> numerus {
     adfirma n >= 0, "factorial only defined for non-negative integers"
 
     si n == 0 || n == 1 {
         redde 1
     }
 
-    varia result = 1
-    varia i = 2
+    varia numerus result = 1
+    varia numerus i = 2
 
     dum i <= n {
         result = result * i
@@ -164,7 +164,7 @@ scribe factorial(0)
 // =============================================================================
 
 // custodi: for validation with fallback/recovery
-functio processAge(age) -> textus {
+functio processAge(numerus age) -> textus {
     custodi {
         si age < 0 {
             redde "Invalid age"
@@ -175,7 +175,7 @@ functio processAge(age) -> textus {
 }
 
 // adfirma: for invariants that should never fail
-functio processValidAge(age) -> textus {
+functio processValidAge(numerus age) -> textus {
     adfirma age >= 0, "age must be non-negative"
     redde "Age: " + age
 }

@@ -79,6 +79,7 @@ import type {
     Literal,
     Parameter,
     TypeAnnotation,
+    LambdaExpression,
 } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 
@@ -928,6 +929,8 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
                 return genNewExpression(node);
             case 'ConditionalExpression':
                 return `(${genExpression(node.test)} ? ${genExpression(node.consequent)} : ${genExpression(node.alternate)})`;
+            case 'LambdaExpression':
+                return genLambdaExpression(node);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }
@@ -1178,6 +1181,32 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         const body = genExpression(node.body as Expression);
 
         return `[&](${params}) { return ${body}; }`;
+    }
+
+    /**
+     * Generate Latin lambda expression (pro x redde expr).
+     *
+     * TRANSFORMS:
+     *   pro x: x + 1 -> [](auto x) { return x + 1; }
+     *   pro x -> numerus: x + 1 -> [](auto x) -> int64_t { return x + 1; }
+     *
+     * TARGET: C++ lambdas support trailing return types with ->
+     */
+    function genLambdaExpression(node: LambdaExpression): string {
+        const params = node.params.map(p => `auto ${p.name}`).join(', ');
+
+        // Add return type annotation if present
+        const returnTypeAnno = node.returnType ? ` -> ${genType(node.returnType)}` : '';
+
+        if (node.body.type === 'BlockStatement') {
+            const body = genBlockStatement(node.body);
+
+            return `[&](${params})${returnTypeAnno} ${body}`;
+        }
+
+        const body = genExpression(node.body as Expression);
+
+        return `[&](${params})${returnTypeAnno} { return ${body}; }`;
     }
 
     function genAssignmentExpression(node: AssignmentExpression): string {

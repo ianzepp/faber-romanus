@@ -60,7 +60,7 @@ de config pro key {
 // =============================================================================
 
 functio countKeys(objectum obj) -> numerus {
-    varia count = 0
+    varia numerus count = 0
     de obj pro k {
         count = count + 1
     }
@@ -69,17 +69,9 @@ functio countKeys(objectum obj) -> numerus {
 
 scribe countKeys({ a: 1, b: 2, c: 3 })
 
-// Clone object (simple)
-functio cloneObject(objectum source) -> objectum {
-    fixum result = {}
-    de source pro key {
-        result[key] = source[key]
-    }
-    redde result
-}
-
+// Clone object (demonstration - direct property access)
 fixum original = { x: 10, y: 20 }
-fixum copy = cloneObject(original)
+fixum copy = { x: original.x, y: original.y }
 scribe copy.x
 scribe copy.y
 

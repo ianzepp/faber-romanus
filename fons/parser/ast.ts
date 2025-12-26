@@ -833,26 +833,31 @@ export interface FacBlockStatement extends BaseNode {
  * Pro expression (lambda/anonymous function).
  *
  * GRAMMAR (in EBNF):
- *   lambdaExpr := 'pro' params? ('redde' expression | blockStmt)
+ *   lambdaExpr := 'pro' params? ('->' typeAnnotation)? (':' expression | 'redde' expression | blockStmt)
  *   params := IDENTIFIER (',' IDENTIFIER)*
  *
  * INVARIANT: params is always an array (empty for zero-arg lambdas).
  * INVARIANT: async inferred from presence of cede in block body.
+ * INVARIANT: returnType is optional - required for Zig target.
  *
  * WHY: Latin 'pro' (for) + 'redde' (return) creates lambda syntax.
  *      Expression form: "for x, return x * 2"
  *      Block form: "for x { ... }" for multi-statement bodies
+ *      Return type mirrors function syntax: "pro x -> numerus: x * 2"
  *
  * Examples:
- *   pro x redde x * 2     -> (x) => x * 2
- *   pro x, y redde x + y  -> (x, y) => x + y
- *   pro redde 42          -> () => 42
- *   pro x { redde x * 2 } -> (x) => { return x * 2; }
- *   pro { scribe "hi" }   -> () => { console.log("hi"); }
+ *   pro x redde x * 2          -> (x) => x * 2
+ *   pro x, y redde x + y       -> (x, y) => x + y
+ *   pro redde 42               -> () => 42
+ *   pro x { redde x * 2 }      -> (x) => { return x * 2; }
+ *   pro { scribe "hi" }        -> () => { console.log("hi"); }
+ *   pro x -> numerus: x * 2    -> (x): number => x * 2 (typed return)
+ *   pro -> textus: "hello"     -> (): string => "hello" (typed, zero-param)
  */
 export interface LambdaExpression extends BaseNode {
     type: 'LambdaExpression';
     params: Identifier[];
+    returnType?: TypeAnnotation;
     body: Expression | BlockStatement;
     async: boolean;
 }

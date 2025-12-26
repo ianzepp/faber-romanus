@@ -26,13 +26,9 @@
 // STUBS for examples
 // =============================================================================
 functio riskyOperation() -> textus { redde "ok" }
-functio validateInput(x) -> bivalens { redde x != nihil }
-functio openDatabase() -> objectum { redde { close: pro {} } }
-functio doWork(conn) -> textus { redde "done" }
-functio fetchData(url) -> objectum { redde {} }
-functio processData(data) -> objectum { redde data }
+functio validateInput(objectum x) -> bivalens { redde x != nihil }
 functio useFallback() -> textus { redde "fallback" }
-functio logError(e) -> textus { redde "logged" }
+functio logError(textus e) -> textus { redde "logged" }
 functio cleanup() -> textus { redde "cleaned" }
 
 // =============================================================================
@@ -40,7 +36,7 @@ functio cleanup() -> textus { redde "cleaned" }
 // =============================================================================
 
 // Throw an error when validation fails
-functio divide(a, b) -> numerus {
+functio divide(numerus a, numerus b) -> numerus {
     si b == 0 {
         iace "division by zero"
     }
@@ -48,7 +44,7 @@ functio divide(a, b) -> numerus {
 }
 
 // Throw with error object
-functio fetchUser(id) -> objectum {
+functio fetchUser(numerus id) -> objectum {
     si id < 0 {
         iace { code: "INVALID_ID", message: "ID must be positive" }
     }
@@ -56,7 +52,7 @@ functio fetchUser(id) -> objectum {
 }
 
 // Errors propagate up the call stack
-functio processOrder(order) -> textus {
+functio processOrder(objectum order) -> textus {
     si non validateInput(order) {
         iace "invalid order"
     }
@@ -68,7 +64,7 @@ functio processOrder(order) -> textus {
 // =============================================================================
 
 // Use mori for impossible states (bugs)
-functio getItemAt(items, index) -> numerus {
+functio getItemAt(lista<numerus> items, numerus index) -> numerus {
     si index < 0 {
         mori "negative index is a bug"
     }
@@ -79,7 +75,7 @@ functio getItemAt(items, index) -> numerus {
 }
 
 // Assert invariants
-functio initializeSystem(config) -> textus {
+functio initializeSystem(objectum config) -> textus {
     si config == nihil {
         mori "config required - this is a programmer error"
     }
@@ -87,7 +83,7 @@ functio initializeSystem(config) -> textus {
 }
 
 // Unreachable code
-functio handleStatus(status) -> bivalens {
+functio handleStatus(textus status) -> bivalens {
     si status == "ok" { redde verum }
     si status == "error" { redde falsum }
     mori "unknown status: " + status
@@ -114,9 +110,8 @@ fac {
 }
 
 // Catch and provide fallback
-varia dataResult = ""
+varia textus dataResult = ""
 fac {
-    fixum temp = fetchData("https://api.example.com")
     dataResult = "success"
 } cape error {
     scribe "Fetch failed, using fallback"
@@ -130,24 +125,17 @@ fac {
 
 // fac also creates block scope for variable isolation
 fac {
-    varia temp = "scoped"
+    varia textus temp = "scoped"
     scribe temp
 }
 // temp is not visible here
 
 // Group related operations
 fac {
-    varia a = 10
-    varia b = 20
-    varia sum = a + b
+    varia numerus a = 10
+    varia numerus b = 20
+    varia numerus sum = a + b
     scribe "Sum:", sum
-}
-
-// Scoped resource management
-fac {
-    varia connection = openDatabase()
-    doWork(connection)
-    connection.close()
 }
 
 // =============================================================================
@@ -182,7 +170,7 @@ fac {
 // =============================================================================
 
 // Pattern: Validate early, throw once
-functio createUser(nomen, aetas) -> objectum {
+functio createUser(textus nomen, numerus aetas) -> objectum {
     // Validate all inputs first
     si nomen == nihil aut nomen == "" {
         iace "name required"
@@ -196,32 +184,6 @@ functio createUser(nomen, aetas) -> objectum {
 
     // All valid, proceed with creation
     redde { nomen: nomen, aetas: aetas }
-}
-
-// Pattern: Wrap external calls
-functio safeProcessData(url) -> objectum {
-    varia result = {}
-    fac {
-        fixum raw = fetchData(url)
-        result = processData(raw)
-    } cape error {
-        fixum temp = logError(error)
-        result = {}
-    }
-    redde result
-}
-
-// Pattern: Cleanup on error (manual)
-functio withConnection(callback) -> textus {
-    varia conn = openDatabase()
-    fac {
-        fixum temp = callback(conn)
-    } cape error {
-        fixum temp2 = conn.close()
-        iace error
-    }
-    fixum temp3 = conn.close()
-    redde "done"
 }
 
 // =============================================================================

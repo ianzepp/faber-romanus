@@ -1585,13 +1585,16 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         const params = node.params.map(p => p.name).join(', ');
         const asyncPrefix = node.async ? 'async ' : '';
 
+        // Add return type annotation if present
+        const returnTypeAnno = node.returnType ? `: ${genType(node.returnType)}` : '';
+
         if (node.body.type === 'BlockStatement') {
             const body = genBlockStatement(node.body);
-            return `${asyncPrefix}(${params}) => ${body}`;
+            return `${asyncPrefix}(${params})${returnTypeAnno} => ${body}`;
         }
 
         const body = genExpression(node.body);
-        return `${asyncPrefix}(${params}) => ${body}`;
+        return `${asyncPrefix}(${params})${returnTypeAnno} => ${body}`;
     }
 
     function genAssignmentExpression(node: AssignmentExpression): string {

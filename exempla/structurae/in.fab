@@ -66,19 +66,15 @@ scribe display.volume
 // IN BLOCKS IN FUNCTIONS
 // =============================================================================
 
-functio configureServer(host, port) -> objectum {
-    fixum server = { host: "", port: 0, started: falsum }
+// Server configuration pattern
+fixum myServer = { host: "", port: 0, started: falsum }
 
-    in server {
-        host = host
-        port = port
-        started = verum
-    }
-
-    redde server
+in myServer {
+    host = "example.com"
+    port = 443
+    started = verum
 }
 
-fixum myServer = configureServer("example.com", 443)
 scribe myServer.host
 scribe myServer.port
 

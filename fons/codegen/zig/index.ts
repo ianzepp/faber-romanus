@@ -1408,27 +1408,31 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      *
      * TARGET: Zig uses .{ .field = value } for struct literals.
      *
-     * LIMITATION: Zig doesn't have object spread. We generate a compile error
-     *             for spread in objects since it would require comptime reflection.
+     * LIMITATION: Zig doesn't have object spread. We skip spread elements
+     *             since they cannot be represented in Zig struct literals.
+     *
+     * EDGE: 'error' is a reserved keyword in Zig, rename to 'err'.
      */
     function genObjectExpression(node: ObjectExpression): string {
         if (node.properties.length === 0) {
             return '.{}';
         }
 
-        const props = node.properties.map(prop => {
-            // Handle spread element
-            if (prop.type === 'SpreadElement') {
-                // WHY: Zig doesn't support struct spread/merge at runtime
-                // Would require comptime reflection or explicit field copying
-                return `@compileError("Object spread not supported in Zig target")`;
-            }
+        // Filter out spread elements - they can't be represented in Zig
+        const props = node.properties
+            .filter(prop => prop.type !== 'SpreadElement')
+            .map(prop => {
+                let key = prop.key.type === 'Identifier' ? prop.key.name : String((prop.key as Literal).value);
 
-            const key = prop.key.type === 'Identifier' ? prop.key.name : String((prop.key as Literal).value);
-            const value = genExpression(prop.value);
+                // EDGE: 'error' is reserved in Zig
+                if (key === 'error') {
+                    key = 'err';
+                }
 
-            return `.${key} = ${value}`;
-        });
+                const value = genExpression(prop.value);
+
+                return `.${key} = ${value}`;
+            });
 
         return `.{ ${props.join(', ')} }`;
     }
@@ -1602,7 +1606,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         if (node.callee.type === 'Identifier' && node.callee.name === '_scribe') {
             const args = node.arguments.map(genArg);
             const formatSpecs = node.arguments.map(arg => {
-                if (arg.type === 'SpreadElement') return '{any}';
+                if (arg.type === 'SpreadElement') {
+                    return '{any}';
+                }
                 return getFormatSpecifier(arg);
             });
             const format = formatSpecs.join(' ') + '\\n';
@@ -1706,58 +1712,55 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * Generate arrow function (emulated).
      *
      * TRANSFORMS:
-     *   (x) => x + 1 -> struct { fn call(x: anytype) anytype { return x + 1; } }.call
+     *   (x) => x + 1 -> @compileError("Arrow functions not supported in Zig")
      *
-     * TARGET: Zig doesn't have arrow functions. We emulate with anonymous struct
-     *         containing a function. This is a simplification for basic cases.
+     * TARGET: Zig doesn't have arrow functions or lambdas as first-class values.
+     *         Arrow functions don't have return type annotations in Faber, so
+     *         they cannot be compiled to Zig. Use pro syntax with return type instead.
      *
-     * LIMITATION: This pattern doesn't capture closures properly. Full implementation
-     *             would require passing captured variables explicitly.
+     * LIMITATION: Arrow functions should be converted to lambdas with return types
+     *             or named functions for Zig target.
      */
-    function genArrowFunction(node: ArrowFunctionExpression): string {
-        const params = node.params.map(genParameter).join(', ');
-
-        if (node.body.type === 'BlockStatement') {
-            const body = genBlockStatement(node.body);
-
-            return `struct { fn call(${params}) anytype ${body} }.call`;
-        }
-
-        const body = genExpression(node.body as Expression);
-
-        return `struct { fn call(${params}) anytype { return ${body}; } }.call`;
+    function genArrowFunction(_node: ArrowFunctionExpression): string {
+        return `@compileError("Arrow functions not supported in Zig - use 'pro x -> Type: expr' syntax")`;
     }
 
     /**
      * Generate lambda expression (pro syntax).
      *
      * TRANSFORMS:
-     *   pro x: x * 2 -> struct { fn call(x: anytype) anytype { return x * 2; } }.call
-     *   pro x, y: x + y -> struct { fn call(x: anytype, y: anytype) anytype { return x + y; } }.call
-     *   pro: 42 -> struct { fn call() anytype { return 42; } }.call
-     *   pro x { redde x * 2 } -> struct { fn call(x: anytype) anytype { return x * 2; } }.call
+     *   pro x -> numerus: x * 2 -> struct { fn call(x: anytype) i64 { return x * 2; } }.call
+     *   pro x: x * 2 -> @compileError("Lambda requires return type for Zig")
      *
-     * TARGET: Zig doesn't have lambdas/closures. We emulate with anonymous struct
-     *         containing a function, same pattern as arrow functions.
+     * TARGET: Zig doesn't have lambdas/closures as first-class values.
+     *         We emulate with anonymous struct containing a function.
+     *         This ONLY works when a return type annotation is provided,
+     *         because anytype can't be used as a return type in Zig.
      *
-     * LIMITATION: This pattern doesn't capture closures properly. Full implementation
-     *             would require passing captured variables explicitly or using
-     *             Zig's comptime function pointers with context.
+     * LIMITATION: Closures are not properly supported - captured variables
+     *             would need to be passed explicitly via context struct.
      */
     function genLambdaExpression(node: LambdaExpression): string {
+        // WHY: Zig doesn't support first-class functions with inferred return types.
+        // With an explicit return type, we can generate valid Zig code.
+        if (!node.returnType) {
+            return `@compileError("Lambda requires return type annotation for Zig target: pro x -> Type: expr")`;
+        }
+
         // Build parameter list - lambda params are just Identifiers
         const params = node.params.map(p => `${p.name}: anytype`).join(', ');
+        const returnType = genType(node.returnType);
 
         if (node.body.type === 'BlockStatement') {
             const body = genBlockStatement(node.body);
 
-            return `struct { fn call(${params}) anytype ${body} }.call`;
+            return `struct { fn call(${params}) ${returnType} ${body} }.call`;
         }
 
         // Expression body
         const body = genExpression(node.body as Expression);
 
-        return `struct { fn call(${params}) anytype { return ${body}; } }.call`;
+        return `struct { fn call(${params}) ${returnType} { return ${body}; } }.call`;
     }
 
     /**

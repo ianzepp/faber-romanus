@@ -232,6 +232,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `pro x: expr` (colon shorthand) |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [ ]  |
 | `pro x { body }` (block)        |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [ ]  |
 | `pro redde expr` (zero-param)   |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [ ]  |
+| `pro x -> T: expr` (ret. type)  |    [x]     | [x] |  [-]   | [ ]  | [ ]  |  [x]  |
 | `(x) => expr` (JS-style)        |    [x]     | [~] |  [~]   | [ ]  | [ ]  |  [x]  |
 | `per property` (shorthand)      |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 

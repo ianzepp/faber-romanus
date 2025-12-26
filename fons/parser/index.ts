@@ -3062,29 +3062,36 @@ export function parse(tokens: Token[]): ParserResult {
 
         const params: Identifier[] = [];
 
-        // Check for immediate redde, :, or { (zero-param lambda)
-        if (!checkKeyword('redde') && !check('COLON') && !check('LBRACE')) {
-            // Parse parameters until we hit redde, :, or {
+        // Check for immediate redde, :, ->, or { (zero-param lambda)
+        if (!checkKeyword('redde') && !check('COLON') && !check('LBRACE') && !check('THIN_ARROW')) {
+            // Parse parameters until we hit redde, :, ->, or {
             do {
                 params.push(parseIdentifier());
             } while (match('COMMA'));
         }
 
+        // Parse optional return type annotation: -> Type
+        let returnType: TypeAnnotation | undefined;
+
+        if (match('THIN_ARROW')) {
+            returnType = parseTypeAnnotation();
+        }
+
         let body: Expression | BlockStatement;
 
         if (check('LBRACE')) {
-            // Block form: pro x { ... }
+            // Block form: pro x { ... } or pro x -> T { ... }
             body = parseBlockStatement();
         } else if (match('COLON')) {
-            // Expression shorthand: pro x: expr
+            // Expression shorthand: pro x: expr or pro x -> T: expr
             body = parseExpression();
         } else {
-            // Expression form: pro x redde expr
+            // Expression form: pro x redde expr or pro x -> T redde expr
             expectKeyword('redde', ParserErrorCode.ExpectedKeywordRedde);
             body = parseExpression();
         }
 
-        return { type: 'LambdaExpression', params, body, async: false, position };
+        return { type: 'LambdaExpression', params, returnType, body, async: false, position };
     }
 
     /**

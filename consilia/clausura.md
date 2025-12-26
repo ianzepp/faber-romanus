@@ -4,20 +4,21 @@ Latin: _clausura_ (from _claudere_, to close) — a closure, enclosure.
 
 ## Implementation Status
 
-| Feature                           |  TypeScript  |    Python    |     Zig      |     Rust     |              C++23              | Notes                              |
-| --------------------------------- | :----------: | :----------: | :----------: | :----------: | :-----------------------------: | ---------------------------------- |
-| `pro x redde expr` expression     |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Single-expression lambda           |
-| `pro x: expr` shorthand           |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | `:` as alias for `redde`           |
-| `pro x, y redde expr` multi-param |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Multiple parameters                |
-| `pro redde expr` zero-param       |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | No parameters                      |
-| `pro x { body }` block            |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Multi-statement body               |
-| `pro { body }` zero-param block   |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | No parameters, block body          |
-| Nested lambdas                    |   [x] Done   |   [x] Done   | [ ] Not Done | [ ] Not Done |            [x] Done             | `pro x: pro y: x + y`              |
+| Feature                           |  TypeScript  |    Python    |     Zig      |     Rust     |              C++23              | Notes                          |
+| --------------------------------- | :----------: | :----------: | :----------: | :----------: | :-----------------------------: | ------------------------------ |
+| `pro x redde expr` expression     |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Single-expression lambda       |
+| `pro x: expr` shorthand           |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | `:` as alias for `redde`       |
+| `pro x, y redde expr` multi-param |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Multiple parameters            |
+| `pro redde expr` zero-param       |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | No parameters                  |
+| `pro x { body }` block            |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Multi-statement body           |
+| `pro { body }` zero-param block   |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | No parameters, block body      |
+| Nested lambdas                    |   [x] Done   |   [x] Done   | [ ] Not Done | [ ] Not Done |            [x] Done             | `pro x: pro y: x + y`          |
 | Captures                          |   [x] Done   |   [x] Done   | [ ] Not Done |   [x] Done   | Implicit capture of outer scope |
-| `(x) => expr` JS-style            |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Alternative syntax                 |
-| Async lambdas                     |   [x] Done   |   [x] Done   | [ ] Not Done | [ ] Not Done |            [x] Done             | Use block form with `cede`         |
-| Generator lambdas                 | [ ] Not Done | [ ] Not Done | [ ] Not Done | [ ] Not Done |          [ ] Not Done           | Use named functions                |
-| Typed parameters                  | [ ] Not Done | [ ] Not Done | [ ] Not Done | [ ] Not Done |          [ ] Not Done           | Future: `pro numerus x: x * 2`     |
+| `(x) => expr` JS-style            |   [x] Done   |   [x] Done   | [~] Partial  | [ ] Not Done |            [x] Done             | Alternative syntax             |
+| Async lambdas                     |   [x] Done   |   [x] Done   | [ ] Not Done | [ ] Not Done |            [x] Done             | Use block form with `cede`     |
+| Generator lambdas                 | [ ] Not Done | [ ] Not Done | [ ] Not Done | [ ] Not Done |          [ ] Not Done           | Use named functions            |
+| Typed parameters                  | [ ] Not Done | [ ] Not Done | [ ] Not Done | [ ] Not Done |          [ ] Not Done           | Future: `pro numerus x: x * 2` |
+| Return type annotation            |   [x] Done   |   [-] N/A    |   [x] Done   | [ ] Not Done |            [x] Done             | `pro x -> numerus: x * 2`      |
 
 ---
 
@@ -66,6 +67,27 @@ pro {
 }
 ```
 
+### Return Type Annotation
+
+For targets that require explicit return types (e.g., Zig), use `-> Type` after params:
+
+```
+pro <params> -> <type>: <expr>
+pro <params> -> <type> redde <expr>
+pro <params> -> <type> { <body> }
+```
+
+Examples:
+
+```
+pro x -> numerus: x * 2           // expression with return type
+pro x, y -> numerus: x + y        // multi-param
+pro -> textus: "hello"            // zero-param
+pro x -> textus { redde "hello" } // block body
+```
+
+Mirrors function syntax: `functio double(x) -> numerus { ... }`
+
 ---
 
 ## Etymology and Design
@@ -87,8 +109,8 @@ pro {
 
 The colon acts as a "defined as" operator, consistent with object literal syntax:
 
-| Symbol | Meaning        | Examples                    |
-| ------ | -------------- | --------------------------- |
+| Symbol | Meaning         | Examples                    |
+| ------ | --------------- | --------------------------- |
 | `:`    | "is defined as" | `{ x: 42 }`, `pro x: x * 2` |
 | `=`    | "assign to"     | `sit x = 5`, `x = 10`       |
 
@@ -266,12 +288,24 @@ lambda x: x * 2
 
 ### Zig
 
+Zig requires explicit return types. Without a return type annotation, a compile error is generated:
+
 ```
-// Faber
+// Faber (without return type - compile error)
 pro x: x * 2
 
-// Zig (no closures, uses struct)
-struct { fn call(x: i64) i64 { return x * 2; } }.call
+// Zig
+@compileError("Lambda requires return type annotation for Zig target")
+```
+
+With return type annotation:
+
+```
+// Faber (with return type)
+pro x -> numerus: x * 2
+
+// Zig
+struct { fn call(x: anytype) i64 { return x * 2; } }.call
 ```
 
 ### Rust
