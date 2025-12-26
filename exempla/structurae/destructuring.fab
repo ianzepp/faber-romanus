@@ -152,12 +152,12 @@ scribe price
 // COMPARISON WITH MANUAL EXTRACTION
 // =============================================================================
 
-fixum response = { status: 200, data: { value: 42 }, error: nihil }
+fixum response = { status: 200, data: { value: 42 }, erratum: nihil }
 
 // Without destructuring (verbose):
 fixum status = response.status
 fixum responseData = response.data
-fixum error = response.error
+fixum respError = response.erratum
 
 scribe status
 scribe responseData
@@ -184,10 +184,10 @@ aliter {
 }
 
 // API response pattern
-fixum successResponse = { status: 200, data: "OK", error: nihil }
+fixum successResponse = { status: 200, data: "OK", erratum: nihil }
 ex successResponse fixum { status: respStatus, data: respPayload }
 scribe "Success:", respStatus, respPayload
 
-fixum errorResponse = { status: 404, data: nihil, error: "Not found" }
-ex errorResponse fixum { status: errStatus, error: errMsg }
+fixum errorResponse = { status: 404, data: nihil, erratum: "Not found" }
+ex errorResponse fixum { status: errStatus, erratum: errMsg }
 scribe "Error:", errStatus, errMsg

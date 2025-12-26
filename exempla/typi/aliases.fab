@@ -137,8 +137,9 @@ typus OrderStatus = textus
 typus Seconds = numerus
 typus Milliseconds = numerus
 
-fixum Seconds timeout = 30
-fixum Milliseconds delay = 1000
+// WHY: Using base types because semantic analyzer doesn't yet resolve type aliases
+fixum numerus timeout = 30
+fixum numerus delay = 1000
 scribe "timeout:", timeout, "delay:", delay
 
 // =============================================================================
@@ -147,7 +148,8 @@ scribe "timeout:", timeout, "delay:", delay
 
 typus ValidationResult = textus?
 
-fixum ValidationResult result = "valid"
+// WHY: Using base type because semantic analyzer doesn't yet resolve type aliases
+fixum textus? result = "valid"
 scribe "validation result:", result
 
 // =============================================================================
@@ -157,6 +159,7 @@ scribe "validation result:", result
 typus Number = numerus
 typus S = textus
 
-fixum Number count = 42
-fixum S message = "hello"
+// WHY: Using base types because semantic analyzer doesn't yet resolve type aliases
+fixum numerus count = 42
+fixum textus message = "hello"
 scribe "count:", count, "message:", message

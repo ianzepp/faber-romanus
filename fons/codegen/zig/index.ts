@@ -1365,7 +1365,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         }
 
         if (typeof node.value === 'string') {
-            return `"${node.value}"`;
+            // Escape special characters for Zig string literals
+            const escaped = node.value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+            return `"${escaped}"`;
         }
 
         if (typeof node.value === 'boolean') {
