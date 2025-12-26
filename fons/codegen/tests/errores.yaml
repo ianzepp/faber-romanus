@@ -1,0 +1,93 @@
+# Errores - Error handling codegen tests
+# Covers: tempta/cape/demum, iace/mori, fac blocks
+
+# Try/catch/finally
+- name: tempta cape
+  input: |
+      tempta {
+        riskyCode()
+      }
+      cape error {
+        handleError()
+      }
+  ts:
+      - 'try {'
+      - 'catch (error)'
+  py:
+      - 'try:'
+      - 'except Exception as error:'
+
+- name: tempta with demum
+  input: |
+      tempta {
+        riskyCode()
+      }
+      cape error {
+        handleError()
+      }
+      demum {
+        cleanup()
+      }
+  ts:
+      - 'try {'
+      - 'finally {'
+      - 'cleanup()'
+  py:
+      - 'try:'
+      - 'finally:'
+      - 'cleanup()'
+
+# Throw
+- name: iace string
+  input: 'iace "error message"'
+  ts:
+      - 'throw'
+      - 'error message'
+  py:
+      - 'raise Exception("error message")'
+
+- name: iace with Error
+  input: 'iace novum Error("msg")'
+  ts:
+      - 'throw'
+      - 'new Error'
+  py:
+      - 'raise Exception("msg")'
+
+- name: iace variable
+  input: iace err
+  ts:
+      - 'throw'
+      - 'err'
+  py:
+      - 'raise err'
+
+# Panic (mori)
+- name: mori string
+  input: 'mori "something went wrong"'
+  ts:
+      - 'throw new Panic("something went wrong")'
+  py:
+      - 'raise SystemExit("something went wrong")'
+
+# Fac block
+- name: fac block bare
+  input: 'fac { varia x = 1 }'
+  ts:
+      - '{'
+      - 'let x = 1'
+  py:
+      - 'x = 1'
+
+- name: fac with cape
+  input: 'fac { x() } cape e { y() }'
+  ts:
+      - 'try {'
+      - 'x()'
+      - 'catch (e)'
+      - 'y()'
+  py:
+      - 'try:'
+      - 'x()'
+      - 'except Exception as e:'
+      - 'y()'

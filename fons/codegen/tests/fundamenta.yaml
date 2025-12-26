@@ -1,0 +1,156 @@
+# Fundamenta - Basic language constructs
+# Covers: variable declarations, literals, object/array literals, scribe
+
+# Variable declarations
+- name: const declaration
+  input: fixum x = 1
+  ts: 'const x = 1;'
+  py: 'x = 1'
+  zig: 'const x = 1;'
+
+- name: let declaration
+  input: varia nomen = "Marcus"
+  ts: 'let nomen = "Marcus";'
+  py: 'nomen = "Marcus"'
+  zig: 'var nomen = "Marcus";'
+
+- name: const with type annotation
+  input: fixum numerus x = 42
+  ts: 'const x: number = 42;'
+  py: 'x: int = 42'
+  zig: 'const x: i64 = 42;'
+
+- name: const with await
+  input: |
+      futura functio fetchData() -> textus { redde "data" }
+      figendum data = fetchData()
+  ts:
+      - 'const data = await fetchData()'
+  py:
+      - 'data = await fetchData()'
+
+- name: let with await
+  input: |
+      futura functio getResult() -> numerus { redde 42 }
+      variandum result = getResult()
+  ts:
+      - 'let result = await getResult()'
+  py:
+      - 'result = await getResult()'
+
+# Special expressions
+- name: await expression
+  input: cede fetch(url)
+  ts: 'await fetch(url);'
+  py: 'await fetch(url)'
+
+- name: new expression
+  input: novum erratum(message)
+  ts: 'new erratum(message);'
+  py: 'erratum(message)'
+
+- name: true literal
+  input: verum
+  ts: 'true;'
+  py: 'True'
+
+- name: false literal
+  input: falsum
+  ts: 'false;'
+  py: 'False'
+
+- name: null literal
+  input: nihil
+  ts: 'null;'
+  py: 'None'
+
+# Object literals
+- name: empty object
+  input: fixum x = {}
+  ts: 'const x = {};'
+  py: 'x = {}'
+
+- name: object with properties
+  input: 'fixum user = { nomen: "Marcus", aetas: 30 }'
+  ts: 'const user = { nomen: "Marcus", aetas: 30 };'
+  py: 'user = {"nomen": "Marcus", "aetas": 30}'
+
+- name: object with expression values
+  input: 'fixum data = { sum: 1 + 2, active: verum }'
+  ts:
+      - 'sum:'
+      - '1 + 2'
+      - 'active:'
+      - 'true'
+  py:
+      - '"sum":'
+      - '1 + 2'
+      - '"active":'
+      - 'True'
+
+# Array literals
+- name: empty array
+  input: fixum arr = []
+  ts: 'const arr = [];'
+  py: 'arr = []'
+
+- name: array with elements
+  input: fixum nums = [1, 2, 3]
+  ts: 'const nums = [1, 2, 3];'
+  py: 'nums = [1, 2, 3]'
+
+# Hex literals
+- name: hex literal
+  input: fixum x = 0xFF
+  ts: 'const x = 0xFF;'
+  py: 'x = 0xFF'
+
+- name: hex in expression
+  input: 0xFF & 0x0F
+  ts: '(0xFF & 0x0F);'
+  py: '(0xFF & 0x0F)'
+
+- name: hex bigint
+  input: fixum big = 0xFFFFFFFFFFn
+  ts: 'const big = 0xFFFFFFFFFFn;'
+  py: 'big = 0xFFFFFFFFFF'
+
+- name: lowercase hex
+  input: fixum val = 0xabcdef
+  ts: 'const val = 0xabcdef;'
+  py: 'val = 0xabcdef'
+
+# Template literals
+- name: simple template literal
+  input: fixum msg = `hello world`
+  ts: 'const msg = `hello world`;'
+  py: 'msg = f"hello world"'
+
+- name: template with interpolation
+  input: |
+      fixum name = "Marcus"
+      fixum greeting = `Hello, ${name}!`
+  ts:
+      - 'const greeting = `Hello, ${name}!`'
+  py:
+      - 'greeting = f"Hello, ${name}!"'
+
+# Scribe statements
+- name: scribe single arg
+  input: scribe x
+  ts: 'console.log(x);'
+  py: 'print(x)'
+
+- name: scribe multiple args
+  input: 'scribe "a", "b", "c"'
+  ts: 'console.log("a", "b", "c");'
+  py: 'print("a", "b", "c")'
+
+- name: scribe with expression
+  input: scribe x + y
+  ts:
+      - 'console.log'
+      - 'x + y'
+  py:
+      - 'print'
+      - 'x + y'

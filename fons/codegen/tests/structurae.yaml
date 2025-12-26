@@ -1,0 +1,110 @@
+# Structurae - Data structure codegen tests
+# Covers: genus, pactum, destructuring, novum, ego
+
+# Object destructuring
+- name: simple object destructuring
+  input: 'fixum { nomen, aetas } = user'
+  ts: 'const { nomen, aetas } = user;'
+  py:
+      - 'nomen = user["nomen"]'
+      - 'aetas = user["aetas"]'
+
+- name: destructuring with rename
+  input: 'fixum { nomen: localName } = user'
+  ts: 'const { nomen: localName } = user;'
+  py:
+      - 'localName = user["nomen"]'
+
+# Array destructuring
+- name: simple array destructuring
+  input: fixum [a, b, c] = coords
+  ts: 'const [a, b, c] = coords;'
+  py: 'a, b, c = coords'
+
+- name: array destructuring with rest
+  input: fixum [first, ceteri rest] = items
+  ts: 'const [first, ...rest] = items;'
+  py: 'first, *rest = items'
+
+- name: array destructuring with skip
+  input: fixum [_, second, _] = data
+  ts: 'const [, second, ] = data;'
+  py: '_, second, _ = data'
+
+# Genus (class)
+- name: genus with field
+  input: 'genus persona { textus nomen: "X" }'
+  ts:
+      - 'class persona'
+      - 'nomen: string = "X"'
+      - 'constructor('
+  py:
+      - 'class persona:'
+      - 'nomen: str = "X"'
+      - 'def __init__'
+
+- name: genus with method
+  input: |
+      genus persona {
+        textus nomen: "X"
+        functio saluta() { redde ego.nomen }
+      }
+  ts:
+      - 'class persona'
+      - 'return this.nomen'
+  py:
+      - 'class persona:'
+      - 'return self.nomen'
+
+# Novum (new)
+- name: novum without args
+  input: fixum p = novum persona
+  ts: 'const p = new persona();'
+  py: 'p = persona()'
+
+- name: novum with overrides
+  input: 'fixum p = novum persona { nomen: "Claudia" }'
+  ts: 'const p = new persona({ nomen: "Claudia" });'
+  py: 'p = persona({"nomen": "Claudia"})'
+
+# Ego (this/self)
+- name: ego becomes this or self
+  input: |
+      genus persona {
+        textus nomen: "X"
+        functio saluta() { redde ego.nomen }
+      }
+  ts:
+      - 'return this.nomen'
+  py:
+      - 'return self.nomen'
+
+# Pactum (interface/protocol)
+- name: pactum with method
+  input: |
+      pactum Salutator {
+        functio salve(textus nomen) -> textus
+      }
+  ts:
+      - 'interface Salutator'
+      - 'salve(nomen: string): string;'
+  py:
+      - 'class Salutator(Protocol):'
+      - 'def salve(self, nomen: str) -> str:'
+
+- name: genus implements pactum
+  input: |
+      pactum Greeter {
+        functio greet(textus name) -> textus
+      }
+      genus FriendlyGreeter implet Greeter {
+        functio greet(textus name) -> textus {
+          redde "Hello, " + name
+        }
+      }
+  ts:
+      - 'interface Greeter'
+      - 'class FriendlyGreeter implements Greeter'
+  py:
+      - 'class Greeter(Protocol):'
+      - 'class FriendlyGreeter(Greeter):'

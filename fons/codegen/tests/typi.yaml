@@ -1,0 +1,68 @@
+# Typi - Type system codegen tests
+# Covers: type aliases, ordo (enum), union types, nullable
+
+# Type aliases
+- name: simple type alias
+  input: typus ID = textus
+  ts: 'type ID = string;'
+  py: 'ID = str'
+
+- name: generic type alias
+  input: typus StringList = lista<textus>
+  ts: 'type StringList = Array<string>;'
+  py: 'StringList = list[str]'
+
+# Nullable types
+- name: nullable type
+  input: fixum textus? name = nihil
+  ts:
+      - 'string | null'
+  py:
+      - 'str | None'
+
+# Enums
+- name: simple enum
+  input: 'ordo color { rubrum, viridis, caeruleum }'
+  ts: 'enum color { rubrum, viridis, caeruleum }'
+  py:
+      - 'class color(Enum):'
+      - 'rubrum = auto()'
+      - 'viridis = auto()'
+
+- name: enum with values
+  input: 'ordo status { pendens = 0, actum = 1, finitum = 2 }'
+  ts: 'enum status { pendens = 0, actum = 1, finitum = 2 }'
+  py:
+      - 'class status(Enum):'
+      - 'pendens = 0'
+      - 'actum = 1'
+
+- name: enum with string values
+  input: 'ordo direction { north = "N", south = "S" }'
+  ts: 'enum direction { north = "N", south = "S" }'
+  py:
+      - 'class direction(Enum):'
+      - 'north = "N"'
+      - 'south = "S"'
+
+# Type checks
+- name: est with primitive
+  input: fixum check = x est textus
+  ts:
+      - 'typeof x === "string"'
+  py:
+      - 'isinstance(x, str)'
+
+- name: non est with primitive
+  input: fixum check = x non est numerus
+  ts:
+      - 'typeof x !== "number"'
+  py:
+      - 'not isinstance(x, int)'
+
+- name: est with user type
+  input: fixum check = obj est Persona
+  ts:
+      - 'instanceof Persona'
+  py:
+      - 'isinstance(obj, Persona)'

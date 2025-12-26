@@ -1,0 +1,119 @@
+# Functiones - Function declaration and lambda codegen tests
+# Covers: functio, futura, cursor, arrow functions, pro lambdas
+
+# Simple functions
+- name: simple function
+  input: |
+      functio salve(nomen) {
+        redde nomen
+      }
+  ts:
+      - 'function salve(nomen)'
+      - 'return nomen;'
+  py:
+      - 'def salve(nomen):'
+      - 'return nomen'
+
+- name: function with return type
+  input: 'functio greet() -> textus { redde "hello" }'
+  ts:
+      - 'function greet(): string'
+  py:
+      - 'def greet() -> str:'
+
+# Async functions
+- name: async function
+  input: |
+      futura functio fetch(url) {
+        redde data
+      }
+  ts:
+      - 'async function fetch(url)'
+  py:
+      - 'async def fetch(url):'
+
+- name: async function with return type
+  input: 'functio fetch() fiet textus { redde "data" }'
+  ts:
+      - 'async function fetch(): Promise<string>'
+  py:
+      - 'async def fetch() -> Awaitable[str]:'
+
+# Generator functions
+- name: generator function
+  input: 'functio range() fiunt numerus { redde 1 }'
+  ts:
+      - 'function* range(): Generator<number>'
+  py:
+      - 'def range() -> Iterator[int]:'
+
+- name: async generator function
+  input: 'functio stream() fient textus { redde "chunk" }'
+  ts:
+      - 'async function* stream(): AsyncGenerator<string>'
+  py:
+      - 'async def stream() -> AsyncIterator[str]:'
+
+# Yield/await
+- name: cede in generator
+  input: 'functio range() fiunt numerus { cede 1 }'
+  ts:
+      - 'yield 1'
+  py:
+      - 'yield 1'
+
+- name: cede in async function
+  input: 'functio fetch() fiet textus { cede getData() }'
+  ts:
+      - 'await getData()'
+  py:
+      - 'await getData()'
+
+# Arrow functions
+- name: simple arrow
+  input: '(x) => x'
+  ts: '(x) => x;'
+  py: 'lambda x: x'
+
+- name: arrow with block
+  input: '(x) => { redde x }'
+  ts:
+      - '(x) =>'
+      - 'return x;'
+  py: 'lambda x: x'
+
+# Lambda expressions (pro)
+- name: single param lambda
+  input: pro x redde x * 2
+  ts: '(x) => (x * 2);'
+  py: 'lambda x: (x * 2)'
+
+- name: multi param lambda
+  input: pro x, y redde x + y
+  ts: '(x, y) => (x + y);'
+  py: 'lambda x, y: (x + y)'
+
+- name: zero param lambda
+  input: pro redde 42
+  ts: '() => 42;'
+  py: 'lambda : 42'
+
+- name: lambda in variable
+  input: fixum double = pro x redde x * 2
+  ts: 'const double = (x) => (x * 2);'
+  py: 'double = lambda x: (x * 2)'
+
+- name: lambda as callback
+  input: items.filtrata(pro x redde x > 0)
+  ts: 'items.filter((x) => (x > 0));'
+  py:
+      - 'filter'
+      - 'lambda x: (x > 0)'
+
+# Empty blocks
+- name: empty function body
+  input: 'functio noop() {}'
+  ts: 'function noop() {}'
+  py:
+      - 'def noop():'
+      - 'pass'

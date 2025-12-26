@@ -1,0 +1,205 @@
+# Regimen - Control flow codegen tests
+# Covers: si/aliter, dum, ex/de...pro, elige, custodi, adfirma, redde/rumpe/perge
+
+# If statements
+- name: simple if
+  input: |
+      si verum {
+        scribe "yes"
+      }
+  ts:
+      - 'if (true)'
+      - 'console.log("yes")'
+  py:
+      - 'if True:'
+      - 'print("yes")'
+
+- name: if with else
+  input: |
+      si falsum {
+        a()
+      }
+      aliter {
+        b()
+      }
+  ts:
+      - 'if (false)'
+      - '} else {'
+  py:
+      - 'if False:'
+      - 'else:'
+
+- name: if-elif-else chain
+  input: |
+      si x == 1 { a() }
+      aliter si x == 2 { b() }
+      aliter { c() }
+  ts:
+      - 'if ((x == 1))'
+      - 'else if ((x == 2))'
+      - 'else {'
+  py:
+      - 'if (x == 1):'
+      - 'elif (x == 2):'
+      - 'else:'
+
+# While loops
+- name: while loop
+  input: |
+      dum verum {
+        scribe "loop"
+      }
+  ts:
+      - 'while (true)'
+  py:
+      - 'while True:'
+
+# For loops
+- name: for-of loop
+  input: |
+      ex numeros pro numero {
+        scribe numero
+      }
+  ts:
+      - 'for (const numero of numeros)'
+  py:
+      - 'for numero in numeros:'
+
+- name: for-in loop
+  input: |
+      de lista pro item {
+        scribe item
+      }
+  ts:
+      - 'for (const item in lista)'
+  py:
+      - 'for item in lista:'
+
+# Range loops
+- name: simple range loop
+  input: |
+      ex 0..10 pro i {
+        scribe i
+      }
+  ts:
+      - 'for (let i = 0; i < 10; i++)'
+  py:
+      - 'for i in range(0, 10):'
+
+- name: range with step
+  input: |
+      ex 0..10 per 2 pro i {
+        scribe i
+      }
+  ts:
+      - 'for (let i = 0; i < 10; i += 2)'
+  py:
+      - 'for i in range(0, 10, 2):'
+
+- name: inclusive range loop
+  input: |
+      ex 0 usque 10 pro i {
+        scribe i
+      }
+  ts:
+      - 'for (let i = 0; i <= 10; i++)'
+  py:
+      - 'for i in range(0, 10 + 1):'
+
+# Break and continue
+- name: break statement
+  input: |
+      dum verum {
+        rumpe
+      }
+  ts:
+      - 'break;'
+  py:
+      - 'break'
+
+- name: continue statement
+  input: |
+      dum verum {
+        perge
+      }
+  ts:
+      - 'continue;'
+  py:
+      - 'continue'
+
+# Return
+- name: return with value
+  input: |
+      functio f() {
+        redde 42
+      }
+  ts:
+      - 'return 42;'
+  py:
+      - 'return 42'
+
+- name: return without value
+  input: |
+      functio f() {
+        redde
+      }
+  ts:
+      - 'return;'
+  py:
+      - 'return'
+
+# Assert
+- name: assert without message
+  input: adfirma x > 0
+  ts:
+      - 'if (!('
+      - 'throw new Error'
+  py: 'assert (x > 0)'
+
+- name: assert with message
+  input: 'adfirma x > 0, "x must be positive"'
+  ts:
+      - 'throw new Error("x must be positive")'
+  py: 'assert (x > 0), "x must be positive"'
+
+# Elige (switch/match)
+- name: elige with cases
+  input: |
+      elige x {
+        si 1 { a() }
+        si 2 { b() }
+      }
+  ts:
+      - 'if (x === 1)'
+      - 'else if (x === 2)'
+  py:
+      - 'match x:'
+      - 'case 1:'
+      - 'case 2:'
+
+- name: elige with default
+  input: |
+      elige x {
+        si 1 { a() }
+        aliter { c() }
+      }
+  ts:
+      - 'if (x === 1)'
+      - 'else {'
+  py:
+      - 'match x:'
+      - 'case 1:'
+      - 'case _:'
+
+# Guard statements
+- name: guard with condition
+  input: |
+      custodi {
+        si x == nihil { redde }
+      }
+  ts:
+      - 'if ((x == null))'
+      - 'return;'
+  py:
+      - 'if (x == None):'
+      - 'return'
