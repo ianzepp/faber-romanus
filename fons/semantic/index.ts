@@ -367,7 +367,9 @@ export function analyze(program: Program): SemanticResult {
         }
 
         // ex norma importa scribe, series - add specific exports
-        if (!exports) return;
+        if (!exports) {
+            return;
+        }
 
         for (const specifier of node.specifiers) {
             const exportInfo = exports[specifier.name];

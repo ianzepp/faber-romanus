@@ -205,12 +205,18 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
                 return !stmt.fatal; // iace has fatal=false, mori has fatal=true
 
             case 'IfStatement':
-                if (blockContainsIace(stmt.consequent)) return true;
+                if (blockContainsIace(stmt.consequent)) {
+                    return true;
+                }
                 if (stmt.alternate) {
                     if (stmt.alternate.type === 'BlockStatement') {
-                        if (blockContainsIace(stmt.alternate)) return true;
+                        if (blockContainsIace(stmt.alternate)) {
+                            return true;
+                        }
                     } else if (stmt.alternate.type === 'IfStatement') {
-                        if (statementContainsIace(stmt.alternate)) return true;
+                        if (statementContainsIace(stmt.alternate)) {
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -221,21 +227,37 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
             case 'SwitchStatement':
                 for (const c of stmt.cases) {
-                    if (c.type === 'SwitchCase' && blockContainsIace(c.consequent)) return true;
-                    if (c.type === 'VariantCase' && blockContainsIace(c.consequent)) return true;
+                    if (c.type === 'SwitchCase' && blockContainsIace(c.consequent)) {
+                        return true;
+                    }
+                    if (c.type === 'VariantCase' && blockContainsIace(c.consequent)) {
+                        return true;
+                    }
                 }
-                if (stmt.defaultCase && blockContainsIace(stmt.defaultCase)) return true;
+                if (stmt.defaultCase && blockContainsIace(stmt.defaultCase)) {
+                    return true;
+                }
                 return false;
 
             case 'TryStatement':
-                if (blockContainsIace(stmt.block)) return true;
-                if (stmt.handler && blockContainsIace(stmt.handler.body)) return true;
-                if (stmt.finalizer && blockContainsIace(stmt.finalizer)) return true;
+                if (blockContainsIace(stmt.block)) {
+                    return true;
+                }
+                if (stmt.handler && blockContainsIace(stmt.handler.body)) {
+                    return true;
+                }
+                if (stmt.finalizer && blockContainsIace(stmt.finalizer)) {
+                    return true;
+                }
                 return false;
 
             case 'FacBlockStatement':
-                if (blockContainsIace(stmt.body)) return true;
-                if (stmt.catchClause && blockContainsIace(stmt.catchClause.body)) return true;
+                if (blockContainsIace(stmt.body)) {
+                    return true;
+                }
+                if (stmt.catchClause && blockContainsIace(stmt.catchClause.body)) {
+                    return true;
+                }
                 return false;
 
             case 'GuardStatement':
@@ -1361,7 +1383,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         let first = true;
 
         for (const caseNode of node.cases) {
-            if (caseNode.type !== 'SwitchCase') continue;
+            if (caseNode.type !== 'SwitchCase') {
+                continue;
+            }
 
             const test = genExpression(caseNode.test);
             const prefix = first ? '' : ' else ';

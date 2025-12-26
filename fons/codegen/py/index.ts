@@ -224,8 +224,12 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         }
 
         const parts: string[] = [];
-        if (imports.length > 0) parts.push(imports.join('\n'));
-        if (helpers.length > 0) parts.push(helpers.join('\n\n'));
+        if (imports.length > 0) {
+            parts.push(imports.join('\n'));
+        }
+        if (helpers.length > 0) {
+            parts.push(helpers.join('\n\n'));
+        }
 
         return parts.length > 0 ? parts.join('\n\n') + '\n\n' : '';
     }
