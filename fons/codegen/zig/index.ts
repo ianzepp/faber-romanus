@@ -654,11 +654,20 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      *   futura functio f(): numerus -> fn f() !i64
      *
      * TARGET: Zig uses fn not function. Async becomes error union (!T).
+     *
+     * EDGE: anytype is not valid as a return type in Zig. If the return type
+     *       resolves to anytype (from objectum/ignotum), generate a compile error.
      */
     function genFunctionDeclaration(node: FunctionDeclaration): string {
         const name = node.name.name;
         const params = node.params.map(genParameter).join(', ');
         const returnType = node.returnType ? genType(node.returnType) : 'void';
+
+        // EDGE: anytype is not valid as return type in Zig
+        if (returnType === 'anytype') {
+            const body = `{ @compileError("Function '${name}' returns objectum/ignotum which has no Zig equivalent - use a concrete type"); }`;
+            return `${ind()}fn ${name}(${params}) void ${body}`;
+        }
 
         // TARGET: Async in Zig uses error unions (!T) not async/await
         const retType = node.async ? `!${returnType}` : returnType;
@@ -844,6 +853,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * TRANSFORMS:
      *   functio saluta() -> textus { redde ego.nomen }
      *   -> pub fn saluta(self: *const Self) []const u8 { return self.nomen; }
+     *
+     * EDGE: anytype is not valid as a return type in Zig.
      */
     function genStructMethod(node: FunctionDeclaration): string {
         const name = node.name.name;
@@ -853,6 +864,11 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         // Add self parameter - use *Self for methods that might mutate
         const selfParam = 'self: *const Self';
         const allParams = [selfParam, ...params].join(', ');
+
+        // EDGE: anytype is not valid as return type in Zig
+        if (returnType === 'anytype') {
+            return `${ind()}pub fn ${name}(${allParams}) void { @compileError("Method '${name}' returns objectum/ignotum which has no Zig equivalent - use a concrete type"); }`;
+        }
 
         const lines: string[] = [];
 
