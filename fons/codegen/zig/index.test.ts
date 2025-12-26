@@ -1,6 +1,7 @@
 import { test, expect, describe } from 'bun:test';
 import { tokenize } from '../../tokenizer';
 import { parse } from '../../parser';
+import { analyze } from '../../semantic';
 import { generate } from '../index';
 
 function compile(code: string): string {
@@ -11,7 +12,11 @@ function compile(code: string): string {
         throw new Error('Parse failed');
     }
 
-    return generate(program, { target: 'zig' });
+    // WHY: Semantic analysis populates resolvedType on AST nodes,
+    // which is needed for collection method dispatch (tabula vs copia vs lista)
+    const { program: analyzedProgram } = analyze(program);
+
+    return generate(analyzedProgram, { target: 'zig' });
 }
 
 describe('zig codegen', () => {
@@ -775,6 +780,268 @@ describe('zig codegen', () => {
 
             expect(zig).toContain('const m_val');
             expect(zig).toContain('= 0xabcdef');
+        });
+    });
+
+    // =========================================================================
+    // LISTA METHODS - Latin Array API for Zig
+    // =========================================================================
+    describe('lista methods - Latin ArrayList API', () => {
+        // Helper to compile with lista variable in scope
+        const listaCompile = (expr: string) => compile(`fixum lista<numerus> items = []\n${expr}`);
+
+        describe('arena preamble', () => {
+            test('emits arena allocator when lista is used', () => {
+                const zig = listaCompile('items.adde(1)');
+
+                expect(zig).toContain('var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator)');
+                expect(zig).toContain('defer arena.deinit()');
+                expect(zig).toContain('const alloc = arena.allocator()');
+            });
+        });
+
+        describe('adding elements', () => {
+            test('adde -> append with allocator', () => {
+                const zig = listaCompile('items.adde(42)');
+
+                expect(zig).toContain('items.append(alloc, 42)');
+                expect(zig).toContain('catch @panic("OOM")');
+            });
+
+            test('praepone -> insert at 0', () => {
+                const zig = listaCompile('items.praepone(1)');
+
+                expect(zig).toContain('items.insert(alloc, 0, 1)');
+            });
+
+            test('addita -> compileError (not implemented)', () => {
+                const zig = listaCompile('items.addita(1)');
+
+                expect(zig).toContain('@compileError');
+            });
+        });
+
+        describe('removing elements', () => {
+            test('remove -> pop', () => {
+                const zig = listaCompile('items.remove()');
+
+                expect(zig).toContain('items.pop()');
+            });
+
+            test('decapita -> orderedRemove(0)', () => {
+                const zig = listaCompile('items.decapita()');
+
+                expect(zig).toContain('items.orderedRemove(0)');
+            });
+
+            test('purga -> clearRetainingCapacity', () => {
+                const zig = listaCompile('items.purga()');
+
+                expect(zig).toContain('items.clearRetainingCapacity()');
+            });
+        });
+
+        describe('accessing elements', () => {
+            test('primus -> items[0]', () => {
+                const zig = listaCompile('items.primus()');
+
+                expect(zig).toContain('items.items[0]');
+            });
+
+            test('ultimus -> items[items.len - 1]', () => {
+                const zig = listaCompile('items.ultimus()');
+
+                expect(zig).toContain('items.items[items.items.len - 1]');
+            });
+
+            test('accipe -> items[index]', () => {
+                const zig = listaCompile('items.accipe(2)');
+
+                expect(zig).toContain('items.items[2]');
+            });
+        });
+
+        describe('properties', () => {
+            test('longitudo -> items.len', () => {
+                const zig = listaCompile('items.longitudo()');
+
+                expect(zig).toContain('items.items.len');
+            });
+
+            test('vacua -> items.len == 0', () => {
+                const zig = listaCompile('items.vacua()');
+
+                expect(zig).toContain('items.items.len == 0');
+            });
+        });
+
+        describe('unimplemented methods', () => {
+            test('filtrata -> compileError', () => {
+                const zig = listaCompile('items.filtrata(fn)');
+
+                expect(zig).toContain('@compileError');
+                expect(zig).toContain('not implemented');
+            });
+
+            test('mappata -> compileError', () => {
+                const zig = listaCompile('items.mappata(fn)');
+
+                expect(zig).toContain('@compileError');
+            });
+
+            test('reducta -> compileError', () => {
+                const zig = listaCompile('items.reducta(0, fn)');
+
+                expect(zig).toContain('@compileError');
+            });
+        });
+    });
+
+    // =========================================================================
+    // TABULA METHODS - Latin HashMap API for Zig
+    // =========================================================================
+    describe('tabula methods - Latin HashMap API', () => {
+        const tabulaCompile = (expr: string) => compile(`fixum tabula<textus, numerus> map = novum tabula()\n${expr}`);
+
+        describe('core operations', () => {
+            test('pone -> put with allocator', () => {
+                const zig = tabulaCompile('map.pone(key, 42)');
+
+                expect(zig).toContain('map.put(alloc, key, 42)');
+                expect(zig).toContain('catch @panic("OOM")');
+            });
+
+            test('accipe -> get', () => {
+                const zig = tabulaCompile('map.accipe(key)');
+
+                expect(zig).toContain('map.get(key)');
+            });
+
+            test('habet -> contains', () => {
+                const zig = tabulaCompile('map.habet(key)');
+
+                expect(zig).toContain('map.contains(key)');
+            });
+
+            test('dele -> remove', () => {
+                const zig = tabulaCompile('map.dele(key)');
+
+                expect(zig).toContain('map.remove(key)');
+            });
+
+            test('longitudo -> count', () => {
+                const zig = tabulaCompile('map.longitudo()');
+
+                expect(zig).toContain('map.count()');
+            });
+
+            test('vacua -> count == 0', () => {
+                const zig = tabulaCompile('map.vacua()');
+
+                expect(zig).toContain('map.count() == 0');
+            });
+
+            test('purga -> clearRetainingCapacity', () => {
+                const zig = tabulaCompile('map.purga()');
+
+                expect(zig).toContain('map.clearRetainingCapacity()');
+            });
+        });
+
+        describe('iteration', () => {
+            test('claves -> keyIterator', () => {
+                const zig = tabulaCompile('map.claves()');
+
+                expect(zig).toContain('map.keyIterator()');
+            });
+
+            test('valores -> valueIterator', () => {
+                const zig = tabulaCompile('map.valores()');
+
+                expect(zig).toContain('map.valueIterator()');
+            });
+
+            test('paria -> iterator', () => {
+                const zig = tabulaCompile('map.paria()');
+
+                expect(zig).toContain('map.iterator()');
+            });
+        });
+
+        describe('extended', () => {
+            test('accipeAut -> get with orelse', () => {
+                const zig = tabulaCompile('map.accipeAut(key, 0)');
+
+                expect(zig).toContain('map.get(key) orelse 0');
+            });
+        });
+    });
+
+    // =========================================================================
+    // COPIA METHODS - Latin HashSet API for Zig
+    // =========================================================================
+    describe('copia methods - Latin HashSet API', () => {
+        const copiaCompile = (expr: string) => compile(`fixum copia<numerus> set = novum copia()\n${expr}`);
+
+        describe('core operations', () => {
+            test('adde -> put with void value', () => {
+                const zig = copiaCompile('set.adde(42)');
+
+                expect(zig).toContain('set.put(alloc, 42, {})');
+                expect(zig).toContain('catch @panic("OOM")');
+            });
+
+            test('habet -> contains', () => {
+                const zig = copiaCompile('set.habet(42)');
+
+                expect(zig).toContain('set.contains(42)');
+            });
+
+            test('dele -> remove', () => {
+                const zig = copiaCompile('set.dele(42)');
+
+                expect(zig).toContain('set.remove(42)');
+            });
+
+            test('longitudo -> count', () => {
+                const zig = copiaCompile('set.longitudo()');
+
+                expect(zig).toContain('set.count()');
+            });
+
+            test('vacua -> count == 0', () => {
+                const zig = copiaCompile('set.vacua()');
+
+                expect(zig).toContain('set.count() == 0');
+            });
+
+            test('purga -> clearRetainingCapacity', () => {
+                const zig = copiaCompile('set.purga()');
+
+                expect(zig).toContain('set.clearRetainingCapacity()');
+            });
+        });
+
+        describe('iteration', () => {
+            test('valores -> keyIterator (set values are keys)', () => {
+                const zig = copiaCompile('set.valores()');
+
+                expect(zig).toContain('set.keyIterator()');
+            });
+        });
+
+        describe('set operations - unimplemented', () => {
+            test('unio -> compileError', () => {
+                const zig = copiaCompile('set.unio(other)');
+
+                expect(zig).toContain('@compileError');
+            });
+
+            test('intersectio -> compileError', () => {
+                const zig = copiaCompile('set.intersectio(other)');
+
+                expect(zig).toContain('@compileError');
+            });
         });
     });
 });

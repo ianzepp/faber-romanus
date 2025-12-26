@@ -100,6 +100,11 @@ import type {
 import type { CodegenOptions } from '../types';
 import type { SemanticType } from '../../semantic/types';
 
+// Collection method registries
+import { getListaMethod } from './norma/lista';
+import { getTabulaMethod } from './norma/tabula';
+import { getCopiaMethod } from './norma/copia';
+
 // =============================================================================
 // TYPE MAPPING
 // =============================================================================
@@ -181,6 +186,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
     // Top-level
     // ---------------------------------------------------------------------------
 
+    // Track if program uses collections (need arena allocator)
+    let usesCollections = false;
+
     /**
      * Generate top-level program structure.
      *
@@ -193,6 +201,9 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         // WHY: Many features need std (print, assert, string comparison)
         const needsStd = programNeedsStd(node);
+
+        // WHY: Check if collections are used to emit arena allocator preamble
+        usesCollections = programUsesCollections(node);
 
         if (needsStd) {
             lines.push('const std = @import("std");');
@@ -221,12 +232,35 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
             lines.push('pub fn main() void {');
             depth++;
+
+            // WHY: Emit arena allocator preamble when collections are used
+            // This provides a module-level 'alloc' for ArrayList/HashMap operations
+            if (usesCollections) {
+                lines.push(`${ind()}var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);`);
+                lines.push(`${ind()}defer arena.deinit();`);
+                lines.push(`${ind()}const alloc = arena.allocator();`);
+                lines.push('');
+            }
+
             lines.push(...runtime.map(genStatement));
             depth--;
             lines.push('}');
         }
 
         return lines.join('\n');
+    }
+
+    /**
+     * Check if program uses collection types that need arena allocator.
+     *
+     * WHY: lista, tabula, copia operations in Zig require an allocator.
+     *      We detect their use and emit arena preamble in main().
+     */
+    function programUsesCollections(node: Program): boolean {
+        // WHY: Use replacer to handle BigInt values in AST
+        const json = JSON.stringify(node, (_key, value) => (typeof value === 'bigint' ? value.toString() : value));
+        // Check for collection type annotations or generic names
+        return json.includes('"lista"') || json.includes('"tabula"') || json.includes('"copia"');
     }
 
     /**
@@ -1837,6 +1871,54 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             const format = formatSpecs.join(' ') + '\\n';
 
             return `std.debug.print("${format}", .{${args.join(', ')}})`;
+        }
+
+        // Check for collection methods (method calls on lista/tabula/copia)
+        // WHY: Latin collection methods map to Zig stdlib ArrayList/HashMap operations
+        if (node.callee.type === 'MemberExpression' && !node.callee.computed) {
+            const methodName = (node.callee.property as Identifier).name;
+            const obj = genExpression(node.callee.object);
+            const args = node.arguments.map(genArg).join(', ');
+
+            // Use semantic type info to dispatch to correct collection registry
+            const objType = node.callee.object.resolvedType;
+            const collectionName = objType?.kind === 'generic' ? objType.name : null;
+
+            // Dispatch based on resolved type
+            if (collectionName === 'tabula') {
+                const method = getTabulaMethod(methodName);
+                if (method) {
+                    if (typeof method.zig === 'function') {
+                        return method.zig(obj, args);
+                    }
+                    return `${obj}.${method.zig}(${args})`;
+                }
+            } else if (collectionName === 'copia') {
+                const method = getCopiaMethod(methodName);
+                if (method) {
+                    if (typeof method.zig === 'function') {
+                        return method.zig(obj, args);
+                    }
+                    return `${obj}.${method.zig}(${args})`;
+                }
+            } else if (collectionName === 'lista') {
+                const method = getListaMethod(methodName);
+                if (method) {
+                    if (typeof method.zig === 'function') {
+                        return method.zig(obj, args);
+                    }
+                    return `${obj}.${method.zig}(${args})`;
+                }
+            }
+
+            // Fallback: no type info or unknown type - try lista (most common)
+            const listaMethod = getListaMethod(methodName);
+            if (listaMethod) {
+                if (typeof listaMethod.zig === 'function') {
+                    return listaMethod.zig(obj, args);
+                }
+                return `${obj}.${listaMethod.zig}(${args})`;
+            }
         }
 
         const callee = genExpression(node.callee);

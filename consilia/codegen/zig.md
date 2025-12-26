@@ -6,24 +6,24 @@ Zig and Rust share similar memory management concerns. Faber uses a **unified ap
 
 ## Implementation Status Summary
 
-| Category | Status | Notes |
-|----------|--------|-------|
-| Variables | Done | `var`/`const` with type inference |
-| Functions | Done | Parameters, return types, async stubs |
-| Control flow | Done | `if`, `while`, `for`, `switch` |
-| `genus`/struct | Done | Fields, methods, `init()` with `@hasField` |
-| `pactum`/interface | Stub | Emits doc comment only |
-| `ego` → `self` | Done | Explicit self parameter |
-| `novum .. de` | Partial | `@hasField` pattern, arity issues |
-| Lambdas | Done | Anonymous struct `.call` pattern |
-| Error handling | Partial | `mori` → `@panic`, `iace` → `@panic` (should be error union) |
-| Allocators | Not started | Design complete, not implemented |
-| `de`/`in` prepositions | Not started | Design complete, not implemented |
-| Collections | Not started | Types mapped, no runtime methods |
-| Comptime | Not started | No explicit comptime blocks |
-| Slices | Partial | Type mapping works, runtime building needs allocators |
-| Tuples | Not started | `series<A,B>` designed but not implemented |
-| Tagged unions | Not designed | Critical gap for self-hosting |
+| Category               | Status       | Notes                                                        |
+| ---------------------- | ------------ | ------------------------------------------------------------ |
+| Variables              | Done         | `var`/`const` with type inference                            |
+| Functions              | Done         | Parameters, return types, async stubs                        |
+| Control flow           | Done         | `if`, `while`, `for`, `switch`                               |
+| `genus`/struct         | Done         | Fields, methods, `init()` with `@hasField`                   |
+| `pactum`/interface     | Stub         | Emits doc comment only                                       |
+| `ego` → `self`         | Done         | Explicit self parameter                                      |
+| `novum .. de`          | Partial      | `@hasField` pattern, arity issues                            |
+| Lambdas                | Done         | Anonymous struct `.call` pattern                             |
+| Error handling         | Partial      | `mori` → `@panic`, `iace` → `@panic` (should be error union) |
+| Allocators             | Partial      | Arena preamble auto-emitted for collections                  |
+| `de`/`in` prepositions | Not started  | Design complete, not implemented                             |
+| Collections            | Partial      | Core methods implemented, functional methods stubbed         |
+| Comptime               | Not started  | No explicit comptime blocks                                  |
+| Slices                 | Partial      | Type mapping works, runtime building needs allocators        |
+| Tuples                 | Not started  | `series<A,B>` designed but not implemented                   |
+| Tagged unions          | Not designed | Critical gap for self-hosting                                |
 
 **Exempla Status: 25/45 passing (56%)**
 
@@ -100,30 +100,30 @@ Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works
 
 ## Type Mappings
 
-| Faber | Zig | Nullable | Notes |
-|-------|-----|----------|-------|
-| `textus` | `[]const u8` | `?[]const u8` | String slice |
-| `numerus` | `i64` | `?i64` | Integer |
-| `fractus` | `f64` | `?f64` | Float |
-| `decimus` | `f128` | `?f128` | Wide float |
-| `magnus` | `i128` | `?i128` | Big integer |
-| `bivalens` | `bool` | `?bool` | Boolean |
-| `nihil` | `void` | — | Unit type |
-| `vacuum` | `void` | — | Void return |
-| `octeti` | `[]u8` | `?[]u8` | Byte slice |
-| `objectum` | — | — | **No equivalent** - generates compile error |
-| `ignotum` | — | — | **No equivalent** - generates compile error |
-| `numquam` | `noreturn` | — | Never returns |
+| Faber      | Zig          | Nullable      | Notes                                       |
+| ---------- | ------------ | ------------- | ------------------------------------------- |
+| `textus`   | `[]const u8` | `?[]const u8` | String slice                                |
+| `numerus`  | `i64`        | `?i64`        | Integer                                     |
+| `fractus`  | `f64`        | `?f64`        | Float                                       |
+| `decimus`  | `f128`       | `?f128`       | Wide float                                  |
+| `magnus`   | `i128`       | `?i128`       | Big integer                                 |
+| `bivalens` | `bool`       | `?bool`       | Boolean                                     |
+| `nihil`    | `void`       | —             | Unit type                                   |
+| `vacuum`   | `void`       | —             | Void return                                 |
+| `octeti`   | `[]u8`       | `?[]u8`       | Byte slice                                  |
+| `objectum` | —            | —             | **No equivalent** - generates compile error |
+| `ignotum`  | —            | —             | **No equivalent** - generates compile error |
+| `numquam`  | `noreturn`   | —             | Never returns                               |
 
 ### Generic Types
 
-| Faber | Zig | Notes |
-|-------|-----|-------|
-| `lista<T>` | `[]T` | Slice (no allocator) |
-| `tabula<K,V>` | `std.StringHashMap(V)` | Type only, unusable without allocator |
-| `copia<T>` | `std.AutoHashMap(T, void)` | Type only, unusable without allocator |
-| `promissum<T>` | `!T` | Error union |
-| `series<A,B>` | — | **Not implemented** |
+| Faber          | Zig                        | Notes                                 |
+| -------------- | -------------------------- | ------------------------------------- |
+| `lista<T>`     | `[]T`                      | Slice (no allocator)                  |
+| `tabula<K,V>`  | `std.StringHashMap(V)`     | Type only, unusable without allocator |
+| `copia<T>`     | `std.AutoHashMap(T, void)` | Type only, unusable without allocator |
+| `promissum<T>` | `!T`                       | Error union                           |
+| `series<A,B>`  | —                          | **Not implemented**                   |
 
 ## Ownership Design: Latin Prepositions
 
@@ -131,11 +131,11 @@ Faber's nullable types (`textus?`) map to Zig's `?[]const u8`. The mapping works
 
 Faber uses Latin prepositions to annotate borrowing semantics. This design is shared with the Rust target.
 
-| Preposition | Meaning | Zig Output |
-|-------------|---------|------------|
-| (none) | Owned, may allocate | Allocator-managed value |
-| `de` | Borrowed, read-only | `[]const u8`, `*const T` |
-| `in` | Mutable borrow | `*T`, `*[]u8` |
+| Preposition | Meaning             | Zig Output               |
+| ----------- | ------------------- | ------------------------ |
+| (none)      | Owned, may allocate | Allocator-managed value  |
+| `de`        | Borrowed, read-only | `[]const u8`, `*const T` |
+| `in`        | Mutable borrow      | `*T`, `*[]u8`            |
 
 ### Examples (Design Only)
 
@@ -174,7 +174,7 @@ fn append(alloc: Allocator, items: *std.ArrayList([]const u8), value: []const u8
 
 ## Memory Management: Arena Allocator
 
-> **Status:** Design complete. **NOT IMPLEMENTED.**
+> **Status:** Implemented for collections.
 
 Faber uses arena allocation as the default memory strategy for systems targets.
 
@@ -185,7 +185,9 @@ Faber uses arena allocation as the default memory strategy for systems targets.
 3. **Zero memory leaks** - Arena deinit handles everything
 4. **Standard library** - Uses `std.heap.ArenaAllocator`, no external deps
 
-### Generated Code Pattern (Future)
+### Generated Code Pattern
+
+When a program uses collections (`lista`, `tabula`, or `copia`), the codegen automatically emits the arena preamble:
 
 ```zig
 const std = @import("std");
@@ -196,8 +198,92 @@ pub fn main() void {
     const alloc = arena.allocator();
 
     // User code - allocations use arena
-    const greeting = greet(alloc, "World");
-    std.debug.print("{s}\n", .{greeting});
+    var items = std.ArrayList(i64).init(alloc);
+    items.append(alloc, 42) catch @panic("OOM");
+}
+```
+
+The preamble is only emitted when the AST contains collection type annotations or `novum` expressions for collections.
+
+## Collection Methods
+
+> **Status:** Core methods implemented. Functional methods stubbed with `@compileError`.
+
+### Implementation Files
+
+- `fons/codegen/zig/norma/lista.ts` — ArrayList methods
+- `fons/codegen/zig/norma/tabula.ts` — HashMap methods
+- `fons/codegen/zig/norma/copia.ts` — HashSet (as HashMap with void values)
+
+### lista<T> Methods
+
+| Faber       | Zig Output                         | Status |
+| ----------- | ---------------------------------- | ------ |
+| `adde`      | `items.append(alloc, x)`           | [x]    |
+| `remove`    | `items.pop()`                      | [x]    |
+| `praepone`  | `items.insert(alloc, 0, x)`        | [x]    |
+| `decapita`  | `items.orderedRemove(0)`           | [x]    |
+| `purga`     | `items.clearRetainingCapacity()`   | [x]    |
+| `primus`    | `items.items[0]`                   | [x]    |
+| `ultimus`   | `items.items[items.items.len - 1]` | [x]    |
+| `accipe`    | `items.items[i]`                   | [x]    |
+| `longitudo` | `items.items.len`                  | [x]    |
+| `vacua`     | `items.items.len == 0`             | [x]    |
+| `continet`  | inline loop                        | [x]    |
+| `indiceDe`  | inline loop                        | [x]    |
+| `filtrata`  | `@compileError`                    | [-]    |
+| `mappata`   | `@compileError`                    | [-]    |
+| `reducta`   | `@compileError`                    | [-]    |
+
+Functional methods (`filtrata`, `mappata`, `reducta`, etc.) emit `@compileError` with guidance to use `ex...pro` loops instead.
+
+### tabula<K,V> Methods
+
+| Faber       | Zig Output                     | Status |
+| ----------- | ------------------------------ | ------ |
+| `pone`      | `map.put(alloc, k, v)`         | [x]    |
+| `accipe`    | `map.get(k)`                   | [x]    |
+| `habet`     | `map.contains(k)`              | [x]    |
+| `dele`      | `map.remove(k)`                | [x]    |
+| `longitudo` | `map.count()`                  | [x]    |
+| `vacua`     | `map.count() == 0`             | [x]    |
+| `purga`     | `map.clearRetainingCapacity()` | [x]    |
+| `claves`    | `map.keyIterator()`            | [x]    |
+| `valores`   | `map.valueIterator()`          | [x]    |
+| `paria`     | `map.iterator()`               | [x]    |
+| `accipeAut` | `map.get(k) orelse default`    | [x]    |
+
+### copia<T> Methods
+
+Copia uses `std.AutoHashMap(T, void)` — a HashMap with void values as a set.
+
+| Faber         | Zig Output                     | Status |
+| ------------- | ------------------------------ | ------ |
+| `adde`        | `set.put(alloc, x, {})`        | [x]    |
+| `habet`       | `set.contains(x)`              | [x]    |
+| `dele`        | `set.remove(x)`                | [x]    |
+| `longitudo`   | `set.count()`                  | [x]    |
+| `vacua`       | `set.count() == 0`             | [x]    |
+| `purga`       | `set.clearRetainingCapacity()` | [x]    |
+| `valores`     | `set.keyIterator()`            | [x]    |
+| `unio`        | `@compileError`                | [-]    |
+| `intersectio` | `@compileError`                | [-]    |
+| `differentia` | `@compileError`                | [-]    |
+
+### Design Notes
+
+1. **Allocator threading** — Methods that allocate (`adde`, `praepone`, `pone`) use the module-level `alloc` from the arena preamble.
+
+2. **Error handling** — Allocation failures panic with `catch @panic("OOM")`. This is intentional for simplicity; recoverable allocation failures would require error union propagation throughout.
+
+3. **Functional methods** — Deliberately stubbed. Zig's philosophy favors explicit iteration over hidden allocation. Users should use `ex...pro` loops:
+
+```fab
+// Instead of: items.filtrata(pro x redde x > 0)
+// Use:
+varia result = novum lista<numerus>()
+ex items pro x {
+    si x > 0 { result.adde(x) }
 }
 ```
 
@@ -205,11 +291,11 @@ pub fn main() void {
 
 > **Status:** Partially implemented. `mori` works, `iace` does NOT generate proper error unions.
 
-| Keyword | Meaning | Current Output | Should Be |
-|---------|---------|----------------|-----------|
-| `iace` | Recoverable error | `@panic("msg")` | `return error.X` |
-| `mori` | Fatal/panic | `@panic("msg")` | `@panic("msg")` ✓ |
-| `fac`/`cape` | Error boundary | Comment stub | `catch \|err\|` |
+| Keyword      | Meaning           | Current Output  | Should Be         |
+| ------------ | ----------------- | --------------- | ----------------- |
+| `iace`       | Recoverable error | `@panic("msg")` | `return error.X`  |
+| `mori`       | Fatal/panic       | `@panic("msg")` | `@panic("msg")` ✓ |
+| `fac`/`cape` | Error boundary    | Comment stub    | `catch \|err\|`   |
 
 ### Current Implementation (Broken)
 
@@ -221,6 +307,7 @@ functio fetch(textus url) -> textus {
 ```
 
 **Currently generates:**
+
 ```zig
 fn fetch(url: []const u8) []const u8 {
     if (timeout) { @panic("timeout"); }  // WRONG - should be return error
@@ -229,6 +316,7 @@ fn fetch(url: []const u8) []const u8 {
 ```
 
 **Should generate:**
+
 ```zig
 fn fetch(url: []const u8) ![]const u8 {
     if (timeout) { return error.Timeout; }
@@ -296,6 +384,7 @@ Faber does implicit compile-time work (like `proba ex` table unrolling) but does
 ### Slices vs Arrays
 
 Zig distinguishes fixed arrays `[N]T` from slices `[]T`. Faber's `lista<T>` maps to slice, but:
+
 - Array literals `.{1,2,3}` don't coerce to slices
 - Runtime slice building needs allocators
 
@@ -319,14 +408,14 @@ const Event = union(enum) {
 
 ### Passing (25)
 
-| Category | Files |
-|----------|-------|
-| Fundamenta | fixum, litterae, salve, scribe, varia (5/5) |
-| Functiones | async, basic, praepositiones, typed, verba (5/5) |
-| Regimen | adfirma, custodi, elige, iace-mori, si-ergo (5/9) |
+| Category   | Files                                                             |
+| ---------- | ----------------------------------------------------------------- |
+| Fundamenta | fixum, litterae, salve, scribe, varia (5/5)                       |
+| Functiones | async, basic, praepositiones, typed, verba (5/5)                  |
+| Regimen    | adfirma, custodi, elige, iace-mori, si-ergo (5/9)                 |
 | Structurae | ego, genus/basic, genus/creo, genus/defaults, genus/methods (5/7) |
-| Typi | bigint, collectiones, nullable (3/4) |
-| Operatores | ternarius, vel (2/7) |
+| Typi       | bigint, collectiones, nullable (3/4)                              |
+| Operatores | ternarius, vel (2/7)                                              |
 
 ### Failure Categories
 

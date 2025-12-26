@@ -4,27 +4,56 @@
 
 Three core collection types wrap native implementations:
 
-| Faber | JavaScript | Zig | Description |
-|-------|------------|-----|-------------|
-| `lista<T>` | `Array<T>` | `ArrayList(T)` | Ordered, indexed, duplicates allowed |
-| `tabula<K,V>` | `Map<K,V>` | `HashMap(K,V)` | Key-value pairs, unique keys |
-| `copia<T>` | `Set<T>` | `HashSet(T)` | Unique values, unordered |
+| Faber         | JavaScript | Zig            | Description                          |
+| ------------- | ---------- | -------------- | ------------------------------------ |
+| `lista<T>`    | `Array<T>` | `ArrayList(T)` | Ordered, indexed, duplicates allowed |
+| `tabula<K,V>` | `Map<K,V>` | `HashMap(K,V)` | Key-value pairs, unique keys         |
+| `copia<T>`    | `Set<T>`   | `HashSet(T)`   | Unique values, unordered             |
 
 All collection type names are feminine (Latin convention for containers).
 
 ---
 
-## Implementation Status (TypeScript)
+## Implementation Status
 
-Method registries implemented in `fons/codegen/ts/norma/`:
+Method registries implemented in `fons/codegen/*/norma/`:
 
-| Collection | Status | File | Notes |
-|------------|--------|------|-------|
-| `lista<T>` | [x] Complete | `lista.ts` | 50+ methods |
+### TypeScript
+
+| Collection    | Status       | File        | Notes      |
+| ------------- | ------------ | ----------- | ---------- |
+| `lista<T>`    | [x] Complete | `lista.ts`  | 46 methods |
 | `tabula<K,V>` | [x] Complete | `tabula.ts` | 17 methods |
-| `copia<T>` | [x] Complete | `copia.ts` | 14 methods |
+| `copia<T>`    | [x] Complete | `copia.ts`  | 14 methods |
 
-**Not yet implemented:**
+### Zig
+
+| Collection    | Status      | File        | Notes                                                 |
+| ------------- | ----------- | ----------- | ----------------------------------------------------- |
+| `lista<T>`    | [~] Partial | `lista.ts`  | 12 core methods; functional methods use @compileError |
+| `tabula<K,V>` | [~] Partial | `tabula.ts` | 11 core methods                                       |
+| `copia<T>`    | [~] Partial | `copia.ts`  | 7 core methods; set operations use @compileError      |
+
+Zig implementation uses arena allocation. Programs using collections automatically emit:
+
+```zig
+var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+defer arena.deinit();
+const alloc = arena.allocator();
+```
+
+Functional methods (`filtrata`, `mappata`, `reducta`, etc.) emit `@compileError` — use `ex...pro` loops instead.
+
+### Python
+
+| Collection    | Status       | File        | Notes      |
+| ------------- | ------------ | ----------- | ---------- |
+| `lista<T>`    | [x] Complete | `lista.ts`  | 46 methods |
+| `tabula<K,V>` | [x] Complete | `tabula.ts` | 17 methods |
+| `copia<T>`    | [x] Complete | `copia.ts`  | 14 methods |
+
+**Not yet implemented (any target):**
+
 - [-] Array destructuring (`ex arr fixum [a, b, ceteri rest]`) — requires parser work
 - [-] Collection DSL (`ex items filtra ubi...`) — requires parser work
 - [-] Closure syntax (`per property`, `{ .property }`) — requires parser work
@@ -40,82 +69,82 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 
 ### Core Methods
 
-| Faber | JS Equivalent | Description |
-|-------|---------------|-------------|
-| `adde(T)` | `push` | Add to end |
-| `remove() -> T?` | `pop` | Remove from end |
-| `primus() -> T?` | `[0]` | First element |
-| `ultimus() -> T?` | `at(-1)` | Last element |
-| `longitudo() -> numerus` | `length` | Count |
-| `vacua() -> bivalens` | `length === 0` | Is empty |
-| `purgare()` | `length = 0` | Clear all |
+| Faber                    | JS Equivalent  | Description     |
+| ------------------------ | -------------- | --------------- |
+| `adde(T)`                | `push`         | Add to end      |
+| `remove() -> T?`         | `pop`          | Remove from end |
+| `primus() -> T?`         | `[0]`          | First element   |
+| `ultimus() -> T?`        | `at(-1)`       | Last element    |
+| `longitudo() -> numerus` | `length`       | Count           |
+| `vacua() -> bivalens`    | `length === 0` | Is empty        |
+| `purgare()`              | `length = 0`   | Clear all       |
 
 ### Search & Test
 
-| Faber | JS Equivalent | Description |
-|-------|---------------|-------------|
-| `contine(T) -> bivalens` | `includes` | Contains element |
-| `indiceDe(T) -> numerus?` | `indexOf` | Find index |
-| `inveni((T) -> bivalens) -> T?` | `find` | Find first match |
-| `omnes((T) -> bivalens) -> bivalens` | `every` | All match predicate |
-| `aliquis((T) -> bivalens) -> bivalens` | `some` | Any matches predicate |
+| Faber                                  | JS Equivalent | Description           |
+| -------------------------------------- | ------------- | --------------------- |
+| `contine(T) -> bivalens`               | `includes`    | Contains element      |
+| `indiceDe(T) -> numerus?`              | `indexOf`     | Find index            |
+| `inveni((T) -> bivalens) -> T?`        | `find`        | Find first match      |
+| `omnes((T) -> bivalens) -> bivalens`   | `every`       | All match predicate   |
+| `aliquis((T) -> bivalens) -> bivalens` | `some`        | Any matches predicate |
 
 ### Transformation (Functional)
 
-| Faber | JS Equivalent | Description |
-|-------|---------------|-------------|
-| `mappa((T) -> U) -> lista<U>` | `map` | Transform each |
-| `filtra((T) -> bivalens) -> lista<T>` | `filter` | Keep matching |
-| `reducere(U, (U,T) -> U) -> U` | `reduce` | Fold to value |
-| `coniunge(textus) -> textus` | `join` | Join to string |
+| Faber                                 | JS Equivalent | Description    |
+| ------------------------------------- | ------------- | -------------- |
+| `mappa((T) -> U) -> lista<U>`         | `map`         | Transform each |
+| `filtra((T) -> bivalens) -> lista<T>` | `filter`      | Keep matching  |
+| `reducere(U, (U,T) -> U) -> U`        | `reduce`      | Fold to value  |
+| `coniunge(textus) -> textus`          | `join`        | Join to string |
 
 ### Lodash-Inspired Methods
 
-| Faber | lodash | Description |
-|-------|--------|-------------|
-| `ordina((T) -> U) -> lista<T>` | `sortBy` | Sort by key function |
-| `congrega((T) -> K) -> tabula<K, lista<T>>` | `groupBy` | Group by key function |
-| `unica() -> lista<T>` | `uniq` | Remove duplicates |
-| `plana() -> lista<T>` | `flatten` | Flatten one level |
-| `planaOmnia() -> lista<T>` | `flattenDeep` | Flatten all levels |
-| `fragmenta(numerus) -> lista<lista<T>>` | `chunk` | Split into chunks of size n |
-| `densa() -> lista<T>` | `compact` | Remove falsy values |
-| `partire((T) -> bivalens) -> (lista<T>, lista<T>)` | `partition` | Split by predicate |
-| `misce() -> lista<T>` | `shuffle` | Randomize order |
-| `specimen() -> T?` | `sample` | Random element |
-| `specimina(numerus) -> lista<T>` | `sampleSize` | Random n elements |
-| `prima(numerus) -> lista<T>` | `take` | First n elements |
-| `ultima(numerus) -> lista<T>` | `takeRight` | Last n elements |
-| `omitte(numerus) -> lista<T>` | `drop` | Skip first n |
-| `inversa() -> lista<T>` | `reverse` | Reverse order |
+| Faber                                              | lodash        | Description                 |
+| -------------------------------------------------- | ------------- | --------------------------- |
+| `ordina((T) -> U) -> lista<T>`                     | `sortBy`      | Sort by key function        |
+| `congrega((T) -> K) -> tabula<K, lista<T>>`        | `groupBy`     | Group by key function       |
+| `unica() -> lista<T>`                              | `uniq`        | Remove duplicates           |
+| `plana() -> lista<T>`                              | `flatten`     | Flatten one level           |
+| `planaOmnia() -> lista<T>`                         | `flattenDeep` | Flatten all levels          |
+| `fragmenta(numerus) -> lista<lista<T>>`            | `chunk`       | Split into chunks of size n |
+| `densa() -> lista<T>`                              | `compact`     | Remove falsy values         |
+| `partire((T) -> bivalens) -> (lista<T>, lista<T>)` | `partition`   | Split by predicate          |
+| `misce() -> lista<T>`                              | `shuffle`     | Randomize order             |
+| `specimen() -> T?`                                 | `sample`      | Random element              |
+| `specimina(numerus) -> lista<T>`                   | `sampleSize`  | Random n elements           |
+| `prima(numerus) -> lista<T>`                       | `take`        | First n elements            |
+| `ultima(numerus) -> lista<T>`                      | `takeRight`   | Last n elements             |
+| `omitte(numerus) -> lista<T>`                      | `drop`        | Skip first n                |
+| `inversa() -> lista<T>`                            | `reverse`     | Reverse order               |
 
 ### Aggregation
 
-| Faber | lodash | Description |
-|-------|--------|-------------|
-| `summa() -> numerus` | `sum` | Sum of numbers |
-| `medium() -> numerus` | `mean` | Average |
-| `minimus() -> T?` | `min` | Minimum value |
-| `maximus() -> T?` | `max` | Maximum value |
-| `minimusPer((T) -> U) -> T?` | `minBy` | Min by key function |
-| `maximusPer((T) -> U) -> T?` | `maxBy` | Max by key function |
-| `numera((T) -> bivalens) -> numerus` | `countBy` | Count matching |
+| Faber                                | lodash    | Description         |
+| ------------------------------------ | --------- | ------------------- |
+| `summa() -> numerus`                 | `sum`     | Sum of numbers      |
+| `medium() -> numerus`                | `mean`    | Average             |
+| `minimus() -> T?`                    | `min`     | Minimum value       |
+| `maximus() -> T?`                    | `max`     | Maximum value       |
+| `minimusPer((T) -> U) -> T?`         | `minBy`   | Min by key function |
+| `maximusPer((T) -> U) -> T?`         | `maxBy`   | Max by key function |
+| `numera((T) -> bivalens) -> numerus` | `countBy` | Count matching      |
 
 ### Open Questions
 
 1. **Mutability**: Should `adde`/`remove` mutate in place or return new list?
-   - JS convention: mutate in place
-   - Functional convention: return new
-   - Proposal: mutate in place, provide variants for immutable ops
+    - JS convention: mutate in place
+    - Functional convention: return new
+    - Proposal: mutate in place, provide variants for immutable ops
 
 2. **Negative indices**: Support `lista[-1]` for last element?
-   - JS: No (use `at(-1)`)
-   - Python: Yes
-   - Proposal: Support via subscript operator
+    - JS: No (use `at(-1)`)
+    - Python: Yes
+    - Proposal: Support via subscript operator
 
 3. **Slicing**: Syntax for sublists?
-   - Python: `lista[1:3]`
-   - Proposal: `lista.sectio(1, 3)` method
+    - Python: `lista[1:3]`
+    - Proposal: `lista.sectio(1, 3)` method
 
 ---
 
@@ -125,41 +154,41 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 
 ### Core Methods
 
-| Faber | JS Equivalent | Description |
-|-------|---------------|-------------|
-| `pone(K, V)` | `set` | Set key-value |
-| `accipe(K) -> V?` | `get` | Get by key |
-| `habet(K) -> bivalens` | `has` | Key exists |
-| `erade(K) -> bivalens` | `delete` | Erase key |
-| `longitudo() -> numerus` | `size` | Count |
-| `vacua() -> bivalens` | `size === 0` | Is empty |
-| `purgare()` | `clear` | Clear all |
+| Faber                    | JS Equivalent | Description   |
+| ------------------------ | ------------- | ------------- |
+| `pone(K, V)`             | `set`         | Set key-value |
+| `accipe(K) -> V?`        | `get`         | Get by key    |
+| `habet(K) -> bivalens`   | `has`         | Key exists    |
+| `dele(K) -> bivalens`    | `delete`      | Delete key    |
+| `longitudo() -> numerus` | `size`        | Count         |
+| `vacua() -> bivalens`    | `size === 0`  | Is empty      |
+| `purgare()`              | `clear`       | Clear all     |
 
 ### Iteration
 
-| Faber | JS Equivalent | Description |
-|-------|---------------|-------------|
-| `claves() -> cursor<K>` | `keys()` | Iterate keys |
-| `valores() -> cursor<V>` | `values()` | Iterate values |
-| `paria() -> cursor<(K,V)>` | `entries()` | Iterate pairs |
+| Faber                      | JS Equivalent | Description    |
+| -------------------------- | ------------- | -------------- |
+| `claves() -> cursor<K>`    | `keys()`      | Iterate keys   |
+| `valores() -> cursor<V>`   | `values()`    | Iterate values |
+| `paria() -> cursor<(K,V)>` | `entries()`   | Iterate pairs  |
 
 ### Lodash-Inspired Methods
 
-| Faber | lodash | Description |
-|-------|--------|-------------|
-| `accipeAut(K, V) -> V` | `get` with default | Get or return default |
-| `selige(...K) -> tabula<K,V>` | `pick` | Keep only specified keys |
-| `omitte(...K) -> tabula<K,V>` | `omit` | Remove specified keys |
-| `confla(tabula<K,V>) -> tabula<K,V>` | `merge` | Merge maps |
-| `inversa() -> tabula<V,K>` | `invert` | Swap keys and values |
-| `mappaValores((V) -> U) -> tabula<K,U>` | `mapValues` | Transform values |
-| `mappaClaves((K) -> J) -> tabula<J,V>` | `mapKeys` | Transform keys |
+| Faber                                   | lodash             | Description              |
+| --------------------------------------- | ------------------ | ------------------------ |
+| `accipeAut(K, V) -> V`                  | `get` with default | Get or return default    |
+| `selige(...K) -> tabula<K,V>`           | `pick`             | Keep only specified keys |
+| `omitte(...K) -> tabula<K,V>`           | `omit`             | Remove specified keys    |
+| `confla(tabula<K,V>) -> tabula<K,V>`    | `merge`            | Merge maps               |
+| `inversa() -> tabula<V,K>`              | `invert`           | Swap keys and values     |
+| `mappaValores((V) -> U) -> tabula<K,U>` | `mapValues`        | Transform values         |
+| `mappaClaves((K) -> J) -> tabula<J,V>`  | `mapKeys`          | Transform keys           |
 
 ### Open Questions
 
 1. **Object conversion**: `exObjecto(obj)` static constructor?
-   - Useful for JS interop
-   - Less relevant for Zig target
+    - Useful for JS interop
+    - Less relevant for Zig target
 
 ---
 
@@ -169,29 +198,29 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 
 ### Core Methods
 
-| Faber | JS Equivalent | Description |
-|-------|---------------|-------------|
-| `adde(T)` | `add` | Add element |
-| `habet(T) -> bivalens` | `has` | Contains |
-| `erade(T) -> bivalens` | `delete` | Erase |
-| `longitudo() -> numerus` | `size` | Count |
-| `vacua() -> bivalens` | `size === 0` | Is empty |
-| `purgare()` | `clear` | Clear all |
+| Faber                    | JS Equivalent | Description |
+| ------------------------ | ------------- | ----------- |
+| `adde(T)`                | `add`         | Add element |
+| `habet(T) -> bivalens`   | `has`         | Contains    |
+| `dele(T) -> bivalens`    | `delete`      | Delete      |
+| `longitudo() -> numerus` | `size`        | Count       |
+| `vacua() -> bivalens`    | `size === 0`  | Is empty    |
+| `purgare()`              | `clear`       | Clear all   |
 
 ### Set Operations
 
-| Faber | JS Equivalent | Description |
-|-------|---------------|-------------|
-| `unio(copia<T>) -> copia<T>` | `union` | A ∪ B |
-| `intersectio(copia<T>) -> copia<T>` | `intersection` | A ∩ B |
-| `differentia(copia<T>) -> copia<T>` | `difference` | A - B |
-| `symmetrica(copia<T>) -> copia<T>` | — | (A - B) ∪ (B - A) |
+| Faber                               | JS Equivalent  | Description       |
+| ----------------------------------- | -------------- | ----------------- |
+| `unio(copia<T>) -> copia<T>`        | `union`        | A ∪ B             |
+| `intersectio(copia<T>) -> copia<T>` | `intersection` | A ∩ B             |
+| `differentia(copia<T>) -> copia<T>` | `difference`   | A - B             |
+| `symmetrica(copia<T>) -> copia<T>`  | —              | (A - B) ∪ (B - A) |
 
 ### Predicates
 
-| Faber | lodash | Description |
-|-------|--------|-------------|
-| `subcopia(copia<T>) -> bivalens` | `isSubset` | Is subset of |
+| Faber                              | lodash       | Description    |
+| ---------------------------------- | ------------ | -------------- |
+| `subcopia(copia<T>) -> bivalens`   | `isSubset`   | Is subset of   |
 | `supercopia(copia<T>) -> bivalens` | `isSuperset` | Is superset of |
 
 ### Open Questions
@@ -248,6 +277,7 @@ scribe tail  // [3, 4, 5]
 ### Practical Examples
 
 **Recursive list processing:**
+
 ```faber
 functio sum(lista<numerus> nums) -> numerus {
     si nums.vacua() { redde 0 }
@@ -259,6 +289,7 @@ scribe sum([1, 2, 3, 4, 5])  // 15
 ```
 
 **Command argument parsing:**
+
 ```faber
 functio parseArgs(lista<textus> args) {
     ex args fixum [command, ceteri flags]
@@ -272,6 +303,7 @@ functio parseArgs(lista<textus> args) {
 ```
 
 **Tuple-style returns:**
+
 ```faber
 functio divide(numerus a, numerus b) -> lista<numerus> {
     redde [a / b, a % b]
@@ -283,6 +315,7 @@ scribe remainder  // 2
 ```
 
 **Swapping values:**
+
 ```faber
 varia a = 1
 varia b = 2
@@ -315,27 +348,28 @@ scribe x  // 20
 
 ### Comparison with Object Destructuring
 
-| Aspect | Object | Array |
-|--------|--------|-------|
-| Syntax | `ex obj fixum { a, b }` | `ex arr fixum [a, b]` |
-| Extraction | By name | By position |
-| Rest | `{ a, ceteri rest }` | `[a, ceteri rest]` |
-| Self-documenting | Yes (names) | No (positions) |
-| Fragile | No | Yes (order matters) |
+| Aspect           | Object                  | Array                 |
+| ---------------- | ----------------------- | --------------------- |
+| Syntax           | `ex obj fixum { a, b }` | `ex arr fixum [a, b]` |
+| Extraction       | By name                 | By position           |
+| Rest             | `{ a, ceteri rest }`    | `[a, ceteri rest]`    |
+| Self-documenting | Yes (names)             | No (positions)        |
+| Fragile          | No                      | Yes (order matters)   |
 
 **Recommendation:** Prefer object destructuring when possible. Use array destructuring for:
+
 - Tuple returns where position has clear meaning
 - Head/tail recursion patterns
 - Coordinate/vector operations
 
 ### Target Mappings
 
-| Target | Syntax |
-|--------|--------|
-| TypeScript | `const [a, b, ...rest] = arr` |
-| Python | `a, b, *rest = arr` |
-| Zig | Manual indexing or slice patterns |
-| Rust | `let [a, b, rest @ ..] = arr` |
+| Target     | Syntax                            |
+| ---------- | --------------------------------- |
+| TypeScript | `const [a, b, ...rest] = arr`     |
+| Python     | `a, b, *rest = arr`               |
+| Zig        | Manual indexing or slice patterns |
+| Rust       | `let [a, b, rest @ ..] = arr`     |
 
 ### Open Questions
 
@@ -349,13 +383,13 @@ scribe x  // 20
 
 Functions that operate on multiple collections or don't belong to a single type.
 
-| Faber | lodash | Description |
-|-------|--------|-------------|
-| `iunge(lista<T>, lista<U>) -> lista<(T,U)>` | `zip` | Pair up elements |
-| `iungeOmnes(...lista) -> lista<(...)>` | `zipAll` | Zip multiple lists |
-| `series(n) -> lista<numerus>` | `range` | 0 to n-1 |
-| `series(a, b) -> lista<numerus>` | `range` | a to b-1 |
-| `repete(T, n) -> lista<T>` | `times` | Repeat value n times |
+| Faber                                       | lodash   | Description          |
+| ------------------------------------------- | -------- | -------------------- |
+| `iunge(lista<T>, lista<U>) -> lista<(T,U)>` | `zip`    | Pair up elements     |
+| `iungeOmnes(...lista) -> lista<(...)>`      | `zipAll` | Zip multiple lists   |
+| `series(n) -> lista<numerus>`               | `range`  | 0 to n-1             |
+| `series(a, b) -> lista<numerus>`            | `range`  | a to b-1             |
+| `repete(T, n) -> lista<T>`                  | `times`  | Repeat value n times |
 
 ---
 
@@ -363,13 +397,13 @@ Functions that operate on multiple collections or don't belong to a single type.
 
 Higher-order function helpers.
 
-| Faber | lodash | Description |
-|-------|--------|-------------|
-| `memora((A) -> B) -> (A) -> B` | `memoize` | Cache results |
-| `semel((A) -> B) -> (A) -> B` | `once` | Call only once |
-| `mora(numerus, fn) -> fn` | `debounce` | Delay execution |
-| `tempera(numerus, fn) -> fn` | `throttle` | Rate limit |
-| `partialis(fn, ...args) -> fn` | `partial` | Partial application |
+| Faber                          | lodash     | Description         |
+| ------------------------------ | ---------- | ------------------- |
+| `memora((A) -> B) -> (A) -> B` | `memoize`  | Cache results       |
+| `semel((A) -> B) -> (A) -> B`  | `once`     | Call only once      |
+| `mora(numerus, fn) -> fn`      | `debounce` | Delay execution     |
+| `tempera(numerus, fn) -> fn`   | `throttle` | Rate limit          |
+| `partialis(fn, ...args) -> fn` | `partial`  | Partial application |
 
 ---
 
@@ -377,21 +411,21 @@ Higher-order function helpers.
 
 ### Method Naming Convention
 
-| Pattern | Meaning | Examples |
-|---------|---------|----------|
-| `-are` verbs | Actions | `adde`, `dele`, `purgare`, `filtra`, `mappa` |
-| Adjectives | Properties/predicates | `vacua`, `primus`, `ultimus`, `unica` |
-| Nouns | Derived values | `longitudo`, `claves`, `valores`, `summa` |
-| `-Per` suffix | "by" variant | `ordinaPer`, `maximusPer` |
+| Pattern       | Meaning               | Examples                                     |
+| ------------- | --------------------- | -------------------------------------------- |
+| `-are` verbs  | Actions               | `adde`, `dele`, `purgare`, `filtra`, `mappa` |
+| Adjectives    | Properties/predicates | `vacua`, `primus`, `ultimus`, `unica`        |
+| Nouns         | Derived values        | `longitudo`, `claves`, `valores`, `summa`    |
+| `-Per` suffix | "by" variant          | `ordinaPer`, `maximusPer`                    |
 
 ### Verb Conjugation for Mutability and Async
 
 Latin verb forms distinguish between mutable/immutable and sync/async operations:
 
-| | Mutates | Returns New |
-|---|---------|-------------|
-| **Sync** | `adde` (imperative) | `addita` (perfect participle) |
-| **Async** | `addet` (future) | `additura` (future participle) |
+|           | Mutates             | Returns New                    |
+| --------- | ------------------- | ------------------------------ |
+| **Sync**  | `adde` (imperative) | `addita` (perfect participle)  |
+| **Async** | `addet` (future)    | `additura` (future participle) |
 
 **Examples:**
 
@@ -415,13 +449,13 @@ fixum nova = cede lista.additura(x)  // new list eventually
 
 **Pattern for any verb:**
 
-| Root | Imperative | Perfect Participle | Future | Future Participle |
-|------|------------|-------------------|--------|-------------------|
-| addere | adde | addita | addet | additura |
-| ordinare | ordina | ordinata | ordinat | ordinatura |
-| filtrare | filtra | filtrata | filtrat | filtratura |
-| removere | remove | remota | removet | remotura |
-| purgare | purga | purgata | purgat | purgatura |
+| Root     | Imperative | Perfect Participle | Future  | Future Participle |
+| -------- | ---------- | ------------------ | ------- | ----------------- |
+| addere   | adde       | addita             | addet   | additura          |
+| ordinare | ordina     | ordinata           | ordinat | ordinatura        |
+| filtrare | filtra     | filtrata           | filtrat | filtratura        |
+| removere | remove     | remota             | removet | remotura          |
+| purgare  | purga      | purgata            | purgat  | purgatura         |
 
 The grammar carries semantic weight that other languages encode with symbols (`!`, `async`, `Immutable.`).
 
@@ -497,6 +531,7 @@ users.mappa({ .nomen + " " + .cognomen })
 For complex logic requiring named variable, two syntaxes are supported:
 
 **`pro var { }` block form (preferred — aligns with iteration syntax):**
+
 ```
 users.filtra(pro user {
     si user.aetas < 18 {
@@ -507,12 +542,14 @@ users.filtra(pro user {
 ```
 
 **`pro var redde expr` expression form:**
+
 ```
 users.filtra(pro user redde user.activus et user.verificatus)
 lista.mappa(pro item redde item.nomen)
 ```
 
 **`var => { }` (supported — familiar to JS/TS developers):**
+
 ```
 users.filtra(user => {
     si user.aetas < 18 {
@@ -526,16 +563,16 @@ The `pro` keyword aligns with iteration: `ex items pro x { }` iterates, `pro x {
 
 ### Summary
 
-| Form | Use Case | Example |
-|------|----------|---------|
-| `per property` | Property access | `ordina(per aetas)` |
-| `per a et b` | Multi-property | `ordina(per aetas et nomen)` |
-| `per a descendens` | Sort direction | `ordina(per aetas descendens)` |
-| `{ .property }` | Expressions | `filtra({ .aetas > 18 })` |
-| `{ redde ... }` | Multi-statement | `mappa({ redde .x + .y })` |
-| `pro v redde expr` | Expression closure | `mappa(pro x redde x * 2)` |
-| `pro v { }` | Block closure (preferred) | `filtra(pro u { ... })` |
-| `v => { }` | Block closure (JS-style) | `filtra(u => { ... })` |
+| Form               | Use Case                  | Example                        |
+| ------------------ | ------------------------- | ------------------------------ |
+| `per property`     | Property access           | `ordina(per aetas)`            |
+| `per a et b`       | Multi-property            | `ordina(per aetas et nomen)`   |
+| `per a descendens` | Sort direction            | `ordina(per aetas descendens)` |
+| `{ .property }`    | Expressions               | `filtra({ .aetas > 18 })`      |
+| `{ redde ... }`    | Multi-statement           | `mappa({ redde .x + .y })`     |
+| `pro v redde expr` | Expression closure        | `mappa(pro x redde x * 2)`     |
+| `pro v { }`        | Block closure (preferred) | `filtra(pro u { ... })`        |
+| `v => { }`         | Block closure (JS-style)  | `filtra(u => { ... })`         |
 
 ---
 
@@ -544,6 +581,7 @@ The `pro` keyword aligns with iteration: `ex items pro x { }` iterates, `pro x {
 ### TypeScript Target
 
 Direct mapping to native types:
+
 - `lista<T>` → `Array<T>`
 - `tabula<K,V>` → `Map<K,V>`
 - `copia<T>` → `Set<T>`
@@ -553,6 +591,7 @@ Lodash methods compile to equivalent lodash calls or inline implementations.
 ### Zig Target
 
 Use standard library types:
+
 - `lista<T>` → `std.ArrayList(T)`
 - `tabula<K,V>` → `std.HashMap(K,V,...)`
 - `copia<T>` → `std.HashSet(T,...)`
@@ -585,6 +624,7 @@ ex items filtra ubi active, ordina per nomen pro item {
 ```
 
 The differentiator:
+
 - `= ex ...` → expression, returns value
 - `ex ... pro var { }` → loop, executes body
 
@@ -602,34 +642,35 @@ The comma acts as an implicit pipe — each operation flows into the next.
 
 ### Prefix Verbs
 
-| Latin | Meaning | Method Equivalent |
-|-------|---------|-------------------|
-| `summa` | sum | `.summa()` |
-| `maximum` | max | `.maximus()` |
-| `minimum` | min | `.minimus()` |
-| `medium` | average | `.medium()` |
-| `quota` | count | `.longitudo()` |
-| `filtra` | filter | `.filtrata()` |
-| `ordina` | sort/order | `.ordinata()` |
-| `collige` | collect/pluck | `.mappa()` for property extraction |
-| `mappa` | map to key-value | creates `tabula` keyed by property |
-| `grupa` | group by | `.congrega()` |
-| `prima` | first n | `.prima()` |
-| `ultima` | last n | `.ultima()` |
-| `inversa` | reverse | `.inversa()` |
-| `unica` | unique | `.unica()` |
+| Latin     | Meaning          | Method Equivalent                  |
+| --------- | ---------------- | ---------------------------------- |
+| `summa`   | sum              | `.summa()`                         |
+| `maximum` | max              | `.maximus()`                       |
+| `minimum` | min              | `.minimus()`                       |
+| `medium`  | average          | `.medium()`                        |
+| `quota`   | count            | `.longitudo()`                     |
+| `filtra`  | filter           | `.filtrata()`                      |
+| `ordina`  | sort/order       | `.ordinata()`                      |
+| `collige` | collect/pluck    | `.mappa()` for property extraction |
+| `mappa`   | map to key-value | creates `tabula` keyed by property |
+| `grupa`   | group by         | `.congrega()`                      |
+| `prima`   | first n          | `.prima()`                         |
+| `ultima`  | last n           | `.ultima()`                        |
+| `inversa` | reverse          | `.inversa()`                       |
+| `unica`   | unique           | `.unica()`                         |
 
 ### Prepositions
 
-| Latin | Meaning | Use |
-|-------|---------|-----|
-| `ubi` | where | filter condition |
-| `per` | by | property selector, sort/group field |
-| `ex` | from | source collection |
+| Latin | Meaning | Use                                 |
+| ----- | ------- | ----------------------------------- |
+| `ubi` | where   | filter condition                    |
+| `per` | by      | property selector, sort/group field |
+| `ex`  | from    | source collection                   |
 
 ### Examples
 
 **Aggregates:**
+
 ```
 fixum total = ex numeri summa
 fixum highest = ex pretia maximum
@@ -638,6 +679,7 @@ fixum avg = ex scores medium
 ```
 
 **Filtering:**
+
 ```
 fixum active = ex users filtra ubi activus
 fixum expensive = ex items filtra ubi pretium > 100
@@ -645,6 +687,7 @@ fixum adults = ex users filtra ubi aetas >= 18
 ```
 
 **Transformation:**
+
 ```
 fixum names = ex users collige per nomen
 fixum sorted = ex items ordina per pretium
@@ -653,6 +696,7 @@ fixum indexed = ex users mappa per id
 ```
 
 **Chained with comma:**
+
 ```
 // Filter active users, extract names, sort
 fixum result = ex users filtra ubi activus, collige per nomen, ordina
@@ -668,6 +712,7 @@ fixum nested = ex users grupa per role, mappa per departmentum
 ```
 
 **DSL into loop:**
+
 ```
 // Filter and sort, then iterate
 ex users filtra ubi activus, ordina per nomen pro user {
@@ -696,6 +741,7 @@ fixum result = ex users filtra ubi activus, ordina per nomen, prima 10
 ```
 
 The DSL reads more like natural Latin:
+
 - "ex users" = "from users"
 - "filtra ubi activus" = "filter where active"
 - "ordina per nomen" = "order by name"
@@ -705,17 +751,18 @@ The DSL reads more like natural Latin:
 
 Simple Latin adjectives work as prefix predicates, returning `bivalens`:
 
-| Latin | Meaning | Works on |
-|-------|---------|----------|
-| `nulla` | is null/empty | any |
-| `nonnulla` | has content | any |
-| `positivum` | is positive | numerus |
-| `negativum` | is negative | numerus |
-| `vacuum` | is void/zero | numerus, lista |
+| Latin       | Meaning       | Works on       |
+| ----------- | ------------- | -------------- |
+| `nulla`     | is null/empty | any            |
+| `nonnulla`  | has content   | any            |
+| `positivum` | is positive   | numerus        |
+| `negativum` | is negative   | numerus        |
+| `vacuum`    | is void/zero  | numerus, lista |
 
 These work in three contexts:
 
 **Standalone expression:**
+
 ```
 fixum hasItems = nonnulla items
 fixum isPos = positivum balance
@@ -723,6 +770,7 @@ fixum isEmpty = nulla data
 ```
 
 **DSL filter predicate** (no explicit comparison needed):
+
 ```
 // Filter to only positive numbers
 fixum positives = ex numbers filtra ubi positivum
@@ -732,6 +780,7 @@ fixum nonEmpty = ex strings filtra ubi nonnulla
 ```
 
 **DSL terminator** (check property of result):
+
 ```
 // Does the filtered result have any items?
 fixum hasActive = ex users filtra ubi active nonnulla
@@ -762,6 +811,7 @@ fixum result = ex userList filtra ubi active
 ### Target Compilation
 
 **TypeScript:**
+
 ```typescript
 // ex users filtra ubi activus, collige per nomen, ordina
 users.filter(u => u.activus).map(u => u.nomen).sort()
@@ -771,12 +821,14 @@ for (const user of users.filter(u => u.activus)) { ... }
 ```
 
 **Zig:**
+
 ```zig
 // Generates iterator chain or explicit loops
 // with arena allocator for intermediate results
 ```
 
 **Rust:**
+
 ```rust
 // ex users filtra ubi activus, collige per nomen, ordina
 users.iter()
