@@ -1,6 +1,6 @@
 # Faber Romanus
 
-**The Roman Craftsman** — A Latin programming language that compiles to TypeScript, Python, or Zig.
+**The Roman Craftsman** — A Latin programming language that compiles to TypeScript, Python, Zig, or C++.
 
 ## Why Latin?
 
@@ -22,10 +22,10 @@ This is not a novelty language. It is an experiment in whether linguistic struct
 
 ```bash
 bun install
-bun run fons/cli.ts compile exempla/salve.fab        # TypeScript (default)
-bun run fons/cli.ts compile exempla/salve.fab -t zig # Zig
-bun run fons/cli.ts run exempla/salve.fab            # Compile and run
-bun test                                              # Run tests
+bun run fons/cli.ts compile exempla/fundamenta/salve.fab        # TypeScript (default)
+bun run fons/cli.ts compile exempla/fundamenta/salve.fab -t zig # Zig
+bun run fons/cli.ts run exempla/fundamenta/salve.fab            # Compile and run
+bun test                                                         # Run tests
 ```
 
 ## Example
@@ -45,42 +45,42 @@ scribe salve(nomen)
 
 | Target     | Code Coverage |
 | ---------- | :-----------: |
-| TypeScript |      97%      |
-| Python     |      86%      |
-| Zig        |      74%      |
-| C++23      |      60%      |
+| TypeScript |      98%      |
+| Python     |      96%      |
+| C++23      |      92%      |
+| Zig        |      52%      |
 | Rust       |      0%       |
 
 Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not applicable, `[c]` convention (no compiler support needed)
 
 ## Type System
 
-| Feature                  | TypeScript | Zig | Python | WASM | Rust | C++23 |
-| ------------------------ | :--------: | :-: | :----: | :--: | :--: | :---: |
-| `textus` (string)        |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `numerus` (integer)      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `fractus` (float)        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `decimus` (decimal)      |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `magnus` (bigint)        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `bivalens` (boolean)     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `nihil` (null)           |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `vacuum` (void)          |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
-| `numquam` (never)        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `octeti` (bytes)         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `objectum` (object)      |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `lista<T>` (array)       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `tabula<K,V>` (map)      |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `copia<T>` (set)         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `series<T...>` (tuple)   |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
-| `promissum<T>` (promise) |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `erratum` (error)        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `cursor<T>` (iterator)   |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `ignotum` (unknown)      |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| Nullable types (`T?`)    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| Union types (`T \| U`)   |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| Generic type params      |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| Type aliases (`typus`)   |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| typeof (`typus` RHS)     |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| Feature                   | TypeScript | Zig | Python | WASM | Rust | C++23 |
+| ------------------------- | :--------: | :-: | :----: | :--: | :--: | :---: |
+| `textus` (string)         |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| `numerus` (integer)       |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| `fractus` (float)         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [x]  |
+| `decimus` (decimal)       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `magnus` (bigint)         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `bivalens` (boolean)      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| `nihil` (null)            |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| `vacuum` (void)           |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| `numquam` (never)         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `octeti` (bytes)          |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `objectum` (object)       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `lista<T>` (array)        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `tabula<K,V>` (map)       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `copia<T>` (set)          |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `series<T...>` (tuple)    |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `promissum<T>` (promise)  |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `erratum` (error)         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `cursor<T>` (iterator)    |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `ignotum` (unknown)       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Nullable types (`T?`)     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Union types (`unio<A,B>`) |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Generic type params       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Type aliases (`typus`)    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| typeof (`typus` RHS)      |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 
 ## Variable Declarations
 
@@ -122,6 +122,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `fiet T` (async return)            |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `fiunt T` (generator return)       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [-]  |
 | `fient T` (async generator return) |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [-]  |
+| `prae` (comptime type param)       |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 
 ## Control Flow Statements
 
@@ -146,9 +147,11 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `secus` (else/ternary alt)    |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `fac` (do/block)              |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `ergo` (then, one-liner)      |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `rumpe` (break)               |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| `perge` (continue)            |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `rumpe` (break)               |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `perge` (continue)            |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `custodi` (guard)             |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `cura` (resource management)  |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `praefixum` (comptime block)  |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Catch on control flow         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 
 ## Return/Exit Statements
@@ -190,6 +193,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `nihil` literal                     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | String literals                     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Number literals                     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Hex literals (`0xFF`)               |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| BigInt hex (`0xFFn`)                |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Template literals                   |    [x]     | [~] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Regex literals (`sed`)              |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 | Array literals                      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
@@ -199,6 +204,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Binary operators                    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Comparison operators                |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | Logical operators                   |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Bitwise operators (`&\|^~<<>>`)     |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 | Unary operators                     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 | `nulla` (is empty)                  |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `nonnulla` (has content)            |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
@@ -265,6 +271,19 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | ------------------------------ | :--------: | :-: | :----: | :--: | :--: | :---: |
 | `ex...importa` (named imports) |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `ex...importa *` (wildcard)    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
+
+## Testing
+
+| Feature                         | TypeScript | Zig | Python | WASM | Rust | C++23 |
+| ------------------------------- | :--------: | :-: | :----: | :--: | :--: | :---: |
+| `proba` (test case)             |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `probandum` (test suite)        |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `cura ante` (beforeEach)        |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `cura post` (afterEach)         |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `omitte` modifier (skip)        |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `solum` modifier (only)         |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `futurum` modifier (todo)       |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| Table-driven tests (`proba ex`) |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 
 ## Preamble / Prologue
 
