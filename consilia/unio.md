@@ -7,12 +7,25 @@ Faber has two union constructs with distinct semantics.
 ### Implemented
 
 - `unio<A, B>` generic type — TypeScript, Python, Zig (falls back to `anytype`)
+- `discretio` declaration — TypeScript, Python, Zig, C++
+- Variant syntax with named fields — All targets
+- Generic type parameters (`discretio Option<T>`) — All targets
+- Pattern matching (`ex Variant pro bindings`) — TypeScript, Python, Zig
+- Semantic analysis: type registration and binding introduction
+
+### Partial / In Progress
+
+- C++ pattern matching — generates TODO placeholder (needs `std::visit`)
+- Exhaustiveness checking — not yet enforced by semantic analyzer
+- Variant construction validation — `Type.Variant { ... }` not yet validated
 
 ### Not Yet Implemented
 
-- `discretio` declaration and variant syntax
-- Pattern matching on `discretio` variants
-- Codegen for Rust, C++
+- Rust codegen
+- Tuple-style variant shorthand (`Some(T)`)
+- Methods on discretio types
+- Nested pattern matching
+- Guard clauses in patterns
 
 ---
 
@@ -63,19 +76,19 @@ A discriminated union where each variant has a tag and optional payload. The com
 
 ```
 discretio Event {
-    Click { x: numerus, y: numerus }
-    Keypress { key: textus }
+    Click { numerus x, numerus y }
+    Keypress { textus key }
     Quit
 }
 
 discretio Option<T> {
-    Some { value: T }
+    Some { T value }
     None
 }
 
 discretio Result<T, E> {
-    Ok { value: T }
-    Err { error: E }
+    Ok { T value }
+    Err { E error }
 }
 ```
 
@@ -90,19 +103,21 @@ Variants can have:
     None
     ```
 
-2. **Named fields** — struct-like payload
+2. **Named fields** — struct-like payload (type-first, like `genus` fields)
 
     ```
-    Click { x: numerus, y: numerus }
+    Click { numerus x, numerus y }
     ```
 
 3. **Single value** — tuple-like payload (shorthand)
     ```
-    Some { value: T }
-    // or potentially: Some(T)
+    Some { T value }
+    // or potentially: Some(T) — not yet decided
     ```
 
 ### Construction
+
+Construction uses the type name, dot, variant name, then an object literal for fields:
 
 ```
 fixum event = Event.Click { x: 10, y: 20 }
@@ -112,17 +127,27 @@ fixum quit = Event.Quit
 fixum result: Result<numerus, textus> = Result.Ok { value: 42 }
 ```
 
+Note: The object literal uses name-colon-value syntax (like all Faber object literals), not type-first. The type-first syntax is only for the _declaration_ of variant fields.
+
 ### Pattern Matching
 
-Use `elige` for exhaustive matching:
+Use `elige` for exhaustive matching with `ex`/`pro` syntax:
 
 ```
 elige event {
-    si Click { scribe "clicked at " + x + ", " + y }
-    si Keypress { scribe "pressed " + key }
-    si Quit { mori "goodbye" }
+    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
+    ex Keypress pro key { scribe "pressed " + key }
+    ex Quit { mori "goodbye" }
 }
 ```
+
+The syntax is `ex VariantName pro bindings { body }`:
+
+- `ex` = "from this variant" (extraction)
+- `pro` = "binding these names"
+- For unit variants (no payload), omit `pro`: `ex Quit { ... }`
+
+This parallels the existing iteration syntax: `ex items pro item { ... }`
 
 The compiler enforces exhaustiveness — all variants must be handled.
 
@@ -130,12 +155,29 @@ The compiler enforces exhaustiveness — all variants must be handled.
 
 ```
 elige result {
-    si Ok { redde value }
-    si Err { iace error }
+    ex Ok pro value { redde value }
+    ex Err pro error { iace error }
 }
 ```
 
-Variant fields are bound as local variables within the branch.
+Only the fields you name are bound. Binding order matches declaration order.
+
+#### Mixed Switches
+
+`si` remains for value matching, `ex` for variant extraction:
+
+```
+elige status {
+    si "pending" { ... }      // value match (string)
+    si "active" { ... }
+    aliter { ... }
+}
+
+elige result {
+    ex Ok pro v { redde v }   // variant match
+    ex Err pro e { iace e }
+}
+```
 
 ### Target Mappings
 
@@ -145,18 +187,32 @@ Variant fields are bound as local variables within the branch.
 
 #### TypeScript Output
 
+```fab
+// Faber source:
+elige event {
+    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
+    ex Keypress pro key { scribe "pressed " + key }
+    ex Quit { mori "goodbye" }
+}
+```
+
 ```typescript
+// Generated TypeScript:
 type Event = { tag: 'Click'; x: number; y: number } | { tag: 'Keypress'; key: string } | { tag: 'Quit' };
 
 const event: Event = { tag: 'Click', x: 10, y: 20 };
 
 switch (event.tag) {
-    case 'Click':
-        console.log(`clicked at ${event.x}, ${event.y}`);
+    case 'Click': {
+        const { x, y } = event;
+        console.log(`clicked at ${x}, ${y}`);
         break;
-    case 'Keypress':
-        console.log(`pressed ${event.key}`);
+    }
+    case 'Keypress': {
+        const { key } = event;
+        console.log(`pressed ${key}`);
         break;
+    }
     case 'Quit':
         throw new Error('goodbye');
 }
@@ -164,7 +220,17 @@ switch (event.tag) {
 
 #### Zig Output
 
+```fab
+// Faber source:
+elige event {
+    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
+    ex Keypress pro key { scribe "pressed " + key }
+    ex Quit { mori "goodbye" }
+}
+```
+
 ```zig
+// Generated Zig:
 const Event = union(enum) {
     click: struct { x: i64, y: i64 },
     keypress: struct { key: []const u8 },
@@ -174,15 +240,32 @@ const Event = union(enum) {
 const event = Event{ .click = .{ .x = 10, .y = 20 } };
 
 switch (event) {
-    .click => |c| std.debug.print("clicked at {}, {}\n", .{c.x, c.y}),
-    .keypress => |k| std.debug.print("pressed {s}\n", .{k.key}),
+    .click => |c| {
+        const x = c.x;
+        const y = c.y;
+        std.debug.print("clicked at {}, {}\n", .{ x, y });
+    },
+    .keypress => |k| {
+        const key = k.key;
+        std.debug.print("pressed {s}\n", .{key});
+    },
     .quit => @panic("goodbye"),
 }
 ```
 
 #### Rust Output
 
+```fab
+// Faber source:
+elige event {
+    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
+    ex Keypress pro key { scribe "pressed " + key }
+    ex Quit { mori "goodbye" }
+}
+```
+
 ```rust
+// Generated Rust:
 enum Event {
     Click { x: i64, y: i64 },
     Keypress { key: String },
@@ -229,7 +312,50 @@ match event {
 
 ## Open Questions
 
-1. **Tuple-style variants:** Should `Some(T)` be allowed as shorthand for `Some { value: T }`?
+1. **Tuple-style variants:** Should `Some(T)` be allowed as shorthand for `Some { T value }`?
 2. **Methods on discretio:** Can variants have associated methods?
 3. **Nested patterns:** How deep can pattern matching go?
-4. **Guard clauses:** Should `si Click si x > 0 { ... }` be supported?
+4. **Guard clauses:** Should `ex Click pro x, y si x > 0 { ... }` be supported?
+
+---
+
+## Implementation Notes
+
+### Grammar
+
+```ebnf
+discretioDecl := 'discretio' IDENTIFIER typeParams? '{' variant (',' variant)* ','? '}'
+variant := IDENTIFIER ('{' variantFields '}')?
+variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
+```
+
+### Pattern Matching Grammar Extension
+
+```ebnf
+// Extends existing switchCase for discretio patterns
+switchCase := 'si' expression (blockStmt | 'ergo' expression)   // value match
+            | 'ex' IDENTIFIER ('pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt  // variant match
+```
+
+### AST Nodes (Implemented)
+
+- `DiscretioDeclaration` — the type declaration (`fons/parser/ast.ts`)
+- `VariantDeclaration` — each variant within discretio
+- `VariantField` — type-first field declaration within a variant
+- `VariantCase` — `ex Variant pro bindings { }` in elige
+
+### Compiler Pipeline
+
+1. **Lexicon** (`fons/lexicon/keywords.ts`): `discretio` keyword
+2. **Parser** (`fons/parser/index.ts`):
+    - `parseDiscretioDeclaration()` — parses the full declaration
+    - `parseVariantDeclaration()` — parses each variant
+    - Extended `parseSwitchStatement()` to handle `ex`/`pro` variant cases
+3. **Semantic** (`fons/semantic/index.ts`):
+    - `analyzeDiscretioDeclaration()` — registers type in scope
+    - Extended `analyzeSwitchStatement()` — introduces variant bindings
+4. **Codegen**:
+    - TypeScript: Discriminated union with `tag` property
+    - Python: `@dataclass` per variant + union type alias
+    - Zig: Native `union(enum)` with struct payloads
+    - C++: `std::variant<...>` with structs per variant

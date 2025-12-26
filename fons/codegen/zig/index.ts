@@ -64,6 +64,7 @@ import type {
     ForStatement,
     WithStatement,
     SwitchStatement,
+    DiscretioDeclaration,
     GuardStatement,
     AssertStatement,
     ReturnStatement,
@@ -326,6 +327,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
                 return genPactumDeclaration(node);
             case 'TypeAliasDeclaration':
                 return genTypeAliasDeclaration(node);
+            case 'DiscretioDeclaration':
+                return genDiscretioDeclaration(node);
             case 'IfStatement':
                 return genIfStatement(node);
             case 'WhileStatement':
@@ -1062,28 +1065,98 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
     /**
      * Generate switch statement as if-else chain.
      *
-     * TRANSFORMS:
+     * TRANSFORMS (value matching):
      *   elige x { si 1 { a() } si 2 { b() } aliter { c() } }
      *   -> if (x == 1) { a(); } else if (x == 2) { b(); } else { c(); }
      *
      *   elige status { si "pending" { ... } aliter { ... } }
      *   -> if (std.mem.eql(u8, status, "pending")) { ... } else { ... }
      *
-     * WHY: Always use if-else chains instead of switch statements.
-     *      Switch is outdated, Zig can't switch on strings, and if-else
-     *      is more consistent across all target languages.
+     * TRANSFORMS (variant matching):
+     *   elige event { ex Click pro x, y { use(x, y) } ex Quit { exit() } }
+     *   -> switch (event) { .click => |c| { use(c.x, c.y); }, .quit => { exit(); } }
+     *
+     * WHY: For value matching, use if-else chains instead of switch statements.
+     *      For variant matching, Zig's switch on tagged unions is idiomatic.
      */
     function genSwitchStatement(node: SwitchStatement): string {
         const discriminant = genExpression(node.discriminant);
 
+        // Check if we have any variant cases (pattern matching on discretio)
+        const hasVariantCases = node.cases.some(c => c.type === 'VariantCase');
+
+        if (hasVariantCases) {
+            // Variant matching: use native switch on tagged union
+            let result = `${ind()}switch (${discriminant}) {\n`;
+            depth++;
+
+            for (const caseNode of node.cases) {
+                if (caseNode.type === 'VariantCase') {
+                    const variantName = caseNode.variant.name.toLowerCase();
+
+                    if (caseNode.bindings.length > 0) {
+                        // Capture payload: .click => |c| { ... }
+                        result += `${ind()}.${variantName} => |payload| {\n`;
+                        depth++;
+
+                        // Bind individual fields
+                        for (const binding of caseNode.bindings) {
+                            result += `${ind()}const ${binding.name} = payload.${binding.name};\n`;
+                        }
+
+                        for (const stmt of caseNode.consequent.body) {
+                            result += genStatement(stmt) + '\n';
+                        }
+
+                        depth--;
+                        result += `${ind()}},\n`;
+                    } else {
+                        // No payload: .quit => { ... }
+                        result += `${ind()}.${variantName} => {\n`;
+                        depth++;
+
+                        for (const stmt of caseNode.consequent.body) {
+                            result += genStatement(stmt) + '\n';
+                        }
+
+                        depth--;
+                        result += `${ind()}},\n`;
+                    }
+                } else {
+                    // Mixed value case in variant switch - not typical
+                    result += `${ind()}// TODO: Mixed value case not supported in Zig variant switch\n`;
+                }
+            }
+
+            if (node.defaultCase) {
+                result += `${ind()}else => {\n`;
+                depth++;
+
+                for (const stmt of node.defaultCase.body) {
+                    result += genStatement(stmt) + '\n';
+                }
+
+                depth--;
+                result += `${ind()}},\n`;
+            }
+
+            depth--;
+            result += `${ind()}}`;
+
+            return result;
+        }
+
+        // Value matching: use if-else chain
         // Check if comparing strings (need std.mem.eql)
-        const hasStringCase = node.cases.some(c => c.test.type === 'Literal' && typeof c.test.value === 'string');
+        const hasStringCase = node.cases.some(c => c.type === 'SwitchCase' && c.test.type === 'Literal' && typeof c.test.value === 'string');
         const isString = isStringType(node.discriminant) || hasStringCase;
 
         let result = '';
         let first = true;
 
         for (const caseNode of node.cases) {
+            if (caseNode.type !== 'SwitchCase') continue;
+
             const test = genExpression(caseNode.test);
             const prefix = first ? '' : ' else ';
             first = false;
@@ -1174,6 +1247,48 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         const typeAnno = genType(node.typeAnnotation);
 
         return `${ind()}const ${name} = ${typeAnno};`;
+    }
+
+    /**
+     * Generate discretio (tagged union) declaration.
+     *
+     * TRANSFORMS:
+     *   discretio Event { Click { numerus x, numerus y }, Quit }
+     *   -> const Event = union(enum) { click: struct { x: i64, y: i64 }, quit };
+     *
+     * TARGET: Zig has native tagged unions via union(enum).
+     */
+    function genDiscretioDeclaration(node: DiscretioDeclaration): string {
+        const name = node.name.name;
+        const lines: string[] = [];
+
+        lines.push(`${ind()}const ${name} = union(enum) {`);
+        depth++;
+
+        for (const variant of node.variants) {
+            const variantName = variant.name.name.toLowerCase();
+
+            if (variant.fields.length === 0) {
+                // Unit variant
+                lines.push(`${ind()}${variantName},`);
+            } else {
+                // Variant with payload - use anonymous struct
+                const fields = variant.fields
+                    .map((field: (typeof variant.fields)[0]) => {
+                        const fieldName = field.name.name;
+                        const fieldType = genType(field.fieldType);
+                        return `${fieldName}: ${fieldType}`;
+                    })
+                    .join(', ');
+
+                lines.push(`${ind()}${variantName}: struct { ${fields} },`);
+            }
+        }
+
+        depth--;
+        lines.push(`${ind()}};`);
+
+        return lines.join('\n');
     }
 
     function genReturnStatement(node: ReturnStatement): string {

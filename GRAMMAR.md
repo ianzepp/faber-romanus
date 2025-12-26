@@ -334,6 +334,48 @@ typeParamDecl := 'prae' 'typus' IDENTIFIER
 (numerus a, numerus b)       -> typeParams=[], params=[a, b]
 ```
 
+### Discretio Declaration
+
+```ebnf
+discretioDecl := 'discretio' IDENTIFIER typeParams? '{' variant (',' variant)* ','? '}'
+variant := IDENTIFIER ('{' variantFields '}')?
+variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
+```
+
+> Latin 'discretio' (distinction) for tagged unions.
+> Each variant has a compiler-managed tag for exhaustive pattern matching.
+
+**Examples:**
+
+```fab
+discretio Event {
+Click { numerus x, numerus y }
+Keypress { textus key }
+Quit
+}
+discretio Option<T> {
+Some { T value }
+None
+}
+```
+
+### Variant Declaration
+
+```ebnf
+variant := IDENTIFIER ('{' variantFields '}')?
+variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
+```
+
+> Variant names are capitalized by convention (like type names).
+> Fields use type-first syntax like genus fields.
+
+**Examples:**
+
+```fab
+Click { numerus x, numerus y }  -> fields with payload
+Quit                            -> unit variant (no payload)
+```
+
 ### If Statement
 
 ```ebnf
@@ -442,23 +484,26 @@ in user { nomen = "Marcus" }  // mutation block
 ### Switch Statement
 
 ```ebnf
-switchStmt := 'elige' expression '{' switchCase* defaultCase? '}' catchClause?
+switchStmt := 'elige' expression '{' (switchCase | variantCase)* defaultCase? '}' catchClause?
 switchCase := 'si' expression (blockStmt | 'ergo' expression)
+variantCase := 'ex' IDENTIFIER ('pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt
 defaultCase := ('aliter' | 'secus') (blockStmt | statement)
 ```
 
-> 'elige' (choose) for switch, 'si' (if) for cases, 'ergo' (therefore) for one-liners.
-> 'aliter'/'secus' (otherwise) doesn't need 'ergo' - it's already the consequence.
-
-**Examples:**
-
-```fab
-elige status {
-si "pending" ergo scribe("waiting")
-si "active" { processActive() }
-aliter iace "Unknown status"
-}
-```
+> 'elige' (choose) for switch, 'si' (if) for value cases, 'ex' (from) for variant cases,
+> 'ergo' (therefore) for one-liners, 'aliter'/'secus' (otherwise) for default.
+> Examples (value matching):
+> elige status {
+> si "pending" ergo scribe("waiting")
+> si "active" { processActive() }
+> aliter iace "Unknown status"
+> }
+> Examples (variant matching):
+> elige event {
+> ex Click pro x, y { scribe x + ", " + y }
+> ex Keypress pro key { scribe key }
+> ex Quit { mori "goodbye" }
+> }
 
 ### Guard Statement
 

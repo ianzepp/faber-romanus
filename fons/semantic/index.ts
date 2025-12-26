@@ -80,6 +80,7 @@ import type {
     ProbaStatement,
     CuraBlock,
     CuraStatement,
+    DiscretioDeclaration,
 } from '../parser/ast';
 import type { Position } from '../tokenizer/types';
 import type { Scope, Symbol } from './scope';
@@ -634,10 +635,7 @@ export function analyze(program: Program): SemanticResult {
             if (elemType && elemNode && !isAssignableTo(elemType, inferredElementType)) {
                 const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.TypeMismatch];
 
-                error(
-                    `${text(formatType(elemType), formatType(inferredElementType))} in array element ${i + 1}\n${help}`,
-                    elemNode.position,
-                );
+                error(`${text(formatType(elemType), formatType(inferredElementType))} in array element ${i + 1}\n${help}`, elemNode.position);
             }
         }
 
@@ -1157,6 +1155,12 @@ export function analyze(program: Program): SemanticResult {
                 analyzePactumDeclaration(node);
                 break;
 
+            case 'DiscretioDeclaration':
+                // TODO: Add proper semantic analysis for discretio
+                // For now, just register the type name
+                analyzeDiscretioDeclaration(node);
+                break;
+
             case 'BreakStatement':
             case 'ContinueStatement':
                 // No semantic analysis needed for break/continue
@@ -1425,6 +1429,32 @@ export function analyze(program: Program): SemanticResult {
         node.name.resolvedType = type;
     }
 
+    /**
+     * Analyze discretio (tagged union) declaration.
+     *
+     * WHY: Discretio declarations define sum types with tagged variants.
+     *      For now, we just register the type name. Full variant checking
+     *      will be added when semantic analysis is extended for pattern matching.
+     */
+    function analyzeDiscretioDeclaration(node: DiscretioDeclaration): void {
+        // Register the discretio as a user-defined type
+        const type = userType(node.name.name);
+
+        define({
+            name: node.name.name,
+            type,
+            kind: 'type', // WHY: discretio is a type definition
+            mutable: false,
+            position: node.position,
+        });
+
+        node.resolvedType = type;
+        node.name.resolvedType = type;
+
+        // TODO: Register each variant as a constructor function
+        // TODO: Track variant fields for pattern matching validation
+    }
+
     function analyzeProbandumStatement(node: ProbandumStatement): void {
         // Test suite - analyze all test statements
         for (const stmt of node.body) {
@@ -1555,11 +1585,32 @@ export function analyze(program: Program): SemanticResult {
         resolveExpression(node.discriminant);
 
         for (const caseNode of node.cases) {
-            resolveExpression(caseNode.test);
+            if (caseNode.type === 'SwitchCase') {
+                // Value matching: si expression { ... }
+                resolveExpression(caseNode.test);
 
-            enterScope();
-            analyzeBlock(caseNode.consequent);
-            exitScope();
+                enterScope();
+                analyzeBlock(caseNode.consequent);
+                exitScope();
+            } else {
+                // Variant matching: ex VariantName pro bindings { ... }
+                // WHY: VariantCase introduces bindings into scope
+                enterScope();
+
+                // Define each binding as a variable in this scope
+                for (const binding of caseNode.bindings) {
+                    define({
+                        name: binding.name,
+                        type: UNKNOWN, // TODO: Infer from variant field type
+                        kind: 'variable',
+                        mutable: false, // Pattern bindings are immutable
+                        position: caseNode.position,
+                    });
+                }
+
+                analyzeBlock(caseNode.consequent);
+                exitScope();
+            }
         }
 
         if (node.defaultCase) {

@@ -52,6 +52,7 @@ import type {
     FieldDeclaration,
     PactumDeclaration,
     TypeAliasDeclaration,
+    DiscretioDeclaration,
     IfStatement,
     WhileStatement,
     ForStatement,
@@ -223,6 +224,7 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
             case 'PactumDeclaration':
             case 'TypeAliasDeclaration':
             case 'EnumDeclaration':
+            case 'DiscretioDeclaration':
                 return true;
             // Top-level const could be declaration, but we'll put in main for simplicity
             default:
@@ -265,6 +267,8 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
                 return genPactumDeclaration(node);
             case 'TypeAliasDeclaration':
                 return genTypeAliasDeclaration(node);
+            case 'DiscretioDeclaration':
+                return genDiscretioDeclaration(node);
             case 'IfStatement':
                 return genIfStatement(node);
             case 'WhileStatement':
@@ -640,6 +644,55 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         return `${ind()}using ${name} = ${type};`;
     }
 
+    /**
+     * Generate discretio (tagged union) as std::variant.
+     *
+     * TRANSFORMS:
+     *   discretio Event { Click { numerus x, numerus y }, Quit }
+     *   -> struct Click { int64_t x; int64_t y; };
+     *      struct Quit {};
+     *      using Event = std::variant<Click, Quit>;
+     *
+     * WHY: std::variant is C++17's type-safe union. Each variant becomes
+     *      a struct, and we use std::variant to hold any of them.
+     */
+    function genDiscretioDeclaration(node: DiscretioDeclaration): string {
+        includes.add('<variant>');
+
+        const name = node.name.name;
+        const lines: string[] = [];
+        const variantNames: string[] = [];
+
+        // Generate a struct for each variant
+        for (const variant of node.variants) {
+            const variantName = variant.name.name;
+            variantNames.push(variantName);
+
+            if (variant.fields.length === 0) {
+                // Unit variant: empty struct
+                lines.push(`${ind()}struct ${variantName} {};`);
+            } else {
+                // Variant with fields
+                lines.push(`${ind()}struct ${variantName} {`);
+                depth++;
+
+                for (const field of variant.fields) {
+                    const fieldName = field.name.name;
+                    const fieldType = genType(field.fieldType);
+                    lines.push(`${ind()}${fieldType} ${fieldName};`);
+                }
+
+                depth--;
+                lines.push(`${ind()}};`);
+            }
+        }
+
+        // Generate the variant type alias
+        lines.push(`${ind()}using ${name} = std::variant<${variantNames.join(', ')}>;`);
+
+        return lines.join('\n');
+    }
+
     // -------------------------------------------------------------------------
     // Control Flow
     // -------------------------------------------------------------------------
@@ -730,6 +783,9 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
 
     /**
      * Generate switch statement.
+     *
+     * NOTE: Variant matching not yet implemented for C++.
+     *       For now, only value cases are supported.
      */
     function genSwitchStatement(node: SwitchStatement): string {
         const discriminant = genExpression(node.discriminant);
@@ -738,18 +794,25 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         lines.push(`${ind()}switch (${discriminant}) {`);
 
         for (const caseNode of node.cases) {
-            const test = genExpression(caseNode.test);
+            if (caseNode.type === 'SwitchCase') {
+                // Value matching: si expression { ... }
+                const test = genExpression(caseNode.test);
 
-            lines.push(`${ind()}case ${test}: {`);
-            depth++;
+                lines.push(`${ind()}case ${test}: {`);
+                depth++;
 
-            for (const stmt of caseNode.consequent.body) {
-                lines.push(genStatement(stmt));
+                for (const stmt of caseNode.consequent.body) {
+                    lines.push(genStatement(stmt));
+                }
+
+                lines.push(`${ind()}break;`);
+                depth--;
+                lines.push(`${ind()}}`);
+            } else {
+                // Variant matching: ex VariantName pro bindings { ... }
+                // TODO: Implement std::visit or variant pattern matching for C++
+                lines.push(`${ind()}// TODO: Variant case ${caseNode.variant.name} not yet implemented for C++`);
             }
-
-            lines.push(`${ind()}break;`);
-            depth--;
-            lines.push(`${ind()}}`);
         }
 
         if (node.defaultCase) {
@@ -1018,7 +1081,7 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
 
         // For simple structs, use designated initializers (C++20)
         const props = node.properties
-            .filter((prop) => prop.type !== 'SpreadElement')
+            .filter(prop => prop.type !== 'SpreadElement')
             .map(prop => {
                 const p = prop as any;
                 const key = p.key.type === 'Identifier' ? p.key.name : String((p.key as Literal).value);

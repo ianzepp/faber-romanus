@@ -87,6 +87,10 @@ import type {
     FieldDeclaration,
     PactumDeclaration,
     PactumMethod,
+    DiscretioDeclaration,
+    VariantDeclaration,
+    VariantField,
+    VariantCase,
     IfStatement,
     WhileStatement,
     ForStatement,
@@ -584,6 +588,10 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('pactum')) {
             return parsePactumDeclaration();
+        }
+
+        if (checkKeyword('discretio')) {
+            return parseDiscretioDeclaration();
         }
 
         if (checkKeyword('si')) {
@@ -1209,6 +1217,117 @@ export function parse(tokens: Token[]): ParserResult {
         expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
         return { type: 'EnumDeclaration', name, members, position };
+    }
+
+    // ---------------------------------------------------------------------------
+    // Discretio (Tagged Union) Declarations
+    // ---------------------------------------------------------------------------
+
+    /**
+     * Parse discretio (tagged union) declaration.
+     *
+     * GRAMMAR:
+     *   discretioDecl := 'discretio' IDENTIFIER typeParams? '{' variant (',' variant)* ','? '}'
+     *   variant := IDENTIFIER ('{' variantFields '}')?
+     *   variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
+     *
+     * WHY: Latin 'discretio' (distinction) for tagged unions.
+     *      Each variant has a compiler-managed tag for exhaustive pattern matching.
+     *
+     * Examples:
+     *   discretio Event {
+     *       Click { numerus x, numerus y }
+     *       Keypress { textus key }
+     *       Quit
+     *   }
+     *
+     *   discretio Option<T> {
+     *       Some { T value }
+     *       None
+     *   }
+     */
+    function parseDiscretioDeclaration(): DiscretioDeclaration {
+        const position = peek().position;
+
+        expectKeyword('discretio', ParserErrorCode.ExpectedKeywordDiscretio);
+
+        const name = parseIdentifier();
+
+        // Parse optional type parameters <T, U>
+        let typeParameters: Identifier[] | undefined;
+
+        if (match('LESS')) {
+            typeParameters = [];
+
+            do {
+                typeParameters.push(parseIdentifier());
+            } while (match('COMMA'));
+
+            expect('GREATER', ParserErrorCode.ExpectedClosingAngle);
+        }
+
+        expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
+
+        const variants: VariantDeclaration[] = [];
+
+        while (!check('RBRACE') && !isAtEnd()) {
+            variants.push(parseVariantDeclaration());
+
+            // Allow trailing comma or no separator between variants
+            match('COMMA');
+        }
+
+        expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
+
+        return { type: 'DiscretioDeclaration', name, typeParameters, variants, position };
+    }
+
+    /**
+     * Parse a single variant within a discretio.
+     *
+     * GRAMMAR:
+     *   variant := IDENTIFIER ('{' variantFields '}')?
+     *   variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
+     *
+     * WHY: Variant names are capitalized by convention (like type names).
+     *      Fields use type-first syntax like genus fields.
+     *
+     * Examples:
+     *   Click { numerus x, numerus y }  -> fields with payload
+     *   Quit                            -> unit variant (no payload)
+     */
+    function parseVariantDeclaration(): VariantDeclaration {
+        const position = peek().position;
+
+        const name = parseIdentifier();
+
+        const fields: VariantField[] = [];
+
+        // Check for payload: Variant { fields }
+        if (match('LBRACE')) {
+            // Parse fields until closing brace
+            while (!check('RBRACE') && !isAtEnd()) {
+                const fieldPosition = peek().position;
+                const fieldType = parseTypeAnnotation();
+                const fieldName = parseIdentifier();
+
+                fields.push({
+                    type: 'VariantField',
+                    name: fieldName,
+                    fieldType,
+                    position: fieldPosition,
+                });
+
+                // Allow comma between fields
+                if (!check('RBRACE')) {
+                    match('COMMA');
+                }
+            }
+
+            expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
+        }
+
+        return { type: 'VariantDeclaration', name, fields, position };
     }
 
     // ---------------------------------------------------------------------------
@@ -1890,18 +2009,26 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse switch statement.
      *
      * GRAMMAR:
-     *   switchStmt := 'elige' expression '{' switchCase* defaultCase? '}' catchClause?
+     *   switchStmt := 'elige' expression '{' (switchCase | variantCase)* defaultCase? '}' catchClause?
      *   switchCase := 'si' expression (blockStmt | 'ergo' expression)
+     *   variantCase := 'ex' IDENTIFIER ('pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt
      *   defaultCase := ('aliter' | 'secus') (blockStmt | statement)
      *
-     * WHY: 'elige' (choose) for switch, 'si' (if) for cases, 'ergo' (therefore) for one-liners.
-     *      'aliter'/'secus' (otherwise) doesn't need 'ergo' - it's already the consequence.
+     * WHY: 'elige' (choose) for switch, 'si' (if) for value cases, 'ex' (from) for variant cases,
+     *      'ergo' (therefore) for one-liners, 'aliter'/'secus' (otherwise) for default.
      *
-     * Examples:
+     * Examples (value matching):
      *   elige status {
      *       si "pending" ergo scribe("waiting")
      *       si "active" { processActive() }
      *       aliter iace "Unknown status"
+     *   }
+     *
+     * Examples (variant matching):
+     *   elige event {
+     *       ex Click pro x, y { scribe x + ", " + y }
+     *       ex Keypress pro key { scribe key }
+     *       ex Quit { mori "goodbye" }
      *   }
      */
     function parseSwitchStatement(): SwitchStatement {
@@ -1913,7 +2040,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
-        const cases: SwitchCase[] = [];
+        const cases: (SwitchCase | VariantCase)[] = [];
         let defaultCase: BlockStatement | undefined;
 
         // Helper: parse 'si' case body (requires ergo or block)
@@ -1949,6 +2076,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         while (hasMoreCases()) {
             if (checkKeyword('si')) {
+                // Value case: si expression { ... }
                 const casePosition = peek().position;
 
                 expectKeyword('si', ParserErrorCode.ExpectedKeywordSi);
@@ -1957,6 +2085,25 @@ export function parse(tokens: Token[]): ParserResult {
                 const consequent = parseSiBody();
 
                 cases.push({ type: 'SwitchCase', test, consequent, position: casePosition });
+            } else if (checkKeyword('ex')) {
+                // Variant case: ex VariantName pro bindings { ... }
+                const casePosition = peek().position;
+
+                advance(); // consume 'ex'
+
+                const variant = parseIdentifier();
+
+                // Parse optional bindings: pro x, y, z
+                const bindings: Identifier[] = [];
+                if (matchKeyword('pro')) {
+                    do {
+                        bindings.push(parseIdentifier());
+                    } while (match('COMMA'));
+                }
+
+                const consequent = parseBlockStatement();
+
+                cases.push({ type: 'VariantCase', variant, bindings, consequent, position: casePosition });
             } else if (checkKeyword('aliter') || checkKeyword('secus')) {
                 advance(); // consume aliter or secus
 

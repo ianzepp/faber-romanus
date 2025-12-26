@@ -58,6 +58,9 @@ import type {
     ForStatement,
     WithStatement,
     SwitchStatement,
+    DiscretioDeclaration,
+    VariantDeclaration,
+    VariantField,
     GuardStatement,
     AssertStatement,
     ReturnStatement,
@@ -248,6 +251,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
                 return genTypeAliasDeclaration(node);
             case 'EnumDeclaration':
                 return genEnumDeclaration(node);
+            case 'DiscretioDeclaration':
+                return genDiscretioDeclaration(node);
             case 'IfStatement':
                 return genIfStatement(node);
             case 'WhileStatement':
@@ -633,6 +638,46 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
+     * Generate discretio (tagged union) declaration.
+     *
+     * TRANSFORMS:
+     *   discretio Event { Click { numerus x, numerus y }, Quit }
+     *   -> type Event = { tag: 'Click'; x: number; y: number } | { tag: 'Quit' };
+     *
+     * WHY: TypeScript discriminated unions use a 'tag' property for narrowing.
+     */
+    function genDiscretioDeclaration(node: DiscretioDeclaration): string {
+        const name = node.name.name;
+
+        // Generate type parameters if present
+        let typeParams = '';
+        if (node.typeParameters && node.typeParameters.length > 0) {
+            typeParams = '<' + node.typeParameters.map(p => p.name).join(', ') + '>';
+        }
+
+        // Generate variant types
+        const variants = node.variants.map(variant => {
+            const variantName = variant.name.name;
+
+            if (variant.fields.length === 0) {
+                // Unit variant: just the tag
+                return `{ tag: '${variantName}' }`;
+            }
+
+            // Variant with fields: tag + field properties
+            const fields = variant.fields.map(field => {
+                const fieldName = field.name.name;
+                const fieldType = genType(field.fieldType);
+                return `${fieldName}: ${fieldType}`;
+            });
+
+            return `{ tag: '${variantName}'; ${fields.join('; ')} }`;
+        });
+
+        return `${ind()}type ${name}${typeParams} = ${variants.join(' | ')};`;
+    }
+
+    /**
      * Generate type parameter (type, literal, or modifier).
      *
      * TRANSFORMS:
@@ -915,11 +960,16 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
-     * Generate switch statement as if/else chain.
+     * Generate switch statement.
      *
-     * TRANSFORMS:
+     * TRANSFORMS (value matching):
      *   elige x { si 1 { a() } si 2 { b() } aliter { c() } }
      *   -> if (x === 1) { a(); } else if (x === 2) { b(); } else { c(); }
+     *
+     * TRANSFORMS (variant matching):
+     *   elige event { ex Click pro x, y { use(x, y) } ex Quit { exit() } }
+     *   -> if (event.tag === 'Click') { const { x, y } = event; use(x, y); }
+     *      else if (event.tag === 'Quit') { exit(); }
      *
      * WHY: Always emit if/else for all targets. Simpler codegen, no type
      *      detection needed, and downstream compilers optimize anyway.
@@ -936,14 +986,32 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         // Generate if/else chain
         for (let i = 0; i < node.cases.length; i++) {
             const caseNode = node.cases[i]!;
-            const test = genExpression(caseNode.test);
             const keyword = i === 0 ? 'if' : 'else if';
 
-            result += `${ind()}${keyword} (${discriminant} === ${test}) {\n`;
-            depth++;
+            if (caseNode.type === 'SwitchCase') {
+                // Value matching: si expression { ... }
+                const test = genExpression(caseNode.test);
+                result += `${ind()}${keyword} (${discriminant} === ${test}) {\n`;
+                depth++;
 
-            for (const stmt of caseNode.consequent.body) {
-                result += genStatement(stmt) + '\n';
+                for (const stmt of caseNode.consequent.body) {
+                    result += genStatement(stmt) + '\n';
+                }
+            } else {
+                // Variant matching: ex VariantName pro bindings { ... }
+                const variantName = caseNode.variant.name;
+                result += `${ind()}${keyword} (${discriminant}.tag === '${variantName}') {\n`;
+                depth++;
+
+                // Destructure bindings if any
+                if (caseNode.bindings.length > 0) {
+                    const bindingNames = caseNode.bindings.map(b => b.name).join(', ');
+                    result += `${ind()}const { ${bindingNames} } = ${discriminant};\n`;
+                }
+
+                for (const stmt of caseNode.consequent.body) {
+                    result += genStatement(stmt) + '\n';
+                }
             }
 
             depth--;

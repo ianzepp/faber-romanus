@@ -88,6 +88,7 @@ export enum ParserErrorCode {
     ExpectedKeywordFac = 'P040',
     ExpectedKeywordFit = 'P041',
     ExpectedKeywordOrdo = 'P042',
+    ExpectedKeywordDiscretio = 'P048',
     ExpectedKeywordProbandum = 'P044',
     ExpectedKeywordProba = 'P045',
     ExpectedKeywordCura = 'P046',
@@ -280,6 +281,10 @@ export const PARSER_ERRORS = {
         text: "Expected 'ordo'",
         help: "Enum declarations use 'ordo' (order): ordo color { rubrum, viridis, caeruleum }",
     },
+    [ParserErrorCode.ExpectedKeywordDiscretio]: {
+        text: "Expected 'discretio'",
+        help: "Tagged union declarations use 'discretio' (distinction): discretio Event { Click { numerus x } }",
+    },
     [ParserErrorCode.ExpectedKeywordProbandum]: {
         text: "Expected 'probandum'",
         help: 'Test suites use \'probandum\' (that which must be tested): probandum "Tokenizer" { ... }',
@@ -317,8 +322,8 @@ export const PARSER_ERRORS = {
         help: "For loops start with 'ex' (for-of) or 'de' (for-in): ex items pro item { ... } or de tabula pro clavis { ... }",
     },
     [ParserErrorCode.InvalidSwitchCaseStart]: {
-        text: "Expected 'si' or 'aliter' in switch block",
-        help: "Switch cases start with 'si' for conditions or 'aliter' for default: elige x { si 1 { ... } aliter { ... } }",
+        text: "Expected 'si', 'ex', or 'aliter' in switch block",
+        help: "Switch cases start with 'si' for value matching, 'ex' for variant matching, or 'aliter' for default: elige x { si 1 { ... } } or elige event { ex Click pro x, y { ... } }",
     },
     [ParserErrorCode.InvalidGuardClauseStart]: {
         text: "Expected 'si' in guard block",

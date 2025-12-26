@@ -151,6 +151,8 @@ export const keywords: KeywordEntry[] = [
     { latin: 'pactum', meaning: 'interface/trait', category: 'declaration' },
     // WHY: "ordo" (order/rank) for enumerations - named constants
     { latin: 'ordo', meaning: 'enum', category: 'declaration' },
+    // WHY: "discretio" (distinction) for tagged unions - discriminated variants
+    { latin: 'discretio', meaning: 'tagged union', category: 'declaration' },
 
     // ---------------------------------------------------------------------------
     // Modifiers

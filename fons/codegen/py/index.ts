@@ -62,6 +62,7 @@ import type {
     PactumMethod,
     TypeAliasDeclaration,
     EnumDeclaration,
+    DiscretioDeclaration,
     IfStatement,
     WhileStatement,
     ForStatement,
@@ -263,6 +264,8 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
                 return genTypeAliasDeclaration(node);
             case 'EnumDeclaration':
                 return genEnumDeclaration(node);
+            case 'DiscretioDeclaration':
+                return genDiscretioDeclaration(node);
             case 'IfStatement':
                 return genIfStatement(node);
             case 'WhileStatement':
@@ -817,6 +820,51 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
     }
 
     /**
+     * Generate discretio (tagged union) declaration.
+     *
+     * TRANSFORMS:
+     *   discretio Event { Click { numerus x, numerus y }, Quit }
+     *   -> @dataclass classes with discriminant property
+     *
+     * WHY: Python uses dataclasses with a 'tag' attribute for discriminated unions.
+     *      TypedDict or Union types could also work, but dataclasses are more idiomatic.
+     */
+    function genDiscretioDeclaration(node: DiscretioDeclaration): string {
+        features.dataclass = true;
+
+        const lines: string[] = [];
+        const baseName = node.name.name;
+
+        // Generate a dataclass for each variant
+        for (const variant of node.variants) {
+            const variantName = `${baseName}_${variant.name.name}`;
+
+            lines.push(`${ind()}@dataclass`);
+            lines.push(`${ind()}class ${variantName}:`);
+            depth++;
+
+            lines.push(`${ind()}tag: str = '${variant.name.name}'`);
+
+            if (variant.fields.length > 0) {
+                for (const field of variant.fields) {
+                    const fieldName = field.name.name;
+                    const fieldType = genType(field.fieldType);
+                    lines.push(`${ind()}${fieldName}: ${fieldType}`);
+                }
+            }
+
+            depth--;
+            lines.push('');
+        }
+
+        // Generate union type alias
+        const variantTypes = node.variants.map((v: (typeof node.variants)[0]) => `${baseName}_${v.name.name}`).join(' | ');
+        lines.push(`${ind()}${baseName} = ${variantTypes}`);
+
+        return lines.join('\n');
+    }
+
+    /**
      * Generate type annotation from Latin type.
      */
     function genType(node: TypeAnnotation): string {
@@ -1029,6 +1077,8 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
     /**
      * Generate switch statement using match/case (Python 3.10+).
+     *
+     * Supports both value matching (si) and variant matching (ex).
      */
     function genSwitchStatement(node: SwitchStatement): string {
         const lines: string[] = [];
@@ -1043,11 +1093,27 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         depth++;
 
         for (const caseNode of node.cases) {
-            const test = genExpression(caseNode.test);
-            lines.push(`${ind()}case ${test}:`);
-            depth++;
-            lines.push(genBlockStatementContent(caseNode.consequent));
-            depth--;
+            if (caseNode.type === 'SwitchCase') {
+                // Value matching: si expression { ... }
+                const test = genExpression(caseNode.test);
+                lines.push(`${ind()}case ${test}:`);
+                depth++;
+                lines.push(genBlockStatementContent(caseNode.consequent));
+                depth--;
+            } else {
+                // Variant matching: ex VariantName pro bindings { ... }
+                // WHY: Python match can destructure tagged unions with type guards
+                const variantName = caseNode.variant.name;
+                if (caseNode.bindings.length > 0) {
+                    const bindingNames = caseNode.bindings.map(b => b.name).join(', ');
+                    lines.push(`${ind()}case {'tag': '${variantName}', ${bindingNames}}:`);
+                } else {
+                    lines.push(`${ind()}case {'tag': '${variantName}'}:`);
+                }
+                depth++;
+                lines.push(genBlockStatementContent(caseNode.consequent));
+                depth--;
+            }
         }
 
         if (node.defaultCase) {

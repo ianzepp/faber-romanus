@@ -71,6 +71,9 @@ export interface RequiredFeatures {
 
     // Compile-time evaluation
     praefixum: boolean; // praefixum blocks - needs __praefixum__ helper (Python)
+
+    // Dataclasses (Python)
+    dataclass: boolean; // discretio - needs dataclass import
 }
 
 /**
@@ -88,6 +91,7 @@ export function createRequiredFeatures(): RequiredFeatures {
         decimal: false,
         enum: false,
         praefixum: false,
+        dataclass: false,
     };
 }
 

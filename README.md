@@ -99,13 +99,17 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Rest in destructuring        |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Initializer expressions      |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
 
-## Enum Declarations
+## Enum & Tagged Union Declarations
 
-| Feature          | TypeScript | Zig | Python | WASM | Rust | C++23 |
-| ---------------- | :--------: | :-: | :----: | :--: | :--: | :---: |
-| `ordo` (enum)    |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| Enum variants    |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
-| Enum with values |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Feature                    | TypeScript | Zig | Python | WASM | Rust | C++23 |
+| -------------------------- | :--------: | :-: | :----: | :--: | :--: | :---: |
+| `ordo` (enum)              |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Enum variants              |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| Enum with values           |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `discretio` (tagged union) |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Variant fields             |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Generic discretio          |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [x]  |
+| Pattern matching (`ex`)    |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [~]  |
 
 ## Function Declarations
 

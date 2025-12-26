@@ -86,6 +86,7 @@ export type Statement =
     | PactumDeclaration
     | TypeAliasDeclaration
     | EnumDeclaration
+    | DiscretioDeclaration
     | ExpressionStatement
     | IfStatement
     | WhileStatement
@@ -365,6 +366,82 @@ export interface EnumDeclaration extends BaseNode {
 }
 
 // ---------------------------------------------------------------------------
+// Discretio (Tagged Union) Declarations
+// ---------------------------------------------------------------------------
+
+/**
+ * Variant field declaration within a discretio variant.
+ *
+ * Uses type-first syntax like genus fields.
+ *
+ * Examples:
+ *   numerus x           -> fieldType=numerus, name=x
+ *   textus key          -> fieldType=textus, name=key
+ */
+export interface VariantField extends BaseNode {
+    type: 'VariantField';
+    name: Identifier;
+    fieldType: TypeAnnotation;
+}
+
+/**
+ * Variant declaration within a discretio.
+ *
+ * GRAMMAR (in EBNF):
+ *   variant := IDENTIFIER ('{' variantFields '}')?
+ *   variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
+ *
+ * INVARIANT: name is the variant tag (e.g., Click, Keypress, Quit).
+ * INVARIANT: fields is empty for unit variants (no payload).
+ *
+ * Examples:
+ *   Click { numerus x, numerus y }  -> name=Click, fields=[x, y]
+ *   Keypress { textus key }         -> name=Keypress, fields=[key]
+ *   Quit                            -> name=Quit, fields=[]
+ */
+export interface VariantDeclaration extends BaseNode {
+    type: 'VariantDeclaration';
+    name: Identifier;
+    fields: VariantField[];
+}
+
+/**
+ * Discretio (tagged union) declaration.
+ *
+ * GRAMMAR (in EBNF):
+ *   discretioDecl := 'discretio' IDENTIFIER typeParams? '{' variant (',' variant)* ','? '}'
+ *
+ * INVARIANT: name is the union type name (e.g., Event, Option, Result).
+ * INVARIANT: variants is non-empty array of VariantDeclaration.
+ *
+ * WHY: "discretio" (distinction) for tagged unions. Each variant has a
+ *      compiler-managed tag for exhaustive pattern matching.
+ *
+ * Target mappings:
+ *   TypeScript: Discriminated union with 'tag' property
+ *   Zig:        union(enum)
+ *   Rust:       enum with struct variants
+ *
+ * Examples:
+ *   discretio Event {
+ *       Click { numerus x, numerus y }
+ *       Keypress { textus key }
+ *       Quit
+ *   }
+ *
+ *   discretio Option<T> {
+ *       Some { T value }
+ *       None
+ *   }
+ */
+export interface DiscretioDeclaration extends BaseNode {
+    type: 'DiscretioDeclaration';
+    name: Identifier;
+    typeParameters?: Identifier[];
+    variants: VariantDeclaration[];
+}
+
+// ---------------------------------------------------------------------------
 // Genus (Struct) Declarations
 // ---------------------------------------------------------------------------
 
@@ -587,34 +664,68 @@ export interface WithStatement extends BaseNode {
  * Switch statement.
  *
  * GRAMMAR (in EBNF):
- *   switchStmt := 'elige' expression '{' switchCase* defaultCase? '}' catchClause?
+ *   switchStmt := 'elige' expression '{' (switchCase | variantCase)* defaultCase? '}' catchClause?
  *   switchCase := 'si' expression blockStmt
+ *   variantCase := 'ex' IDENTIFIER ('pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt
  *   defaultCase := 'aliter' blockStmt
  *
- * WHY: Latin 'elige' (choose) for switch, 'si' (if) for cases.
+ * WHY: Latin 'elige' (choose) for switch, 'si' (if) for value cases,
+ *      'ex' (from) for variant pattern matching.
  *      Uses 'aliter' (otherwise) for default case.
  *
- * Example:
+ * Example (value matching):
  *   elige status {
  *       si "pending" { processPending() }
  *       si "active" { processActive() }
  *       aliter { processDefault() }
  *   }
+ *
+ * Example (variant matching):
+ *   elige event {
+ *       ex Click pro x, y { scribe x + ", " + y }
+ *       ex Keypress pro key { scribe key }
+ *       ex Quit { mori "goodbye" }
+ *   }
  */
 export interface SwitchStatement extends BaseNode {
     type: 'SwitchStatement';
     discriminant: Expression;
-    cases: SwitchCase[];
+    cases: (SwitchCase | VariantCase)[];
     defaultCase?: BlockStatement;
     catchClause?: CatchClause;
 }
 
 /**
- * Switch case (part of switch statement).
+ * Switch case for value matching (part of switch statement).
  */
 export interface SwitchCase extends BaseNode {
     type: 'SwitchCase';
     test: Expression;
+    consequent: BlockStatement;
+}
+
+/**
+ * Variant case for pattern matching (part of switch statement).
+ *
+ * GRAMMAR (in EBNF):
+ *   variantCase := 'ex' IDENTIFIER ('pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt
+ *
+ * INVARIANT: variant is the variant name to match (e.g., Click, Keypress).
+ * INVARIANT: bindings are field names to bind (empty for unit variants).
+ * INVARIANT: consequent is the block to execute on match.
+ *
+ * WHY: 'ex' (from) for extraction, 'pro' (for) to introduce bindings.
+ *      Parallels iteration syntax: ex items pro item { ... }
+ *
+ * Examples:
+ *   ex Click pro x, y { ... }  -> variant=Click, bindings=[x, y]
+ *   ex Keypress pro key { ... } -> variant=Keypress, bindings=[key]
+ *   ex Quit { ... }             -> variant=Quit, bindings=[]
+ */
+export interface VariantCase extends BaseNode {
+    type: 'VariantCase';
+    variant: Identifier;
+    bindings: Identifier[];
     consequent: BlockStatement;
 }
 

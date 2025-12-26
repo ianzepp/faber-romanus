@@ -3127,5 +3127,120 @@ describe('parser', () => {
                 expect(decl.init.left.type).toBe('PraefixumExpression');
             });
         });
+
+        describe('discretio (tagged unions)', () => {
+            test('basic discretio with unit variant', () => {
+                const { program, errors } = parseCode('discretio State { Loading, Ready }');
+
+                expect(errors).toHaveLength(0);
+                expect(program!.body[0]).toBeDefined();
+
+                const decl = program!.body[0] as any;
+                expect(decl.type).toBe('DiscretioDeclaration');
+                expect(decl.name.name).toBe('State');
+                expect(decl.variants).toHaveLength(2);
+                expect(decl.variants[0].name.name).toBe('Loading');
+                expect(decl.variants[0].fields).toHaveLength(0);
+                expect(decl.variants[1].name.name).toBe('Ready');
+            });
+
+            test('discretio with variant fields', () => {
+                const { program, errors } = parseCode(`
+                    discretio Event {
+                        Click { numerus x, numerus y }
+                        Keypress { textus key }
+                        Quit
+                    }
+                `);
+
+                expect(errors).toHaveLength(0);
+
+                const decl = program!.body[0] as any;
+                expect(decl.type).toBe('DiscretioDeclaration');
+                expect(decl.name.name).toBe('Event');
+                expect(decl.variants).toHaveLength(3);
+
+                // Click variant with two fields
+                const click = decl.variants[0];
+                expect(click.name.name).toBe('Click');
+                expect(click.fields).toHaveLength(2);
+                expect(click.fields[0].name.name).toBe('x');
+                expect(click.fields[0].fieldType.name).toBe('numerus');
+                expect(click.fields[1].name.name).toBe('y');
+
+                // Keypress variant with one field
+                const keypress = decl.variants[1];
+                expect(keypress.name.name).toBe('Keypress');
+                expect(keypress.fields).toHaveLength(1);
+                expect(keypress.fields[0].name.name).toBe('key');
+
+                // Quit is a unit variant
+                const quit = decl.variants[2];
+                expect(quit.name.name).toBe('Quit');
+                expect(quit.fields).toHaveLength(0);
+            });
+
+            test('discretio with generic type parameters', () => {
+                const { program, errors } = parseCode(`
+                    discretio Option<T> {
+                        Some { T value }
+                        None
+                    }
+                `);
+
+                expect(errors).toHaveLength(0);
+
+                const decl = program!.body[0] as any;
+                expect(decl.type).toBe('DiscretioDeclaration');
+                expect(decl.name.name).toBe('Option');
+                expect(decl.typeParameters).toHaveLength(1);
+                expect(decl.typeParameters[0].name).toBe('T');
+            });
+
+            test('variant case pattern matching in elige', () => {
+                const { program, errors } = parseCode(`
+                    elige event {
+                        ex Click pro x, y { scribe x }
+                        ex Quit { mori "goodbye" }
+                    }
+                `);
+
+                expect(errors).toHaveLength(0);
+
+                const switchStmt = program!.body[0] as any;
+                expect(switchStmt.type).toBe('SwitchStatement');
+                expect(switchStmt.cases).toHaveLength(2);
+
+                // First case: ex Click pro x, y
+                const clickCase = switchStmt.cases[0];
+                expect(clickCase.type).toBe('VariantCase');
+                expect(clickCase.variant.name).toBe('Click');
+                expect(clickCase.bindings).toHaveLength(2);
+                expect(clickCase.bindings[0].name).toBe('x');
+                expect(clickCase.bindings[1].name).toBe('y');
+
+                // Second case: ex Quit (no bindings)
+                const quitCase = switchStmt.cases[1];
+                expect(quitCase.type).toBe('VariantCase');
+                expect(quitCase.variant.name).toBe('Quit');
+                expect(quitCase.bindings).toHaveLength(0);
+            });
+
+            test('empty discretio parses but has no variants', () => {
+                // WHY: Parser allows empty discretio; semantic analysis should warn
+                const { program, errors } = parseCode('discretio Empty { }');
+
+                expect(errors).toHaveLength(0);
+                const decl = program!.body[0] as any;
+                expect(decl.type).toBe('DiscretioDeclaration');
+                expect(decl.variants).toHaveLength(0);
+            });
+
+            test('missing discretio name is an error', () => {
+                const { errors } = parseCode('discretio { Loading }');
+
+                expect(errors.length).toBeGreaterThan(0);
+            });
+        });
     });
 });
