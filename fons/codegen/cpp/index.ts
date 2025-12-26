@@ -81,8 +81,12 @@ import type {
     Parameter,
     TypeAnnotation,
     LambdaExpression,
+    PraefixumExpression,
 } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
+import { getListaMethod, getListaHeaders } from './norma/lista';
+import { getTabulaMethod, getTabulaHeaders } from './norma/tabula';
+import { getCopiaMethod, getCopiaHeaders } from './norma/copia';
 
 // =============================================================================
 // TYPE MAPPING
@@ -147,6 +151,10 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     // Track which headers are needed
     const includes = new Set<string>();
 
+    // Track whether we need the scope guard helper for demum (finally)
+    let needsScopeGuard = false;
+    let scopeGuardCounter = 0;
+
     /**
      * Generate indentation for current depth.
      */
@@ -207,8 +215,21 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         // Build includes based on what was used
         const includeLines = genIncludes();
 
+        // Build preamble (includes + helpers)
+        const preambleParts: string[] = [];
+
         if (includeLines) {
-            return includeLines + '\n' + lines.join('\n');
+            preambleParts.push(includeLines);
+        }
+
+        // Add scope guard helper if demum was used
+        if (needsScopeGuard) {
+            preambleParts.push('');
+            preambleParts.push(genScopeGuardHelper());
+        }
+
+        if (preambleParts.length > 0) {
+            return preambleParts.join('\n') + '\n' + lines.join('\n');
         }
 
         return lines.join('\n');
@@ -244,6 +265,22 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         const sorted = Array.from(includes).sort();
 
         return sorted.map(h => `#include ${h}`).join('\n');
+    }
+
+    /**
+     * Generate scope guard helper for demum (finally) blocks.
+     *
+     * WHY: C++ lacks finally. This RAII helper runs cleanup on scope exit.
+     * The lambda captures by reference, so it can access local variables.
+     */
+    function genScopeGuardHelper(): string {
+        return `
+template<typename F>
+struct _ScopeGuard {
+    F fn;
+    ~_ScopeGuard() { fn(); }
+};
+`.trim();
     }
 
     // -------------------------------------------------------------------------
@@ -487,13 +524,31 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     // -------------------------------------------------------------------------
 
     /**
-     * Generate genus declaration as C++ struct.
+     * Generate genus declaration as C++ struct with auto-merge constructor.
      *
      * TRANSFORMS:
-     *   genus Persona { textus nomen: "anon" }
+     *   genus Persona { textus nomen: "anon" numerus aetas: 0 }
      *   -> struct Persona {
      *          std::string nomen = "anon";
+     *          int64_t aetas = 0;
+     *
+     *          Persona() = default;
+     *
+     *          template<typename Overrides>
+     *              requires std::is_aggregate_v<Overrides>
+     *          Persona(const Overrides& o) {
+     *              if constexpr (requires { o.nomen; }) nomen = o.nomen;
+     *              if constexpr (requires { o.aetas; }) aetas = o.aetas;
+     *              _creo();
+     *          }
+     *
+     *          void _creo() { // user's creo body }
      *      };
+     *
+     * WHY: Auto-merge design - C++20's if constexpr (requires { ... }) pattern
+     *      provides compile-time field checking, similar to Zig's @hasField.
+     *      This allows `novum Persona { .nomen = "Marcus" }` to only override
+     *      specified fields while keeping others at their defaults.
      */
     function genGenusDeclaration(node: GenusDeclaration): string {
         const name = node.name.name;
@@ -507,10 +562,16 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
             lines.push(genFieldDeclaration(field));
         }
 
-        // Constructor if there's a creo
+        // Always generate auto-merge constructor for struct types with fields
+        if (node.fields.length > 0) {
+            lines.push('');
+            lines.push(genAutoMergeConstructor(node));
+        }
+
+        // User's creo as _creo() private method
         if (node.constructor) {
             lines.push('');
-            lines.push(genCreoConstructor(node));
+            lines.push(genCreoMethod(node.constructor));
         }
 
         // Methods
@@ -521,6 +582,11 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
 
         depth--;
         lines.push(`${ind()}};`);
+
+        // WHY: Auto-merge constructor requires <type_traits> for std::is_aggregate_v
+        if (node.fields.length > 0) {
+            includes.add('<type_traits>');
+        }
 
         return lines.join('\n');
     }
@@ -537,21 +603,62 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     }
 
     /**
-     * Generate creo as constructor.
+     * Generate auto-merge constructor using C++20 concepts.
+     *
+     * WHY: The template constructor accepts any aggregate type and uses
+     *      if constexpr (requires { o.field; }) to check for field presence
+     *      at compile time. This enables partial initialization like:
+     *      `Persona{{.nomen = "Marcus"}}` - only nomen is overridden.
      */
-    function genCreoConstructor(node: GenusDeclaration): string {
+    function genAutoMergeConstructor(node: GenusDeclaration): string {
         const name = node.name.name;
         const lines: string[] = [];
+        const hasCreo = !!node.constructor;
 
-        lines.push(`${ind()}${name}() {`);
+        // Default constructor
+        lines.push(`${ind()}${name}() = default;`);
+        lines.push('');
+
+        // Template auto-merge constructor
+        lines.push(`${ind()}template<typename Overrides>`);
+        lines.push(`${ind()}    requires std::is_aggregate_v<Overrides>`);
+        lines.push(`${ind()}${name}(const Overrides& o) {`);
         depth++;
 
-        if (node.constructor) {
-            for (const stmt of node.constructor.body.body) {
-                const code = genStatement(stmt);
-                // Replace ego. with this->
-                lines.push(code.replace(/\bego\./g, 'this->'));
-            }
+        // Apply each field override if present in the overrides struct
+        for (const field of node.fields) {
+            const fieldName = field.name.name;
+            lines.push(`${ind()}if constexpr (requires { o.${fieldName}; }) ${fieldName} = o.${fieldName};`);
+        }
+
+        // Call _creo() if user defined it
+        if (hasCreo) {
+            lines.push(`${ind()}_creo();`);
+        }
+
+        depth--;
+        lines.push(`${ind()}}`);
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Generate user's creo as a private _creo() method.
+     *
+     * WHY: creo() is a post-initialization hook. By the time it runs,
+     *      the struct already has merged field values. Named _creo to
+     *      avoid conflicts with user-defined methods.
+     */
+    function genCreoMethod(node: FunctionDeclaration): string {
+        const lines: string[] = [];
+
+        lines.push(`${ind()}void _creo() {`);
+        depth++;
+
+        for (const stmt of node.body.body) {
+            const code = genStatement(stmt);
+            // Replace ego. with this->
+            lines.push(code.replace(/\bego\./g, 'this->'));
         }
 
         depth--;
@@ -870,6 +977,21 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     }
 
     function genThrowStatement(node: ThrowStatement): string {
+        // WHY: mori (fatal=true) is unrecoverable, iace (fatal=false) is catchable
+        if (node.fatal) {
+            includes.add('<cstdlib>');
+            includes.add('<print>');
+
+            // mori -> print message and abort
+            if (node.argument.type === 'Literal' && typeof node.argument.value === 'string') {
+                return `${ind()}std::print(stderr, "FATAL: {}\\n", "${node.argument.value}"); std::abort();`;
+            }
+
+            const msg = genExpression(node.argument);
+
+            return `${ind()}std::print(stderr, "FATAL: {}\\n", ${msg}); std::abort();`;
+        }
+
         includes.add('<stdexcept>');
 
         // Handle string literals -> runtime_error
@@ -915,18 +1037,25 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     function genTryStatement(node: TryStatement): string {
         const lines: string[] = [];
 
+        // WHY: C++ doesn't have finally. We use a scope guard pattern:
+        // The finally block runs via RAII destructor on scope exit.
+        if (node.finalizer) {
+            includes.add('<utility>');
+            needsScopeGuard = true;
+
+            // Generate a unique ID for this scope guard
+            const guardId = `_demum_${scopeGuardCounter++}`;
+            const finalizerCode = node.finalizer.body.map(stmt => genStatement(stmt).trim()).join(' ');
+
+            lines.push(`${ind()}auto ${guardId} = _ScopeGuard([&]{ ${finalizerCode} });`);
+        }
+
         lines.push(`${ind()}try ${genBlockStatement(node.block)}`);
 
         if (node.handler) {
             const param = node.handler.param.name;
 
             lines.push(`${ind()}catch (const std::exception& ${param}) ${genBlockStatement(node.handler.body)}`);
-        }
-
-        if (node.finalizer) {
-            // C++ doesn't have finally, but we can use RAII or just add a comment
-            lines.push(`${ind()}// finally block (use RAII for cleanup)`);
-            lines.push(genBlockStatementContent(node.finalizer));
         }
 
         return lines.join('\n');
@@ -994,6 +1123,8 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
                 return `(${genExpression(node.test)} ? ${genExpression(node.consequent)} : ${genExpression(node.alternate)})`;
             case 'LambdaExpression':
                 return genLambdaExpression(node);
+            case 'PraefixumExpression':
+                return genPraefixumExpression(node);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }
@@ -1104,6 +1235,31 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
         return `std::views::iota(${start}, ${end} + 1)`;
     }
 
+    /**
+     * Generate praefixum (compile-time) expression.
+     *
+     * TRANSFORMS:
+     *   praefixum(256 * 4) -> constexpr auto _praefixum_0 = (256 * 4); ... _praefixum_0
+     *   praefixum { ... redde x } -> [&]{ ... return x; }()  (can't be constexpr for complex blocks)
+     *
+     * WHY: C++23 constexpr is limited to certain operations. For simple expressions,
+     *      we use constexpr. For blocks, we emit an IIFE (which may not be constexpr).
+     */
+    function genPraefixumExpression(node: PraefixumExpression): string {
+        if (node.body.type === 'BlockStatement') {
+            // Block form: emit as IIFE
+            // WHY: constexpr lambdas exist but have restrictions. For now, just use regular IIFE.
+            const body = genBlockStatement(node.body);
+
+            return `[&]${body}()`;
+        }
+
+        // Expression form: wrap in constexpr evaluation
+        // WHY: In expression context, we can't declare a constexpr variable.
+        //      Just parenthesize and trust the optimizer.
+        return `(${genExpression(node.body)})`;
+    }
+
     function genBinaryExpression(node: BinaryExpression): string {
         const left = genExpression(node.left);
         const right = genExpression(node.right);
@@ -1159,13 +1315,76 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
      *   fn()    -> fn()
      *   fn?()   -> (fn ? (*fn)() : std::nullopt)  (for function pointers)
      *   fn!()   -> (*fn)()  (assert not null)
+     *   lista.adde(x) -> lista.push_back(x)
+     *   lista.filtrata(fn) -> (lista | views::filter(fn) | ranges::to<vector>())
      */
     function genCallExpression(node: CallExpression): string {
-        const callee = genExpression(node.callee);
         const args = node.arguments
             .filter((arg): arg is Expression => arg.type !== 'SpreadElement')
             .map(genExpression)
             .join(', ');
+
+        // Check for collection methods (method calls on lista/tabula/copia)
+        if (node.callee.type === 'MemberExpression' && !node.callee.computed) {
+            const methodName = (node.callee.property as Identifier).name;
+            const obj = genExpression(node.callee.object);
+
+            // WHY: Use semantic type info to dispatch to correct collection registry.
+            // This prevents method name collisions (e.g., accipe means different
+            // things for lista vs tabula).
+            const objType = node.callee.object.resolvedType;
+            const collectionName = objType?.kind === 'generic' ? objType.name : null;
+
+            // Dispatch based on resolved type
+            if (collectionName === 'tabula') {
+                const method = getTabulaMethod(methodName);
+                if (method) {
+                    for (const header of getTabulaHeaders(methodName)) {
+                        includes.add(header);
+                    }
+                    if (typeof method.cpp === 'function') {
+                        return method.cpp(obj, args);
+                    }
+                    return `${obj}.${method.cpp}(${args})`;
+                }
+            } else if (collectionName === 'copia') {
+                const method = getCopiaMethod(methodName);
+                if (method) {
+                    for (const header of getCopiaHeaders(methodName)) {
+                        includes.add(header);
+                    }
+                    if (typeof method.cpp === 'function') {
+                        return method.cpp(obj, args);
+                    }
+                    return `${obj}.${method.cpp}(${args})`;
+                }
+            } else if (collectionName === 'lista') {
+                const method = getListaMethod(methodName);
+                if (method) {
+                    for (const header of getListaHeaders(methodName)) {
+                        includes.add(header);
+                    }
+                    if (typeof method.cpp === 'function') {
+                        return method.cpp(obj, args);
+                    }
+                    return `${obj}.${method.cpp}(${args})`;
+                }
+            }
+
+            // Fallback: no type info - try lista (most common)
+            const listaMethod = getListaMethod(methodName);
+            if (listaMethod) {
+                for (const header of getListaHeaders(methodName)) {
+                    includes.add(header);
+                }
+                if (typeof listaMethod.cpp === 'function') {
+                    return listaMethod.cpp(obj, args);
+                }
+                return `${obj}.${listaMethod.cpp}(${args})`;
+            }
+        }
+
+        const callee = genExpression(node.callee);
 
         // WHY: For optional call, check if function pointer is valid
         if (node.optional) {

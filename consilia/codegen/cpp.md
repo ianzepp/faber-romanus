@@ -14,73 +14,73 @@ C++23 shares ownership concerns with Zig and Rust. Faber uses a **unified approa
 
 ## What C++23 Adds Over C++20
 
-| Feature | Benefit for Faber |
-|---------|-------------------|
-| `std::expected<T,E>` | Rust-like error handling for `iace` |
-| `std::print` | Clean output, no iostream complexity |
-| `std::views::zip` | Iteration patterns |
-| `std::ranges::to<>` | Collection transformations |
+| Feature              | Benefit for Faber                    |
+| -------------------- | ------------------------------------ |
+| `std::expected<T,E>` | Rust-like error handling for `iace`  |
+| `std::print`         | Clean output, no iostream complexity |
+| `std::views::zip`    | Iteration patterns                   |
+| `std::ranges::to<>`  | Collection transformations           |
 | `std::unreachable()` | Optimization for impossible branches |
 
 ## Direct Mappings
 
-| Faber | C++23 | Notes |
-|-------|-------|-------|
-| `varia` | `auto` (mutable) | Or explicit type |
-| `fixum` | `const auto` | Immutable binding |
-| `functio` | `auto fn() ->` | Trailing return type |
-| `futura` | coroutine | Returns `std::future` or custom awaitable |
-| `cede` | `co_await`/`co_yield` | Context-dependent |
-| `genus` | `struct`/`class` | With auto-merge constructor |
-| `pactum` | `concept` | Compile-time interface |
-| `implet` | `requires` | Concept satisfaction |
-| `ego` | `this->` or `self` | Via reference capture |
-| `novum` | direct construction | No `new` for stack, `std::make_unique` for heap |
-| `novum X {}` | Designated initializers | C++20 designated init |
-| `si`/`aliter` | `if`/`else` | Direct |
-| `dum` | `while` | Direct |
-| `ex...pro` | range-for | `for (auto x : items)` |
-| `elige` | `switch` or if-chain | Limited pattern matching |
-| `tempta`/`cape`/`demum` | try/catch + RAII | `demum` via destructor |
-| `iace` | `return std::unexpected` | Or `throw` |
-| `mori` | `std::unreachable()` or `std::terminate()` | Fatal |
-| `adfirma` | `assert()` | Or `static_assert` |
-| `redde` | `return` | Direct |
-| `scribe` | `std::print` | C++23 |
+| Faber                   | C++23                                      | Notes                                           |
+| ----------------------- | ------------------------------------------ | ----------------------------------------------- |
+| `varia`                 | `auto` (mutable)                           | Or explicit type                                |
+| `fixum`                 | `const auto`                               | Immutable binding                               |
+| `functio`               | `auto fn() ->`                             | Trailing return type                            |
+| `futura`                | coroutine                                  | Returns `std::future` or custom awaitable       |
+| `cede`                  | `co_await`/`co_yield`                      | Context-dependent                               |
+| `genus`                 | `struct`/`class`                           | With auto-merge constructor                     |
+| `pactum`                | `concept`                                  | Compile-time interface                          |
+| `implet`                | `requires`                                 | Concept satisfaction                            |
+| `ego`                   | `this->` or `self`                         | Via reference capture                           |
+| `novum`                 | direct construction                        | No `new` for stack, `std::make_unique` for heap |
+| `novum X {}`            | Designated initializers                    | C++20 designated init                           |
+| `si`/`aliter`           | `if`/`else`                                | Direct                                          |
+| `dum`                   | `while`                                    | Direct                                          |
+| `ex...pro`              | range-for                                  | `for (auto x : items)`                          |
+| `elige`                 | `switch` or if-chain                       | Limited pattern matching                        |
+| `tempta`/`cape`/`demum` | try/catch + RAII                           | `demum` via destructor                          |
+| `iace`                  | `return std::unexpected`                   | Or `throw`                                      |
+| `mori`                  | `std::unreachable()` or `std::terminate()` | Fatal                                           |
+| `adfirma`               | `assert()`                                 | Or `static_assert`                              |
+| `redde`                 | `return`                                   | Direct                                          |
+| `scribe`                | `std::print`                               | C++23                                           |
 
 ## Type Mappings
 
-| Faber | C++23 | Notes |
-|-------|-------|-------|
-| `textus` | `std::string` | Owned string |
-| `de textus` | `std::string_view` | Borrowed, read-only |
-| `in textus` | `std::string&` | Mutable reference |
-| `numerus` | `int64_t` | 64-bit integer |
-| `fractus` | `double` | 64-bit float |
-| `decimus` | — | Requires library (Boost.Multiprecision) |
-| `bivalens` | `bool` | Boolean |
-| `nihil` | `std::nullopt` | In optional context |
-| `vacuum` | `void` | Void return |
-| `lista<T>` | `std::vector<T>` | Dynamic array |
-| `de lista<T>` | `std::span<const T>` | Borrowed view |
-| `in lista<T>` | `std::vector<T>&` | Mutable reference |
-| `tabula<K,V>` | `std::unordered_map<K,V>` | Hash map |
-| `copia<T>` | `std::unordered_set<T>` | Hash set |
-| `T?` | `std::optional<T>` | Nullable |
-| `T \| U` | `std::variant<T,U>` | Union type |
-| `promissum<T>` | `std::future<T>` | Async result |
-| `erratum` | `std::exception` | Error base |
-| `cursor<T>` | Generator coroutine | `std::generator<T>` (C++23) |
+| Faber          | C++23                     | Notes                                   |
+| -------------- | ------------------------- | --------------------------------------- |
+| `textus`       | `std::string`             | Owned string                            |
+| `de textus`    | `std::string_view`        | Borrowed, read-only                     |
+| `in textus`    | `std::string&`            | Mutable reference                       |
+| `numerus`      | `int64_t`                 | 64-bit integer                          |
+| `fractus`      | `double`                  | 64-bit float                            |
+| `decimus`      | —                         | Requires library (Boost.Multiprecision) |
+| `bivalens`     | `bool`                    | Boolean                                 |
+| `nihil`        | `std::nullopt`            | In optional context                     |
+| `vacuum`       | `void`                    | Void return                             |
+| `lista<T>`     | `std::vector<T>`          | Dynamic array                           |
+| `de lista<T>`  | `std::span<const T>`      | Borrowed view                           |
+| `in lista<T>`  | `std::vector<T>&`         | Mutable reference                       |
+| `tabula<K,V>`  | `std::unordered_map<K,V>` | Hash map                                |
+| `copia<T>`     | `std::unordered_set<T>`   | Hash set                                |
+| `T?`           | `std::optional<T>`        | Nullable                                |
+| `T \| U`       | `std::variant<T,U>`       | Union type                              |
+| `promissum<T>` | `std::future<T>`          | Async result                            |
+| `erratum`      | `std::exception`          | Error base                              |
+| `cursor<T>`    | Generator coroutine       | `std::generator<T>` (C++23)             |
 
 ## Ownership Design: Latin Prepositions
 
 > **Note:** The `de` and `in` keywords are **systems-target-specific**. See rust.md and zig.md for the full rationale. This design is shared across all systems targets.
 
-| Preposition | Meaning | C++23 Output |
-|-------------|---------|--------------|
-| (none) | Owned, may move | `T` (by value, moved) |
-| `de` | Borrowed, read-only | `const T&` or `std::string_view` |
-| `in` | Mutable borrow | `T&` |
+| Preposition | Meaning             | C++23 Output                     |
+| ----------- | ------------------- | -------------------------------- |
+| (none)      | Owned, may move     | `T` (by value, moved)            |
+| `de`        | Borrowed, read-only | `const T&` or `std::string_view` |
+| `in`        | Mutable borrow      | `T&`                             |
 
 ### Examples
 
@@ -100,6 +100,7 @@ functio consume(textus data) -> Result {
 ```
 
 **C++23 output:**
+
 ```cpp
 auto greet(std::string_view name) -> std::string {
     return std::format("Hello, {}!", name);
@@ -126,6 +127,7 @@ functio first(de lista<textus> items) -> de textus {
 ```
 
 **C++23 output:**
+
 ```cpp
 auto first(std::span<const std::string> items) -> std::string_view {
     return items.front();
@@ -157,6 +159,7 @@ fac {
 ```
 
 **C++23 output:**
+
 ```cpp
 #include <expected>
 #include <string>
@@ -242,6 +245,7 @@ auto process() -> void {
 ```
 
 Or use a simple scope guard:
+
 ```cpp
 template<typename F>
 struct ScopeExit {
@@ -344,6 +348,7 @@ genus Persona implet Nominatus {
 ```
 
 **C++23 output:**
+
 ```cpp
 template<typename T>
 concept Nominatus = requires(T t) {
@@ -365,21 +370,21 @@ Unlike runtime interfaces (virtual functions), concepts are compile-time and zer
 
 C++23 ranges provide functional-style list operations:
 
-| Latin | C++23 | Example |
-|-------|-------|---------|
-| `mappata` | `std::views::transform` | `items \| std::views::transform(fn)` |
-| `filtrata` | `std::views::filter` | `items \| std::views::filter(pred)` |
-| `primus` | `.front()` | `items.front()` |
-| `ultimus` | `.back()` | `items.back()` |
-| `longitudo` | `.size()` | `items.size()` |
-| `adde` | `.push_back()` | `items.push_back(x)` |
-| `inversa` | `std::views::reverse` | `items \| std::views::reverse` |
-| `prima` | `std::views::take` | `items \| std::views::take(n)` |
-| `omitte` | `std::views::drop` | `items \| std::views::drop(n)` |
-| `coniunge` | — | Custom or `fmt::join` |
-| `reducta` | `std::accumulate` or fold | `std::ranges::fold_left` |
-| `omnes` | `std::ranges::all_of` | `std::ranges::all_of(items, pred)` |
-| `aliquis` | `std::ranges::any_of` | `std::ranges::any_of(items, pred)` |
+| Latin       | C++23                     | Example                              |
+| ----------- | ------------------------- | ------------------------------------ |
+| `mappata`   | `std::views::transform`   | `items \| std::views::transform(fn)` |
+| `filtrata`  | `std::views::filter`      | `items \| std::views::filter(pred)`  |
+| `primus`    | `.front()`                | `items.front()`                      |
+| `ultimus`   | `.back()`                 | `items.back()`                       |
+| `longitudo` | `.size()`                 | `items.size()`                       |
+| `adde`      | `.push_back()`            | `items.push_back(x)`                 |
+| `inversa`   | `std::views::reverse`     | `items \| std::views::reverse`       |
+| `prima`     | `std::views::take`        | `items \| std::views::take(n)`       |
+| `omitte`    | `std::views::drop`        | `items \| std::views::drop(n)`       |
+| `coniunge`  | —                         | Custom or `fmt::join`                |
+| `reducta`   | `std::accumulate` or fold | `std::ranges::fold_left`             |
+| `omnes`     | `std::ranges::all_of`     | `std::ranges::all_of(items, pred)`   |
+| `aliquis`   | `std::ranges::any_of`     | `std::ranges::any_of(items, pred)`   |
 
 ### Ranges Pipeline Example
 
@@ -389,6 +394,7 @@ fixum result = items.filtrata(pro x redde x > 0).mappata(pro x redde x * 2).prim
 ```
 
 **C++23:**
+
 ```cpp
 auto result = items
     | std::views::filter([](auto x) { return x > 0; })
@@ -410,6 +416,7 @@ futura functio fetch(textus url) fiet textus {
 ```
 
 **C++23:**
+
 ```cpp
 #include <coroutine>
 #include <future>
@@ -465,21 +472,26 @@ auto shared = std::make_shared<Persona>();  // Shared ownership
 
 ## Implementation Status
 
-**Not yet implemented.** This document is a design specification.
+**Partially implemented.** Core language features and collection stdlib are working.
 
-| Feature | Designed | Notes |
-|---------|----------|-------|
-| Variables | Yes | `auto` / `const auto` |
-| Functions | Yes | Trailing return type |
-| Control flow | Yes | Direct mapping |
-| `genus` | Yes | struct with auto-merge |
-| `pactum` | Yes | C++20 concepts |
-| Error handling | Yes | `std::expected` or exceptions |
-| `de`/`in` prepositions | Yes | References and views |
-| Lambdas | Yes | Native C++ lambdas |
-| Lista methods | Yes | Ranges library |
-| Async | Partial | Coroutines, needs framework |
-| Arena | Optional | `std::pmr` |
+| Feature                | Status          | Notes                                     |
+| ---------------------- | --------------- | ----------------------------------------- |
+| Variables              | Implemented     | `auto` / `const auto`                     |
+| Functions              | Implemented     | Trailing return type                      |
+| Control flow           | Implemented     | `si`/`aliter`, `dum`, `ex...pro`, `elige` |
+| `genus`                | Implemented     | struct with fields, methods               |
+| `pactum`               | Implemented     | C++20 concepts                            |
+| Error handling         | **Implemented** | `tempta`/`cape`/`demum` via RAII          |
+| `de`/`in` prepositions | Designed        | Not yet implemented                       |
+| Lambdas                | Implemented     | `pro` and arrow syntax                    |
+| Lista methods          | **Implemented** | 53 methods via C++23 ranges               |
+| Tabula methods         | **Implemented** | 17 methods via `std::unordered_map`       |
+| Copia methods          | **Implemented** | 15 methods via `std::unordered_set`       |
+| `mori` (panic)         | **Implemented** | `std::abort()` with stderr message        |
+| `creo` auto-merge      | **Implemented** | `if constexpr (requires {...})` pattern   |
+| `praefixum`            | **Implemented** | Expression and block forms                |
+| Async                  | Pending         | Coroutines, needs framework decision      |
+| Arena                  | Optional        | `std::pmr` when needed                    |
 
 ## Build System
 
@@ -497,27 +509,28 @@ add_executable(main main.cpp)
 
 ## Compiler Requirements
 
-| Compiler | Minimum Version | Notes |
-|----------|-----------------|-------|
-| GCC | 13+ | Full C++23 support |
-| Clang | 17+ | Full C++23 support |
-| MSVC | 19.37+ | Most C++23 features |
+| Compiler | Minimum Version | Notes               |
+| -------- | --------------- | ------------------- |
+| GCC      | 13+             | Full C++23 support  |
+| Clang    | 17+             | Full C++23 support  |
+| MSVC     | 19.37+          | Most C++23 features |
 
 ## Comparison with Other Systems Targets
 
-| Aspect | Zig | Rust | C++23 |
-|--------|-----|------|-------|
-| Error model | Error unions | `Result<T,E>` | `std::expected<T,E>` or exceptions |
-| Memory | Arena required | Arena or ownership | RAII, optional arena |
-| `demum` | Not supported | Not supported | RAII scope guards |
-| Generics | Comptime | Monomorphized | Templates |
-| Interfaces | Duck typing | Traits | Concepts |
-| Async | Frame-based | Future + runtime | Coroutines |
-| String concat | Complex | `format!` | `std::format` / `+` |
-| Lambdas | Context struct | Native closures | Native lambdas |
-| Build system | `build.zig` | Cargo | CMake |
+| Aspect        | Zig            | Rust               | C++23                              |
+| ------------- | -------------- | ------------------ | ---------------------------------- |
+| Error model   | Error unions   | `Result<T,E>`      | `std::expected<T,E>` or exceptions |
+| Memory        | Arena required | Arena or ownership | RAII, optional arena               |
+| `demum`       | Not supported  | Not supported      | RAII scope guards                  |
+| Generics      | Comptime       | Monomorphized      | Templates                          |
+| Interfaces    | Duck typing    | Traits             | Concepts                           |
+| Async         | Frame-based    | Future + runtime   | Coroutines                         |
+| String concat | Complex        | `format!`          | `std::format` / `+`                |
+| Lambdas       | Context struct | Native closures    | Native lambdas                     |
+| Build system  | `build.zig`    | Cargo              | CMake                              |
 
 C++23 is arguably the **easiest** systems target because:
+
 - Exceptions enable `tempta`/`demum` directly
 - `std::string` just works
 - RAII handles most cleanup
