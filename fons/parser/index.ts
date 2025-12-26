@@ -550,7 +550,7 @@ export function parse(tokens: Token[]): ParserResult {
             const nextType = peek(1).type;
 
             if ((nextType === 'IDENTIFIER' || nextType === 'STRING') && peek(2).keyword === 'importa') {
-                return parseImportDeclaration();
+                return parseImportaDeclaration();
             }
 
             // Could be for-loop or destructuring - parse and dispatch
@@ -570,11 +570,11 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (checkKeyword('varia') || checkKeyword('fixum') || checkKeyword('figendum') || checkKeyword('variandum')) {
-            return parseVariableDeclaration();
+            return parseVariaDeclaration();
         }
 
         if (checkKeyword('functio') || checkKeyword('futura') || checkKeyword('cursor')) {
-            return parseFunctionDeclaration();
+            return parseFunctioDeclaration();
         }
 
         if (checkKeyword('typus')) {
@@ -582,7 +582,7 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (checkKeyword('ordo')) {
-            return parseEnumDeclaration();
+            return parseOrdoDeclaration();
         }
 
         if (checkKeyword('genus')) {
@@ -598,43 +598,43 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (checkKeyword('si')) {
-            return parseIfStatement();
+            return parseSiStatement();
         }
 
         if (checkKeyword('dum')) {
-            return parseWhileStatement();
+            return parseDumStatement();
         }
 
         if (checkKeyword('elige')) {
-            return parseSwitchStatement();
+            return parseEligeStatement();
         }
 
         if (checkKeyword('custodi')) {
-            return parseGuardStatement();
+            return parseCustodiStatement();
         }
 
         if (checkKeyword('adfirma')) {
-            return parseAssertStatement();
+            return parseAdfirmaStatement();
         }
 
         if (checkKeyword('redde')) {
-            return parseReturnStatement();
+            return parseReddeStatement();
         }
 
         if (checkKeyword('rumpe')) {
-            return parseBreakStatement();
+            return parseRumpeStatement();
         }
 
         if (checkKeyword('perge')) {
-            return parseContinueStatement();
+            return parsePergeStatement();
         }
 
         if (checkKeyword('iace')) {
-            return parseThrowStatement(false);
+            return parseIaceStatement(false);
         }
 
         if (checkKeyword('mori')) {
-            return parseThrowStatement(true);
+            return parseIaceStatement(true);
         }
 
         if (checkKeyword('scribe')) {
@@ -650,7 +650,7 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (checkKeyword('tempta')) {
-            return parseTryStatement();
+            return parseTemptaStatement();
         }
 
         // fac { } cape { } is block with optional catch (see parseFacBlockStatement)
@@ -699,7 +699,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   ex "norma/tempus" importa nunc, dormi
      *   ex norma importa *
      */
-    function parseImportDeclaration(): ImportDeclaration {
+    function parseImportaDeclaration(): ImportDeclaration {
         const position = peek().position;
 
         expectKeyword('ex', ParserErrorCode.ExpectedKeywordEx);
@@ -765,7 +765,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   - Increment/decrement: x++, ++x, x--, --x
      *   - Compound assignment: x += 1, x -= 1, x *= 2, x /= 2
      */
-    function parseVariableDeclaration(): VariableDeclaration {
+    function parseVariaDeclaration(): VariableDeclaration {
         const position = peek().position;
         const kind = peek().keyword as 'varia' | 'fixum' | 'figendum' | 'variandum';
 
@@ -975,7 +975,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   - TS-style return type: functio f(): textus (use: functio f() -> textus)
      *   - Trailing comma in params: functio f(a, b,)
      */
-    function parseFunctionDeclaration(): FunctionDeclaration {
+    function parseFunctioDeclaration(): FunctionDeclaration {
         const position = peek().position;
 
         // Parse optional prefixes (futura = async, cursor = generator)
@@ -1251,7 +1251,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   ordo color { rubrum, viridis, caeruleum }
      *   ordo status { pendens = 0, actum = 1, finitum = 2 }
      */
-    function parseEnumDeclaration(): EnumDeclaration {
+    function parseOrdoDeclaration(): EnumDeclaration {
         const position = peek().position;
 
         expectKeyword('ordo', ParserErrorCode.ExpectedKeywordOrdo);
@@ -1842,7 +1842,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   si x > 5 { scribe("big") } aliter scribe("small")
      *   si x < 0 { ... } sin x == 0 { ... } secus { ... }
      */
-    function parseIfStatement(skipSiKeyword = false): IfStatement {
+    function parseSiStatement(skipSiKeyword = false): IfStatement {
         const position = peek().position;
 
         if (!skipSiKeyword) {
@@ -1865,7 +1865,7 @@ export function parse(tokens: Token[]): ParserResult {
         let catchClause: CatchClause | undefined;
 
         if (checkKeyword('cape')) {
-            catchClause = parseCatchClause();
+            catchClause = parseCapeClause();
         }
 
         // Check for alternate: aliter/secus (else) or sin (else-if)
@@ -1873,7 +1873,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (matchKeyword('aliter') || matchKeyword('secus')) {
             if (checkKeyword('si')) {
-                alternate = parseIfStatement();
+                alternate = parseSiStatement();
             } else if (check('LBRACE')) {
                 alternate = parseBlockStatement();
             } else {
@@ -1884,7 +1884,7 @@ export function parse(tokens: Token[]): ParserResult {
             }
         } else if (matchKeyword('sin')) {
             // "sin" (but if) is classical Latin for else-if
-            alternate = parseIfStatement(true);
+            alternate = parseSiStatement(true);
         }
 
         return { type: 'IfStatement', test, consequent, alternate, catchClause, position };
@@ -1902,7 +1902,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   dum x > 0 { x = x - 1 }
      *   dum x > 0 ergo x = x - 1
      */
-    function parseWhileStatement(): WhileStatement {
+    function parseDumStatement(): WhileStatement {
         const position = peek().position;
 
         expectKeyword('dum', ParserErrorCode.ExpectedKeywordDum);
@@ -1922,7 +1922,7 @@ export function parse(tokens: Token[]): ParserResult {
         let catchClause: CatchClause | undefined;
 
         if (checkKeyword('cape')) {
-            catchClause = parseCatchClause();
+            catchClause = parseCapeClause();
         }
 
         return { type: 'WhileStatement', test, body, catchClause, position };
@@ -2006,7 +2006,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         let catchClause: CatchClause | undefined;
         if (checkKeyword('cape')) {
-            catchClause = parseCatchClause();
+            catchClause = parseCapeClause();
         }
 
         return {
@@ -2068,7 +2068,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         let catchClause: CatchClause | undefined;
         if (checkKeyword('cape')) {
-            catchClause = parseCatchClause();
+            catchClause = parseCapeClause();
         }
 
         return {
@@ -2132,7 +2132,7 @@ export function parse(tokens: Token[]): ParserResult {
      *       ex Quit { mori "goodbye" }
      *   }
      */
-    function parseSwitchStatement(): SwitchStatement {
+    function parseEligeStatement(): SwitchStatement {
         const position = peek().position;
 
         expectKeyword('elige', ParserErrorCode.ExpectedKeywordElige);
@@ -2221,7 +2221,7 @@ export function parse(tokens: Token[]): ParserResult {
         let catchClause: CatchClause | undefined;
 
         if (checkKeyword('cape')) {
-            catchClause = parseCatchClause();
+            catchClause = parseCapeClause();
         }
 
         return { type: 'SwitchStatement', discriminant, cases, defaultCase, catchClause, position };
@@ -2242,7 +2242,7 @@ export function parse(tokens: Token[]): ParserResult {
      *       si useri age < 0 { iace "Invalid age" }
      *   }
      */
-    function parseGuardStatement(): GuardStatement {
+    function parseCustodiStatement(): GuardStatement {
         const position = peek().position;
 
         expectKeyword('custodi', ParserErrorCode.ExpectedKeywordCustodi);
@@ -2287,7 +2287,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   adfirma x > 0
      *   adfirma x > 0, "x must be positive"
      */
-    function parseAssertStatement(): AssertStatement {
+    function parseAdfirmaStatement(): AssertStatement {
         const position = peek().position;
 
         expectKeyword('adfirma', ParserErrorCode.ExpectedKeywordAdfirma);
@@ -2311,7 +2311,7 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * WHY: 'redde' (give back/return) for return statements.
      */
-    function parseReturnStatement(): ReturnStatement {
+    function parseReddeStatement(): ReturnStatement {
         const position = peek().position;
 
         expectKeyword('redde', ParserErrorCode.ExpectedKeywordRedde);
@@ -2333,7 +2333,7 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * WHY: 'rumpe' (break!) exits the innermost loop.
      */
-    function parseBreakStatement(): BreakStatement {
+    function parseRumpeStatement(): BreakStatement {
         const position = peek().position;
 
         // Consume the 'rumpe' keyword (already validated by checkKeyword in parseStatement)
@@ -2350,7 +2350,7 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * WHY: 'perge' (continue/proceed!) skips to the next loop iteration.
      */
-    function parseContinueStatement(): ContinueStatement {
+    function parsePergeStatement(): ContinueStatement {
         const position = peek().position;
 
         // Consume the 'perge' keyword (already validated by checkKeyword in parseStatement)
@@ -2369,7 +2369,7 @@ export function parse(tokens: Token[]): ParserResult {
      *   iace (throw!) → recoverable, can be caught
      *   mori (die!)   → fatal/panic, unrecoverable
      */
-    function parseThrowStatement(fatal: boolean): ThrowStatement {
+    function parseIaceStatement(fatal: boolean): ThrowStatement {
         const position = peek().position;
 
         // Consume the keyword (already validated by checkKeyword in parseStatement)
@@ -2423,7 +2423,7 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * WHY: 'tempta' (attempt/try), 'cape' (catch/seize), 'demum' (finally/at last).
      */
-    function parseTryStatement(): Statement {
+    function parseTemptaStatement(): Statement {
         const position = peek().position;
 
         expectKeyword('tempta', ParserErrorCode.ExpectedKeywordTempta);
@@ -2433,7 +2433,7 @@ export function parse(tokens: Token[]): ParserResult {
         let handler: CatchClause | undefined;
 
         if (checkKeyword('cape')) {
-            handler = parseCatchClause();
+            handler = parseCapeClause();
         }
 
         let finalizer: BlockStatement | undefined;
@@ -2451,7 +2451,7 @@ export function parse(tokens: Token[]): ParserResult {
      * GRAMMAR:
      *   catchClause := 'cape' IDENTIFIER blockStmt
      */
-    function parseCatchClause(): CatchClause {
+    function parseCapeClause(): CatchClause {
         const position = peek().position;
 
         expectKeyword('cape', ParserErrorCode.ExpectedKeywordCape);
@@ -2489,7 +2489,7 @@ export function parse(tokens: Token[]): ParserResult {
         let catchClause: CatchClause | undefined;
 
         if (checkKeyword('cape')) {
-            catchClause = parseCatchClause();
+            catchClause = parseCapeClause();
         }
 
         return { type: 'FacBlockStatement', body, catchClause, position };
@@ -2705,7 +2705,7 @@ export function parse(tokens: Token[]): ParserResult {
         // Optional catch clause
         let catchClause: CatchClause | undefined;
         if (checkKeyword('cape')) {
-            catchClause = parseCatchClause();
+            catchClause = parseCapeClause();
         }
 
         return { type: 'CuraStatement', resource, binding, async, body, catchClause, position };
@@ -3334,14 +3334,14 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         if (matchKeyword('novum')) {
-            return parseNewExpression();
+            return parseNovumExpression();
         }
 
         if (matchKeyword('praefixum')) {
             return parsePraefixumExpression();
         }
 
-        return parseCast();
+        return parseUtExpression();
     }
 
     /**
@@ -3407,7 +3407,7 @@ export function parse(tokens: Token[]): ParserResult {
      *      - Rust: x as T
      *      - C++: static_cast<T>(x)
      */
-    function parseCast(): Expression {
+    function parseUtExpression(): Expression {
         let expr = parseCall();
 
         while (matchKeyword('ut')) {
@@ -3437,7 +3437,7 @@ export function parse(tokens: Token[]): ParserResult {
      *
      *      The `de` (from) form allows dynamic overrides from variables or function results.
      */
-    function parseNewExpression(): NewExpression {
+    function parseNovumExpression(): NewExpression {
         const position = tokens[current - 1]!.position;
         const callee = parseIdentifier();
 
