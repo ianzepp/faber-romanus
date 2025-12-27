@@ -156,6 +156,119 @@ pactum curator {
 | Lock            | Release lock                |
 | Arena/allocator | Free memory                 |
 
+---
+
+## Memory Allocators
+
+An allocator is a resource, similar to a file descriptor:
+
+| Aspect         | File Descriptor                   | Allocator                        |
+| -------------- | --------------------------------- | -------------------------------- |
+| What it is     | Handle to OS resource             | Handle to memory source          |
+| Obtained from  | `open()`, `socket()`              | `arena()`                        |
+| Passed to      | `read(fd, ...)`, `write(fd, ...)` | `list.adde(...)` (implicitly)    |
+| Lifetime       | Must close when done              | Must deinit when done            |
+| Scoped pattern | `cura open(path) fit fd { ... }`  | `cura arena() fit alloc { ... }` |
+
+Both are "capabilities" you obtain, pass around, and release.
+
+### Scoped Allocators
+
+The existing `cura expr fit name { }` syntax works for allocators:
+
+```fab
+cura arena() fit alloc {
+    varia items: lista<textus> = []
+    items.adde("test")  // uses alloc implicitly
+}
+// arena freed, all allocations released
+```
+
+### The `curator` Type
+
+Functions that need an allocator declare a `curator` parameter:
+
+```fab
+functio buildList(curator memoria, textus prefix) -> lista<textus> {
+    varia items: lista<textus> = []
+    items.adde(prefix)
+    redde items
+}
+```
+
+The parameter name (`memoria`) is user-chosen. Collection methods use the active curator automatically.
+
+#### Etymology
+
+- **curator** — Latin "one who takes care of, steward"
+- Derives from **cura** ("care")
+- Phonetic symmetry with English "allocator" (same syllable count, similar ending)
+
+### Scope Hierarchy
+
+Each scope has an "active curator" name. Collection methods use whatever name is current. Nested scopes shadow outer ones:
+
+```fab
+// main scope: curator = 'alloc' (implicit)
+varia outer: lista<numerus> = []
+outer.adde(1)  // uses alloc
+
+cura arena() fit temp {
+    // inner scope: curator = 'temp'
+    varia inner: lista<numerus> = []
+    inner.adde(2)  // uses temp
+}
+
+// back to main scope
+outer.adde(3)  // uses alloc again
+```
+
+Functions establish their own scope:
+
+```fab
+functio process(curator mem, lista<numerus> data) -> lista<numerus> {
+    // function scope: curator = 'mem'
+    varia result: lista<numerus> = []
+    result.adde(42)  // uses mem
+    redde result
+}
+```
+
+### Complete Example
+
+```fab
+functio processUsers(curator alloc, lista<User> users) -> lista<User> {
+    varia result: lista<User> = []
+
+    ex users pro user {
+        si user.active {
+            result.adde(user)
+        }
+    }
+
+    redde result
+}
+
+// Usage at top level (implicit arena)
+fixum users = getUsers()
+fixum active = processUsers(alloc, users)
+
+// Usage with explicit arena
+cura arena() fit temp {
+    fixum scratch = processUsers(temp, users)
+    // scratch freed when block exits
+}
+```
+
+### Target Mapping
+
+| Target | `curator` becomes                     |
+| ------ | ------------------------------------- |
+| Zig    | `std.mem.Allocator`                   |
+| C++    | `std::pmr::memory_resource*`          |
+| Rust   | `&dyn Allocator` or trait bound       |
+| TS/Py  | parameter omitted (GC handles memory) |
+
 ### Custom Curator
 
 ```
