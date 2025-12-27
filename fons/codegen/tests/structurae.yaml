@@ -78,6 +78,10 @@
       - 'class persona:'
       - 'nomen: str = "X"'
       - 'def __init__'
+  cpp:
+      - 'struct persona {'
+      - 'std::string nomen = '
+      - '};'
 
 # creo becomes private method called from constructor
 - name: 'genus with creo'
@@ -109,12 +113,16 @@
   input: 'fixum p = novum persona'
   ts: 'const p = new persona();'
   py: 'p = persona()'
+  cpp:
+      - 'persona{}'
 
 # novum with object literal passes overrides to constructor
 - name: 'novum with overrides'
   input: 'fixum p = novum persona { nomen: "Claudia" }'
   ts: 'const p = new persona({ nomen: "Claudia" });'
   py: 'p = persona({"nomen": "Claudia"})'
+  cpp:
+      - 'persona{.nomen = '
 
 # =============================================================================
 # Ego (this/self)
@@ -131,6 +139,9 @@
       - 'return this.nomen'
   py:
       - 'return self.nomen'
+  cpp:
+      - 'std::string saluta()'
+      - 'this->nomen'
 
 # =============================================================================
 # Nexum (Reactive Fields) - TS only
@@ -203,6 +214,9 @@
   py:
       - 'class Salutator(Protocol):'
       - 'def salve(self, nomen: str) -> str:'
+  cpp:
+      - 'template<typename T>'
+      - 'concept Salutator = requires'
 
 # pactum with multiple methods
 - name: 'pactum with multiple methods'

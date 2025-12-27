@@ -17,6 +17,9 @@
   py:
       - 'def salve(nomen):'
       - 'return nomen'
+  cpp:
+      - 'void salve(const std::string& nomen)'
+      - 'return;'
 
 # -> specifies return type annotation
 - name: 'function with return type'
@@ -25,6 +28,9 @@
       - 'function greet(): string'
   py:
       - 'def greet() -> str:'
+  cpp:
+      - 'int64_t add(int64_t a, int64_t b)'
+      - 'return (a + b)'
 
 # =============================================================================
 # Async Functions
@@ -98,6 +104,8 @@
   input: '(x) => x'
   ts: '(x) => x;'
   py: 'lambda x: x'
+  cpp:
+      - '[&](auto x) { return (x + 1); }'
 
 # Arrow with block body
 - name: 'arrow with block'

@@ -10,6 +10,8 @@
   input: '1 + 2'
   ts: '(1 + 2);'
   py: '(1 + 2)'
+  cpp:
+      - '(1 + 2)'
 
 # Function calls pass through unchanged
 - name: 'function call'
@@ -38,12 +40,16 @@
   input: 'a et b'
   ts: '(a && b);'
   py: '(a and b)'
+  cpp:
+      - '(a && b)'
 
 # aut is logical OR (|| in TS, 'or' in Python)
 - name: 'aut becomes or'
   input: 'a aut b'
   ts: '(a || b);'
   py: '(a or b)'
+  cpp:
+      - '(a || b)'
 
 # vel is nullish coalescing (?? in TS, conditional in Python)
 - name: 'vel becomes nullish coalescing'
@@ -153,6 +159,8 @@
   input: 'verum ? 1 : 0'
   ts: 'true ? 1 : 0;'
   py: '1 if True else 0'
+  cpp:
+      - '(true ? 1 : 0)'
 
 # Latin sic/secus syntax for ternary
 - name: 'ternary with sic secus'
@@ -175,12 +183,16 @@
   input: 'a == b'
   ts: '(a == b);'
   py: '(a == b)'
+  cpp:
+      - '(a == b)'
 
 # Inequality - same in both targets
 - name: 'inequality'
   input: 'a != b'
   ts: '(a != b);'
   py: '(a != b)'
+  cpp:
+      - '(a != b)'
 
 # Less than - same in both targets
 - name: 'less than'

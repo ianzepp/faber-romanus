@@ -10,18 +10,24 @@
   input: 'fixum x = 1'
   ts: 'const x = 1;'
   py: 'x = 1'
+  cpp:
+      - 'const auto x = 1'
 
 # varia declares a mutable binding (let in TS, simple assignment in Python)
 - name: 'let declaration'
   input: 'varia nomen = "Marcus"'
   ts: 'let nomen = "Marcus";'
   py: 'nomen = "Marcus"'
+  cpp:
+      - 'auto nomen = "Marcus"'
 
 # Type annotations are emitted in both targets
 - name: 'const with type annotation'
   input: 'fixum numerus x = 42'
   ts: 'const x: number = 42;'
   py: 'x: int = 42'
+  cpp:
+      - 'const int64_t x = 42'
 
 # figendum is fixum + implicit await (const with async initialization)
 - name: 'const with await'
@@ -68,18 +74,24 @@
   input: 'verum'
   ts: 'true;'
   py: 'True'
+  cpp:
+      - 'true'
 
 # falsum is the false literal
 - name: 'false literal'
   input: 'falsum'
   ts: 'false;'
   py: 'False'
+  cpp:
+      - 'false'
 
 # nihil is the null literal (null in TS, None in Python)
 - name: 'null literal'
   input: 'nihil'
   ts: 'null;'
   py: 'None'
+  cpp:
+      - 'nullptr'
 
 # =============================================================================
 # Object Literals
@@ -184,12 +196,16 @@
   input: 'scribe x'
   ts: 'console.log(x);'
   py: 'print(x)'
+  cpp:
+      - 'std::print'
 
 # Multiple arguments are comma-separated
 - name: 'scribe multiple args'
   input: 'scribe "a", "b", "c"'
   ts: 'console.log("a", "b", "c");'
   py: 'print("a", "b", "c")'
+  cpp:
+      - 'std::print("{} {} {}"'
 
 # Expressions are evaluated before printing
 - name: 'scribe with expression'

@@ -20,6 +20,9 @@
   py:
       - 'try:'
       - 'except Exception as error:'
+  cpp:
+      - 'try {'
+      - 'catch (const std::exception& error)'
 
 # demum is finally - runs regardless of exception
 - name: 'tempta with demum'
@@ -41,6 +44,13 @@
       - 'try:'
       - 'finally:'
       - 'cleanup()'
+  cpp:
+      - 'try {'
+      - 'catch (const std::exception& error)'
+      - 'struct _ScopeGuard'
+      - '~_ScopeGuard()'
+      - '_ScopeGuard([&]{'
+      - 'cleanup()'
 
 # =============================================================================
 # Throw (iace)
@@ -54,6 +64,8 @@
       - 'error message'
   py:
       - 'raise Exception("error message")'
+  cpp:
+      - 'throw std::runtime_error'
 
 # iace with new Error - translates constructor
 - name: 'iace with Error'
@@ -84,6 +96,11 @@
       - 'throw new Panic("something went wrong")'
   py:
       - 'raise SystemExit("something went wrong")'
+  cpp:
+      - '#include <cstdlib>'
+      - 'std::print(stderr'
+      - 'FATAL:'
+      - 'std::abort()'
 
 # =============================================================================
 # Fac Block

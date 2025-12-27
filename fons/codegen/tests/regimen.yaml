@@ -17,6 +17,8 @@
   py:
       - 'if True:'
       - 'print("yes")'
+  cpp:
+      - 'if (true)'
 
 # aliter is the else keyword
 - name: 'if with else'
@@ -33,6 +35,9 @@
   py:
       - 'if False:'
       - 'else:'
+  cpp:
+      - 'if (false)'
+      - '} else {'
 
 # aliter si chains become else if/elif
 - name: 'if-elif-else chain'
@@ -63,6 +68,8 @@
       - 'while (true)'
   py:
       - 'while True:'
+  cpp:
+      - 'while (true)'
 
 # =============================================================================
 # For Loops
@@ -78,6 +85,8 @@
       - 'for (const numero of numeros)'
   py:
       - 'for numero in numeros:'
+  cpp:
+      - 'for (auto& numero : numeros)'
 
 # de...pro is for-in (iterate keys/indices)
 - name: 'for-in loop'
@@ -104,6 +113,8 @@
       - 'for (let i = 0; i < 10; i++)'
   py:
       - 'for i in range(0, 10):'
+  cpp:
+      - 'for (int64_t i = 0; i < 10; i += 1)'
 
 # per specifies step size
 - name: 'range with step'
@@ -126,6 +137,8 @@
       - 'for (let i = 0; i <= 10; i++)'
   py:
       - 'for i in range(0, 10 + 1):'
+  cpp:
+      - 'for (int64_t i = 0; i <= 10; i += 1)'
 
 # =============================================================================
 # Break and Continue
