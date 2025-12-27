@@ -1,0 +1,231 @@
+# Lista - List/vector collection method codegen tests
+# Covers: adde, addita, praepone, remove, decapita, purga, primus, ultimus,
+#         accipe, longitudo, vacua, continet, indiceDe, filtrata, mappata,
+#         inversa, prima, omitte, omnes, aliquis, ordina, inverte, summa,
+#         minimus, maximus, perambula
+
+# =============================================================================
+# Adding Elements
+# =============================================================================
+
+# adde mutates the list by appending (push_back in C++)
+- name: 'adde -> push_back'
+  input: 'items.adde(1)'
+  cpp:
+      - '.push_back(1)'
+
+# addita returns a new list with the element appended (copy + push_back)
+- name: 'addita -> copy and push_back'
+  input: 'items.addita(1)'
+  cpp:
+      - 'auto v = items'
+      - 'v.push_back(1)'
+      - 'return v'
+
+# praepone inserts at the beginning
+- name: 'praepone -> insert at begin'
+  input: 'items.praepone(1)'
+  cpp:
+      - '.insert('
+      - '.begin()'
+
+# =============================================================================
+# Removing Elements
+# =============================================================================
+
+# remove pops and returns the last element
+- name: 'remove -> pop_back with return'
+  input: 'items.remove()'
+  cpp:
+      - '.back()'
+      - '.pop_back()'
+
+# decapita removes and returns the first element
+- name: 'decapita -> erase at begin'
+  input: 'items.decapita()'
+  cpp:
+      - '.front()'
+      - '.erase('
+
+# purga clears the entire list
+- name: 'purga -> clear'
+  input: 'items.purga()'
+  cpp:
+      - '.clear()'
+
+# =============================================================================
+# Accessing Elements
+# =============================================================================
+
+# primus returns the first element
+- name: 'primus -> front'
+  input: 'items.primus()'
+  cpp:
+      - '.front()'
+
+# ultimus returns the last element
+- name: 'ultimus -> back'
+  input: 'items.ultimus()'
+  cpp:
+      - '.back()'
+
+# accipe returns element at index (bounds-checked)
+- name: 'accipe -> at'
+  input: 'items.accipe(0)'
+  cpp:
+      - '.at(0)'
+
+# longitudo returns the size
+- name: 'longitudo -> size'
+  input: 'items.longitudo()'
+  cpp:
+      - '.size()'
+
+# vacua returns whether the list is empty
+- name: 'vacua -> empty'
+  input: 'items.vacua()'
+  cpp:
+      - '.empty()'
+
+# =============================================================================
+# Searching
+# =============================================================================
+
+# continet checks if element exists
+- name: 'continet -> std::find'
+  input: 'items.continet(5)'
+  cpp:
+      - 'std::find('
+      - '!= items.end()'
+
+# indiceDe returns the index of an element
+- name: 'indiceDe -> std::find with distance'
+  input: 'items.indiceDe(5)'
+  cpp:
+      - 'std::find('
+      - 'std::distance('
+
+# =============================================================================
+# Transformations (C++23 ranges)
+# =============================================================================
+
+# filtrata returns filtered copy using views::filter
+- name: 'filtrata -> views::filter'
+  input: 'items.filtrata(pro x: x > 0)'
+  cpp:
+      - 'std::views::filter'
+      - 'std::ranges::to<std::vector>'
+
+# mappata transforms elements using views::transform
+- name: 'mappata -> views::transform'
+  input: 'items.mappata(pro x: x * 2)'
+  cpp:
+      - 'std::views::transform'
+      - 'std::ranges::to<std::vector>'
+
+# inversa returns reversed copy
+- name: 'inversa -> views::reverse'
+  input: 'items.inversa()'
+  cpp:
+      - 'std::views::reverse'
+      - 'std::ranges::to<std::vector>'
+
+# prima takes first n elements
+- name: 'prima -> views::take'
+  input: 'items.prima(5)'
+  cpp:
+      - 'std::views::take(5)'
+      - 'std::ranges::to<std::vector>'
+
+# omitte drops first n elements
+- name: 'omitte -> views::drop'
+  input: 'items.omitte(2)'
+  cpp:
+      - 'std::views::drop(2)'
+      - 'std::ranges::to<std::vector>'
+
+# =============================================================================
+# Predicates
+# =============================================================================
+
+# omnes checks if all elements match predicate
+- name: 'omnes -> ranges::all_of'
+  input: 'items.omnes(pro x: x > 0)'
+  cpp:
+      - 'std::ranges::all_of('
+
+# aliquis checks if any element matches predicate
+- name: 'aliquis -> ranges::any_of'
+  input: 'items.aliquis(pro x: x > 0)'
+  cpp:
+      - 'std::ranges::any_of('
+
+# =============================================================================
+# Mutating Operations
+# =============================================================================
+
+# ordina sorts the list in-place
+- name: 'ordina -> ranges::sort'
+  input: 'items.ordina()'
+  cpp:
+      - 'std::ranges::sort(items)'
+
+# inverte reverses the list in-place
+- name: 'inverte -> ranges::reverse'
+  input: 'items.inverte()'
+  cpp:
+      - 'std::ranges::reverse(items)'
+
+# =============================================================================
+# Numeric Aggregation
+# =============================================================================
+
+# summa returns the sum of all elements
+- name: 'summa -> std::accumulate'
+  input: 'nums.summa()'
+  cpp:
+      - 'std::accumulate('
+
+# minimus returns the minimum element
+- name: 'minimus -> ranges::min_element'
+  input: 'nums.minimus()'
+  cpp:
+      - 'std::ranges::min_element('
+
+# maximus returns the maximum element
+- name: 'maximus -> ranges::max_element'
+  input: 'nums.maximus()'
+  cpp:
+      - 'std::ranges::max_element('
+
+# =============================================================================
+# Iteration
+# =============================================================================
+
+# perambula iterates over all elements
+- name: 'perambula -> ranges::for_each'
+  input: 'items.perambula(pro x { scribe x })'
+  cpp:
+      - 'std::ranges::for_each('
+
+# =============================================================================
+# Header Includes
+# =============================================================================
+
+# Algorithm methods add algorithm header
+- name: 'algorithm methods add algorithm header'
+  input: 'items.continet(5)'
+  cpp:
+      - '#include <algorithm>'
+
+# Ranges methods add ranges header
+- name: 'ranges methods add ranges header'
+  input: 'items.filtrata(pro x: x > 0)'
+  cpp:
+      - '#include <ranges>'
+
+# Numeric methods add numeric header
+- name: 'numeric methods add numeric header'
+  input: 'nums.summa()'
+  cpp:
+      - '#include <numeric>'

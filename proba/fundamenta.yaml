@@ -64,6 +64,8 @@
   input: 'novum erratum(message)'
   ts: 'new erratum(message);'
   py: 'erratum(message)'
+  zig:
+      - 'erratum.init(message)'
 
 # =============================================================================
 # Boolean and Null Literals
@@ -74,6 +76,8 @@
   input: 'verum'
   ts: 'true;'
   py: 'True'
+  zig:
+      - 'true'
   cpp:
       - 'true'
 
@@ -82,6 +86,8 @@
   input: 'falsum'
   ts: 'false;'
   py: 'False'
+  zig:
+      - 'false'
   cpp:
       - 'false'
 
@@ -90,6 +96,8 @@
   input: 'nihil'
   ts: 'null;'
   py: 'None'
+  zig:
+      - 'null'
   cpp:
       - 'nullptr'
 
@@ -102,12 +110,17 @@
   input: 'fixum x = {}'
   ts: 'const x = {};'
   py: 'x = {}'
+  zig:
+      - 'const x = .{}'
 
 # Object with properties - Python uses quoted keys
 - name: 'object with properties'
   input: 'fixum user = { nomen: "Marcus", aetas: 30 }'
   ts: 'const user = { nomen: "Marcus", aetas: 30 };'
   py: 'user = {"nomen": "Marcus", "aetas": 30}'
+  zig:
+      - '.nomen = "Marcus"'
+      - '.aetas = 30'
 
 # Object values can be expressions; verum becomes true/True
 - name: 'object with expression values'
@@ -132,12 +145,16 @@
   input: 'fixum arr = []'
   ts: 'const arr = [];'
   py: 'arr = []'
+  zig:
+      - 'const arr = .{}'
 
 # Array with elements
 - name: 'array with elements'
   input: 'fixum nums = [1, 2, 3]'
   ts: 'const nums = [1, 2, 3];'
   py: 'nums = [1, 2, 3]'
+  zig:
+      - '.{ 1, 2, 3 }'
 
 # =============================================================================
 # Hex Literals
@@ -216,3 +233,42 @@
   py:
       - 'print'
       - 'x + y'
+
+# =============================================================================
+# Includes (C++)
+# =============================================================================
+
+# scribe generates required includes for print and string
+- name: 'cpp generates required includes'
+  input: 'scribe "hello"'
+  cpp:
+      - '#include <print>'
+      - '#include <string>'
+
+# adfirma adds cassert include
+- name: 'cpp optional includes added when used'
+  input: 'adfirma verum'
+  cpp:
+      - '#include <cassert>'
+
+# =============================================================================
+# Main Function (C++)
+# =============================================================================
+
+# Runtime code is wrapped in main function
+- name: 'cpp runtime code wrapped in main'
+  input: 'scribe "hello"'
+  cpp:
+      - 'int main() {'
+      - 'return 0;'
+
+# Declarations appear outside main, before it
+- name: 'cpp declarations outside main'
+  input: |
+      functio greet() {
+        scribe "hi"
+      }
+      greet()
+  cpp:
+      - 'void greet()'
+      - 'int main() {'

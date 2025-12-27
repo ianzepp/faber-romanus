@@ -66,6 +66,8 @@
       - 'raise Exception("error message")'
   cpp:
       - 'throw std::runtime_error'
+  zig:
+      - 'return error.ErrorMessage'
 
 # iace with new Error - translates constructor
 - name: 'iace with Error'
@@ -75,6 +77,8 @@
       - 'new Error'
   py:
       - 'raise Exception("msg")'
+  zig:
+      - 'return error.Msg'
 
 # iace with variable - throws directly
 - name: 'iace variable'
@@ -84,6 +88,8 @@
       - 'err'
   py:
       - 'raise err'
+  zig:
+      - 'return error.Err'
 
 # =============================================================================
 # Panic (mori)
@@ -101,6 +107,8 @@
       - 'std::print(stderr'
       - 'FATAL:'
       - 'std::abort()'
+  zig:
+      - '@panic("something went wrong")'
 
 # =============================================================================
 # Fac Block

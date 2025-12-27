@@ -1,0 +1,113 @@
+# Tabula - Map/dictionary collection method codegen tests
+# Covers: pone, accipe, habet, dele, longitudo, vacua, purga, claves, valores,
+#         accipeAut, confla, inLista
+
+# =============================================================================
+# Core Operations
+# =============================================================================
+
+# pone inserts or updates a key-value pair
+- name: 'pone -> insert_or_assign'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.pone("key", 42)
+  cpp:
+      - '.insert_or_assign('
+
+# accipe retrieves a value by key (throws if not found)
+- name: 'accipe -> at'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.accipe("key")
+  cpp:
+      - '.at('
+
+# habet checks if key exists
+- name: 'habet -> contains'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.habet("key")
+  cpp:
+      - '.contains('
+
+# dele removes a key-value pair
+- name: 'dele -> erase'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.dele("key")
+  cpp:
+      - '.erase('
+
+# longitudo returns the number of entries
+- name: 'longitudo -> size'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.longitudo()
+  cpp:
+      - '.size()'
+
+# vacua checks if the map is empty
+- name: 'vacua -> empty'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.vacua()
+  cpp:
+      - '.empty()'
+
+# purga clears the entire map
+- name: 'purga -> clear'
+  input: |
+      varia tabula<textus, numerus> map = {}
+      map.purga()
+  cpp:
+      - '.clear()'
+
+# =============================================================================
+# Iteration
+# =============================================================================
+
+# claves returns a view of all keys
+- name: 'claves -> views::keys'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.claves()
+  cpp:
+      - 'std::views::keys'
+
+# valores returns a view of all values
+- name: 'valores -> views::values'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.valores()
+  cpp:
+      - 'std::views::values'
+
+# =============================================================================
+# Extended Methods
+# =============================================================================
+
+# accipeAut returns value if exists, otherwise default
+- name: 'accipeAut -> contains + at with default'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.accipeAut("key", 0)
+  cpp:
+      - '.contains('
+      - '.at('
+
+# confla merges another map into this one
+- name: 'confla -> merge maps'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      fixum tabula<textus, numerus> other = {}
+      map.confla(other)
+  cpp:
+      - 'for (auto& [k, v]'
+
+# inLista converts map entries to a vector
+- name: 'inLista -> vector from map'
+  input: |
+      fixum tabula<textus, numerus> map = {}
+      map.inLista()
+  cpp:
+      - 'std::vector('

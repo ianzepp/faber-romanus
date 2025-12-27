@@ -20,6 +20,9 @@
   cpp:
       - 'void salve(auto nomen)'
       - 'return nomen'
+  zig:
+      - 'fn salve(nomen: anytype) void'
+      - 'return nomen;'
 
 # -> specifies return type annotation
 - name: 'function with return type'
@@ -46,6 +49,8 @@
       - 'async function fetch(url)'
   py:
       - 'async def fetch(url):'
+  zig:
+      - '!void'
 
 # fiet is async + return type (wraps in Promise/Awaitable)
 - name: 'async function with return type'
@@ -94,6 +99,8 @@
       - 'await getData()'
   py:
       - 'await getData()'
+  zig:
+      - 'try getData()'
 
 # =============================================================================
 # Arrow Functions

@@ -1,0 +1,146 @@
+# Copia - Set collection method codegen tests
+# Covers: adde, habet, dele, longitudo, vacua, purga, unio, intersectio,
+#         differentia, symmetrica, subcopia, supercopia, inLista, perambula
+
+# =============================================================================
+# Core Operations
+# =============================================================================
+
+# adde inserts an element into the set
+- name: 'adde -> insert'
+  input: |
+      varia copia<numerus> set = {}
+      set.adde(5)
+  cpp:
+      - '.insert(5)'
+
+# habet checks if element exists in set
+- name: 'habet -> contains'
+  input: |
+      fixum copia<numerus> set = {}
+      set.habet(5)
+  cpp:
+      - '.contains(5)'
+
+# dele removes an element from the set
+- name: 'dele -> erase'
+  input: |
+      varia copia<numerus> set = {}
+      set.dele(5)
+  cpp:
+      - '.erase(5)'
+
+# longitudo returns the number of elements
+- name: 'longitudo -> size'
+  input: |
+      fixum copia<numerus> set = {}
+      set.longitudo()
+  cpp:
+      - '.size()'
+
+# vacua checks if the set is empty
+- name: 'vacua -> empty'
+  input: |
+      fixum copia<numerus> set = {}
+      set.vacua()
+  cpp:
+      - '.empty()'
+
+# purga clears the entire set
+- name: 'purga -> clear'
+  input: |
+      varia copia<numerus> set = {}
+      set.purga()
+  cpp:
+      - '.clear()'
+
+# =============================================================================
+# Set Operations
+# =============================================================================
+
+# unio returns the union of two sets
+- name: 'unio -> set union'
+  input: |
+      fixum copia<numerus> setA = {}
+      fixum copia<numerus> setB = {}
+      setA.unio(setB)
+  cpp:
+      - 'std::unordered_set'
+      - '.insert('
+
+# intersectio returns the intersection of two sets
+- name: 'intersectio -> set intersection'
+  input: |
+      fixum copia<numerus> setA = {}
+      fixum copia<numerus> setB = {}
+      setA.intersectio(setB)
+  cpp:
+      - '.contains('
+      - '.insert('
+
+# differentia returns elements in A but not in B
+- name: 'differentia -> set difference'
+  input: |
+      fixum copia<numerus> setA = {}
+      fixum copia<numerus> setB = {}
+      setA.differentia(setB)
+  cpp:
+      - '!'
+      - '.contains('
+
+# symmetrica returns elements in either set but not both
+- name: 'symmetrica -> symmetric difference'
+  input: |
+      fixum copia<numerus> setA = {}
+      fixum copia<numerus> setB = {}
+      setA.symmetrica(setB)
+  cpp:
+      - '!'
+      - '.contains('
+
+# =============================================================================
+# Predicates
+# =============================================================================
+
+# subcopia checks if A is a subset of B
+- name: 'subcopia -> all_of with contains'
+  input: |
+      fixum copia<numerus> setA = {}
+      fixum copia<numerus> setB = {}
+      setA.subcopia(setB)
+  cpp:
+      - 'std::ranges::all_of'
+      - '.contains('
+
+# supercopia checks if A is a superset of B
+- name: 'supercopia -> all_of reversed'
+  input: |
+      fixum copia<numerus> setA = {}
+      fixum copia<numerus> setB = {}
+      setA.supercopia(setB)
+  cpp:
+      - 'std::ranges::all_of'
+
+# =============================================================================
+# Conversions
+# =============================================================================
+
+# inLista converts the set to a vector
+- name: 'inLista -> vector from set'
+  input: |
+      fixum copia<numerus> set = {}
+      set.inLista()
+  cpp:
+      - 'std::vector('
+
+# =============================================================================
+# Iteration
+# =============================================================================
+
+# perambula iterates over all elements
+- name: 'perambula -> ranges::for_each'
+  input: |
+      fixum copia<numerus> set = {}
+      set.perambula(pro x { scribe x })
+  cpp:
+      - 'std::ranges::for_each('

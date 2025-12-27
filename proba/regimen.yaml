@@ -19,6 +19,8 @@
       - 'print("yes")'
   cpp:
       - 'if (true)'
+  zig:
+      - 'if (true)'
 
 # aliter is the else keyword
 - name: 'if with else'
@@ -36,6 +38,9 @@
       - 'if False:'
       - 'else:'
   cpp:
+      - 'if (false)'
+      - '} else {'
+  zig:
       - 'if (false)'
       - '} else {'
 
@@ -69,6 +74,8 @@
   py:
       - 'while True:'
   cpp:
+      - 'while (true)'
+  zig:
       - 'while (true)'
 
 # =============================================================================
@@ -115,6 +122,10 @@
       - 'for i in range(0, 10):'
   cpp:
       - 'for (int64_t i = 0; i < 10; i += 1)'
+  zig:
+      - 'var i: usize = 0'
+      - 'while (i < 10)'
+      - '(i += 1)'
 
 # per specifies step size
 - name: 'range with step'
@@ -126,6 +137,9 @@
       - 'for (let i = 0; i < 10; i += 2)'
   py:
       - 'for i in range(0, 10, 2):'
+  zig:
+      - 'while (i < 10)'
+      - '(i += 2)'
 
 # usque creates inclusive range (0 usque 10 = 0 to 10)
 - name: 'inclusive range loop'
@@ -139,6 +153,8 @@
       - 'for i in range(0, 10 + 1):'
   cpp:
       - 'for (int64_t i = 0; i <= 10; i += 1)'
+  zig:
+      - 'while (i <= 10)'
 
 # =============================================================================
 # Break and Continue
@@ -203,6 +219,8 @@
       - 'if (!('
       - 'throw new Error'
   py: 'assert (x > 0)'
+  zig:
+      - 'std.debug.assert'
 
 # adfirma with message includes that in the error
 - name: 'assert with message'
@@ -210,6 +228,9 @@
   ts:
       - 'throw new Error("x must be positive")'
   py: 'assert (x > 0), "x must be positive"'
+  zig:
+      - 'if (!((x > 0)))'
+      - '@panic("x must be positive")'
 
 # =============================================================================
 # Elige (Switch/Match)
@@ -229,6 +250,9 @@
       - 'match x:'
       - 'case 1:'
       - 'case 2:'
+  zig:
+      - 'if ((x == 1))'
+      - 'else if ((x == 2))'
 
 # aliter in elige is the default case
 - name: 'elige with default'
@@ -244,6 +268,9 @@
       - 'match x:'
       - 'case 1:'
       - 'case _:'
+  zig:
+      - 'if ((x == 1))'
+      - 'else {'
 
 # =============================================================================
 # Guard Statements
@@ -261,3 +288,34 @@
   py:
       - 'if (x == None):'
       - 'return'
+  zig:
+      - 'if ((x == null))'
+      - 'return;'
+
+# =============================================================================
+# Praefixum (Compile-time Blocks)
+# =============================================================================
+
+# praefixum expression form evaluates at compile time
+- name: 'praefixum expression form'
+  input: 'fixum size = praefixum(256 * 4)'
+  cpp:
+      - '(256 * 4)'
+  zig:
+      - 'comptime ((256 * 4))'
+
+# praefixum block form wraps in IIFE for compile-time evaluation
+- name: 'praefixum block form'
+  input: |
+      fixum result = praefixum {
+        varia x = 10
+        redde x * 2
+      }
+  cpp:
+      - '[&]'
+      - 'auto x = 10'
+      - 'return (x * 2)'
+      - '}()'
+  zig:
+      - 'comptime blk:'
+      - 'break :blk (x * 2)'

@@ -10,6 +10,8 @@
   input: 'typus ID = textus'
   ts: 'type ID = string;'
   py: 'ID = str'
+  zig:
+      - 'const ID = []const u8'
 
 # Generic type aliases preserve type parameters
 - name: 'generic type alias'
@@ -102,6 +104,8 @@
   input: 'fixum unio<textus, numerus> value = "hello"'
   ts: 'const value: string | number = "hello";'
   py: 'value: str | int = "hello"'
+  zig:
+      - 'anytype'
 
 # unio can have multiple members
 - name: 'union type with three members'
@@ -114,6 +118,8 @@
   input: 'typus Json = unio<textus, numerus, bivalens, nihil>'
   ts: 'type Json = string | number | boolean | null;'
   py: 'Json = str | int | bool | None'
+  zig:
+      - 'const Json = anytype'
 
 # =============================================================================
 # Nullable Types
