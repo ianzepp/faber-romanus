@@ -29,13 +29,17 @@
 // TYPES
 // =============================================================================
 
+/**
+ * Generator function type for Zig collection methods.
+ * WHY: The curator parameter allows methods to use the correct allocator.
+ */
+export type ZigGenerator = (obj: string, args: string, curator: string) => string;
+
 export interface CopiaMethod {
     latin: string;
     mutates: boolean;
     zig: string | ZigGenerator;
 }
-
-type ZigGenerator = (obj: string, args: string) => string;
 
 // =============================================================================
 // METHOD REGISTRY
@@ -51,7 +55,7 @@ export const COPIA_METHODS: Record<string, CopiaMethod> = {
         latin: 'adde',
         mutates: true,
         // WHY: Set is implemented as HashMap with void value
-        zig: (obj, args) => `${obj}.put(alloc, ${args}, {}) catch @panic("OOM")`,
+        zig: (obj, args, curator) => `${obj}.put(${curator}, ${args}, {}) catch @panic("OOM")`,
     },
 
     /** Check if element exists */

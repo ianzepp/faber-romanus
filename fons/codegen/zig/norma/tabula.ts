@@ -28,13 +28,17 @@
 // TYPES
 // =============================================================================
 
+/**
+ * Generator function type for Zig collection methods.
+ * WHY: The curator parameter allows methods to use the correct allocator.
+ */
+export type ZigGenerator = (obj: string, args: string, curator: string) => string;
+
 export interface TabulaMethod {
     latin: string;
     mutates: boolean;
     zig: string | ZigGenerator;
 }
-
-type ZigGenerator = (obj: string, args: string) => string;
 
 // =============================================================================
 // METHOD REGISTRY
@@ -51,10 +55,10 @@ export const TABULA_METHODS: Record<string, TabulaMethod> = {
         mutates: true,
         // WHY: put() can fail on OOM
         // args format: "key, value" - need to split
-        zig: (obj, args) => {
+        zig: (obj, args, curator) => {
             const match = args.match(/^(.+?),\s*(.+)$/);
             if (match) {
-                return `${obj}.put(alloc, ${match[1]}, ${match[2]}) catch @panic("OOM")`;
+                return `${obj}.put(${curator}, ${match[1]}, ${match[2]}) catch @panic("OOM")`;
             }
             return `@compileError("pone requires two arguments: key, value")`;
         },

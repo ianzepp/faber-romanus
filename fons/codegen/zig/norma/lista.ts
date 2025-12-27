@@ -35,6 +35,13 @@
 // =============================================================================
 
 /**
+ * Generator function type for Zig collection methods.
+ * WHY: The curator parameter allows methods to use the correct allocator
+ *      based on context (function parameter vs module-level arena).
+ */
+export type ZigGenerator = (obj: string, args: string, curator: string) => string;
+
+/**
  * Describes how to translate a Latin method to Zig.
  */
 export interface ListaMethod {
@@ -47,12 +54,10 @@ export interface ListaMethod {
     /**
      * Zig translation.
      * - string: simple property/method access
-     * - function: custom code generation
+     * - function: custom code generation with allocator context
      */
     zig: string | ZigGenerator;
 }
-
-type ZigGenerator = (obj: string, args: string) => string;
 
 // =============================================================================
 // METHOD REGISTRY
@@ -76,7 +81,7 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'adde',
         mutates: true,
         // WHY: ArrayList.append() can fail on OOM, we catch and panic
-        zig: (obj, args) => `${obj}.append(alloc, ${args}) catch @panic("OOM")`,
+        zig: (obj, args, curator) => `${obj}.append(${curator}, ${args}) catch @panic("OOM")`,
     },
 
     /** Add element to end (returns new list) - NOT IMPLEMENTED */
@@ -91,7 +96,7 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         latin: 'praepone',
         mutates: true,
         // WHY: ArrayList.insert() at index 0 = prepend
-        zig: (obj, args) => `${obj}.insert(alloc, 0, ${args}) catch @panic("OOM")`,
+        zig: (obj, args, curator) => `${obj}.insert(${curator}, 0, ${args}) catch @panic("OOM")`,
     },
 
     /** Add element to start (returns new list) - NOT IMPLEMENTED */

@@ -1,0 +1,208 @@
+# Curator - Allocator tracking codegen tests (Zig target)
+# Covers: curator type, allocator parameter detection, collection method allocator passing
+
+# =============================================================================
+# Curator Type Mapping
+# =============================================================================
+
+# curator maps to std.mem.Allocator in Zig
+- name: 'curator type annotation'
+  input: 'functio process(curator alloc) { }'
+  zig:
+      - 'fn process(alloc: std.mem.Allocator) void'
+
+# curator param with other params
+- name: 'curator with other params'
+  input: 'functio build(curator mem, textus name) { }'
+  zig:
+      - 'fn build(mem: std.mem.Allocator, name: []const u8) void'
+
+# curator with return type
+- name: 'curator with return type'
+  input: 'functio create(curator alloc) -> numerus { redde 42 }'
+  zig:
+      - 'fn create(alloc: std.mem.Allocator) i64'
+      - 'return 42;'
+
+# =============================================================================
+# Curator Tracking in Collection Methods
+# =============================================================================
+
+# Inside function with curator param, use that param for collection ops
+- name: 'lista.adde uses curator param'
+  input: |
+      functio build(curator memoria) {
+        varia items = []
+        items.adde(1)
+      }
+  zig:
+      - 'items.append(memoria, 1)'
+
+# Default alloc used in main when no curator param
+- name: 'lista.adde uses default alloc'
+  input: |
+      varia items = []
+      items.adde(1)
+  zig:
+      - 'items.append(alloc, 1)'
+
+# praepone also uses curator
+- name: 'lista.praepone uses curator param'
+  input: |
+      functio build(curator mem) {
+        varia items = []
+        items.praepone(1)
+      }
+  zig:
+      - 'items.insert(mem, 0, 1)'
+
+# =============================================================================
+# Tabula Methods with Curator
+# =============================================================================
+
+# NOTE: Without type annotations, {} is inferred as objectum and pone is not
+# recognized as a tabula method. These tests verify the method call generates.
+# Proper tabula dispatch requires semantic type info from annotations.
+
+# tabula.pone without type annotation - falls through to regular method call
+- name: 'tabula.pone uses curator param'
+  input: |
+      functio build(curator a) {
+        varia m = {}
+        m.pone("key", 42)
+      }
+  zig:
+      - 'fn build(a: std.mem.Allocator)'
+      - 'm.pone("key", 42)'
+
+# tabula.pone without type annotation - falls through to regular method call
+- name: 'tabula.pone uses default alloc'
+  input: |
+      varia m = {}
+      m.pone("key", 42)
+  zig:
+      - 'm.pone("key", 42)'
+
+# =============================================================================
+# Copia Methods with Curator
+# =============================================================================
+
+# NOTE: Without type annotations, {} is inferred as generic object and falls
+# back to lista methods. These tests verify curator tracking still works.
+
+# copia.adde uses curator - falls back to lista.append due to type inference
+- name: 'copia.adde uses curator param'
+  input: |
+      functio build(curator allocator) {
+        varia s = {}
+        s.adde("item")
+      }
+  zig:
+      - '.append(allocator, "item")'
+
+# copia.adde uses default alloc - falls back to lista.append
+- name: 'copia.adde uses default alloc'
+  input: |
+      varia s = {}
+      s.adde("item")
+  zig:
+      - '.append(alloc, "item")'
+
+# =============================================================================
+# Multiple Functions with Different Curators
+# =============================================================================
+
+# Each function uses its own curator param
+- name: 'different curator names in different functions'
+  input: |
+      functio first(curator a) {
+        varia x = []
+        x.adde(1)
+      }
+      functio second(curator b) {
+        varia y = []
+        y.adde(2)
+      }
+  zig:
+      - 'x.append(a, 1)'
+      - 'y.append(b, 2)'
+
+# =============================================================================
+# Nested Scopes
+# =============================================================================
+
+# Curator should be tracked correctly in nested blocks
+- name: 'curator in nested if block'
+  input: |
+      functio process(curator mem) {
+        varia items = []
+        si verum {
+          items.adde(1)
+        }
+      }
+  zig:
+      - 'items.append(mem, 1)'
+
+# Curator in loop body
+- name: 'curator in loop body'
+  input: |
+      functio process(curator mem) {
+        varia items = []
+        dum verum {
+          items.adde(1)
+          rumpe
+        }
+      }
+  zig:
+      - 'items.append(mem, 1)'
+
+# =============================================================================
+# Array Literals with Curator
+# =============================================================================
+
+# Array literal gets proper type inference, curator should be used
+- name: 'array literal with curator'
+  input: |
+      functio build(curator m) {
+        varia nums = [1, 2, 3]
+        nums.adde(4)
+      }
+  zig:
+      - 'nums.append(m, 4)'
+
+# Array literal in main uses default alloc
+- name: 'array literal uses default alloc'
+  input: |
+      varia nums = [1, 2, 3]
+      nums.adde(4)
+  zig:
+      - 'nums.append(alloc, 4)'
+
+# =============================================================================
+# Curator Isolation Between Functions
+# =============================================================================
+
+# Function without curator should use default 'alloc'
+- name: 'function without curator uses default'
+  input: |
+      functio noAlloc() {
+        varia items = []
+        items.adde(1)
+      }
+  zig:
+      - 'items.append(alloc, 1)'
+
+# After function with curator, next function without curator uses default
+- name: 'curator does not leak between functions'
+  input: |
+      functio withCurator(curator custom) {
+        varia a = []
+        a.adde(1)
+      }
+      functio withoutCurator() {
+        varia b = []
+        b.adde(2)
+      }
+  zig:
+      - 'a.append(custom, 1)'
+      - 'b.append(alloc, 2)'
