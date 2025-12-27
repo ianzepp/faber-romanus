@@ -1,12 +1,18 @@
+---
+status: implemented
+targets: [ts, py]
+updated: 2024-12
+---
+
 # Import System
 
 ## Overview
 
 Faber's import system handles two categories differently:
 
-| Category | Example | Behavior |
-|----------|---------|----------|
-| **External packages** | `ex "@hono/hono" importa Hono` | Pass-through: emits native import |
+| Category                 | Example                           | Behavior                                        |
+| ------------------------ | --------------------------------- | ----------------------------------------------- |
+| **External packages**    | `ex "@hono/hono" importa Hono`    | Pass-through: emits native import               |
 | **Faber stdlib (norma)** | `ex "norma/tempus" importa dormi` | Compiler-handled: intrinsics, no import emitted |
 
 ## External Package Imports
@@ -19,9 +25,10 @@ ex "pg" importa Pool
 ```
 
 Compiles to (TypeScript):
+
 ```typescript
-import { Hono, Context } from "@hono/hono";
-import { Pool } from "pg";
+import { Hono, Context } from '@hono/hono';
+import { Pool } from 'pg';
 ```
 
 The compiler does not validate external imports. Type checking happens in the target language.
@@ -36,6 +43,7 @@ cede dormi(5 * SECUNDUM)
 ```
 
 Compiles to (TypeScript):
+
 ```typescript
 // No import emitted
 await new Promise(r => setTimeout(r, 5 * 1000));
@@ -95,7 +103,7 @@ const NORMA_SUBMODULES = {
 ```typescript
 const TS_INTRINSICS = {
     __tempus_nunc: () => `Date.now()`,
-    __tempus_dormi: (args) => `new Promise(r => setTimeout(r, ${args}))`,
+    __tempus_dormi: args => `new Promise(r => setTimeout(r, ${args}))`,
     // ...
 };
 ```
@@ -122,14 +130,14 @@ These files are documentation only - not compiled or shipped.
 
 ## Module Resolution
 
-| Import path | Resolution |
-|-------------|------------|
-| `"norma"` | Base stdlib (I/O, math intrinsics) |
-| `"norma/tempus"` | Time module |
-| `"norma/crypto"` | Crypto module (future) |
-| `"@scope/package"` | External npm package |
-| `"package"` | External package |
-| `"./local"` | Relative import (pass-through) |
+| Import path        | Resolution                         |
+| ------------------ | ---------------------------------- |
+| `"norma"`          | Base stdlib (I/O, math intrinsics) |
+| `"norma/tempus"`   | Time module                        |
+| `"norma/crypto"`   | Crypto module (future)             |
+| `"@scope/package"` | External npm package               |
+| `"package"`        | External package                   |
+| `"./local"`        | Relative import (pass-through)     |
 
 ## Adding New Stdlib Modules
 
@@ -159,9 +167,9 @@ To add a new norma module (e.g., `norma/crypto`):
 
 ### When to Use Intrinsics vs Preamble
 
-| Complexity | Approach |
-|------------|----------|
-| One-liner | Intrinsic (inline substitution) |
-| Few lines | Intrinsic with IIFE |
-| Complex logic | Preamble (emit once at top of file) |
+| Complexity    | Approach                                     |
+| ------------- | -------------------------------------------- |
+| One-liner     | Intrinsic (inline substitution)              |
+| Few lines     | Intrinsic with IIFE                          |
+| Complex logic | Preamble (emit once at top of file)          |
 | External deps | Not suitable for norma (use external import) |

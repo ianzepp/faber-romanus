@@ -12,10 +12,6 @@
         "named": true
       },
       {
-        "type": "ausculta_expression",
-        "named": true
-      },
-      {
         "type": "await_expression",
         "named": true
       },
@@ -83,10 +79,6 @@
       },
       {
         "type": "continue_statement",
-        "named": true
-      },
-      {
-        "type": "emit_statement",
         "named": true
       },
       {
@@ -159,10 +151,6 @@
       },
       {
         "type": "while_statement",
-        "named": true
-      },
-      {
-        "type": "with_statement",
         "named": true
       }
     ]
@@ -312,22 +300,6 @@
         ]
       },
       "right": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "_expression",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "ausculta_expression",
-    "named": true,
-    "fields": {
-      "event": {
         "multiple": false,
         "required": true,
         "types": [
@@ -602,32 +574,6 @@
           "named": true
         }
       ]
-    }
-  },
-  {
-    "type": "emit_statement",
-    "named": true,
-    "fields": {
-      "data": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "_expression",
-            "named": true
-          }
-        ]
-      },
-      "event": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "_expression",
-            "named": true
-          }
-        ]
-      }
     }
   },
   {
@@ -2043,32 +1989,6 @@
     }
   },
   {
-    "type": "with_statement",
-    "named": true,
-    "fields": {
-      "body": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "block_statement",
-            "named": true
-          }
-        ]
-      },
-      "object": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "_expression",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
     "type": "!",
     "named": false
   },
@@ -2201,10 +2121,6 @@
     "named": false
   },
   {
-    "type": "ausculta",
-    "named": false
-  },
-  {
     "type": "aut",
     "named": false
   },
@@ -2251,10 +2167,6 @@
   },
   {
     "type": "elige",
-    "named": false
-  },
-  {
-    "type": "emitte",
     "named": false
   },
   {

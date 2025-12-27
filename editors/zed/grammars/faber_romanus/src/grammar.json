@@ -55,10 +55,6 @@
         },
         {
           "type": "SYMBOL",
-          "name": "with_statement"
-        },
-        {
-          "type": "SYMBOL",
           "name": "switch_statement"
         },
         {
@@ -92,10 +88,6 @@
         {
           "type": "SYMBOL",
           "name": "scribe_statement"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "emit_statement"
         },
         {
           "type": "SYMBOL",
@@ -1475,31 +1467,6 @@
         }
       ]
     },
-    "with_statement": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "de"
-        },
-        {
-          "type": "FIELD",
-          "name": "object",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_expression"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "body",
-          "content": {
-            "type": "SYMBOL",
-            "name": "block_statement"
-          }
-        }
-      ]
-    },
     "switch_statement": {
       "type": "SEQ",
       "members": [
@@ -1921,48 +1888,6 @@
         }
       ]
     },
-    "emit_statement": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "emitte"
-        },
-        {
-          "type": "FIELD",
-          "name": "event",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_expression"
-          }
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "STRING",
-                  "value": ","
-                },
-                {
-                  "type": "FIELD",
-                  "name": "data",
-                  "content": {
-                    "type": "SYMBOL",
-                    "name": "_expression"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        }
-      ]
-    },
     "fac_block_statement": {
       "type": "SEQ",
       "members": [
@@ -2218,10 +2143,6 @@
         {
           "type": "SYMBOL",
           "name": "await_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "ausculta_expression"
         },
         {
           "type": "SYMBOL",
@@ -2802,27 +2723,6 @@
           {
             "type": "SYMBOL",
             "name": "_expression"
-          }
-        ]
-      }
-    },
-    "ausculta_expression": {
-      "type": "PREC_RIGHT",
-      "value": 9,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "STRING",
-            "value": "ausculta"
-          },
-          {
-            "type": "FIELD",
-            "name": "event",
-            "content": {
-              "type": "SYMBOL",
-              "name": "_expression"
-            }
           }
         ]
       }

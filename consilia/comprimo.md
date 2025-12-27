@@ -1,3 +1,9 @@
+---
+status: planned
+note: Stdlib design; not yet implemented
+updated: 2024-12
+---
+
 # Comprimo - Compression
 
 ## Overview
@@ -29,15 +35,15 @@ fixum original = laxo(compressed, "gzip")
 
 ## Algorithms
 
-| Faber | Description | Use case |
-|-------|-------------|----------|
-| `"deflate"` | Raw DEFLATE | Low-level |
-| `"gzip"` | DEFLATE + headers | Files, HTTP |
-| `"zlib"` | DEFLATE + zlib headers | General |
-| `"brotli"` | Brotli | Web, HTTP |
-| `"zstd"` | Zstandard | Fast, high ratio |
-| `"lz4"` | LZ4 | Very fast |
-| `"snappy"` | Snappy | Speed over ratio |
+| Faber       | Description            | Use case         |
+| ----------- | ---------------------- | ---------------- |
+| `"deflate"` | Raw DEFLATE            | Low-level        |
+| `"gzip"`    | DEFLATE + headers      | Files, HTTP      |
+| `"zlib"`    | DEFLATE + zlib headers | General          |
+| `"brotli"`  | Brotli                 | Web, HTTP        |
+| `"zstd"`    | Zstandard              | Fast, high ratio |
+| `"lz4"`     | LZ4                    | Very fast        |
+| `"snappy"`  | Snappy                 | Speed over ratio |
 
 ---
 
@@ -52,11 +58,11 @@ fixum original = laxo(compressed, "gzip")
 
 ### Compression Levels
 
-| Level | Speed | Ratio |
-|-------|-------|-------|
-| 1 | Fastest | Lowest |
-| 6 | Balanced | Moderate (default) |
-| 9 | Slowest | Highest |
+| Level | Speed    | Ratio              |
+| ----- | -------- | ------------------ |
+| 1     | Fastest  | Lowest             |
+| 6     | Balanced | Moderate (default) |
+| 9     | Slowest  | Highest            |
 
 ---
 
@@ -90,10 +96,10 @@ import { gzipSync, gunzipSync, createGzip } from 'zlib';
 import { brotliCompressSync } from 'zlib';
 
 // comprimo(data, "gzip")
-gzipSync(data)
+gzipSync(data);
 
 // laxo(compressed, "gzip")
-gunzipSync(compressed)
+gunzipSync(compressed);
 
 // Streaming
 const gzip = createGzip();
@@ -159,16 +165,16 @@ const result = try decompressor.reader().readAllAlloc(allocator, max_size);
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `comprimo` (sync) | Not Done | All algorithms |
-| `laxo` (sync) | Not Done | All algorithms |
-| `compressor` (stream) | Not Done | Streaming compress |
-| `laxator` (stream) | Not Done | Streaming decompress |
-| gzip | Not Done | Most common |
-| zstd | Not Done | Recommended for new code |
-| brotli | Not Done | Web/HTTP |
-| lz4 | Not Done | Speed-critical |
+| Feature               | Status   | Notes                    |
+| --------------------- | -------- | ------------------------ |
+| `comprimo` (sync)     | Not Done | All algorithms           |
+| `laxo` (sync)         | Not Done | All algorithms           |
+| `compressor` (stream) | Not Done | Streaming compress       |
+| `laxator` (stream)    | Not Done | Streaming decompress     |
+| gzip                  | Not Done | Most common              |
+| zstd                  | Not Done | Recommended for new code |
+| brotli                | Not Done | Web/HTTP                 |
+| lz4                   | Not Done | Speed-critical           |
 
 ---
 

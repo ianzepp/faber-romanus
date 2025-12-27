@@ -1,3 +1,10 @@
+---
+status: partial
+targets: [zig]
+note: Core language working; collections partial; `curator` and advanced features pending
+updated: 2024-12
+---
+
 # Zig Target
 
 Zig is a systems programming target. Faber uses Latin prepositions (`de`, `in`) for borrowing semantics and arena allocation for memory management.

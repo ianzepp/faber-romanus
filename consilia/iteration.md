@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts, py, zig, cpp]
+updated: 2024-12
+---
+
 # Iteration Design
 
 ## Implementation Status
@@ -219,9 +225,7 @@ ex users.filtrata({ .activus }).ordinata(per nomen) pro user {
 
 ---
 
-## Future: Control Flow
-
-**Status: Designed, not implemented**
+## Control Flow
 
 ### rumpe (break)
 
@@ -244,9 +248,9 @@ ex items pro item {
 }
 ```
 
-### Labeled Loops
+### Labeled Loops (Not Implemented)
 
-For breaking outer loops:
+Labeled loop breaking is designed but not yet implemented:
 
 ```
 @exterior: ex items pro item {
@@ -258,7 +262,7 @@ For breaking outer loops:
 
 ---
 
-## Future: Indexed Iteration
+## Indexed Iteration (Not Implemented)
 
 **Status: Designed, not implemented**
 

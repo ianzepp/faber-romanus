@@ -1,6 +1,12 @@
+---
+status: implemented
+targets: [ts, py, zig, cpp]
+updated: 2024-12
+---
+
 # Semicolon Support
 
-Latin: *semicolon* is modern punctuation, no classical equivalent.
+Latin: _semicolon_ is modern punctuation, no classical equivalent.
 
 ## Summary
 
@@ -52,6 +58,7 @@ custodi {
 ## What This Is Not
 
 This is **not** semicolon-terminated syntax. There is no:
+
 - Automatic Semicolon Insertion (ASI)
 - "Missing semicolon" errors
 - Required semicolons anywhere

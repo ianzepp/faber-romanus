@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts, py, zig, cpp]
+updated: 2024-12
+---
+
 # Codegen Design Principles
 
 Cross-cutting decisions that apply to all codegen targets.
@@ -11,6 +17,7 @@ Prefer simple, uniform codegen over target-specific optimizations. Downstream co
 **Decision:** `elige` always compiles to if/else chains, never native `switch`.
 
 **Rationale:**
+
 1. **Uniform codegen** — Same output structure for all targets
 2. **No type detection** — Don't need to check if discriminant is switchable
 3. **String support** — Works with strings (C++ switch doesn't)
@@ -28,6 +35,7 @@ elige status {
 ```
 
 All targets emit:
+
 ```
 if (status === 0) { pending(); }
 else if (status === 1) { active(); }
@@ -35,6 +43,7 @@ else { unknown(); }
 ```
 
 **Not:**
+
 ```
 switch (status) {
     case 0: pending(); break;

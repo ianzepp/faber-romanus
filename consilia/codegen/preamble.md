@@ -1,29 +1,36 @@
+---
+status: partial
+targets: [ts]
+note: Infrastructure done; `panic` tracking for TS done; other features pending
+updated: 2024-12
+---
+
 # Preamble / Prologue System
 
 Each codegen target needs to emit setup code (imports, includes, class definitions) based on which language features are actually used in the source.
 
 ## Implementation Status
 
-| Feature | TypeScript | Zig | Python | Notes |
-|---------|:----------:|:---:|:------:|-------|
-| Infrastructure | Done | - | - | `RequiredFeatures` in types.ts |
-| `panic` tracking | Done | - | - | Emits `Panic` class when `mori` used |
-| `lista/tabula/copia` | - | - | - | TS doesn't need imports |
-| `async` | - | - | - | TS doesn't need imports |
-| `events` | - | - | - | May need EventEmitter polyfill |
+| Feature              | TypeScript | Zig | Python | Notes                                |
+| -------------------- | :--------: | :-: | :----: | ------------------------------------ |
+| Infrastructure       |    Done    |  -  |   -    | `RequiredFeatures` in types.ts       |
+| `panic` tracking     |    Done    |  -  |   -    | Emits `Panic` class when `mori` used |
+| `lista/tabula/copia` |     -      |  -  |   -    | TS doesn't need imports              |
+| `async`              |     -      |  -  |   -    | TS doesn't need imports              |
+| `events`             |     -      |  -  |   -    | May need EventEmitter polyfill       |
 
 ## Problem
 
 Different targets require different setup:
 
-| Feature Used | TypeScript | Python | C++23 | Rust | Zig |
-|--------------|------------|--------|-------|------|-----|
-| `mori` (panic) | `class Panic...` | `import sys` | `#include <stdexcept>` | — (built-in) | — (built-in) |
-| `lista<T>` | — | `from typing import List` | `#include <vector>` | `use std::vec::Vec` | `const std = @import("std")` |
-| `tabula<K,V>` | — | `from typing import Dict` | `#include <unordered_map>` | `use std::collections::HashMap` | — |
-| `promissum<T>` | — | `import asyncio` | `#include <future>` | — | — |
-| `scribe` | — | — | `#include <print>` | — | — |
-| Arena alloc | — | — | `#include <memory_resource>` | `use bumpalo::Bump` | — |
+| Feature Used   | TypeScript       | Python                    | C++23                        | Rust                            | Zig                          |
+| -------------- | ---------------- | ------------------------- | ---------------------------- | ------------------------------- | ---------------------------- |
+| `mori` (panic) | `class Panic...` | `import sys`              | `#include <stdexcept>`       | — (built-in)                    | — (built-in)                 |
+| `lista<T>`     | —                | `from typing import List` | `#include <vector>`          | `use std::vec::Vec`             | `const std = @import("std")` |
+| `tabula<K,V>`  | —                | `from typing import Dict` | `#include <unordered_map>`   | `use std::collections::HashMap` | —                            |
+| `promissum<T>` | —                | `import asyncio`          | `#include <future>`          | —                               | —                            |
+| `scribe`       | —                | —                         | `#include <print>`           | —                               | —                            |
+| Arena alloc    | —                | —                         | `#include <memory_resource>` | `use bumpalo::Bump`             | —                            |
 
 ## Design
 
@@ -34,26 +41,26 @@ During codegen, track which features are used:
 ```typescript
 interface RequiredFeatures {
     // Error handling
-    panic: boolean;           // mori used
+    panic: boolean; // mori used
 
     // Collections
-    lista: boolean;           // lista<T> or array methods
-    tabula: boolean;          // tabula<K,V>
-    copia: boolean;           // copia<T>
+    lista: boolean; // lista<T> or array methods
+    tabula: boolean; // tabula<K,V>
+    copia: boolean; // copia<T>
 
     // Async
-    async: boolean;           // futura, cede, promissum
-    asyncIterator: boolean;   // fiet, async for
+    async: boolean; // futura, cede, promissum
+    asyncIterator: boolean; // fiet, async for
 
     // Generators
-    generator: boolean;       // cursor, fiunt
+    generator: boolean; // cursor, fiunt
 
     // I/O (future stdlib)
-    fileIO: boolean;          // lege, inscribe
-    networkIO: boolean;       // pete, mitte
+    fileIO: boolean; // lege, inscribe
+    networkIO: boolean; // pete, mitte
 
     // Other
-    arena: boolean;           // arena allocator (systems targets)
+    arena: boolean; // arena allocator (systems targets)
 }
 ```
 
@@ -85,7 +92,9 @@ Inline definitions (no external dependencies):
 
 ```typescript
 // When panic: true
-class Panic extends Error { name = "Panic"; }
+class Panic extends Error {
+    name = 'Panic';
+}
 
 // When asyncIterator: true (for ausculta)
 // May need EventEmitter polyfill for browsers
@@ -210,13 +219,15 @@ ex items pro item {
 ### Output (TypeScript)
 
 ```typescript
-class Panic extends Error { name = "Panic"; }
+class Panic extends Error {
+    name = 'Panic';
+}
 
 if (x < 0) {
-  throw new Panic("negative value");
+    throw new Panic('negative value');
 }
 for (const item of items) {
-  console.log(item);
+    console.log(item);
 }
 ```
 

@@ -1,3 +1,9 @@
+---
+status: analysis
+note: Tracking document for implementation status across consilia docs
+updated: 2024-12
+---
+
 # Gap Analysis: Checklist vs Consilia
 
 Comparison of features documented in `consilia/` against `consilia/codegen/checklist.md`.
@@ -18,9 +24,9 @@ The checklist now covers core language features comprehensively. Stdlib is parti
 
 These appear implemented/designed but lack dedicated consilia docs:
 
-| Feature              | Status      | Notes                         |
-| -------------------- | ----------- | ----------------------------- |
-| `typus` (type alias) | Implemented | Could add to types.md         |
+| Feature              | Status      | Notes                 |
+| -------------------- | ----------- | --------------------- |
+| `typus` (type alias) | Implemented | Could add to types.md |
 
 ---
 

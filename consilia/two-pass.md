@@ -1,3 +1,9 @@
+---
+status: planned
+note: Architectural design for forward references and throwability propagation; not yet implemented
+updated: 2024-12
+---
+
 # Two-Pass Semantic Analysis
 
 The current semantic analyzer uses a single pass over the AST. This works for simple cases but fails when analysis of one construct depends on information from another construct that hasn't been visited yet.

@@ -1,3 +1,9 @@
+---
+status: analysis
+note: Research document identifying gaps for self-hosting; not a feature spec
+updated: 2024-12
+---
+
 # Rivus: Self-Hosted Compiler Analysis
 
 Analysis of TypeScript features used in `fons/` that are NOT covered by the current Faber grammar. This identifies what must be added to Faber before the compiler can be self-hosted.
@@ -7,19 +13,22 @@ Analysis of TypeScript features used in `fons/` that are NOT covered by the curr
 These features are heavily used and would be difficult to work around:
 
 ### 1. Type Casting (`as` operator)
+
 **Usage:** 200+ occurrences
 
 ```typescript
 // fons/semantic/types.ts:257
-(b as PrimitiveType)
+b as PrimitiveType;
 ```
 
 Used extensively for type narrowing in pattern matching. Faber would need an equivalent like `ut` (as):
+
 ```fab
 (b ut typus_primitivus)
 ```
 
 ### 2. Interface Declarations
+
 **Usage:** 50+ interfaces
 
 ```typescript
@@ -31,11 +40,13 @@ export interface BaseType {
 ```
 
 Faber has `pactum` for method contracts but not for pure data shapes. Options:
+
 - Extend `genus` to work as interfaces
 - Add `forma` keyword for structural types
 - Use `pactum` for data shapes too
 
 ### 3. Discriminated Unions
+
 **Usage:** 50+ type unions
 
 ```typescript
@@ -50,6 +61,7 @@ export type Statement =
 Core to AST safety. The `kind` field pattern enables exhaustive `switch` matching. Faber's `typus` supports unions but not discrimination.
 
 ### 4. Generic Type Parameters
+
 **Usage:** Extensive
 
 ```typescript
@@ -62,6 +74,7 @@ interface GenericType extends BaseType {
 Faber has `lista<T>` syntax but not generic interfaces/classes.
 
 ### 5. Optional Properties (`?:`)
+
 **Usage:** 100+ fields
 
 ```typescript
@@ -72,11 +85,12 @@ resolvedType?: SemanticType;
 Faber has `T?` for nullable types but the `:` field syntax with `?` isn't in the grammar for genus fields.
 
 ### 6. Template Literals
+
 **Usage:** 100+ occurrences
 
 ```typescript
 // fons/codegen/ts/index.ts
-`const ${name} = ${value};`
+`const ${name} = ${value};`;
 ```
 
 Essential for code generation. Faber needs backtick templates with `${}` interpolation.
@@ -86,6 +100,7 @@ Essential for code generation. Faber needs backtick templates with `${}` interpo
 These are used but workarounds exist:
 
 ### 7. Spread Operator
+
 **Usage:** 20+ occurrences
 
 ```typescript
@@ -96,15 +111,17 @@ These are used but workarounds exist:
 Faber has `sparge` keyword. Verify it works in all contexts (arrays, objects, function calls).
 
 ### 8. Arrow Functions in Expressions
+
 **Usage:** 40+ occurrences
 
 ```typescript
-items.map(x => x * 2)
+items.map(x => x * 2);
 ```
 
 Faber has `pro x: x * 2` lambda syntax. Verify it works in method call contexts.
 
 ### 9. Array Method Chains
+
 **Usage:** 30+ occurrences
 
 ```typescript
@@ -115,24 +132,27 @@ builtinTypes.map(t => [t.stem, t]).filter(...)
 Faber has `lista` methods. May need to verify `.mappa()`, `.filtra()`, `.reduce()` equivalents.
 
 ### 10. Object.entries/keys/values
+
 **Usage:** 10+ occurrences
 
 ```typescript
-Object.entries(exports)
+Object.entries(exports);
 ```
 
 Would need `tabula` or `objectum` methods: `.ingressus()`, `.claves()`, `.valores()`.
 
 ### 11. Regular Expressions
+
 **Usage:** 10+ occurrences
 
 Used in tokenizer for pattern matching. Could be replaced with character-by-character parsing, but adds complexity.
 
 ### 12. Destructuring
+
 **Usage:** 20+ occurrences
 
 ```typescript
-const { tokens, errors } = tokenize(source)
+const { tokens, errors } = tokenize(source);
 ```
 
 Faber has `ex response fixum { data }` syntax. Verify nested destructuring works.
@@ -142,9 +162,11 @@ Faber has `ex response fixum { data }` syntax. Verify nested destructuring works
 These can be easily worked around:
 
 ### 13. `import type` Syntax
+
 Tree-shaking optimization only. Use regular imports.
 
 ### 14. Enum Declarations
+
 ```typescript
 export enum SemanticErrorCode { ... }
 ```
@@ -152,6 +174,7 @@ export enum SemanticErrorCode { ... }
 Faber has `ordo`. Direct equivalent.
 
 ### 15. Default Parameters
+
 ```typescript
 function foo(x: number = 0) { ... }
 ```
@@ -159,18 +182,21 @@ function foo(x: number = 0) { ... }
 Handle at call sites or add to Faber grammar.
 
 ### 16. `as const` Assertions
+
 ```typescript
-const TARGETS = ['ts', 'py'] as const
+const TARGETS = ['ts', 'py'] as const;
 ```
 
 Use explicit type annotations instead.
 
 ### 17. Class Declarations
+
 Only 5 uses (error classes). Faber's `genus` covers this.
 
 ## Features NOT Used in fons/
 
 Good news — these TypeScript features are NOT needed:
+
 - Mapped types (`{ [K in keyof T]: ... }`)
 - Conditional types (`T extends U ? X : Y`)
 - Utility types (Partial, Pick, Omit)
@@ -196,28 +222,28 @@ Priority order for enabling self-hosting:
 Given these gaps, recommended approach:
 
 1. **Phase 1**: Compile `rivus/` to Zig (not TypeScript)
-   - Zig doesn't need TS type features
-   - Focus on runtime correctness
+    - Zig doesn't need TS type features
+    - Focus on runtime correctness
 
 2. **Phase 2**: Add missing Faber features incrementally
-   - Template literals first (essential for codegen)
-   - Type casting second (needed for AST manipulation)
+    - Template literals first (essential for codegen)
+    - Type casting second (needed for AST manipulation)
 
 3. **Phase 3**: Rewrite using new features
-   - Update `rivus/` to use new syntax
-   - Maintain parallel TS/Faber implementations
+    - Update `rivus/` to use new syntax
+    - Maintain parallel TS/Faber implementations
 
 ## Current rivus/ Status
 
 ### Converted Files
 
-| fons/ | rivus/ | Size | Status |
-|-------|--------|------|--------|
-| `lexicon/types.ts` | `lexicon/typi.fab` | 3.8K | ✓ Full compile |
-| `lexicon/types-builtin.ts` | `lexicon/typi_constructi.fab` | 13K | Parser OK |
-| `lexicon/keywords.ts` | `lexicon/verba_clavium.fab` | 9.4K | Parser OK |
-| `lexicon/nouns.ts` | `lexicon/nomina.fab` | 11K | Parser OK |
-| `lexicon/verbs.ts` | `lexicon/verba.fab` | 13K | Parser OK |
+| fons/                      | rivus/                        | Size | Status         |
+| -------------------------- | ----------------------------- | ---- | -------------- |
+| `lexicon/types.ts`         | `lexicon/typi.fab`            | 3.8K | ✓ Full compile |
+| `lexicon/types-builtin.ts` | `lexicon/typi_constructi.fab` | 13K  | Parser OK      |
+| `lexicon/keywords.ts`      | `lexicon/verba_clavium.fab`   | 9.4K | Parser OK      |
+| `lexicon/nouns.ts`         | `lexicon/nomina.fab`          | 11K  | Parser OK      |
+| `lexicon/verbs.ts`         | `lexicon/verba.fab`           | 13K  | Parser OK      |
 
 **Not yet converted:** `lexicon/index.ts` (module re-exports — depends on import resolution)
 
@@ -237,12 +263,14 @@ si decl est declinatio.prima { ... }
 ```
 
 The parser creates an `ImportDeclaration` AST node, but the semantic analyzer doesn't:
+
 1. Resolve the path (`"./typi"` → `./typi.fab`)
 2. Parse the imported file
 3. Extract its exports
 4. Add them to the current file's scope
 
 **Required work:**
+
 - Path resolution logic
 - File I/O during semantic analysis
 - Export tracking per file
@@ -276,10 +304,12 @@ fixum tabula<textus, lista<casus_numerus>> terminationes = novum tabula de {
 ### Naming Conventions
 
 Type names are lowercase (Latin had no title case):
+
 - `casus`, `numerositas`, `genera`, `declinatio`
 - `nomen_ingressus`, `verbum_resolutum`
 
 Field names avoid reserved keywords:
+
 - `genus` (keyword) → `forma` (for grammatical gender field)
 - `typus` (keyword) → use different variable names in loops
 

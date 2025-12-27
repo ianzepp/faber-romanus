@@ -1,3 +1,10 @@
+---
+status: partial
+targets: [ts]
+note: `nunc`, `dormi`, duration constants done for TS; datetime objects and formatting not yet done
+updated: 2024-12
+---
+
 # Tempus - Time Operations
 
 ## Overview
@@ -163,17 +170,17 @@ scribe forma(now, "ISO")                  // "2025-12-24T14:30:45.000Z"
 
 ### Format Tokens
 
-| Token | Meaning | Example |
-|-------|---------|---------|
-| `YYYY` | 4-digit year | 2025 |
-| `MM` | Month (01-12) | 12 |
-| `DD` | Day (01-31) | 24 |
-| `HH` | Hour 24h (00-23) | 14 |
-| `hh` | Hour 12h (01-12) | 02 |
-| `mm` | Minutes (00-59) | 30 |
-| `ss` | Seconds (00-59) | 45 |
-| `SSS` | Milliseconds | 123 |
-| `a` | AM/PM | PM |
+| Token  | Meaning          | Example |
+| ------ | ---------------- | ------- |
+| `YYYY` | 4-digit year     | 2025    |
+| `MM`   | Month (01-12)    | 12      |
+| `DD`   | Day (01-31)      | 24      |
+| `HH`   | Hour 24h (00-23) | 14      |
+| `hh`   | Hour 12h (01-12) | 02      |
+| `mm`   | Minutes (00-59)  | 30      |
+| `ss`   | Seconds (00-59)  | 45      |
+| `SSS`  | Milliseconds     | 123     |
+| `a`    | AM/PM            | PM      |
 
 ---
 
@@ -242,16 +249,16 @@ si a == b { scribe "same instant" }
 
 ```typescript
 // nunc()
-Date.now()
+Date.now();
 
 // tempus.nunc()
-new Date()
+new Date();
 
 // dormi(1000)
-await new Promise(resolve => setTimeout(resolve, 1000))
+await new Promise(resolve => setTimeout(resolve, 1000));
 
 // intervallum(1000, callback)
-setInterval(callback, 1000)
+setInterval(callback, 1000);
 
 // forma(date, "YYYY-MM-DD")
 // Use Intl.DateTimeFormat or date-fns
@@ -317,26 +324,26 @@ std.time.sleep(1_000_000_000)  // nanoseconds
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `nunc` | **Done** | Current instant (TS) |
-| `nunc_nano` | **Done** | Nanosecond precision (TS) |
-| `nunc_secunda` | **Done** | Seconds since epoch (TS) |
-| `dormi` | **Done** | Async sleep (TS) |
-| Duration constants | **Done** | MILLISECUNDUM, SECUNDUM, MINUTUM, HORA, DIES (TS) |
-| `tempus.nunc()` | Not Done | Current datetime object |
-| `hodie` | Not Done | Current date |
-| Duration type | Not Done | Time spans |
-| `post` | Not Done | One-shot timer |
-| `intervallum` | Not Done | Repeating timer |
-| `forma` | Not Done | Format to string |
-| `lege_tempus` | Not Done | Parse from string |
-| Time zones | Not Done | Zona support |
-| Date arithmetic | Not Done | Add/subtract |
-| TypeScript codegen | **Partial** | Basic functions done |
-| Python codegen | Not Done | datetime, asyncio |
-| Rust codegen | Not Done | chrono, tokio |
-| Zig codegen | Not Done | std.time |
+| Feature            | Status      | Notes                                             |
+| ------------------ | ----------- | ------------------------------------------------- |
+| `nunc`             | **Done**    | Current instant (TS)                              |
+| `nunc_nano`        | **Done**    | Nanosecond precision (TS)                         |
+| `nunc_secunda`     | **Done**    | Seconds since epoch (TS)                          |
+| `dormi`            | **Done**    | Async sleep (TS)                                  |
+| Duration constants | **Done**    | MILLISECUNDUM, SECUNDUM, MINUTUM, HORA, DIES (TS) |
+| `tempus.nunc()`    | Not Done    | Current datetime object                           |
+| `hodie`            | Not Done    | Current date                                      |
+| Duration type      | Not Done    | Time spans                                        |
+| `post`             | Not Done    | One-shot timer                                    |
+| `intervallum`      | Not Done    | Repeating timer                                   |
+| `forma`            | Not Done    | Format to string                                  |
+| `lege_tempus`      | Not Done    | Parse from string                                 |
+| Time zones         | Not Done    | Zona support                                      |
+| Date arithmetic    | Not Done    | Add/subtract                                      |
+| TypeScript codegen | **Partial** | Basic functions done                              |
+| Python codegen     | Not Done    | datetime, asyncio                                 |
+| Rust codegen       | Not Done    | chrono, tokio                                     |
+| Zig codegen        | Not Done    | std.time                                          |
 
 ---
 
@@ -345,6 +352,7 @@ std.time.sleep(1_000_000_000)  // nanoseconds
 ### Why `nunc` over `tempus.nunc()`?
 
 Both provided:
+
 - `nunc()` — quick epoch milliseconds (primitive)
 - `tempus.nunc()` — full datetime object with fields
 
@@ -360,14 +368,14 @@ Blocking sleep halts the entire program. Async sleep yields to other tasks. Even
 
 ### Why Latin date field names?
 
-| Latin | English |
-|-------|---------|
-| `annus` | year |
-| `mensis` | month |
-| `dies` | day |
-| `hora` | hour |
-| `minutum` | minute |
-| `secundum` | second |
+| Latin      | English |
+| ---------- | ------- |
+| `annus`    | year    |
+| `mensis`   | month   |
+| `dies`     | day     |
+| `hora`     | hour    |
+| `minutum`  | minute  |
+| `secundum` | second  |
 
 Consistent with the language's Latin vocabulary. These are common Latin words that are recognizable.
 

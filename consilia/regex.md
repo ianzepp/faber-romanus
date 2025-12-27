@@ -1,3 +1,9 @@
+---
+status: planned
+note: Design complete; tokenizer/parser/codegen not yet implemented
+updated: 2024-12
+---
+
 # Regex Literals
 
 Regex literals use the `sed` keyword with a string pattern and optional flags.

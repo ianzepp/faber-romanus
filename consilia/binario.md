@@ -1,12 +1,22 @@
+---
+status: implemented
+targets: [ts, py, zig, cpp]
+updated: 2024-12
+---
+
 # Bitwise Operators
 
 ## Implementation Status
 
-### Not Yet Implemented
+### Implemented
 
 - Tokenizer: `&`, `|`, `^`, `~`, `<<`, `>>`
-- Parser: bitwise precedence levels
-- Codegen: all targets
+- Parser: bitwise precedence levels (above comparison)
+- Codegen: TypeScript, Python, Zig, C++
+
+### Not Yet Implemented
+
+- Compound assignment: `&=`, `|=`, etc.
 
 **Note:** The `|` symbol is exclusively bitwise OR. Union types use `unio<A, B>` syntax instead. See `unio.md`.
 

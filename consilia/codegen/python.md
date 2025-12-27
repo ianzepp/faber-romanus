@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [py]
+updated: 2024-12
+---
+
 # Python Target Notes
 
 Python is a high-priority compilation target for Faber due to its accessibility and popularity in education. The language's dynamic nature and significant whitespace present unique challenges, but Python 3.10+ features provide good alignment with Faber's syntax.

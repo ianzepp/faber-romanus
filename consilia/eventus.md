@@ -1,8 +1,15 @@
+---
+status: planned
+note: was implemented then stripped; keywords/parser/codegen removed
+updated: 2024-12
+---
+
 # Eventus - Event System
 
 ## Overview
 
 Faber provides two event primitives:
+
 - `emitte` - Push events (statement)
 - `ausculta` - Pull events as async stream (expression)
 
@@ -10,12 +17,13 @@ Together they enable both fire-and-forget and reactive consumption patterns.
 
 ## Design Philosophy
 
-| Construct | Type | Purpose | Compiles to (TS) |
-|-----------|------|---------|------------------|
-| `emitte "name", data` | Statement | Push event | `Eventus.emitte("name", data)` |
-| `ausculta "name"` | Expression | Pull stream | `Eventus.ausculta("name")` |
+| Construct             | Type       | Purpose     | Compiles to (TS)               |
+| --------------------- | ---------- | ----------- | ------------------------------ |
+| `emitte "name", data` | Statement  | Push event  | `Eventus.emitte("name", data)` |
+| `ausculta "name"`     | Expression | Pull stream | `Eventus.ausculta("name")`     |
 
 The push/pull duality:
+
 - `emitte` = fire and forget, don't know/care who listens
 - `ausculta` = subscribe and iterate, async generator pattern
 
@@ -29,6 +37,7 @@ emitte <event-name>, <data>
 ```
 
 Examples:
+
 ```
 emitte "userLogin"
 emitte "userLogin", { userId: 42 }
@@ -57,6 +66,7 @@ ex stream fiet event {
 ```
 
 Or inline:
+
 ```
 ex ausculta "data" fiet chunk {
     processChunk(chunk)
@@ -86,13 +96,12 @@ export const Eventus = {
             resolve?.();
         };
 
-        listeners.get(event)?.add(handler) ??
-            listeners.set(event, new Set([handler]));
+        listeners.get(event)?.add(handler) ?? listeners.set(event, new Set([handler]));
 
         try {
             while (true) {
                 if (queue.length === 0) {
-                    await new Promise<void>(r => resolve = r);
+                    await new Promise<void>(r => (resolve = r));
                 }
                 yield queue.shift();
             }
@@ -106,7 +115,7 @@ export const Eventus = {
         if (!listeners.has(event)) listeners.set(event, new Set());
         listeners.get(event)!.add(handler);
         return () => listeners.get(event)?.delete(handler);
-    }
+    },
 };
 ```
 
@@ -155,15 +164,16 @@ futura functio monitor() {
 
 ```typescript
 // emitte "userLogin", { userId: 42 }
-Eventus.emitte("userLogin", { userId: 42 });
+Eventus.emitte('userLogin', { userId: 42 });
 
 // ausculta "userAction"
-Eventus.ausculta("userAction")
+Eventus.ausculta('userAction');
 ```
 
 ### Zig (Future)
 
 Zig has no async generators. Would need manual iterator struct:
+
 ```zig
 const stream = Eventus.ausculta("userAction");
 while (stream.next()) |event| {
@@ -174,6 +184,7 @@ while (stream.next()) |event| {
 ### Rust (Future)
 
 Could use async-stream or channels:
+
 ```rust
 let stream = Eventus::ausculta("userAction");
 while let Some(event) = stream.next().await {
@@ -192,16 +203,16 @@ Note: `ausculta` is the root of medical "auscultation" (listening to body sounds
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `emitte` keyword | Done | Statement, parser + TS codegen |
-| `ausculta` keyword | Done | Expression, parser + TS codegen |
-| Event data payload | Done | Optional second argument on emitte |
-| Async iteration | Done | `ex ausculta "x" fiet y { }` |
-| Callback subscription (`audi`) | Not Done | Stdlib method only |
-| Typed events | Not Done | Future: compile-time type checking |
-| Zig target | Not Done | Needs iterator struct pattern |
-| Python target | Not Done | Needs stdlib |
+| Feature                        | Status   | Notes                              |
+| ------------------------------ | -------- | ---------------------------------- |
+| `emitte` keyword               | Done     | Statement, parser + TS codegen     |
+| `ausculta` keyword             | Done     | Expression, parser + TS codegen    |
+| Event data payload             | Done     | Optional second argument on emitte |
+| Async iteration                | Done     | `ex ausculta "x" fiet y { }`       |
+| Callback subscription (`audi`) | Not Done | Stdlib method only                 |
+| Typed events                   | Not Done | Future: compile-time type checking |
+| Zig target                     | Not Done | Needs iterator struct pattern      |
+| Python target                  | Not Done | Needs stdlib                       |
 
 ## Future Considerations
 

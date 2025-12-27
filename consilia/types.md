@@ -1,3 +1,10 @@
+---
+status: partial
+targets: [ts, py, zig, cpp]
+note: Core types implemented; `series` tuples, `aperit` index signatures, value semantics are planned
+updated: 2024-12
+---
+
 # Types Design
 
 ## Implementation Status
@@ -453,11 +460,11 @@ fixum magnus huge = magnus("99999999999999999999")
 
 ### Numeric Literals
 
-| Format | Example | Description |
-| ------ | ------- | ----------- |
-| Decimal | `42`, `3.14` | Standard base-10 integers and floats |
-| Hex | `0xFF`, `0xABCDEF` | Base-16 with `0x` or `0X` prefix |
-| BigInt | `123n`, `0xFFn` | Arbitrary precision with `n` suffix |
+| Format  | Example            | Description                          |
+| ------- | ------------------ | ------------------------------------ |
+| Decimal | `42`, `3.14`       | Standard base-10 integers and floats |
+| Hex     | `0xFF`, `0xABCDEF` | Base-16 with `0x` or `0X` prefix     |
+| BigInt  | `123n`, `0xFFn`    | Arbitrary precision with `n` suffix  |
 
 ```
 fixum mask = 0xFF
@@ -470,11 +477,11 @@ fixum huge = 0xFFFFFFFFFFFFFFFFn
 
 **Target behavior:**
 
-| Target | Hex | BigInt |
-| ------ | --- | ------ |
-| TypeScript | `0xFF` | `0xFFn` |
-| Python | `0xFF` | `0xFF` (no suffix, arbitrary precision) |
-| Zig | `0xFF` | `0xFF` (comptime_int, arbitrary precision) |
+| Target     | Hex    | BigInt                                     |
+| ---------- | ------ | ------------------------------------------ |
+| TypeScript | `0xFF` | `0xFFn`                                    |
+| Python     | `0xFF` | `0xFF` (no suffix, arbitrary precision)    |
+| Zig        | `0xFF` | `0xFF` (comptime_int, arbitrary precision) |
 
 **Etymology:**
 

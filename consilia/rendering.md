@@ -1,23 +1,30 @@
+---
+status: partial
+targets: [ts, py]
+note: `nexum` keyword and getter/setter codegen done; batching/diffing are library concerns
+updated: 2024-12
+---
+
 # Rendering Model
 
 Faber provides reactive component primitives. Rendering vocabulary is external.
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `nexum` keyword | Done | Parsed as field modifier |
-| Getter/setter codegen | Done | Private backing field + accessors |
-| `__invalidate?.()` hook | Done | Called on setter, library handles rest |
-| `pingo()` method | Convention | No special compiler treatment needed |
-| `deleo()` method | Convention | No special compiler treatment needed |
-| Batching | **Not done** | Library concern |
-| Diffing | **Not done** | Library concern |
-| Async `pingo()` | **Not done** | Open question |
+| Feature                 | Status       | Notes                                  |
+| ----------------------- | ------------ | -------------------------------------- |
+| `nexum` keyword         | Done         | Parsed as field modifier               |
+| Getter/setter codegen   | Done         | Private backing field + accessors      |
+| `__invalidate?.()` hook | Done         | Called on setter, library handles rest |
+| `pingo()` method        | Convention   | No special compiler treatment needed   |
+| `deleo()` method        | Convention   | No special compiler treatment needed   |
+| Batching                | **Not done** | Library concern                        |
+| Diffing                 | **Not done** | Library concern                        |
+| Async `pingo()`         | **Not done** | Open question                          |
 
 ## Design Philosophy
 
-Faber is a compiler, like Svelte. But unlike Svelte, Faber doesn't prescribe what you render *to*. The same reactive component model works for:
+Faber is a compiler, like Svelte. But unlike Svelte, Faber doesn't prescribe what you render _to_. The same reactive component model works for:
 
 - Web apps (DOM)
 - Games (sprites, polygons, canvas)
@@ -43,11 +50,11 @@ genus Counter {
 }
 ```
 
-| Keyword | Mutable | Reactive | Use case |
-|---------|---------|----------|----------|
-| `fixum` | No | No | Constants, props from parent |
-| `varia` | Yes | No | Internal state, caches |
-| `nexum` | Yes | Yes | UI-bound state |
+| Keyword | Mutable | Reactive | Use case                     |
+| ------- | ------- | -------- | ---------------------------- |
+| `fixum` | No      | No       | Constants, props from parent |
+| `varia` | Yes     | No       | Internal state, caches       |
+| `nexum` | Yes     | Yes      | UI-bound state               |
 
 **Etymology:** `nexum` = "bound, connected" - the property is bound to the rendered output.
 
@@ -145,11 +152,11 @@ genus Menu {
 
 Existing conventions apply:
 
-| Method | When called |
-|--------|-------------|
-| `creo()` | After construction, before first render |
-| `pingo()` | On mount and after any `nexum` change |
-| `deleo()` | On unmount/destruction |
+| Method    | When called                             |
+| --------- | --------------------------------------- |
+| `creo()`  | After construction, before first render |
+| `pingo()` | On mount and after any `nexum` change   |
+| `deleo()` | On unmount/destruction                  |
 
 ## What Stays Outside Faber
 
@@ -164,7 +171,7 @@ These are library/framework concerns, not language features:
 - Dev server / hot reload
 - Build tooling
 
-A "kit" (like SvelteKit) can be built *with* Faber, not *in* Faber.
+A "kit" (like SvelteKit) can be built _with_ Faber, not _in_ Faber.
 
 ## Compilation
 
@@ -206,7 +213,7 @@ Libraries (like `dominus` for DOM) attach the `__invalidate` handler to schedule
 
 ```javascript
 // Library attaches invalidation handler
-counter.__invalidate = (field) => {
+counter.__invalidate = field => {
     if (!dirty) {
         dirty = true;
         queueMicrotask(() => {
@@ -228,12 +235,12 @@ counter.__invalidate = (field) => {
 
 ## Summary
 
-| Concept | Faber provides | Libraries provide |
-|---------|----------------|-------------------|
-| Reactive state | `nexum` keyword | - |
-| Render trigger | `pingo()` convention | - |
-| Lifecycle | `creo()`, `deleo()` | - |
-| DOM primitives | - | `dominus` or similar |
-| Game primitives | - | `ludus` or similar |
-| Terminal primitives | - | `terminus` or similar |
-| Routing, SSR, etc. | - | "Kit" frameworks |
+| Concept             | Faber provides       | Libraries provide     |
+| ------------------- | -------------------- | --------------------- |
+| Reactive state      | `nexum` keyword      | -                     |
+| Render trigger      | `pingo()` convention | -                     |
+| Lifecycle           | `creo()`, `deleo()`  | -                     |
+| DOM primitives      | -                    | `dominus` or similar  |
+| Game primitives     | -                    | `ludus` or similar    |
+| Terminal primitives | -                    | `terminus` or similar |
+| Routing, SSR, etc.  | -                    | "Kit" frameworks      |

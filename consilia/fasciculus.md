@@ -1,3 +1,9 @@
+---
+status: planned
+note: Stdlib design; not yet implemented
+updated: 2024-12
+---
+
 # Fasciculus - File I/O Statements
 
 ## Overview
@@ -5,6 +11,7 @@
 This document covers **core file I/O statements** — language-level keywords for reading and writing files.
 
 Faber provides two tiers:
+
 - **High-level**: `lege`, `inscribe`, `appone` — convenience operations with optional format parsing
 - **Low-level**: `aperi`, `claude`, `quaere` — file descriptors for systems programming
 
@@ -29,12 +36,14 @@ For file/directory utilities (copy, delete, etc.), see `solum.md`.
 ### Reading Files
 
 **Syntax:**
+
 ```
 lege <path>
 lege <path> ut <format>
 ```
 
 **Examples:**
+
 ```
 // Read as text (default)
 fixum readme = lege "README.md"
@@ -70,6 +79,7 @@ pactum formator<T> {
 ```
 
 **Etymology:**
+
 - `verte` - "turn!" (imperative of vertere) - turn data into octets
 - `reverte` - "turn back!" - turn octets back into data
 - `octeti` - "octets" (8-bit bytes) - raw binary data without encoding assumptions
@@ -105,6 +115,7 @@ genus ZIP implet formator<Archivum> { }
 ```
 
 **Usage:**
+
 ```
 // Read file as raw bytes
 fixum raw = lege "image.png" ut octeti
@@ -162,12 +173,14 @@ fixum data = lege "data.custom" ut formatter
 ### Writing Files
 
 **Syntax:**
+
 ```
 inscribe <path>, <data>
 inscribe <path> ut <format>, <data>
 ```
 
 **Examples:**
+
 ```
 // Write text
 inscribe "output.txt", "Hello, world!"
@@ -184,11 +197,13 @@ inscribe "report.md", report
 ### Appending
 
 **Syntax:**
+
 ```
 appone <path>, <data>
 ```
 
 **Examples:**
+
 ```
 appone "log.txt", "[INFO] Server started\n"
 appone "events.jsonl", JSON.stringify(event) + "\n"
@@ -203,12 +218,14 @@ For systems programming: file descriptors, byte buffers, seeking.
 ### Opening Files
 
 **Syntax:**
+
 ```
 aperi <path>
 aperi <path>, <options>
 ```
 
 **Options:**
+
 ```
 {
     modus: "r" | "w" | "rw" | "a",  // read/write/readwrite/append
@@ -218,6 +235,7 @@ aperi <path>, <options>
 ```
 
 **Examples:**
+
 ```
 fixum fd = aperi "data.bin"
 fixum fd = aperi "output.bin", { modus: "w", crea: verum }
@@ -226,6 +244,7 @@ fixum fd = aperi "output.bin", { modus: "w", crea: verum }
 ### Reading from Descriptor
 
 **Syntax:**
+
 ```
 lege <fd>, <buffer>
 lege <fd>, <count>
@@ -234,6 +253,7 @@ lege <fd>, <count>
 **Returns:** Number of bytes read
 
 **Examples:**
+
 ```
 fixum fd = aperi "data.bin"
 faber buffer: octeti = nova octeti(1024)
@@ -246,6 +266,7 @@ fixum data = lege fd, 1024
 ### Writing to Descriptor
 
 **Syntax:**
+
 ```
 inscribe <fd>, <buffer>
 ```
@@ -253,6 +274,7 @@ inscribe <fd>, <buffer>
 **Returns:** Number of bytes written
 
 **Examples:**
+
 ```
 fixum fd = aperi "output.bin", { modus: "w" }
 inscribe fd, buffer
@@ -262,17 +284,20 @@ claude fd
 ### Seeking
 
 **Syntax:**
+
 ```
 quaere <fd>, <position>
 quaere <fd>, <offset>, <origin>
 ```
 
 **Origins:**
+
 - `initium` - from start (SEEK_SET)
 - `hic` - from current position (SEEK_CUR)
 - `finis` - from end (SEEK_END)
 
 **Examples:**
+
 ```
 quaere fd, 0                    // seek to start
 quaere fd, 100                  // seek to position 100
@@ -282,11 +307,13 @@ quaere fd, -10, finis           // 10 bytes before end
 ### Closing
 
 **Syntax:**
+
 ```
 claude <fd>
 ```
 
 **Examples:**
+
 ```
 fixum fd = aperi "file.bin"
 // ... operations ...
@@ -306,6 +333,7 @@ cura aperi "data.bin" fit fd {
 ```
 
 **With error handling:**
+
 ```
 cura aperi "data.bin" fit fd {
     inscribe fd, data
@@ -361,13 +389,13 @@ Async low-level via explicit wrapping (future consideration).
 
 ```typescript
 // lege "config.json" ut json
-JSON.parse(await fs.promises.readFile("config.json", "utf-8"))
+JSON.parse(await fs.promises.readFile('config.json', 'utf-8'));
 
 // inscribe "out.json" ut json, data
-await fs.promises.writeFile("out.json", JSON.stringify(data))
+await fs.promises.writeFile('out.json', JSON.stringify(data));
 
 // aperi "file.bin"
-await fs.promises.open("file.bin", "r")
+await fs.promises.open('file.bin', 'r');
 ```
 
 ### Python
@@ -436,31 +464,31 @@ This document covers core file I/O **statements** (`lege`, `inscribe`, `aperi`, 
 
 For other functionality, see:
 
-| Doc | Module | Content |
-|-----|--------|---------|
-| `cura.md` | — | Resource management (`cura` keyword) |
-| `solum.md` | `norma/solum` | File/dir utilities (exstat, dele, copia, etc.) |
-| `caelum.md` | `norma/caelum` | Network I/O (HTTP, sockets) |
-| `tempus.md` | `norma/tempus` | Time operations (nunc, dormi) |
-| `crypto.md` | `norma/crypto` | Cryptography (digere, cifra, fortuita) |
-| `comprimo.md` | `norma/comprimo` | Compression (comprimo, laxo) |
-| `codex.md` | `norma/codex` | Encoding (coda, decoda) |
+| Doc           | Module           | Content                                        |
+| ------------- | ---------------- | ---------------------------------------------- |
+| `cura.md`     | —                | Resource management (`cura` keyword)           |
+| `solum.md`    | `norma/solum`    | File/dir utilities (exstat, dele, copia, etc.) |
+| `caelum.md`   | `norma/caelum`   | Network I/O (HTTP, sockets)                    |
+| `tempus.md`   | `norma/tempus`   | Time operations (nunc, dormi)                  |
+| `crypto.md`   | `norma/crypto`   | Cryptography (digere, cifra, fortuita)         |
+| `comprimo.md` | `norma/comprimo` | Compression (comprimo, laxo)                   |
+| `codex.md`    | `norma/codex`    | Encoding (coda, decoda)                        |
 
 ---
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `lege` (text) | Not Done | High-level read |
-| `lege` ut format | Not Done | With parsing |
-| `inscribe` | Not Done | High-level write |
-| `appone` | Not Done | Append |
-| `aperi`/`claude` | Not Done | Low-level open/close |
-| Low-level `lege` | Not Done | Read to buffer |
-| Low-level `inscribe` | Not Done | Write buffer |
-| `quaere` | Not Done | Seek |
-| `~` expansion | Not Done | Home directory |
+| Feature              | Status   | Notes                 |
+| -------------------- | -------- | --------------------- |
+| `lege` (text)        | Not Done | High-level read       |
+| `lege` ut format     | Not Done | With parsing          |
+| `inscribe`           | Not Done | High-level write      |
+| `appone`             | Not Done | Append                |
+| `aperi`/`claude`     | Not Done | Low-level open/close  |
+| Low-level `lege`     | Not Done | Read to buffer        |
+| Low-level `inscribe` | Not Done | Write buffer          |
+| `quaere`             | Not Done | Seek                  |
+| `~` expansion        | Not Done | Home directory        |
 | `formator` interface | Not Done | Custom format parsing |
 
 ---
@@ -470,6 +498,7 @@ For other functionality, see:
 ### Why keywords over stdlib?
 
 Core file I/O (read/write/open/close) is fundamental. Making these keyword-based:
+
 1. Keeps the most common operations concise
 2. Enables target-specific optimization
 3. Feels natural in Latin syntax
@@ -501,20 +530,22 @@ Secondary operations (exists, delete, copy, move, etc.) go to stdlib — they're
 ## Future Considerations
 
 1. **Streaming**: Read large files in chunks via `ausculta`?
-   ```
-   ex ausculta lege "large.csv" fiet chunk {
-       processChunk(chunk)
-   }
-   ```
+
+    ```
+    ex ausculta lege "large.csv" fiet chunk {
+        processChunk(chunk)
+    }
+    ```
 
 2. **Glob patterns**: Read multiple files
-   ```
-   fixum files = lege "src/**/*.fab"
-   ```
+
+    ```
+    fixum files = lege "src/**/*.fab"
+    ```
 
 3. **Watching**: File change notifications
-   ```
-   ex vigila "config.json" fiet change {
-       reloadConfig()
-   }
-   ```
+    ```
+    ex vigila "config.json" fiet change {
+        reloadConfig()
+    }
+    ```

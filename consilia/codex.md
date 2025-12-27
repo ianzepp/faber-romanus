@@ -1,3 +1,9 @@
+---
+status: planned
+note: Stdlib design; not yet implemented
+updated: 2024-12
+---
+
 # Codex - Encoding
 
 ## Overview
@@ -30,12 +36,12 @@ fixum decoded = decoda(encoded, "base64")
 
 ### Binary-to-Text
 
-| Faber | Description | Use case |
-|-------|-------------|----------|
-| `"base64"` | Base64 (standard) | Email, JSON, general |
-| `"base64url"` | Base64 URL-safe | URLs, JWT |
-| `"hex"` | Hexadecimal | Debugging, hashes |
-| `"base32"` | Base32 | Case-insensitive contexts |
+| Faber         | Description       | Use case                  |
+| ------------- | ----------------- | ------------------------- |
+| `"base64"`    | Base64 (standard) | Email, JSON, general      |
+| `"base64url"` | Base64 URL-safe   | URLs, JWT                 |
+| `"hex"`       | Hexadecimal       | Debugging, hashes         |
+| `"base32"`    | Base32            | Case-insensitive contexts |
 
 ```
 ex "norma/codex" importa { coda, decoda }
@@ -49,9 +55,9 @@ fixum b64url = coda(bytes, "base64url") // "SGVsbG8tV29ybGQ"
 
 ### URL Encoding
 
-| Faber | Description |
-|-------|-------------|
-| `"url"` | Percent-encoding for URLs |
+| Faber             | Description                  |
+| ----------------- | ---------------------------- |
+| `"url"`           | Percent-encoding for URLs    |
 | `"url_component"` | Encode path/query components |
 
 ```
@@ -63,8 +69,8 @@ fixum original = decoda("hello%20world%21", "url") // "hello world!"
 
 ### HTML Entities
 
-| Faber | Description |
-|-------|-------------|
+| Faber    | Description          |
+| -------- | -------------------- |
 | `"html"` | HTML entity encoding |
 
 ```
@@ -80,12 +86,12 @@ fixum original = decoda("&lt;", "html")  // "<"
 
 Encodings have different input/output types:
 
-| Encoding | `coda` | `decoda` |
-|----------|--------|----------|
+| Encoding   | `coda`             | `decoda`           |
+| ---------- | ------------------ | ------------------ |
 | `"base64"` | `octeti -> textus` | `textus -> octeti` |
-| `"hex"` | `octeti -> textus` | `textus -> octeti` |
-| `"url"` | `textus -> textus` | `textus -> textus` |
-| `"html"` | `textus -> textus` | `textus -> textus` |
+| `"hex"`    | `octeti -> textus` | `textus -> octeti` |
+| `"url"`    | `textus -> textus` | `textus -> textus` |
+| `"html"`   | `textus -> textus` | `textus -> textus` |
 
 Binary-to-text encodings convert between `octeti` and `textus`.
 Text-to-text encodings (URL, HTML) work on `textus` only.
@@ -98,16 +104,16 @@ Text-to-text encodings (URL, HTML) work on `textus` only.
 
 ```typescript
 // coda(bytes, "base64")
-Buffer.from(bytes).toString('base64')
+Buffer.from(bytes).toString('base64');
 
 // decoda(str, "base64")
-Buffer.from(str, 'base64')
+Buffer.from(str, 'base64');
 
 // coda(str, "url")
-encodeURIComponent(str)
+encodeURIComponent(str);
 
 // decoda(str, "url")
-decodeURIComponent(str)
+decodeURIComponent(str);
 ```
 
 ### Python
@@ -165,14 +171,14 @@ try base64.standard.Decoder.decode(&decoded, str);
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `coda` | Not Done | Encode |
-| `decoda` | Not Done | Decode |
-| base64 | Not Done | Standard + URL-safe |
-| hex | Not Done | Hexadecimal |
-| url | Not Done | Percent-encoding |
-| html | Not Done | Entity encoding |
+| Feature  | Status   | Notes               |
+| -------- | -------- | ------------------- |
+| `coda`   | Not Done | Encode              |
+| `decoda` | Not Done | Decode              |
+| base64   | Not Done | Standard + URL-safe |
+| hex      | Not Done | Hexadecimal         |
+| url      | Not Done | Percent-encoding    |
+| html     | Not Done | Entity encoding     |
 
 ---
 

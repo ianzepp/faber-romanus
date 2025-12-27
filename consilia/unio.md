@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts, py, zig, cpp]
+updated: 2024-12
+---
+
 # Union Types
 
 Faber has two union constructs with distinct semantics.

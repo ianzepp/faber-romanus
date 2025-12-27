@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts, py, zig]
+updated: 2024-12
+---
+
 # Operators Reference
 
 Complete reference of all operators in Faber Romanus.

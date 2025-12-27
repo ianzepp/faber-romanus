@@ -1,3 +1,9 @@
+---
+status: planned
+note: Stdlib design; not yet implemented
+updated: 2024-12
+---
+
 # Crypto - Cryptographic Operations
 
 ## Overview
@@ -28,14 +34,14 @@ fixum hash = digere(octeti, "sha512")
 
 ### Supported Algorithms
 
-| Faber | Description |
-|-------|-------------|
-| `"md5"` | MD5 (legacy, insecure) |
-| `"sha1"` | SHA-1 (legacy) |
-| `"sha256"` | SHA-256 |
-| `"sha512"` | SHA-512 |
-| `"blake2b"` | BLAKE2b |
-| `"blake3"` | BLAKE3 |
+| Faber       | Description            |
+| ----------- | ---------------------- |
+| `"md5"`     | MD5 (legacy, insecure) |
+| `"sha1"`    | SHA-1 (legacy)         |
+| `"sha256"`  | SHA-256                |
+| `"sha512"`  | SHA-512                |
+| `"blake2b"` | BLAKE2b                |
+| `"blake3"`  | BLAKE3                 |
 
 ### HMAC
 
@@ -60,11 +66,11 @@ fixum decrypted = decifra(encrypted, clavis, "aes-256-gcm")
 
 ### Modes
 
-| Faber | Description |
-|-------|-------------|
-| `"aes-128-gcm"` | AES-128 with GCM |
-| `"aes-256-gcm"` | AES-256 with GCM (recommended) |
-| `"chacha20-poly1305"` | ChaCha20-Poly1305 |
+| Faber                 | Description                    |
+| --------------------- | ------------------------------ |
+| `"aes-128-gcm"`       | AES-128 with GCM               |
+| `"aes-256-gcm"`       | AES-256 with GCM (recommended) |
+| `"chacha20-poly1305"` | ChaCha20-Poly1305              |
 
 ---
 
@@ -96,10 +102,10 @@ fixum clavis = deriva("password", sal, {
 
 ### Algorithms
 
-| Faber | Description |
-|-------|-------------|
-| `"pbkdf2"` | PBKDF2 (legacy) |
-| `"scrypt"` | scrypt |
+| Faber        | Description            |
+| ------------ | ---------------------- |
+| `"pbkdf2"`   | PBKDF2 (legacy)        |
+| `"scrypt"`   | scrypt                 |
 | `"argon2id"` | Argon2id (recommended) |
 
 ---
@@ -110,13 +116,13 @@ fixum clavis = deriva("password", sal, {
 
 ```typescript
 import { createHash, createHmac, randomBytes } from 'crypto';
-import { scrypt, argon2 } from 'crypto';  // or external libs
+import { scrypt, argon2 } from 'crypto'; // or external libs
 
 // digere("hello", "sha256")
-createHash('sha256').update('hello').digest()
+createHash('sha256').update('hello').digest();
 
 // fortuita(32)
-randomBytes(32)
+randomBytes(32);
 ```
 
 ### Python
@@ -166,13 +172,13 @@ crypto.random.bytes(&bytes);
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
+| Feature            | Status   | Notes                   |
+| ------------------ | -------- | ----------------------- |
 | `digere` (hashing) | Not Done | SHA-256, SHA-512, BLAKE |
-| `hmac` | Not Done | HMAC with any hash |
-| `cifra`/`decifra` | Not Done | AES-GCM, ChaCha20 |
-| `fortuita` | Not Done | Secure random bytes |
-| `deriva` | Not Done | Key derivation |
+| `hmac`             | Not Done | HMAC with any hash      |
+| `cifra`/`decifra`  | Not Done | AES-GCM, ChaCha20       |
+| `fortuita`         | Not Done | Secure random bytes     |
+| `deriva`           | Not Done | Key derivation          |
 
 ---
 
@@ -181,6 +187,7 @@ crypto.random.bytes(&bytes);
 ### Why stdlib over external?
 
 Crypto is security-critical. Providing a stdlib:
+
 1. Ensures consistent, audited implementations
 2. Avoids users choosing weak algorithms
 3. Maps to platform-native crypto (faster, FIPS-compliant)

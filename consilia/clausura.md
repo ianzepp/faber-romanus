@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts, py, zig, cpp]
+updated: 2024-12
+---
+
 # Clausura (Closures/Lambdas) Design
 
 Latin: _clausura_ (from _claudere_, to close) — a closure, enclosure.

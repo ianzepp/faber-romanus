@@ -1,3 +1,10 @@
+---
+status: partial
+targets: [cpp]
+note: Core language and collection stdlib working; `de`/`in` prepositions and async pending
+updated: 2024-12
+---
+
 # C++23 Target Notes
 
 C++23 is a natural systems target for Faber, bridging the gap between the high-level TypeScript/Python targets and the low-level Zig/Rust targets. Modern C++ (C++23) has converged toward Rust-like patterns (`std::expected`, concepts, ranges) making it well-aligned with Faber's existing systems target designs.

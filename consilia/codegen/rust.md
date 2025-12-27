@@ -1,3 +1,10 @@
+---
+status: planned
+targets: [rust]
+note: Design complete; skeleton only, not yet implemented
+updated: 2024-12
+---
+
 # Rust Target Notes
 
 Rust presents unique challenges as a compilation target due to its ownership system. While many Faber constructs have natural Rust equivalents, the fundamental difference is that Rust requires explicit ownership reasoning. Faber addresses this through Latin prepositions (`de`, `in`) that map naturally to Rust's borrow semantics.
@@ -45,6 +52,7 @@ Faber's nullable types (`textus?`) map to Rust's `Option<String>`. Rust has firs
 ### 1. Ownership (Solved via Prepositions)
 
 Rust requires explicit ownership reasoning:
+
 - Who owns this value?
 - Should this be `&T`, `&mut T`, or `T`?
 - When does this get dropped?
@@ -60,6 +68,7 @@ Rust needs lifetime annotations when returning borrowed values.
 ### 3. String Types (Solved via Prepositions)
 
 Rust has `String` (owned) vs `&str` (borrowed slice). Faber's `textus` maps to either based on preposition:
+
 - `textus` → `String` (owned)
 - `de textus` → `&str` (borrowed)
 
@@ -74,6 +83,7 @@ Rust's async is also different from JS. It's lazy (futures don't run until polle
 ### 6. `novum X { overrides }`
 
 Rust doesn't have Zig's comptime `@hasField`. The auto-merge pattern would need:
+
 - A builder pattern, or
 - Default trait + struct update syntax: `Struct { field: value, ..Default::default() }`
 
@@ -81,17 +91,17 @@ The struct update syntax is close but requires `Default` impl.
 
 ## Rust vs Zig Comparison
 
-| Aspect | Zig | Rust | Easier Target |
-|--------|-----|------|---------------|
-| Ownership/borrowing | `de`/`in` prepositions | `de`/`in` prepositions | Same (unified) |
-| Memory management | Arena (`std.heap.ArenaAllocator`) | Arena (`bumpalo`) | Same (unified) |
-| Interfaces | Duck typing (lossy) | Real traits | Rust |
-| Error handling | Error unions | Result<T, E> | Similar |
-| Generics | Comptime | Monomorphized | Similar |
-| String handling | `de textus` → `[]const u8` | `de textus` → `&str` | Same (unified) |
-| Auto-merge constructor | `@hasField` comptime | Needs builder/Default | Zig |
-| Async | Frame-based | Future + runtime | Both hard |
-| Ecosystem/tooling | Newer | Mature (cargo) | Rust |
+| Aspect                 | Zig                               | Rust                   | Easier Target  |
+| ---------------------- | --------------------------------- | ---------------------- | -------------- |
+| Ownership/borrowing    | `de`/`in` prepositions            | `de`/`in` prepositions | Same (unified) |
+| Memory management      | Arena (`std.heap.ArenaAllocator`) | Arena (`bumpalo`)      | Same (unified) |
+| Interfaces             | Duck typing (lossy)               | Real traits            | Rust           |
+| Error handling         | Error unions                      | Result<T, E>           | Similar        |
+| Generics               | Comptime                          | Monomorphized          | Similar        |
+| String handling        | `de textus` → `[]const u8`        | `de textus` → `&str`   | Same (unified) |
+| Auto-merge constructor | `@hasField` comptime              | Needs builder/Default  | Zig            |
+| Async                  | Frame-based                       | Future + runtime       | Both hard      |
+| Ecosystem/tooling      | Newer                             | Mature (cargo)         | Rust           |
 
 ## Ownership Design: Latin Prepositions
 
@@ -99,13 +109,13 @@ The struct update syntax is close but requires `Default` impl.
 
 A key insight: **Rust's ownership model maps naturally to Latin grammatical cases.** Latin uses declensions (noun endings) to indicate relationships - subject, object, possession, recipient. These concepts align with Rust's owned, moved, borrowed, and mutably borrowed.
 
-| Latin Case | Grammatical Role | Rust Ownership |
-|------------|------------------|----------------|
-| Nominative | Subject, the "doer" | Owned value (`T`) |
-| Accusative | Direct object, acted upon | Moved/consumed (`T`) |
-| Genitive | Possession, "of X" | Borrowed reference (`&T`) |
-| Dative | Indirect object, "to/for X" | Mutable borrow (`&mut T`) |
-| Ablative | "by/with/from X" | Source, transformed from |
+| Latin Case | Grammatical Role            | Rust Ownership            |
+| ---------- | --------------------------- | ------------------------- |
+| Nominative | Subject, the "doer"         | Owned value (`T`)         |
+| Accusative | Direct object, acted upon   | Moved/consumed (`T`)      |
+| Genitive   | Possession, "of X"          | Borrowed reference (`&T`) |
+| Dative     | Indirect object, "to/for X" | Mutable borrow (`&mut T`) |
+| Ablative   | "by/with/from X"            | Source, transformed from  |
 
 ### Primary Mechanism: Prepositions
 
@@ -123,10 +133,12 @@ functio append(in textus target, textus suffix)
 ```
 
 This reads naturally as Latin:
+
 - `de textus source` = "concerning the string source" (borrowed)
 - `in textus target` = "into the string target" (mutable)
 
 **Rust output:**
+
 ```rust
 fn consume(data: String) -> Result          // owned
 fn read(source: &str) -> i64                // borrowed
@@ -151,11 +163,11 @@ fn read(nomen: &str) -> i64
 
 The compiler already has morphological analysis via the lexicon. It knows `texti` is genitive of `textus` - no type explosion needed, just lookup.
 
-| Type (Nominative) | Genitive | Dative | Rust Mapping |
-|-------------------|----------|--------|--------------|
-| `textus` | `texti` | `texto` | `String` / `&str` / `&mut String` |
-| `numerus` | `numeri` | `numero` | `i64` / `&i64` / `&mut i64` |
-| `lista` | `listae` | `listae` | `Vec<T>` / `&[T]` / `&mut Vec<T>` |
+| Type (Nominative) | Genitive | Dative   | Rust Mapping                      |
+| ----------------- | -------- | -------- | --------------------------------- |
+| `textus`          | `texti`  | `texto`  | `String` / `&str` / `&mut String` |
+| `numerus`         | `numeri` | `numero` | `i64` / `&i64` / `&mut i64`       |
+| `lista`           | `listae` | `listae` | `Vec<T>` / `&[T]` / `&mut Vec<T>` |
 
 ### Lifetimes via `de` on Return Type
 
@@ -170,6 +182,7 @@ functio longest(de textus x, de textus y) fit de textus
 ```
 
 **Rust output:**
+
 ```rust
 fn first(items: &[String]) -> &str
 // Compiler infers: fn first<'a>(items: &'a [String]) -> &'a str
@@ -183,6 +196,7 @@ This mirrors Rust's lifetime elision rules - no explicit lifetime names needed f
 ### Async/Generator Restriction: No Borrowed Returns
 
 The return verb distinguishes sync from async:
+
 - `fit` (present: "becomes") = sync return
 - `fiet` (future: "will become") = async return
 
@@ -199,6 +213,7 @@ futura functio first(de lista<textus> items) fiet de textus
 ```
 
 **Error message:**
+
 ```
 error: futura functio cannot return borrowed (de) value
   --> file.fab:10:50
@@ -258,6 +273,7 @@ fn greet<'a>(arena: &'a Bump, name: &str) -> &'a str {
 ### Allocator Threading
 
 Functions that may allocate receive `arena: &Bump` as a hidden first parameter. The codegen inserts this automatically for:
+
 - Functions returning owned values (no `de` on return type)
 - Functions that concatenate strings
 - Functions that build collections
@@ -281,6 +297,7 @@ fn process(items: Vec<String>) -> Vec<String> {
 **Fallback 2: Inference Heuristics**
 
 When no annotation is provided:
+
 - Function params: borrow by default (`&T`)
 - Return values: owned by default (`T`)
 - Local variables: owned (`T`)
@@ -326,6 +343,7 @@ Reads as: "for x, return x times 2" — same `pro` as iteration.
 Rust has native closures with `|params| body` syntax.
 
 **Expression lambda:**
+
 ```
 // Faber
 pro x redde x * 2
@@ -335,6 +353,7 @@ pro x redde x * 2
 ```
 
 **Block lambda:**
+
 ```
 // Faber
 pro user {
@@ -350,6 +369,7 @@ pro user {
 ```
 
 **Capturing lambda:**
+
 ```
 // Faber
 fixum multiplier = 2
@@ -404,14 +424,15 @@ Faber uses a simplified error model that maps cleanly to Rust's `Result` type. T
 
 ### Keywords
 
-| Keyword | Meaning | Rust Output |
-|---------|---------|-------------|
-| `iace` | Expected failure, recoverable | `return Err(...)` |
-| `mori` | Fatal, unrecoverable | `panic!("msg")` |
-| `fac` | Block scope (like `{}`) | scoped block |
-| `cape` | Catch errors on block | `match` / `if let Err` |
+| Keyword | Meaning                       | Rust Output            |
+| ------- | ----------------------------- | ---------------------- |
+| `iace`  | Expected failure, recoverable | `return Err(...)`      |
+| `mori`  | Fatal, unrecoverable          | `panic!("msg")`        |
+| `fac`   | Block scope (like `{}`)       | scoped block           |
+| `cape`  | Catch errors on block         | `match` / `if let Err` |
 
 **Target-specific keywords:**
+
 - `tempta`/`demum` - Available for TS/Python (maps to try/finally), but **not valid for Rust** because `demum` has no equivalent (Rust uses RAII/Drop). Use `fac`/`cape` instead.
 
 ### `fac` vs `tempta`
@@ -441,6 +462,7 @@ For Rust, `tempta` is rejected because it implies `demum` which cannot be direct
 ### `iace` - Recoverable Errors
 
 `iace` (throw) becomes an error return. The compiler automatically:
+
 1. Marks functions containing `iace` as failable
 2. Changes return type from `T` to `Result<T, FaberError>`
 3. Inserts `?` at call sites of failable functions
@@ -457,6 +479,7 @@ fixum result = fetch(url)
 ```
 
 **Rust output:**
+
 ```rust
 fn fetch(arena: &Bump, url: &str) -> Result<String, FaberError> {
     if timeout { return Err(FaberError::new("timeout")); }
@@ -499,6 +522,7 @@ si needsData {
 ```
 
 **Rust output:**
+
 ```rust
 match risky_call() {
     Ok(_) => { /* success path */ },
@@ -528,18 +552,18 @@ Future enhancement: infer error enums from `iace` usage patterns.
 
 ## Type Mappings
 
-| Faber | Rust | Notes |
-|-------|------|-------|
-| `textus` | `String` | Owned string |
-| `numerus` | `i64` | Integer |
-| `fractus` | `f64` | Floating point |
-| `decimus` | `BigDecimal` | Arbitrary precision decimal |
-| `bivalens` | `bool` | Boolean |
-| `nihil` | `()` | Unit type |
-| `textus?` | `Option<String>` | Optional |
-| `lista<T>` | `Vec<T>` | Vector |
-| `tabula<K,V>` | `HashMap<K,V>` | Hash map |
-| `copia<T>` | `HashSet<T>` | Hash set |
+| Faber         | Rust             | Notes                       |
+| ------------- | ---------------- | --------------------------- |
+| `textus`      | `String`         | Owned string                |
+| `numerus`     | `i64`            | Integer                     |
+| `fractus`     | `f64`            | Floating point              |
+| `decimus`     | `BigDecimal`     | Arbitrary precision decimal |
+| `bivalens`    | `bool`           | Boolean                     |
+| `nihil`       | `()`             | Unit type                   |
+| `textus?`     | `Option<String>` | Optional                    |
+| `lista<T>`    | `Vec<T>`         | Vector                      |
+| `tabula<K,V>` | `HashMap<K,V>`   | Hash map                    |
+| `copia<T>`    | `HashSet<T>`     | Hash set                    |
 
 ## Current Implementation Status
 

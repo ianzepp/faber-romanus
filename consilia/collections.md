@@ -1,3 +1,10 @@
+---
+status: partial
+targets: [ts, py, zig, cpp]
+note: Core types and methods complete; DSL syntax and `per property` closures are planned
+updated: 2024-12
+---
+
 # Collections Design
 
 ## Overview

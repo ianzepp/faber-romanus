@@ -1,6 +1,12 @@
+---
+status: philosophy
+note: Foundational design document; not a feature spec
+updated: 2024-12
+---
+
 # Faber Romanus: Statement of Purpose
 
-*"The Roman Craftsman"*
+_"The Roman Craftsman"_
 
 ## Core Thesis
 
@@ -51,6 +57,7 @@ This approach treats Faber as a syntax layer over existing ecosystems rather tha
 ### Organizing Principles
 
 **Types are nouns.** They name what something is.
+
 - `textus` (string) — from "woven, texture"
 - `numerus` (number) — count, quantity
 - `bivalens` (boolean) — two-valued
@@ -61,6 +68,7 @@ This approach treats Faber as a syntax layer over existing ecosystems rather tha
 **Collections are feminine.** Containers that hold things follow the Latin pattern where abstract containers tend toward feminine gender: `lista`, `tabula`, `copia`.
 
 **Verbs follow Unix philosophy.** If it feels like a shell command, it's a verb:
+
 - `legere` (read) — file/stream input
 - `scribere` (write) — output
 - `aperire` (open) — open resource
@@ -87,6 +95,7 @@ functio salve(textus nomen) -> textus { ... }
 The parser is case-insensitive—`textus`, `textus`, and `TEXTUS` all work. But the canonical style is lowercase.
 
 Exceptions:
+
 - **Constants:** `PI`, `MAX_VALUE` (universal convention)
 - **Generic parameters:** `<T>`, `<K, V>` (universal convention)
 
@@ -120,7 +129,7 @@ External code can use whatever case the author prefers. The parser doesn't judge
 
 Case systems aren't a gimmick. They scaffold understanding of semantic roles—who does what to whom, what flows where.
 
-English hides this. "The dog bit the man" vs "The man bit the dog"—only word order distinguishes subject from object. Latin makes the roles explicit in the words themselves: *canis* (subject) vs *canem* (object).
+English hides this. "The dog bit the man" vs "The man bit the dog"—only word order distinguishes subject from object. Latin makes the roles explicit in the words themselves: _canis_ (subject) vs _canem_ (object).
 
 Programming has the same structures, just less visible. A function's parameters are objects (accusative). Its return value is a subject (nominative). Callbacks receive data (dative).
 
@@ -150,9 +159,9 @@ The Roman craftsman built for the ages. We're building for a world where code is
 
 ## Why "Faber Romanus"?
 
-*Faber*: craftsman, artisan, maker. One who builds with skill and care.
+_Faber_: craftsman, artisan, maker. One who builds with skill and care.
 
-*Romanus*: Roman. Of the tradition that gave us law, engineering, and a language that shaped Western civilization.
+_Romanus_: Roman. Of the tradition that gave us law, engineering, and a language that shaped Western civilization.
 
 The Roman craftsman built aqueducts that still stand. He worked with precision, understanding that good foundations matter. He created things meant to last.
 

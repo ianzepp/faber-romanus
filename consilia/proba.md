@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts]
+updated: 2024-12
+---
+
 # Proba: Test Syntax for Faber
 
 Test framework syntax for self-hosted compiler testing in rivus/.

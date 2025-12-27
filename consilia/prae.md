@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts, py, zig]
+updated: 2024-12
+---
+
 # Prae: Compile-Time Evaluation
 
 Compile-time computation for Faber, enabling static evaluation and type-level programming.

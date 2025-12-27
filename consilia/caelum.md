@@ -1,3 +1,9 @@
+---
+status: planned
+note: Stdlib design; not yet implemented
+updated: 2024-12
+---
+
 # Caelum - Network I/O
 
 ## Overview
@@ -192,7 +198,7 @@ fixum records = cede resolve("example.com", "MX")
 
 ```typescript
 // pete(url)
-await fetch(url)
+await fetch(url);
 
 // socket("tcp", host, port)
 import { createConnection } from 'net';
@@ -318,23 +324,23 @@ figendum (users, posts) = promissum.omnes([
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `pete` (HTTP GET) | Not Done | Basic HTTP client |
-| `mitte` (HTTP POST) | Not Done | POST requests |
-| `pone` (HTTP PUT) | Not Done | PUT requests |
-| `dele` (HTTP DELETE) | Not Done | DELETE requests |
-| Response parsing | Not Done | json, textus, octeti |
-| WebSocket client | Not Done | ws.aperi, mitte, accipe |
-| TCP client | Not Done | socket() for client |
-| TCP server | Not Done | servi() for server |
-| UDP socket | Not Done | Datagram support |
-| DNS resolve | Not Done | Name resolution |
-| Timeout handling | Not Done | Request timeouts |
-| TypeScript codegen | Not Done | fetch, net, ws |
-| Python codegen | Not Done | httpx, socket |
-| Rust codegen | Not Done | reqwest, std::net |
-| Zig codegen | Not Done | std.net |
+| Feature              | Status   | Notes                   |
+| -------------------- | -------- | ----------------------- |
+| `pete` (HTTP GET)    | Not Done | Basic HTTP client       |
+| `mitte` (HTTP POST)  | Not Done | POST requests           |
+| `pone` (HTTP PUT)    | Not Done | PUT requests            |
+| `dele` (HTTP DELETE) | Not Done | DELETE requests         |
+| Response parsing     | Not Done | json, textus, octeti    |
+| WebSocket client     | Not Done | ws.aperi, mitte, accipe |
+| TCP client           | Not Done | socket() for client     |
+| TCP server           | Not Done | servi() for server      |
+| UDP socket           | Not Done | Datagram support        |
+| DNS resolve          | Not Done | Name resolution         |
+| Timeout handling     | Not Done | Request timeouts        |
+| TypeScript codegen   | Not Done | fetch, net, ws          |
+| Python codegen       | Not Done | httpx, socket           |
+| Rust codegen         | Not Done | reqwest, std::net       |
+| Zig codegen          | Not Done | std.net                 |
 
 ---
 
@@ -343,6 +349,7 @@ figendum (users, posts) = promissum.omnes([
 ### Why `pete` for requests?
 
 `pete` means "seek, request" — fitting for HTTP requests. Alternatives:
+
 - `roga` ("ask") — too conversational
 - `quaere` ("search") — already used for file seek
 
@@ -357,6 +364,7 @@ Sockets and WebSockets need cleanup. Using `cura` ensures connections are closed
 ### HTTP vs raw sockets?
 
 Both provided:
+
 - `pete`/`mitte`/`pone`/`dele` — high-level HTTP (90% of use cases)
 - `socket`/`servi` — low-level for protocols, games, custom services
 

@@ -323,7 +323,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Feature                         | TypeScript | Zig | Python | WASM | Rust | C++23 |
 | ------------------------------- | :--------: | :-: | :----: | :--: | :--: | :---: |
 | `proba` (test case)             |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
-| `probandum` (test suite)        |    [ ]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
+| `probandum` (test suite)        |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 | `cura ante` (beforeEach)        |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 | `cura post` (afterEach)         |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |
 | `omitte` modifier (skip)        |    [x]     | [ ] |  [ ]   | [ ]  | [ ]  |  [ ]  |

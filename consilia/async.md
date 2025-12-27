@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts, py]
+updated: 2024-12
+---
+
 # Async Design
 
 ## Verb Conjugation for Return Types

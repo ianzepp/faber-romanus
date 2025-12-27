@@ -1,3 +1,9 @@
+---
+status: implemented
+targets: [ts]
+updated: 2024-12
+---
+
 # TypeScript Target Notes
 
 TypeScript is the primary compilation target for Faber. The language design was heavily influenced by TypeScript/JavaScript semantics, making this the most natural and complete target.

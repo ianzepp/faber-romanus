@@ -1,3 +1,10 @@
+---
+status: partial
+targets: [ts]
+note: Parser/AST and TS codegen done; Python/Rust/Zig codegen and `curator` type not yet implemented
+updated: 2024-12
+---
+
 # Cura - Resource Management
 
 ## Implementation Status

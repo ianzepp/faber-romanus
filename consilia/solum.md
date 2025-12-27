@@ -1,3 +1,9 @@
+---
+status: planned
+note: Stdlib design; not yet implemented
+updated: 2024-12
+---
+
 # Solum - Local I/O
 
 ## Overview
@@ -293,25 +299,28 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 // exstat(path)
-await fs.access(path).then(() => true).catch(() => false)
+await fs
+    .access(path)
+    .then(() => true)
+    .catch(() => false);
 
 // dele(path)
-await fs.unlink(path)
+await fs.unlink(path);
 
 // copia(src, dest)
-await fs.copyFile(src, dest)
+await fs.copyFile(src, dest);
 
 // move(src, dest)
-await fs.rename(src, dest)
+await fs.rename(src, dest);
 
 // inspice(path)
-await fs.stat(path)
+await fs.stat(path);
 
 // crea(path)
-await fs.mkdir(path, { recursive: true })
+await fs.mkdir(path, { recursive: true });
 
 // elenca(path)
-await fs.readdir(path)
+await fs.readdir(path);
 
 // ambula(path)
 // Use fs.readdir with recursive option or glob library
@@ -414,28 +423,28 @@ defer dir.close();
 
 ## Implementation Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| `exstat` | Not Done | Check existence |
-| `dele` | Not Done | Delete file |
-| `duplica` | Not Done | Copy file |
-| `move` | Not Done | Move/rename |
-| `inspice` | Not Done | File info |
-| `trunca` | Not Done | Truncate |
-| `tange` | Not Done | Touch |
-| `crea` | Not Done | Create directory |
-| `elenca` | Not Done | List directory |
-| `ambula` | Not Done | Walk tree |
-| `vacua` | Not Done | Remove empty dir |
-| `dele_arbor` | Not Done | Recursive delete |
-| `via` utilities | Not Done | Path operations |
-| `necte` | Not Done | Symlinks |
-| `modus` | Not Done | Permissions |
-| `temporarium` | Not Done | Temp files |
-| TypeScript codegen | Not Done | fs/promises |
-| Python codegen | Not Done | os, shutil |
-| Rust codegen | Not Done | std::fs |
-| Zig codegen | Not Done | std.fs |
+| Feature            | Status   | Notes            |
+| ------------------ | -------- | ---------------- |
+| `exstat`           | Not Done | Check existence  |
+| `dele`             | Not Done | Delete file      |
+| `duplica`          | Not Done | Copy file        |
+| `move`             | Not Done | Move/rename      |
+| `inspice`          | Not Done | File info        |
+| `trunca`           | Not Done | Truncate         |
+| `tange`            | Not Done | Touch            |
+| `crea`             | Not Done | Create directory |
+| `elenca`           | Not Done | List directory   |
+| `ambula`           | Not Done | Walk tree        |
+| `vacua`            | Not Done | Remove empty dir |
+| `dele_arbor`       | Not Done | Recursive delete |
+| `via` utilities    | Not Done | Path operations  |
+| `necte`            | Not Done | Symlinks         |
+| `modus`            | Not Done | Permissions      |
+| `temporarium`      | Not Done | Temp files       |
+| TypeScript codegen | Not Done | fs/promises      |
+| Python codegen     | Not Done | os, shutil       |
+| Rust codegen       | Not Done | std::fs          |
+| Zig codegen        | Not Done | std.fs           |
 
 ---
 
