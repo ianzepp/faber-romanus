@@ -7,7 +7,7 @@ updated: 2024-12
 
 # Zig Target
 
-Zig is a systems programming target. Faber uses Latin prepositions (`de`, `in`) for borrowing semantics and arena allocation for memory management.
+Zig is a systems programming target. Faber uses Latin prepositions (`de`, `in`) for borrowing semantics and arena allocation for memory management. See `praepositiones.md` for the unified preposition system.
 
 ## Status
 
@@ -51,7 +51,7 @@ Zig is a systems programming target. Faber uses Latin prepositions (`de`, `in`) 
 
 | Faber          | Zig                        | Notes                       |
 | -------------- | -------------------------- | --------------------------- |
-| `T[]`     | `std.ArrayList(T)`         | Requires allocator          |
+| `T[]`          | `std.ArrayList(T)`         | Requires allocator          |
 | `tabula<K,V>`  | `std.StringHashMap(V)`     | String keys; requires alloc |
 | `copia<T>`     | `std.AutoHashMap(T, void)` | Set via HashMap; req alloc  |
 | `promissum<T>` | `!T`                       | Error union                 |

@@ -9,7 +9,7 @@ updated: 2024-12
 
 C++23 is a natural systems target for Faber, bridging the gap between the high-level TypeScript/Python targets and the low-level Zig/Rust targets. Modern C++ (C++23) has converged toward Rust-like patterns (`std::expected`, concepts, ranges) making it well-aligned with Faber's existing systems target designs.
 
-C++23 shares ownership concerns with Zig and Rust. Faber uses a **unified approach** for all systems targets: Latin prepositions (`de`, `in`) for borrowing semantics. Unlike Zig/Rust, C++23 has exceptions and RAII, giving more flexibility in error handling and memory management.
+C++23 shares ownership concerns with Zig and Rust. Faber uses a **unified approach** for all systems targets: Latin prepositions (`de`, `in`) for borrowing semantics. See `praepositiones.md` for the unified preposition system. Unlike Zig/Rust, C++23 has exceptions and RAII, giving more flexibility in error handling and memory management.
 
 ## Why C++23
 
@@ -68,9 +68,9 @@ C++23 shares ownership concerns with Zig and Rust. Faber uses a **unified approa
 | `bivalens`     | `bool`                    | Boolean                                 |
 | `nihil`        | `std::nullopt`            | In optional context                     |
 | `vacuum`       | `void`                    | Void return                             |
-| `T[]`     | `std::vector<T>`          | Dynamic array                           |
-| `de T[]`  | `std::span<const T>`      | Borrowed view                           |
-| `in T[]`  | `std::vector<T>&`         | Mutable reference                       |
+| `T[]`          | `std::vector<T>`          | Dynamic array                           |
+| `de T[]`       | `std::span<const T>`      | Borrowed view                           |
+| `in T[]`       | `std::vector<T>&`         | Mutable reference                       |
 | `tabula<K,V>`  | `std::unordered_map<K,V>` | Hash map                                |
 | `copia<T>`     | `std::unordered_set<T>`   | Hash set                                |
 | `T?`           | `std::optional<T>`        | Nullable                                |

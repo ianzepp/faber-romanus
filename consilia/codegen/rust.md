@@ -7,9 +7,9 @@ updated: 2024-12
 
 # Rust Target Notes
 
-Rust presents unique challenges as a compilation target due to its ownership system. While many Faber constructs have natural Rust equivalents, the fundamental difference is that Rust requires explicit ownership reasoning. Faber addresses this through Latin prepositions (`de`, `in`) that map naturally to Rust's borrow semantics.
+Rust presents unique challenges as a compilation target due to its ownership system. While many Faber constructs have natural Rust equivalents, the fundamental difference is that Rust requires explicit ownership reasoning. Faber addresses this through Latin prepositions (`de`, `in`) that map naturally to Rust's borrow semantics. See `praepositiones.md` for the unified preposition system.
 
-Rust and Zig share similar memory management concerns. Faber uses a **unified approach** for both targets: Latin prepositions (`de`, `in`) for borrowing semantics, and arena allocation for memory management. See zig.md for Zig-specific details.
+Rust and Zig share similar memory management concerns. Faber uses a **unified approach** for both targets: Latin prepositions (`de`, `in`) for borrowing semantics, and arena allocation for memory management. See `zig.md` for Zig-specific details.
 
 ## What Makes Rust Easier
 
@@ -561,7 +561,7 @@ Future enhancement: infer error enums from `iace` usage patterns.
 | `bivalens`    | `bool`           | Boolean                     |
 | `nihil`       | `()`             | Unit type                   |
 | `textus?`     | `Option<String>` | Optional                    |
-| `T[]`    | `Vec<T>`         | Vector                      |
+| `T[]`         | `Vec<T>`         | Vector                      |
 | `tabula<K,V>` | `HashMap<K,V>`   | Hash map                    |
 | `copia<T>`    | `HashSet<T>`     | Hash set                    |
 

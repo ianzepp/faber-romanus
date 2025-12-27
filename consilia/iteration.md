@@ -6,6 +6,8 @@ updated: 2024-12
 
 # Iteration Design
 
+Loops and generators in Faber. For the underlying preposition system (`ex`, `de`, `pro`), see `praepositiones.md`.
+
 ## Implementation Status
 
 | Feature                   | Status       | Notes                             |
@@ -34,7 +36,7 @@ updated: 2024-12
 
 **Syntax:** `ex <iterable> (pro | fit | fiet) <variable> { body }`
 
-```
+```fab
 fixum numeri = [1, 2, 3]
 ex numeri pro n {
     scribe n
@@ -49,7 +51,7 @@ The binding keyword encodes sync/async:
 | `fit`   | becomes (sync verb) | `for...of`       |
 | `fiet`  | will become (async) | `for await...of` |
 
-```
+```fab
 // Sync (equivalent)
 ex items pro item { scribe item }
 ex items fit item { scribe item }
@@ -62,20 +64,20 @@ ex stream fiet chunk { scribe chunk }
 
 **Syntax:** `de <object> (pro | fit) <key> { body }`
 
-```
+```fab
 fixum persona = { nomen: "Marcus", aetas: 30 }
 de persona pro clavis {
     scribe clavis + ": " + persona[clavis]
 }
 ```
 
-Compiles to `for...in`. Uses `de` (from/concerning) because we're extracting keys from the object — a read operation.
+Compiles to `for...in`. Uses `de` ("concerning") for read-only key access.
 
 ### One-liner Form
 
 Use `ergo` instead of block:
 
-```
+```fab
 ex numeri pro n ergo scribe n
 ```
 
@@ -83,7 +85,7 @@ ex numeri pro n ergo scribe n
 
 Attach `cape` clause for error handling within iteration:
 
-```
+```fab
 ex items pro item {
     riskyOperation(item)
 } cape err {
@@ -105,7 +107,7 @@ Three range operators with different end semantics:
 | `ante`   | "before"      | exclusive | `0 ante 10` → 0-9   |
 | `usque`  | "up to"       | inclusive | `0 usque 10` → 0-10 |
 
-```
+```fab
 ex 0..5 pro n {
     scribe n  // 0, 1, 2, 3, 4
 }
@@ -131,7 +133,7 @@ ex 0 usque 10 per 2 pro n {
 
 **Syntax:** `dum <condition> { body }`
 
-```
+```fab
 varia i = 0
 dum i < 10 {
     scribe i
@@ -141,7 +143,7 @@ dum i < 10 {
 
 One-liner:
 
-```
+```fab
 dum i > 0 ergo i = i - 1
 ```
 
@@ -165,7 +167,7 @@ Alternative prefix syntax:
 
 **Example:**
 
-```
+```fab
 functio numerare(numerus n) fiunt numerus {
     varia i = 0
     dum i < n {
@@ -229,7 +231,7 @@ ex users.filtrata({ .activus }).ordinata(per nomen) pro user {
 
 ### rumpe (break)
 
-```
+```fab
 ex items pro item {
     si item == target {
         rumpe
@@ -239,7 +241,7 @@ ex items pro item {
 
 ### perge (continue)
 
-```
+```fab
 ex items pro item {
     si item < 0 {
         perge
@@ -252,7 +254,7 @@ ex items pro item {
 
 Labeled loop breaking is designed but not yet implemented:
 
-```
+```fab
 @exterior: ex items pro item {
     ex subitems pro sub {
         si found ergo rumpe @exterior
@@ -268,7 +270,7 @@ Labeled loop breaking is designed but not yet implemented:
 
 Use tuple destructuring to bind both index and value:
 
-```
+```fab
 ex numeri pro (i, n) {
     scribe i + ": " + n
 }
@@ -293,7 +295,7 @@ for i, n in enumerate(numeri):
 
 Works with ranges too:
 
-```
+```fab
 ex 0..10 pro (i, n) {
     // i and n are the same for ranges
 }
@@ -305,7 +307,7 @@ ex 0..10 pro (i, n) {
 
 1. **`cede ex` delegation**: Yield from another iterator (like JS `yield*`)
 
-    ```
+    ```fab
     cede ex numerare(5)  // yields 0,1,2,3,4
     ```
 

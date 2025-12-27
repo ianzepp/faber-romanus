@@ -13,7 +13,7 @@ Three core collection types wrap native implementations:
 
 | Faber         | JavaScript | Zig            | Description                          |
 | ------------- | ---------- | -------------- | ------------------------------------ |
-| `T[]`    | `Array<T>` | `ArrayList(T)` | Ordered, indexed, duplicates allowed |
+| `T[]`         | `Array<T>` | `ArrayList(T)` | Ordered, indexed, duplicates allowed |
 | `tabula<K,V>` | `Map<K,V>` | `HashMap(K,V)` | Key-value pairs, unique keys         |
 | `copia<T>`    | `Set<T>`   | `HashSet(T)`   | Unique values, unordered             |
 
@@ -29,7 +29,7 @@ Method registries implemented in `fons/codegen/*/norma/`:
 
 | Collection    | Status       | File        | Notes      |
 | ------------- | ------------ | ----------- | ---------- |
-| `T[]`    | [x] Complete | `lista.ts`  | 46 methods |
+| `T[]`         | [x] Complete | `lista.ts`  | 46 methods |
 | `tabula<K,V>` | [x] Complete | `tabula.ts` | 17 methods |
 | `copia<T>`    | [x] Complete | `copia.ts`  | 14 methods |
 
@@ -37,7 +37,7 @@ Method registries implemented in `fons/codegen/*/norma/`:
 
 | Collection    | Status      | File        | Notes                                                 |
 | ------------- | ----------- | ----------- | ----------------------------------------------------- |
-| `T[]`    | [~] Partial | `lista.ts`  | 12 core methods; functional methods use @compileError |
+| `T[]`         | [~] Partial | `lista.ts`  | 12 core methods; functional methods use @compileError |
 | `tabula<K,V>` | [~] Partial | `tabula.ts` | 11 core methods                                       |
 | `copia<T>`    | [~] Partial | `copia.ts`  | 7 core methods; set operations use @compileError      |
 
@@ -55,7 +55,7 @@ Functional methods (`filtrata`, `mappata`, `reducta`, etc.) emit `@compileError`
 
 | Collection    | Status       | File        | Notes      |
 | ------------- | ------------ | ----------- | ---------- |
-| `T[]`    | [x] Complete | `lista.ts`  | 46 methods |
+| `T[]`         | [x] Complete | `lista.ts`  | 46 methods |
 | `tabula<K,V>` | [x] Complete | `tabula.ts` | 17 methods |
 | `copia<T>`    | [x] Complete | `copia.ts`  | 14 methods |
 
@@ -97,32 +97,32 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 
 ### Transformation (Functional)
 
-| Faber                                 | JS Equivalent | Description    |
-| ------------------------------------- | ------------- | -------------- |
+| Faber                            | JS Equivalent | Description    |
+| -------------------------------- | ------------- | -------------- |
 | `mappa((T) -> U) -> U[]`         | `map`         | Transform each |
 | `filtra((T) -> bivalens) -> T[]` | `filter`      | Keep matching  |
-| `reducere(U, (U,T) -> U) -> U`        | `reduce`      | Fold to value  |
-| `coniunge(textus) -> textus`          | `join`        | Join to string |
+| `reducere(U, (U,T) -> U) -> U`   | `reduce`      | Fold to value  |
+| `coniunge(textus) -> textus`     | `join`        | Join to string |
 
 ### Lodash-Inspired Methods
 
-| Faber                                              | lodash        | Description                 |
-| -------------------------------------------------- | ------------- | --------------------------- |
-| `ordina((T) -> U) -> T[]`                     | `sortBy`      | Sort by key function        |
-| `congrega((T) -> K) -> tabula<K, T[]>`        | `groupBy`     | Group by key function       |
-| `unica() -> T[]`                              | `uniq`        | Remove duplicates           |
-| `plana() -> T[]`                              | `flatten`     | Flatten one level           |
-| `planaOmnia() -> T[]`                         | `flattenDeep` | Flatten all levels          |
+| Faber                                    | lodash        | Description                 |
+| ---------------------------------------- | ------------- | --------------------------- |
+| `ordina((T) -> U) -> T[]`                | `sortBy`      | Sort by key function        |
+| `congrega((T) -> K) -> tabula<K, T[]>`   | `groupBy`     | Group by key function       |
+| `unica() -> T[]`                         | `uniq`        | Remove duplicates           |
+| `plana() -> T[]`                         | `flatten`     | Flatten one level           |
+| `planaOmnia() -> T[]`                    | `flattenDeep` | Flatten all levels          |
 | `fragmenta(numerus) -> T[][]`            | `chunk`       | Split into chunks of size n |
-| `densa() -> T[]`                              | `compact`     | Remove falsy values         |
+| `densa() -> T[]`                         | `compact`     | Remove falsy values         |
 | `partire((T) -> bivalens) -> (T[], T[])` | `partition`   | Split by predicate          |
-| `misce() -> T[]`                              | `shuffle`     | Randomize order             |
-| `specimen() -> T?`                                 | `sample`      | Random element              |
-| `specimina(numerus) -> T[]`                   | `sampleSize`  | Random n elements           |
-| `prima(numerus) -> T[]`                       | `take`        | First n elements            |
-| `ultima(numerus) -> T[]`                      | `takeRight`   | Last n elements             |
-| `omitte(numerus) -> T[]`                      | `drop`        | Skip first n                |
-| `inversa() -> T[]`                            | `reverse`     | Reverse order               |
+| `misce() -> T[]`                         | `shuffle`     | Randomize order             |
+| `specimen() -> T?`                       | `sample`      | Random element              |
+| `specimina(numerus) -> T[]`              | `sampleSize`  | Random n elements           |
+| `prima(numerus) -> T[]`                  | `take`        | First n elements            |
+| `ultima(numerus) -> T[]`                 | `takeRight`   | Last n elements             |
+| `omitte(numerus) -> T[]`                 | `drop`        | Skip first n                |
+| `inversa() -> T[]`                       | `reverse`     | Reverse order               |
 
 ### Aggregation
 
@@ -417,13 +417,13 @@ scribe x  // 20
 
 Functions that operate on multiple collections or don't belong to a single type.
 
-| Faber                                       | lodash   | Description          |
-| ------------------------------------------- | -------- | -------------------- |
-| `iunge(T[], U[]) -> (T,U)[]` | `zip`    | Pair up elements     |
-| `iungeOmnes(...lista) -> (...)[]`      | `zipAll` | Zip multiple lists   |
-| `series(n) -> numerus[]`               | `range`  | 0 to n-1             |
-| `series(a, b) -> numerus[]`            | `range`  | a to b-1             |
-| `repete(T, n) -> T[]`                  | `times`  | Repeat value n times |
+| Faber                             | lodash   | Description          |
+| --------------------------------- | -------- | -------------------- |
+| `iunge(T[], U[]) -> (T,U)[]`      | `zip`    | Pair up elements     |
+| `iungeOmnes(...lista) -> (...)[]` | `zipAll` | Zip multiple lists   |
+| `series(n) -> numerus[]`          | `range`  | 0 to n-1             |
+| `series(a, b) -> numerus[]`       | `range`  | a to b-1             |
+| `repete(T, n) -> T[]`             | `times`  | Repeat value n times |
 
 ---
 
@@ -636,238 +636,61 @@ Many lodash-style methods need custom implementation for Zig.
 
 ---
 
-## Collection DSL: Unified `ex` Syntax
+## Collection DSL
 
-Collection operations and loops share a unified syntax rooted in `ex` (from). The difference is whether you assign the result or execute a loop body.
+**Status: Not implemented**
 
-### The Unification
+The `ex` preposition supports inline collection transforms before iteration. See `praepositiones.md` for the full preposition system.
 
-```
-// DSL expression - assignment captures result
+### Basic Concept
+
+```fab
+// Simple iteration
+ex items pro item { scribe(item) }
+
+// With inline transforms
+ex items filtra ubi active, ordina per nomen pro item { scribe(item) }
+
+// As expression (assigned)
 fixum result = ex items filtra ubi active, ordina per nomen
-
-// Loop - pro + body executes code
-ex items pro item {
-    scribe item.nomen
-}
-
-// Composed - DSL operations inline with loop
-ex items filtra ubi active, ordina per nomen pro item {
-    scribe item.nomen
-}
 ```
 
-The differentiator:
+The `ex ... pro` frame stays constant. Transforms are optional and chain with commas.
 
-- `= ex ...` → expression, returns value
-- `ex ... pro var { }` → loop, executes body
+### DSL Verbs
 
-Both start with `ex` (from). Both can use the same operations. The ending determines the behavior.
+| Verb      | Meaning  | Method Equivalent |
+| --------- | -------- | ----------------- |
+| `filtra`  | filter   | `.filtrata()`     |
+| `ordina`  | sort     | `.ordinata()`     |
+| `collige` | pluck    | `.mappa()`        |
+| `grupa`   | group by | `.congrega()`     |
+| `prima`   | first n  | `.prima()`        |
+| `ultima`  | last n   | `.ultima()`       |
+| `summa`   | sum      | `.summa()`        |
+| `maximum` | max      | `.maximus()`      |
+| `minimum` | min      | `.minimus()`      |
 
-> **Implementation note:** The composed form (`ex ... filtra/ordina, pro var { }`) requires new parser/codegen work beyond the current `ex...pro` loop implementation.
+### DSL Prepositions
 
-### Basic Syntax
-
-```
-ex <collection> [<operation> <preposition> <arg>], ... [pro <var> { <body> }]
-```
-
-The comma acts as an implicit pipe — each operation flows into the next.
-
-### Prefix Verbs
-
-| Latin     | Meaning          | Method Equivalent                  |
-| --------- | ---------------- | ---------------------------------- |
-| `summa`   | sum              | `.summa()`                         |
-| `maximum` | max              | `.maximus()`                       |
-| `minimum` | min              | `.minimus()`                       |
-| `medium`  | average          | `.medium()`                        |
-| `quota`   | count            | `.longitudo()`                     |
-| `filtra`  | filter           | `.filtrata()`                      |
-| `ordina`  | sort/order       | `.ordinata()`                      |
-| `collige` | collect/pluck    | `.mappa()` for property extraction |
-| `mappa`   | map to key-value | creates `tabula` keyed by property |
-| `grupa`   | group by         | `.congrega()`                      |
-| `prima`   | first n          | `.prima()`                         |
-| `ultima`  | last n           | `.ultima()`                        |
-| `inversa` | reverse          | `.inversa()`                       |
-| `unica`   | unique           | `.unica()`                         |
-
-### Prepositions
-
-| Latin | Meaning | Use                                 |
-| ----- | ------- | ----------------------------------- |
-| `ubi` | where   | filter condition                    |
-| `per` | by      | property selector, sort/group field |
-| `ex`  | from    | source collection                   |
+| Preposition | Meaning | Use               |
+| ----------- | ------- | ----------------- |
+| `ubi`       | where   | filter condition  |
+| `per`       | by      | property selector |
 
 ### Examples
 
-**Aggregates:**
-
-```
-fixum total = ex numeri summa
-fixum highest = ex pretia maximum
-fixum count = ex users quota
-fixum avg = ex scores medium
-```
-
-**Filtering:**
-
-```
+```fab
 fixum active = ex users filtra ubi activus
-fixum expensive = ex items filtra ubi pretium > 100
-fixum adults = ex users filtra ubi aetas >= 18
-```
-
-**Transformation:**
-
-```
-fixum names = ex users collige per nomen
 fixum sorted = ex items ordina per pretium
-fixum byRole = ex users grupa per role
-fixum indexed = ex users mappa per id
+fixum total = ex prices summa
+fixum top5 = ex items ordina per pretium, prima 5
 ```
 
-**Chained with comma:**
+### Alternative: Method Chaining
 
-```
-// Filter active users, extract names, sort
-fixum result = ex users filtra ubi activus, collige per nomen, ordina
+Until DSL is implemented, use method chaining:
 
-// Filter expensive items, sort by price, take top 5
-fixum top5 = ex items filtra ubi pretium > 100, ordina per pretium, prima 5
-
-// Sum prices of active products
-fixum total = ex products filtra ubi activus, collige per pretium, summa
-
-// Group users by role, then by department
-fixum nested = ex users grupa per role, mappa per departmentum
-```
-
-**DSL into loop:**
-
-```
-// Filter and sort, then iterate
-ex users filtra ubi activus, ordina per nomen pro user {
-    scribe user.nomen
-}
-
-// Process top 10 expensive items
-ex items ordina per pretium, prima 10 pro item {
-    processItem(item)
-}
-```
-
-### Comparison with Method Chaining
-
-Both syntaxes are valid and equivalent:
-
-```
-// Method chaining (OOP style)
-fixum result = users
-    .filtrata({ .activus })
-    .ordinata(per nomen)
-    .prima(10)
-
-// DSL (Latin sentence style)
-fixum result = ex users filtra ubi activus, ordina per nomen, prima 10
-```
-
-The DSL reads more like natural Latin:
-
-- "ex users" = "from users"
-- "filtra ubi activus" = "filter where active"
-- "ordina per nomen" = "order by name"
-- "prima 10" = "first 10"
-
-### Unary Predicates
-
-Simple Latin adjectives work as prefix predicates, returning `bivalens`:
-
-| Latin       | Meaning       | Works on       |
-| ----------- | ------------- | -------------- |
-| `nulla`     | is null/empty | any            |
-| `nonnulla`  | has content   | any            |
-| `positivum` | is positive   | numerus        |
-| `negativum` | is negative   | numerus        |
-| `vacuum`    | is void/zero  | numerus, lista |
-
-These work in three contexts:
-
-**Standalone expression:**
-
-```
-fixum hasItems = nonnulla items
-fixum isPos = positivum balance
-fixum isEmpty = nulla data
-```
-
-**DSL filter predicate** (no explicit comparison needed):
-
-```
-// Filter to only positive numbers
-fixum positives = ex numbers filtra ubi positivum
-
-// Filter to non-empty strings
-fixum nonEmpty = ex strings filtra ubi nonnulla
-```
-
-**DSL terminator** (check property of result):
-
-```
-// Does the filtered result have any items?
-fixum hasActive = ex users filtra ubi active nonnulla
-
-// Are there any negative values?
-fixum anyNegative = ex numbers filtra ubi negativum nonnulla
-```
-
-The predicates are just unary functions returning `bivalens`. They read naturally as Latin prefix adjectives agreeing with their subject.
-
-### Grammar Notes
-
-When using genitive case for collection names, the syntax becomes fully grammatical Latin:
-
-```
-fixum total = ex numerorum summa      // from the numbers, sum
-fixum high = ex pretiorum maximum     // from the prices, maximum
-fixum top = ex itemis prima 5         // from the items, first 5
-```
-
-However, for practical code with non-Latin variable names, the nominative form works:
-
-```
-fixum total = ex orderTotals summa
-fixum result = ex userList filtra ubi active
-```
-
-### Target Compilation
-
-**TypeScript:**
-
-```typescript
-// ex users filtra ubi activus, collige per nomen, ordina
-users.filter(u => u.activus).map(u => u.nomen).sort()
-
-// ex users filtra ubi activus pro user { ... }
-for (const user of users.filter(u => u.activus)) { ... }
-```
-
-**Zig:**
-
-```zig
-// Generates iterator chain or explicit loops
-// with arena allocator for intermediate results
-```
-
-**Rust:**
-
-```rust
-// ex users filtra ubi activus, collige per nomen, ordina
-users.iter()
-    .filter(|u| u.activus)
-    .map(|u| &u.nomen)
-    .sorted()
-    .collect()
+```fab
+fixum result = users.filtrata(pro u: u.activus).ordinata(pro u: u.nomen).prima(10)
 ```

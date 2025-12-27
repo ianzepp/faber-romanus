@@ -1,6 +1,6 @@
 # Functiones
 
-Design decisions for function declarations, parameters, and call syntax.
+Design decisions for function declarations, parameters, and call syntax. For ownership prepositions (`de`, `in`) and the `pro` internal name keyword, see `praepositiones.md`.
 
 ## Status
 
@@ -37,6 +37,8 @@ greet(location: "Roma")  // external name at callsite
 parameter := preposition? typeAnnotation externalName ('pro' internalName)?
 preposition := 'ad' | 'de' | 'in' | 'ex'
 ```
+
+See `praepositiones.md` for the complete preposition system.
 
 ### With Ownership Prepositions
 
