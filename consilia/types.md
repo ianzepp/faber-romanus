@@ -712,7 +712,7 @@ fixum { nomen, aetas } = p
 Both Latin and symbolic syntax supported:
 
 ```
-fixum { nomen pro n } = p     // Latin: "nomen, [call it] n"
+fixum { nomen ut n } = p      // Latin: "nomen as n"
 fixum { nomen: n } = p        // symbolic
 
 scribe n  // "Marcus"
@@ -730,7 +730,7 @@ fixum { aetas ?? 0 } = p      // symbolic (nil-coalescing)
 ### Combined
 
 ```
-fixum { nomen pro n, aetas vel 0 } = p
+fixum { nomen ut n, aetas vel 0 } = p
 ```
 
 ### Partial

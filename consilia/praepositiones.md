@@ -21,7 +21,7 @@ The Latin preposition `cum` ("with") is **permanently banned** from Faber. Its E
 
 ---
 
-## The Six Prepositions
+## The Seven Prepositions
 
 | Preposition | Latin Meaning       | Core Semantic         |
 | ----------- | ------------------- | --------------------- |
@@ -29,8 +29,9 @@ The Latin preposition `cum` ("with") is **permanently banned** from Faber. Its E
 | `de`        | "from, concerning"  | Read-only reference   |
 | `in`        | "in, into"          | Mutable target        |
 | `ad`        | "to, toward"        | Destination/recipient |
-| `pro`       | "for, on behalf of" | Binding/naming        |
-| `qua`       | "as, by which"      | Type/name binding     |
+| `pro`       | "for, on behalf of" | Iteration binding     |
+| `ut`        | "as, like"          | Aliasing/renaming     |
+| `qua`       | "as, in capacity of"| Type assertion        |
 
 ---
 
@@ -231,11 +232,11 @@ Send a request **to** a destination. See `ad.md` for full documentation.
 
 ---
 
-## `pro` — Binding/Naming
+## `pro` — Iteration Binding
 
 **Latin:** "for, on behalf of"
 
-`pro` introduces named bindings. It says "for this name, bind the following."
+`pro` introduces named bindings in control flow. It says "for each of these, call it..."
 
 ### Iteration Binding
 
@@ -264,55 +265,76 @@ discerne event {
 }
 ```
 
-**For** fields `x` and `y`, bind them from the matched variant. Note: variant matching uses `discerne`/`si`, not `ex`. See below.
+**For** fields `x` and `y`, bind them from the matched variant.
 
-### Internal Parameter Name
+### Summary
+
+| Pattern                     | Meaning                  |
+| --------------------------- | ------------------------ |
+| `ex source pro var { }`     | Bind each element as var |
+| `pro params: expr`          | Lambda with params       |
+| `si Variant pro fields { }` | Bind variant fields      |
+
+---
+
+## `ut` — Aliasing/Renaming
+
+**Latin:** "as, like"
+
+`ut` renames identifiers. It says "call this AS that name."
+
+### Import Alias
 
 ```fab
-functio move(de Point[] from pro source, in Point[] to pro dest) {
+ex norma importa scribe ut s, lege ut l
+s("Salve!")
+```
+
+Import `scribe` **as** `s`.
+
+### Destructuring Alias
+
+```fab
+fixum { nomen ut n, aetas ut a } = persona
+scribe(n, a)
+```
+
+Bind field `nomen` **as** `n`.
+
+### Parameter Alias
+
+```fab
+functio move(de Point[] from ut source, in Point[] to ut dest) {
     // 'source' and 'dest' are internal names
     // 'from' and 'to' are external (callsite) names
 }
 ```
 
-**For** external name `from`, use internal name `source`.
-
-### Destructuring Alias
-
-```fab
-fixum { nomen pro n, aetas pro a } = persona
-scribe(n, a)
-```
-
-**For** field `nomen`, bind it as `n`. Same pattern as parameter aliasing — `source pro local`.
-
-### Import Alias
-
-```fab
-ex norma importa scribe pro s, lege pro l
-s("Salve!")
-```
-
-**For** import `scribe`, bind it locally as `s`. Same pattern — `external pro internal`.
+External name `from`, internally known **as** `source`.
 
 ### Summary
 
-| Pattern                      | Meaning                   |
-| ---------------------------- | ------------------------- |
-| `ex source pro var { }`      | Bind each element as var  |
-| `pro params: expr`           | Lambda with params        |
-| `si Variant pro fields { }`  | Bind variant fields       |
-| `Type external pro internal` | Internal parameter name   |
-| `{ field pro alias }`        | Destructuring field alias |
-| `importa name pro alias`     | Import alias              |
+| Pattern                    | Meaning                 |
+| -------------------------- | ----------------------- |
+| `importa name ut alias`    | Import alias            |
+| `{ field ut alias }`       | Destructuring alias     |
+| `Type external ut internal`| Parameter internal name |
 
 ---
 
-## `qua` — Type/Name Binding
+## `qua` — Type Assertion
 
 **Latin:** "as, in the capacity of, by which"
 
-`qua` binds a value as a specific name or type. It says "treat this as."
+`qua` asserts a value's type. It says "treat this in the capacity of."
+
+### Type Assertion
+
+```fab
+fixum value = getData() qua textus
+```
+
+Treat the result **as** `textus`. (Assertion, not conversion.)
 
 ### Response Binding
 
@@ -374,8 +396,11 @@ Prepositions compose naturally:
 // Iterate from source, binding as name
 ex items pro item { }
 
-// Borrow from caller, name internally
-functio f(de textus external pro internal) { }
+// Borrow from caller, rename internally
+functio f(de textus external ut internal) { }
+
+// Import and rename
+ex norma importa scribe ut s { }
 
 // Extract from source into bindings
 ex response fixum { data }
@@ -403,9 +428,9 @@ ad url ("GET") fiet Response qua resp { }
 | `pro`       | Iteration binding            | Done       |
 | `pro`       | Lambda parameter             | Done       |
 | `pro`       | Variant binding (`discerne`) | Not done   |
-| `pro`       | Internal param name          | Not done   |
-| `pro`       | Destructuring alias          | Not done   |
-| `pro`       | Import alias                 | Not done   |
+| `ut`        | Import alias                 | Not done   |
+| `ut`        | Destructuring alias          | Not done   |
+| `ut`        | Parameter alias              | Not done   |
 | `qua`       | Response binding (`ad`)      | Partial    |
 | `qua`       | Type assertion               | Done       |
 
