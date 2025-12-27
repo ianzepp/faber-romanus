@@ -21,7 +21,7 @@ The Latin preposition `cum` ("with") is **permanently banned** from Faber. Its E
 
 ---
 
-## The Five Prepositions
+## The Six Prepositions
 
 | Preposition | Latin Meaning       | Core Semantic         |
 | ----------- | ------------------- | --------------------- |
@@ -30,6 +30,7 @@ The Latin preposition `cum` ("with") is **permanently banned** from Faber. Its E
 | `in`        | "in, into"          | Mutable target        |
 | `ad`        | "to, toward"        | Destination/recipient |
 | `pro`       | "for, on behalf of" | Binding/naming        |
+| `qua`       | "as, by which"      | Type/name binding     |
 
 ---
 
@@ -287,6 +288,39 @@ functio move(de Point[] from pro source, in Point[] to pro dest) {
 
 ---
 
+## `qua` — Type/Name Binding
+
+**Latin:** "as, in the capacity of, by which"
+
+`qua` binds a value as a specific name or type. It says "treat this as."
+
+### Response Binding
+
+```fab
+ad "https://api.example.com/users" ("GET") fiet Response qua resp {
+    scribe(resp.status)
+}
+```
+
+Bind the response **as** `resp`.
+
+### Type Assertion
+
+```fab
+fixum value = getData() qua textus
+```
+
+Treat the result **as** `textus`. (Type assertion, not conversion.)
+
+### Summary
+
+| Pattern              | Meaning                    |
+| -------------------- | -------------------------- |
+| `fiet Type qua name` | Bind typed result as name  |
+| `expr qua Type`      | Assert expression as type  |
+
+---
+
 ## Positional Grammar
 
 The same preposition means different things based on position:
@@ -350,6 +384,8 @@ ad url ("GET") fiet Response qua resp { }
 | `pro`       | Lambda parameter             | Done       |
 | `pro`       | Variant binding (`discerne`) | Not done   |
 | `pro`       | Internal param name          | Not done   |
+| `qua`       | Response binding (`ad`)      | Partial    |
+| `qua`       | Type assertion               | Not done   |
 
 ---
 
