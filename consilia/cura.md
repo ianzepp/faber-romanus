@@ -1,7 +1,7 @@
 ---
 status: partial
-targets: [ts]
-note: Parser/AST and TS codegen done; Python/Rust/Zig codegen and `curator` type not yet implemented
+targets: [ts, zig]
+note: Parser/AST done; TS codegen done; Zig curatorStack partial; curatum not implemented
 updated: 2024-12
 ---
 
@@ -9,276 +9,201 @@ updated: 2024-12
 
 ## Implementation Status
 
-| Feature                | Status   | Notes                       |
-| ---------------------- | -------- | --------------------------- |
-| `cura ... fit` syntax  | Done     | Parser + AST                |
-| `cura cede` async      | Done     | Async resource acquisition  |
-| `cura ... cape` errors | Done     | Optional catch clause       |
-| TypeScript codegen     | Done     | try/finally with solve?.()  |
-| `curator` interface    | Not Done | Semantic validation         |
-| `solve` method check   | Not Done | Type system integration     |
-| Built-in curators      | Not Done | File, socket, etc. (stdlib) |
-| Python codegen         | Not Done | with statement              |
-| Rust codegen           | Not Done | RAII / Drop                 |
-| Zig codegen            | Not Done | defer                       |
+| Feature                | Status   | Notes                             |
+| ---------------------- | -------- | --------------------------------- |
+| `cura ... fit` syntax  | Done     | Parser + AST                      |
+| `cura cede` async      | Done     | Async resource acquisition        |
+| `cura ... cape` errors | Done     | Optional catch clause             |
+| TypeScript codegen     | Done     | try/finally with solve?.()        |
+| Zig `curatorStack`     | Partial  | Functions only; not `cura` blocks |
+| `curatum` param        | Not Done | Allocator in function signature   |
+| `curatum` callsite     | Not Done | Per-call allocator override       |
+| `curator` interface    | Not Done | Semantic validation for `solve`   |
+| Python codegen         | Not Done | with statement                    |
+| Rust codegen           | Not Done | RAII / Drop                       |
+
+---
 
 ## Overview
 
-Automatic resource cleanup via scoped ownership. Any resource that needs cleanup — file handles, database connections, network sockets, locks — can be managed with `cura`.
+`cura` provides two related capabilities:
+
+1. **Resource cleanup** — file handles, connections, locks get released on scope exit
+2. **Allocator scoping** — memory allocators for non-GC targets (Zig, C++, Rust)
+
+For GC targets (TypeScript, Python), allocators are irrelevant. The compiler ignores allocator-related constructs entirely.
+
+---
 
 ## Etymology
 
-- `cura` - "care, concern, attention" — care for a resource within scope
-- `curator` - "one who cares for" — interface for managed resources
-- `solve` - "release, free" — cleanup action
+| Keyword   | Meaning                       | Role                            |
+| --------- | ----------------------------- | ------------------------------- |
+| `cura`    | "care, concern"               | Block that manages a resource   |
+| `curator` | "one who cares for, steward"  | Interface for managed resources |
+| `curatum` | "having been cared for" (PPP) | Allocator annotation            |
+| `solve`   | "release, free"               | Cleanup method                  |
 
 ---
 
-## Basic Pattern
+## The Three Mechanisms
 
-```
-cura <acquire> fit <binding> {
-    <use binding>
-}
-// automatically cleaned up
-```
+### 1. `cura ... fit` — Block Scope (Primary)
 
-**Reads as:** "Care for [resource] as [name] { use it }"
-
----
-
-## Examples
-
-### File Descriptor
-
-```
-cura aperi "data.bin" fit fd {
-    fixum data = lege fd, 1024
-    process(data)
-}
-// fd closed
-```
-
-### Database Connection
-
-```
-cura connect(db_url) fit conn {
-    fixum users = conn.query("SELECT * FROM users")
-    redde users
-}
-// conn closed
-```
-
-### Transaction
-
-```
-cura conn.transaction() fit tx {
-    tx.insert(record)
-    tx.commit()
-}
-// tx rolled back if not committed
-```
-
-### Network Socket
-
-```
-cura socket("localhost", 8080) fit sock {
-    sock.mitte(request)
-    fixum response = sock.accipe()
-}
-// sock closed
-```
-
-### Lock / Mutex
-
-```
-cura mutex.lock() fit guard {
-    shared_counter += 1
-}
-// lock released
-```
-
-### Nested Resources
-
-```
-cura aperi "input.txt" fit input {
-    cura aperi "output.txt", { modus: "w" } fit output {
-        pro linea in lege input ut lineae {
-            inscribe output, process(linea)
-        }
-    }
-    // output closed
-}
-// input closed
-```
-
----
-
-## Error Handling
-
-Cleanup runs even on error:
-
-```
-cura aperi "data.bin" fit fd {
-    riskyOperation(fd)
-} cape err {
-    mone "Operation failed:", err
-}
-// fd still closed
-```
-
-Errors during cleanup itself:
-
-```
-cura acquire() fit resource {
-    use(resource)
-} cape err {
-    // err could be from use() OR from cleanup
-    mone "Error:", err
-}
-```
-
----
-
-## The Curator Interface
-
-Resources implement the `curator` interface:
-
-```
-pactum curator {
-    functio solve() -> vacuum    // cleanup action
-}
-```
-
-**Etymology:** `solve` = "release, free"
-
-### Built-in Curators
-
-| Type            | `solve` action              |
-| --------------- | --------------------------- |
-| File descriptor | Close file                  |
-| DB connection   | Disconnect                  |
-| Transaction     | Rollback (if not committed) |
-| Socket          | Close connection            |
-| Lock            | Release lock                |
-| Arena/allocator | Free memory                 |
-
----
-
-## Memory Allocators
-
-An allocator is a resource, similar to a file descriptor:
-
-| Aspect         | File Descriptor                   | Allocator                        |
-| -------------- | --------------------------------- | -------------------------------- |
-| What it is     | Handle to OS resource             | Handle to memory source          |
-| Obtained from  | `open()`, `socket()`              | `arena()`                        |
-| Passed to      | `read(fd, ...)`, `write(fd, ...)` | `list.adde(...)` (implicitly)    |
-| Lifetime       | Must close when done              | Must deinit when done            |
-| Scoped pattern | `cura open(path) fit fd { ... }`  | `cura arena() fit alloc { ... }` |
-
-Both are "capabilities" you obtain, pass around, and release.
-
-### Scoped Allocators
-
-The existing `cura expr fit name { }` syntax works for allocators:
+Establishes a resource/allocator for a block. This is the default mechanism.
 
 ```fab
 cura arena() fit alloc {
     varia items: textus[] = []
-    items.adde("test")  // uses alloc implicitly
+    items.adde("hello")        // uses 'alloc' implicitly
+    items.adde("world")        // uses 'alloc' implicitly
 }
 // arena freed, all allocations released
 ```
 
-### The `curator` Type
+**How it works:** The binding name (`alloc`) is pushed onto an internal `curatorStack`. Any allocation operations within the block use the current stack top. On block exit, the stack pops and cleanup runs.
 
-Functions that need an allocator declare a `curator` parameter:
+Nesting works naturally:
 
 ```fab
-functio buildList(curator memoria, textus prefix) -> textus[] {
+cura arena() fit outer {
+    varia a: textus[] = []
+    a.adde("one")              // uses 'outer'
+
+    cura arena() fit inner {
+        varia b: textus[] = []
+        b.adde("two")          // uses 'inner'
+    }
+    // inner freed
+
+    a.adde("three")            // uses 'outer' again
+}
+// outer freed
+```
+
+### 2. `curatum` — Allocator Annotation (Escape Hatch)
+
+The `curatum` keyword marks allocator intent. It appears in two places:
+
+#### In Function Signatures
+
+When a function needs an explicit allocator parameter:
+
+```fab
+functio buildList(curatum mem, textus prefix) -> textus[] {
     varia items: textus[] = []
-    items.adde(prefix)
+    items.adde(prefix)         // uses 'mem'
     redde items
 }
 ```
 
-The parameter name (`memoria`) is user-chosen. Collection methods use the active curator automatically.
+**When to use:** Rarely. Most code should rely on `cura` blocks. Use `curatum` params when:
 
-#### Etymology
+- Writing library code that must work with caller-provided allocators
+- Interfacing with low-level systems code
+- You need fine-grained control over which allocator a function uses
 
-- **curator** — Latin "one who takes care of, steward"
-- Derives from **cura** ("care")
-- Phonetic symmetry with English "allocator" (same syllable count, similar ending)
+**Target behavior:**
 
-### Scope Hierarchy
+- Zig: `curatum mem` → `mem: std.mem.Allocator`
+- TS/Py: parameter stripped entirely (GC handles memory)
 
-Each scope has an "active curator" name. Collection methods use whatever name is current. Nested scopes shadow outer ones:
+#### At Callsites
+
+Override the allocator for a single call without modifying the callee:
 
 ```fab
-// main scope: curator = 'alloc' (implicit)
-varia outer: numerus[] = []
-outer.adde(1)  // uses alloc
-
 cura arena() fit temp {
-    // inner scope: curator = 'temp'
-    varia inner: numerus[] = []
-    inner.adde(2)  // uses temp
-}
+    // Everything here uses 'temp'
+    fixum a = buildList("foo")
 
-// back to main scope
-outer.adde(3)  // uses alloc again
+    // But this specific call uses a different allocator
+    fixum b = buildList("bar") curatum custom_alloc
+}
 ```
 
-Functions establish their own scope:
+**When to use:** When you need a specific call to use a different allocator than the current scope provides, but you don't want to (or can't) modify the function signature.
+
+**How it works:** `curatum X` temporarily pushes `X` onto the `curatorStack` for the duration of that call only.
+
+#### Symmetry
+
+Same keyword, same meaning — "with this allocator":
+
+| Context   | Syntax                        | Meaning                              |
+| --------- | ----------------------------- | ------------------------------------ |
+| Signature | `functio f(curatum mem, ...)` | Function receives allocator as `mem` |
+| Callsite  | `f() curatum alloc`           | Use `alloc` for this call            |
+
+---
+
+## Default Behavior
+
+Outside any `cura` block, there's an implicit default allocator (`alloc`). For Zig, this maps to a global arena or page allocator. For GC targets, it's ignored.
 
 ```fab
-functio process(curator mem, numerus[] data) -> numerus[] {
-    // function scope: curator = 'mem'
-    varia result: numerus[] = []
-    result.adde(42)  // uses mem
-    redde result
-}
+// Top-level code, no explicit cura block
+varia items: textus[] = []
+items.adde("hello")           // uses default 'alloc'
 ```
 
-### Complete Example
+Most Faber code never mentions allocators at all. Just use `cura` blocks when you need scoped cleanup, and let the compiler handle the rest.
+
+---
+
+## Resource Cleanup (Non-Allocator)
+
+`cura` isn't just for allocators. Any resource needing cleanup works:
 
 ```fab
-functio processUsers(curator alloc, User[] users) -> User[] {
-    varia result: User[] = []
-
-    ex users pro user {
-        si user.active {
-            result.adde(user)
-        }
-    }
-
-    redde result
+cura aperi("data.bin") fit fd {
+    fixum data = lege(fd, 1024)
+    process(data)
 }
+// fd closed automatically
+```
 
-// Usage at top level (implicit arena)
-fixum users = getUsers()
-fixum active = processUsers(alloc, users)
+```fab
+cura connect(db_url) fit conn {
+    fixum users = conn.query("SELECT * FROM users")
+    redde users
+}
+// conn closed automatically
+```
 
-// Usage with explicit arena
-cura arena() fit temp {
-    fixum scratch = processUsers(temp, users)
-    // scratch freed when block exits
+```fab
+cura mutex.lock() fit guard {
+    shared_counter += 1
+}
+// lock released automatically
+```
+
+Cleanup runs even if an error occurs:
+
+```fab
+cura aperi("data.bin") fit fd {
+    riskyOperation(fd)
+} cape err {
+    mone("Operation failed:", err)
+}
+// fd still closed
+```
+
+---
+
+## The `curator` Interface
+
+Resources implement cleanup via the `curator` interface:
+
+```fab
+pactum curator {
+    functio solve() -> vacuum
 }
 ```
 
-### Target Mapping
+Custom resources:
 
-| Target | `curator` becomes                     |
-| ------ | ------------------------------------- |
-| Zig    | `std.mem.Allocator`                   |
-| C++    | `std::pmr::memory_resource*`          |
-| Rust   | `&dyn Allocator` or trait bound       |
-| TS/Py  | parameter omitted (GC handles memory) |
-
-### Custom Curator
-
-```
+```fab
 genus TempFile implet curator {
     privatum path: textus
 
@@ -288,7 +213,7 @@ genus TempFile implet curator {
 }
 
 cura TempFile.create() fit tmp {
-    inscribe tmp.path, data
+    inscribe(tmp.path, data)
 }
 // temp file deleted
 ```
@@ -299,14 +224,14 @@ cura TempFile.create() fit tmp {
 
 `cura` works with async acquisition:
 
-```
+```fab
 cura cede connect(db_url) fit conn {
     fixum result = cede conn.query(sql)
 }
 // conn closed
 ```
 
-Cleanup is always sync (no `cede` in `solve`). Async cleanup would complicate the model and create ordering issues.
+Cleanup is always synchronous. Async cleanup creates ordering problems and most resources have sync close anyway.
 
 ---
 
@@ -314,41 +239,43 @@ Cleanup is always sync (no `cede` in `solve`). Async cleanup would complicate th
 
 ### TypeScript
 
-Uses explicit try/finally:
-
 ```typescript
 const fd = await open('data.bin');
 try {
     const data = await read(fd, 1024);
     process(data);
 } finally {
-    await fd.close();
+    fd.solve?.();
 }
 ```
 
-Or with `using` (Stage 3 proposal / TypeScript 5.2+):
-
-```typescript
-await using fd = await open('data.bin');
-const data = await read(fd, 1024);
-process(data);
-// auto-disposed
-```
+Allocator constructs (`curatum` params/callsites, allocator `cura` blocks) are stripped entirely.
 
 ### Python
-
-Maps to `with` statement:
 
 ```python
 with open("data.bin") as fd:
     data = fd.read(1024)
     process(data)
-# fd closed
 ```
 
-### Rust
+Allocator constructs stripped.
 
-Maps to RAII / Drop:
+### Zig
+
+```zig
+var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+defer arena.deinit();
+const alloc = arena.allocator();
+
+var items = std.ArrayList([]const u8).init(alloc);
+defer items.deinit();
+try items.append(alloc, "hello");
+```
+
+The `curatorStack` determines which allocator name appears in generated code.
+
+### Rust
 
 ```rust
 {
@@ -356,45 +283,26 @@ Maps to RAII / Drop:
     let data = read(&fd, 1024)?;
     process(data);
 }
-// fd dropped, closed
-```
-
-Or explicit scope with arena:
-
-```rust
-let fd = File::open("data.bin")?;
-// ... use fd ...
-drop(fd);  // explicit cleanup
-```
-
-### Zig
-
-Maps to `defer`:
-
-```zig
-const fd = try std.fs.cwd().openFile("data.bin", .{});
-defer fd.close();
-
-const data = try fd.read(buffer);
-process(data);
-// fd closed on scope exit
+// fd dropped
 ```
 
 ---
 
 ## Design Decisions
 
-### Why `solve` for cleanup?
+### Why two mechanisms?
 
-`solve` means "release, free" — fitting for releasing resources. Alternatives considered:
+**`cura` blocks** handle 95% of cases — scoped resource lifetime with implicit allocator threading.
 
-- `claude` — already used for file close
-- `purga` — "clean" feels like scrubbing, not releasing
-- `libera` — "free" works but `solve` is shorter
+**`curatum`** is the escape hatch for explicit control — either in function signatures (for library authors) or at callsites (for per-call overrides).
 
-### Why interface-based?
+Most Faber code uses only `cura` blocks.
 
-The `curator` interface allows any type to be managed with `cura`. This is more flexible than hardcoding specific resource types.
+### Why implicit allocator threading?
+
+Explicit allocator params pollute every function signature. Faber targets multiple backends — forcing Zig's allocator model onto TypeScript code is wrong.
+
+The `curatorStack` approach keeps Faber source clean while generating correct Zig code.
 
 ### Why sync-only cleanup?
 
@@ -406,154 +314,39 @@ Async cleanup creates ordering problems:
 
 If async cleanup is truly needed, do it explicitly before scope exit.
 
-### Error during cleanup?
+### Why `solve` for cleanup?
 
-If `solve()` fails, the error propagates. The resource may be in an undefined state. This matches Rust's Drop behavior (panics on drop failure are usually fatal).
+Latin `solve` means "release, free" — fitting for releasing resources. Short and clear.
 
 ---
 
-## Proposed: `curatum` Callsite Annotation
+## Implementation Notes
 
-**Status: Not implemented**
+### Zig Codegen
 
-Currently, allocators are threaded through function signatures via `curator` parameters:
+The `curatorStack` tracks the active allocator name:
 
-```fab
-functio fetch(curator alloc, textus url) fiet Response { ... }
-fetch(arena, "https://...")
-```
+```typescript
+let curatorStack: string[] = ['alloc'];
 
-**Proposed:** Use `curatum` at the callsite to specify the allocator without changing function signatures:
-
-```fab
-functio fetch(textus url) fiet Response { ... }
-fetch("https://...") curatum arena
-```
-
-### How It Works
-
-`curatum` pushes an allocator onto the curator stack for that call's duration:
-
-```fab
-functio outer() {
-    // getCurator() = "alloc" (default)
-
-    inner() curatum arena
-    // getCurator() = "arena" during inner()'s execution
-
-    // getCurator() = "alloc" again
-}
-
-functio inner() {
-    varia items = []      // uses current curator
-    items.adde(1)         // uses getCurator() -> "arena"
+function getCurator(): string {
+    return curatorStack[curatorStack.length - 1] ?? 'alloc';
 }
 ```
 
-The allocator is **contextual**, not passed as an argument. The Zig codegen references whatever's on the stack.
+Currently pushes on:
 
-### With `ad` Dispatch
+- Function entry when a `curatum` param exists
 
-Works naturally with `ad` calls:
+Needs to also push on:
 
-```fab
-ad "https://api.example.com/users" ("GET") curatum arena fiet Response qua r { }
-```
+- `cura` block entry (using the binding name)
+- `curatum` callsite (for that call only)
 
-The `curatum arena` sets the curator for the stdlib HTTP call and any allocations it performs internally.
+### GC Target Codegen
 
-### Benefits
+Simply ignore:
 
-| Aspect                | `curator` param     | `curatum` callsite      |
-| --------------------- | ------------------- | ----------------------- |
-| Function signature    | Includes allocator  | Clean, no allocator     |
-| Caller responsibility | Pass as first arg   | Annotate with `curatum` |
-| Nested calls          | Must thread through | Automatic via stack     |
-| Non-systems targets   | Ignored but present | Ignored entirely        |
-
-### Scoping Rules
-
-```fab
-// Default curator
-varia a = []  // uses default 'alloc'
-
-// Override for single call
-process(data) curatum arena  // arena for this call
-
-// Override for block (via cura)
-cura arena() fit temp {
-    varia b = []  // uses 'temp'
-    process(data)  // also uses 'temp'
-}
-
-// Explicit override within cura
-cura arena() fit temp {
-    process(data) curatum other  // uses 'other', not 'temp'
-}
-```
-
-### Async Boundaries
-
-The `curatum` value is **captured at creation**, not looked up dynamically at runtime.
-
-```fab
-cura arena() fit temp {
-    cede fetch("url") curatum temp
-}
-```
-
-Codegen (Zig):
-
-```zig
-var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-defer arena.deinit();
-const temp = arena.allocator();
-
-// temp is captured INTO the async frame at creation
-const result = try await async fetch(temp, "url");
-```
-
-The allocator is passed when the async operation is _created_, not when it _resumes_. The frame holds `temp` for its entire lifetime.
-
-#### Parallel Async
-
-Each task captures its own allocator:
-
-```fab
-cura arena() fit temp1 {
-    cura arena() fit temp2 {
-        fixum tasks = [
-            fetch("url1") curatum temp1,
-            fetch("url2") curatum temp2,
-        ]
-        cede promissum.omnes(tasks)
-    }
-}
-```
-
-No interleaving confusion — each frame has its allocator baked in at creation.
-
-#### Restriction: Awaited Calls Only
-
-`curatum` is only valid for `cede` (awaited) calls, not spawned/fire-and-forget tasks:
-
-```fab
-// OK: awaited, allocator lifetime is guaranteed
-cede fetch("url") curatum temp
-
-// ERROR: spawned task may outlive allocator
-spawn fetch("url") curatum temp
-```
-
-The allocator must outlive the async operation. With `cede`, the enclosing scope waits for completion, guaranteeing the allocator is still valid. Spawned tasks have no such guarantee.
-
-#### The Rule
-
-> `curatum X` means "use allocator X, resolved now, at the point this code is written."
-
-Lexical capture, not dynamic scoping. Same as how closures capture variables.
-
-### Open Questions
-
-1. Can `curatum` be used without a `cura` block if the allocator exists in scope?
-2. Should there be a module-level `curatum` default?
+- `curatum` parameters (strip from signature and callsites)
+- `curatum` callsite annotations (strip entirely)
+- Allocator-related `cura` blocks (generate normal try/finally for cleanup, ignore allocator aspect)
