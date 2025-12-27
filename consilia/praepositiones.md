@@ -286,6 +286,15 @@ scribe(n, a)
 
 **For** field `nomen`, bind it as `n`. Same pattern as parameter aliasing — `source pro local`.
 
+### Import Alias
+
+```fab
+ex norma importa scribe pro s, lege pro l
+s("Salve!")
+```
+
+**For** import `scribe`, bind it locally as `s`. Same pattern — `external pro internal`.
+
 ### Summary
 
 | Pattern                      | Meaning                   |
@@ -295,6 +304,7 @@ scribe(n, a)
 | `si Variant pro fields { }`  | Bind variant fields       |
 | `Type external pro internal` | Internal parameter name   |
 | `{ field pro alias }`        | Destructuring field alias |
+| `importa name pro alias`     | Import alias              |
 
 ---
 
@@ -395,6 +405,7 @@ ad url ("GET") fiet Response qua resp { }
 | `pro`       | Variant binding (`discerne`) | Not done   |
 | `pro`       | Internal param name          | Not done   |
 | `pro`       | Destructuring alias          | Not done   |
+| `pro`       | Import alias                 | Not done   |
 | `qua`       | Response binding (`ad`)      | Partial    |
 | `qua`       | Type assertion               | Done       |
 
