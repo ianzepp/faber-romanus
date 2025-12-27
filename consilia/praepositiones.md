@@ -15,6 +15,12 @@ This is not overloading. It's positional grammar.
 
 ---
 
+## Banned: `cum`
+
+The Latin preposition `cum` ("with") is **permanently banned** from Faber. Its English homograph makes it unsuitable for a programming language. Use alternative constructs for "with" semantics — `cura` for resource management, composition for companion values.
+
+---
+
 ## The Five Prepositions
 
 | Preposition | Latin Meaning       | Core Semantic         |

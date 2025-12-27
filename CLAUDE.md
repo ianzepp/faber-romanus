@@ -49,6 +49,10 @@ functio greet(name: textus): textus
 
 The colon `:` is used only for default values in genus properties, not for type annotations.
 
+## Banned Keywords
+
+- `cum` — The Latin preposition "with" is permanently banned due to its English homograph.
+
 ## Code Standards
 
 **Documentation Tags** (in comments):
