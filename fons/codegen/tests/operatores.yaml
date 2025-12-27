@@ -124,6 +124,26 @@
   py:
       - 'x -= 1'
 
+# &= bitwise AND assignment
+- name: compound bitwise AND
+  input: |
+      varia flags = 0xFF
+      flags &= 0x0F
+  ts:
+      - 'flags &= 0x0F'
+  py:
+      - 'flags &= 0x0F'
+
+# |= bitwise OR assignment
+- name: compound bitwise OR
+  input: |
+      varia flags = 0
+      flags |= 0x01
+  ts:
+      - 'flags |= 0x01'
+  py:
+      - 'flags |= 0x01'
+
 # =============================================================================
 # Ternary Operator
 # =============================================================================
@@ -296,3 +316,67 @@
   input: fixum x = nums[0 usque 2]
   ts: 'const x = nums.slice(0, 3);'
   py: 'x = nums[0:3]'
+
+# =============================================================================
+# Type Cast (ut)
+# =============================================================================
+
+# ut casts expression to type (as in TS, ignored in Python)
+- name: simple type cast
+  input: fixum name = data ut textus
+  ts: 'const name = (data as string);'
+  py: 'name = data'
+
+# Cast member expression
+- name: cast member expression
+  input: fixum body = response.body ut objectum
+  ts: 'const body = (response.body as object);'
+  py: 'body = response.body'
+
+# =============================================================================
+# Type Check (est)
+# =============================================================================
+
+# est with primitive uses typeof in TS, isinstance in Python
+- name: est with primitive typeof
+  input: fixum check = x est textus
+  ts:
+      - 'typeof x === "string"'
+  py:
+      - 'isinstance(x, str)'
+
+# non est negates the check
+- name: non est negated
+  input: fixum check = x non est numerus
+  ts:
+      - 'typeof x !== "number"'
+  py:
+      - 'not isinstance(x, int)'
+
+# est with user type uses instanceof
+- name: est with user type instanceof
+  input: fixum check = obj est Persona
+  ts:
+      - 'instanceof Persona'
+  py:
+      - 'isinstance(obj, Persona)'
+
+# =============================================================================
+# Null Check Operators
+# =============================================================================
+
+# nihil unary checks if value is null
+- name: nihil unary
+  input: 'si nihil x { scribe "null" }'
+  ts:
+      - '(x === null)'
+  py:
+      - '(x is None)'
+
+# nonnihil unary checks if value is not null
+- name: nonnihil unary
+  input: 'si nonnihil x { scribe "not null" }'
+  ts:
+      - '(x !== null)'
+  py:
+      - '(x is not None)'

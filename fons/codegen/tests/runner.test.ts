@@ -19,14 +19,20 @@ import { generate } from '../index';
 const TARGETS = ['ts', 'py'] as const;
 type Target = (typeof TARGETS)[number];
 
+interface TargetExpectation {
+    contains?: string[];
+    not_contains?: string[];
+    exact?: string;
+}
+
 interface TestCase {
     name: string;
     input: string;
-    ts?: string | string[];
-    py?: string | string[];
-    zig?: string | string[];
-    cpp?: string | string[];
-    rs?: string | string[];
+    ts?: string | string[] | TargetExpectation;
+    py?: string | string[] | TargetExpectation;
+    zig?: string | string[] | TargetExpectation;
+    cpp?: string | string[] | TargetExpectation;
+    rs?: string | string[] | TargetExpectation;
     skip?: Target[];
 }
 
@@ -49,14 +55,30 @@ function compile(code: string, target: Target = 'ts'): string {
  * Check if output matches expectation.
  * - String: exact match (after trimming)
  * - Array: all fragments must be present (contains)
+ * - Object: { contains?: [], not_contains?: [], exact?: string }
  */
-function checkOutput(output: string, expected: string | string[]): void {
-    if (Array.isArray(expected)) {
+function checkOutput(output: string, expected: string | string[] | TargetExpectation): void {
+    if (typeof expected === 'string') {
+        expect(output.trim()).toBe(expected);
+    } else if (Array.isArray(expected)) {
         for (const fragment of expected) {
             expect(output).toContain(fragment);
         }
     } else {
-        expect(output.trim()).toBe(expected);
+        // Object form with contains/not_contains/exact
+        if (expected.exact !== undefined) {
+            expect(output.trim()).toBe(expected.exact);
+        }
+        if (expected.contains) {
+            for (const fragment of expected.contains) {
+                expect(output).toContain(fragment);
+            }
+        }
+        if (expected.not_contains) {
+            for (const fragment of expected.not_contains) {
+                expect(output).not.toContain(fragment);
+            }
+        }
     }
 }
 

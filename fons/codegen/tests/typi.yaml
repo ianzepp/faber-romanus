@@ -1,5 +1,5 @@
 # Typi - Type system codegen tests
-# Covers: type aliases, ordo (enum), union types, nullable
+# Covers: type aliases, ordo (enum), union types, nullable, numeric types
 
 # =============================================================================
 # Type Aliases
@@ -16,6 +16,104 @@
   input: typus StringList = lista<textus>
   ts: 'type StringList = Array<string>;'
   py: 'StringList = list[str]'
+
+# typeof captures the type of a value (TS only - Python uses Any)
+- name: typeof type alias
+  input: |
+      fixum config = { debug: verum }
+      typus ConfigTypus = typus config
+  ts:
+      - 'type ConfigTypus = typeof config;'
+
+# Numeric type parameters are ignored in TS (no fixed-width integers)
+- name: type with numeric parameter ignored
+  input: typus SmallNum = numerus<32>
+  ts: 'type SmallNum = number;'
+
+# Size type parameters (i32, u64) preserved but ignored in TS
+- name: type with size type parameter
+  input: typus Int32 = numerus<i32>
+  ts: 'type Int32 = number<i32>;'
+
+# =============================================================================
+# Primitive Type Mappings
+# =============================================================================
+
+# fractus is floating point (number in TS, float in Python)
+- name: fractus maps to number
+  input: typus Ratio = fractus
+  ts: 'type Ratio = number;'
+  py: 'Ratio = float'
+
+# decimus is arbitrary precision decimal (requires import)
+- name: decimus maps to Decimal
+  input: typus Price = decimus
+  ts:
+      - "import type Decimal from 'decimal.js';"
+      - 'type Price = Decimal;'
+  py:
+      - 'from decimal import Decimal'
+      - 'Price = Decimal'
+
+# octeti is byte array
+- name: octeti maps to Uint8Array
+  input: typus Buffer = octeti
+  ts: 'type Buffer = Uint8Array;'
+  py: 'Buffer = bytes'
+
+# magnus is arbitrary precision integer (bigint in TS, int in Python)
+- name: magnus maps to bigint
+  input: typus BigNum = magnus
+  ts: 'type BigNum = bigint;'
+  py: 'BigNum = int'
+
+# magnus variable with bigint literal
+- name: magnus variable with literal
+  input: fixum magnus huge = 99999999999999999999n
+  ts: 'const huge: bigint = 99999999999999999999n;'
+  py: 'huge: int = 99999999999999999999'
+
+# numquam is the never type (function never returns)
+- name: numquam maps to never
+  input: 'functio moritur() -> numquam { iace novum Erratum("fatal") }'
+  ts:
+      - 'function moritur(): never'
+  py:
+      - 'def moritur() -> NoReturn:'
+
+# ignotum is the unknown type
+- name: ignotum maps to unknown
+  input: typus Mystery = ignotum
+  ts: 'type Mystery = unknown;'
+  py: 'Mystery = Any'
+
+# ignotum variable accepts any value
+- name: ignotum variable
+  input: varia ignotum x = 42
+  ts: 'let x: unknown = 42;'
+  py: 'x: Any = 42'
+
+# =============================================================================
+# Union Types
+# =============================================================================
+
+# unio<A, B> creates union type
+- name: union type with two members
+  input: 'fixum unio<textus, numerus> value = "hello"'
+  ts: 'const value: string | number = "hello";'
+  py: 'value: str | int = "hello"'
+
+# unio can have multiple members
+- name: union type with three members
+  input: fixum unio<textus, numerus, nihil> value = nihil
+  ts: 'const value: string | number | null = null;'
+  py: 'value: str | int | None = None'
+
+# Type alias with union type
+- name: type alias with union
+  input: typus Json = unio<textus, numerus, bivalens, nihil>
+  ts: 'type Json = string | number | boolean | null;'
+  py: 'Json = str | int | bool | None'
 
 # =============================================================================
 # Nullable Types
@@ -43,7 +141,7 @@
       - 'viridis = auto()'
 
 # Enum with explicit numeric values
-- name: enum with values
+- name: enum with numeric values
   input: 'ordo status { pendens = 0, actum = 1, finitum = 2 }'
   ts: 'enum status { pendens = 0, actum = 1, finitum = 2 }'
   py:
@@ -59,6 +157,28 @@
       - 'class direction(Enum):'
       - 'north = "N"'
       - 'south = "S"'
+
+# Enum with mixed auto and explicit values
+- name: enum with mixed values
+  input: 'ordo mixed { a, b = 5, c }'
+  ts: 'enum mixed { a, b = 5, c }'
+  py:
+      - 'class mixed(Enum):'
+      - 'a = auto()'
+      - 'b = 5'
+      - 'c = auto()'
+
+# Accessing enum members via dot notation
+- name: enum member access
+  input: |
+      ordo color { rubrum, viridis }
+      scribe color.rubrum
+  ts:
+      - 'enum color { rubrum, viridis }'
+      - 'console.log(color.rubrum)'
+  py:
+      - 'class color(Enum):'
+      - 'print(color.rubrum)'
 
 # =============================================================================
 # Type Checks (est)

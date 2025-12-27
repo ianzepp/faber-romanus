@@ -1,5 +1,5 @@
 # Structurae - Data structure codegen tests
-# Covers: genus, pactum, destructuring, novum, ego
+# Covers: genus, pactum, destructuring, novum, ego, nexum
 
 # =============================================================================
 # Object Destructuring
@@ -19,6 +19,11 @@
   ts: 'const { nomen: localName } = user;'
   py:
       - 'localName = user["nomen"]'
+
+# Mutable destructuring uses varia
+- name: mutable destructuring
+  input: varia { count } = data
+  ts: 'let { count } = data;'
 
 # =============================================================================
 # Array Destructuring
@@ -42,35 +47,58 @@
   ts: 'const [, second, ] = data;'
   py: '_, second, _ = data'
 
+# Mutable array destructuring
+- name: mutable array destructuring
+  input: varia [x, y] = coords
+  ts: 'let [x, y] = coords;'
+
+# ex array syntax (source first)
+- name: ex array destructuring
+  input: ex coords fixum [x, y, z]
+  ts: 'const [x, y, z] = coords;'
+
+# ex array with rest
+- name: ex array destructuring with rest
+  input: ex items fixum [first, ceteri tail]
+  ts: 'const [first, ...tail] = items;'
+
 # =============================================================================
 # Genus (Class)
 # =============================================================================
 
-# genus declares a class with typed fields
-- name: genus with field
+# genus generates class with auto-merge constructor
+- name: genus with auto-merge constructor
   input: 'genus persona { textus nomen: "X" }'
   ts:
       - 'class persona'
       - 'nomen: string = "X"'
-      - 'constructor('
+      - 'constructor(overrides:'
+      - 'if (overrides.nomen !== undefined)'
   py:
       - 'class persona:'
       - 'nomen: str = "X"'
       - 'def __init__'
 
-# Methods inside genus use ego for self-reference
-- name: genus with method
+# creo becomes private method called from constructor
+- name: genus with creo
   input: |
       genus persona {
-        textus nomen: "X"
-        functio saluta() { redde ego.nomen }
+        numerus aetas: 0
+        functio creo() {
+          si ego.aetas < 0 { ego.aetas = 0 }
+        }
       }
   ts:
-      - 'class persona'
-      - 'return this.nomen'
-  py:
-      - 'class persona:'
-      - 'return self.nomen'
+      - 'this.creo();'
+      - 'private creo()'
+
+# Without creo, no creo method is generated
+- name: genus without creo
+  input: 'genus persona { textus nomen: "X" }'
+  ts:
+      not_contains:
+          - 'this.creo()'
+          - 'private creo()'
 
 # =============================================================================
 # Novum (New)
@@ -105,6 +133,61 @@
       - 'return self.nomen'
 
 # =============================================================================
+# Nexum (Reactive Fields) - TS only
+# =============================================================================
+
+# nexum emits private backing field
+- name: nexum private backing field
+  input: 'genus counter { nexum numerus count: 0 }'
+  ts:
+      - '#count = 0;'
+
+# nexum emits getter
+- name: nexum getter
+  input: 'genus counter { nexum numerus count: 0 }'
+  ts:
+      - 'get count(): number { return this.#count; }'
+
+# nexum emits setter with invalidation
+- name: nexum setter with invalidation
+  input: 'genus counter { nexum numerus count: 0 }'
+  ts:
+      - 'set count(v: number)'
+      - 'this.#count = v'
+      - "__invalidate?.('count')"
+
+# nexum works with different types
+- name: nexum with textus
+  input: 'genus user { nexum textus name: "anon" }'
+  ts:
+      - '#name = "anon";'
+      - 'get name(): string { return this.#name; }'
+      - 'set name(v: string)'
+
+# nexum without initial value
+- name: nexum without initial value
+  input: 'genus timer { nexum numerus elapsed }'
+  ts:
+      - '#elapsed;'
+      - 'get elapsed(): number'
+      - 'set elapsed(v: number)'
+
+# Mixed nexum and regular fields
+- name: mixed nexum and regular fields
+  input: |
+      genus widget {
+        textus id: "x"
+        nexum numerus count: 0
+        bivalens active: verum
+      }
+  ts:
+      - 'id: string = "x";'
+      - 'active: boolean = true;'
+      - '#count = 0;'
+      - 'get count(): number'
+      - 'set count(v: number)'
+
+# =============================================================================
 # Pactum (Interface/Protocol)
 # =============================================================================
 
@@ -121,6 +204,60 @@
       - 'class Salutator(Protocol):'
       - 'def salve(self, nomen: str) -> str:'
 
+# pactum with multiple methods
+- name: pactum with multiple methods
+  input: |
+      pactum Calculator {
+        functio adde(numerus a, numerus b) -> numerus
+        functio minue(numerus a, numerus b) -> numerus
+      }
+  ts:
+      - 'interface Calculator'
+      - 'adde(a: number, b: number): number;'
+      - 'minue(a: number, b: number): number;'
+
+# pactum with async method
+- name: pactum with async method
+  input: |
+      pactum DataFetcher {
+        futura functio fetch(textus url) -> textus
+      }
+  ts:
+      - 'interface DataFetcher'
+      - 'fetch(url: string): Promise<string>;'
+
+# pactum with generator method
+- name: pactum with generator method
+  input: |
+      pactum NumberGenerator {
+        cursor functio generate(numerus max) -> numerus
+      }
+  ts:
+      - 'interface NumberGenerator'
+      - 'generate(max: number): Generator<number>;'
+
+# pactum with async generator method
+- name: pactum with async generator method
+  input: |
+      pactum StreamReader {
+        futura cursor functio read() -> textus
+      }
+  ts:
+      - 'interface StreamReader'
+      - 'read(): AsyncGenerator<string>;'
+
+# pactum with type parameters
+- name: pactum with type parameters
+  input: |
+      pactum Container<T> {
+        functio get() -> T
+        functio set(T value)
+      }
+  ts:
+      - 'interface Container<T>'
+      - 'get(): T;'
+      - 'set(value: T): void;'
+
 # implet makes a class implement an interface
 - name: genus implements pactum
   input: |
@@ -135,6 +272,7 @@
   ts:
       - 'interface Greeter'
       - 'class FriendlyGreeter implements Greeter'
+      - 'greet(name: string): string'
   py:
       - 'class Greeter(Protocol):'
       - 'class FriendlyGreeter(Greeter):'
