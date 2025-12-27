@@ -409,3 +409,151 @@ If async cleanup is truly needed, do it explicitly before scope exit.
 ### Error during cleanup?
 
 If `solve()` fails, the error propagates. The resource may be in an undefined state. This matches Rust's Drop behavior (panics on drop failure are usually fatal).
+
+---
+
+## Proposed: `curatum` Callsite Annotation
+
+**Status: Not implemented**
+
+Currently, allocators are threaded through function signatures via `curator` parameters:
+
+```fab
+functio fetch(curator alloc, textus url) fiet Response { ... }
+fetch(arena, "https://...")
+```
+
+**Proposed:** Use `curatum` at the callsite to specify the allocator without changing function signatures:
+
+```fab
+functio fetch(textus url) fiet Response { ... }
+fetch("https://...") curatum arena
+```
+
+### How It Works
+
+`curatum` pushes an allocator onto the curator stack for that call's duration:
+
+```fab
+functio outer() {
+    // getCurator() = "alloc" (default)
+
+    inner() curatum arena
+    // getCurator() = "arena" during inner()'s execution
+
+    // getCurator() = "alloc" again
+}
+
+functio inner() {
+    varia items = []      // uses current curator
+    items.adde(1)         // uses getCurator() -> "arena"
+}
+```
+
+The allocator is **contextual**, not passed as an argument. The Zig codegen references whatever's on the stack.
+
+### With `ad` Dispatch
+
+Works naturally with `ad` calls:
+
+```fab
+ad "https://api.example.com/users" ("GET") curatum arena fiet Response qua r { }
+```
+
+The `curatum arena` sets the curator for the stdlib HTTP call and any allocations it performs internally.
+
+### Benefits
+
+| Aspect                | `curator` param     | `curatum` callsite      |
+| --------------------- | ------------------- | ----------------------- |
+| Function signature    | Includes allocator  | Clean, no allocator     |
+| Caller responsibility | Pass as first arg   | Annotate with `curatum` |
+| Nested calls          | Must thread through | Automatic via stack     |
+| Non-systems targets   | Ignored but present | Ignored entirely        |
+
+### Scoping Rules
+
+```fab
+// Default curator
+varia a = []  // uses default 'alloc'
+
+// Override for single call
+process(data) curatum arena  // arena for this call
+
+// Override for block (via cura)
+cura arena() fit temp {
+    varia b = []  // uses 'temp'
+    process(data)  // also uses 'temp'
+}
+
+// Explicit override within cura
+cura arena() fit temp {
+    process(data) curatum other  // uses 'other', not 'temp'
+}
+```
+
+### Async Boundaries
+
+The `curatum` value is **captured at creation**, not looked up dynamically at runtime.
+
+```fab
+cura arena() fit temp {
+    cede fetch("url") curatum temp
+}
+```
+
+Codegen (Zig):
+
+```zig
+var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+defer arena.deinit();
+const temp = arena.allocator();
+
+// temp is captured INTO the async frame at creation
+const result = try await async fetch(temp, "url");
+```
+
+The allocator is passed when the async operation is _created_, not when it _resumes_. The frame holds `temp` for its entire lifetime.
+
+#### Parallel Async
+
+Each task captures its own allocator:
+
+```fab
+cura arena() fit temp1 {
+    cura arena() fit temp2 {
+        fixum tasks = [
+            fetch("url1") curatum temp1,
+            fetch("url2") curatum temp2,
+        ]
+        cede promissum.omnes(tasks)
+    }
+}
+```
+
+No interleaving confusion — each frame has its allocator baked in at creation.
+
+#### Restriction: Awaited Calls Only
+
+`curatum` is only valid for `cede` (awaited) calls, not spawned/fire-and-forget tasks:
+
+```fab
+// OK: awaited, allocator lifetime is guaranteed
+cede fetch("url") curatum temp
+
+// ERROR: spawned task may outlive allocator
+spawn fetch("url") curatum temp
+```
+
+The allocator must outlive the async operation. With `cede`, the enclosing scope waits for completion, guaranteeing the allocator is still valid. Spawned tasks have no such guarantee.
+
+#### The Rule
+
+> `curatum X` means "use allocator X, resolved now, at the point this code is written."
+
+Lexical capture, not dynamic scoping. Same as how closures capture variables.
+
+### Open Questions
+
+1. Can `curatum` be used without a `cura` block if the allocator exists in scope?
+2. Should there be a module-level `curatum` default?

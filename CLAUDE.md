@@ -31,6 +31,24 @@ See `GRAMMAR.md` for the complete syntax reference. It is auto-generated from pa
 - `consilia/` — design documents (not authoritative)
 - `grammatica/` — auto-generated grammar docs by category
 
+## Syntax Reminder
+
+Faber uses **type-first** syntax, not TypeScript-style `name: Type`:
+
+```fab
+// Correct
+textus nomen
+numerus aetas
+functio greet(textus name) -> textus
+
+// Wrong (not Faber syntax)
+nomen: textus
+aetas: numerus
+functio greet(name: textus): textus
+```
+
+The colon `:` is used only for default values in genus properties, not for type annotations.
+
 ## Code Standards
 
 **Documentation Tags** (in comments):
