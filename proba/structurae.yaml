@@ -631,3 +631,62 @@
       - 'template<typename T>'
       - 'concept Greeter = requires(T t) {'
       - '{ t.greet(std::declval<std::string>()) } -> std::same_as<std::string>;'
+
+# =============================================================================
+# Discretio (Tagged Unions)
+# =============================================================================
+
+# discretio creates a tagged union type
+- name: 'discretio with variants'
+  input: |
+      discretio Result {
+        Success { numerus value }
+        Error { textus message }
+      }
+  ts:
+      - "type Result = { tag: 'Success'; value: number } | { tag: 'Error'; message: string }"
+  py:
+      - '@dataclass'
+      - 'class Result_Success:'
+      - 'value: int'
+      - 'class Result_Error:'
+      - 'message: str'
+      - 'Result = Result_Success | Result_Error'
+  cpp:
+      - 'struct Success {'
+      - 'int64_t value'
+      - 'struct Error {'
+      - 'std::string message'
+      - 'using Result = std::variant<Success, Error>'
+  zig:
+      - 'const Result = union(enum) {'
+      - 'success: struct { value: i64 }'
+      - 'error: struct { message: []const u8 }'
+
+# discretio variant without fields
+- name: 'discretio with empty variant'
+  input: |
+      discretio Option {
+        Some { numerus value }
+        None
+      }
+  ts:
+      - "type Option = { tag: 'Some'; value: number } | { tag: 'None' }"
+
+# =============================================================================
+# In Statement (Mutation Blocks)
+# =============================================================================
+
+# in allows chained mutations on an object
+- name: 'in statement for object mutation'
+  input: |
+      in user {
+        nomen = "Marcus"
+        aetas = 30
+      }
+  ts:
+      - 'user.nomen = "Marcus"'
+      - 'user.aetas = 30'
+  py:
+      - 'user.nomen = "Marcus"'
+      - 'user.aetas = 30'

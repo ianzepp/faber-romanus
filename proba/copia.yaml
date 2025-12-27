@@ -13,6 +13,8 @@
       set.adde(5)
   cpp:
       - '.insert(5)'
+  ts:
+      - '.add('
 
 # habet checks if element exists in set
 - name: 'habet -> contains'
@@ -21,6 +23,8 @@
       set.habet(5)
   cpp:
       - '.contains(5)'
+  ts:
+      - '.has('
 
 # dele removes an element from the set
 - name: 'dele -> erase'
@@ -29,6 +33,8 @@
       set.dele(5)
   cpp:
       - '.erase(5)'
+  ts:
+      - '.delete('
 
 # longitudo returns the number of elements
 - name: 'longitudo -> size'
@@ -37,6 +43,8 @@
       set.longitudo()
   cpp:
       - '.size()'
+  ts:
+      - '.size'
 
 # vacua checks if the set is empty
 - name: 'vacua -> empty'
@@ -45,6 +53,8 @@
       set.vacua()
   cpp:
       - '.empty()'
+  ts:
+      - '.size === 0'
 
 # purga clears the entire set
 - name: 'purga -> clear'
@@ -53,6 +63,8 @@
       set.purga()
   cpp:
       - '.clear()'
+  ts:
+      - '.clear('
 
 # =============================================================================
 # Set Operations
@@ -67,6 +79,8 @@
   cpp:
       - 'std::unordered_set'
       - '.insert('
+  ts:
+      - '[...'
 
 # intersectio returns the intersection of two sets
 - name: 'intersectio -> set intersection'
@@ -77,6 +91,8 @@
   cpp:
       - '.contains('
       - '.insert('
+  ts:
+      - '.filter('
 
 # differentia returns elements in A but not in B
 - name: 'differentia -> set difference'
@@ -87,6 +103,8 @@
   cpp:
       - '!'
       - '.contains('
+  ts:
+      - '.filter('
 
 # symmetrica returns elements in either set but not both
 - name: 'symmetrica -> symmetric difference'
@@ -97,6 +115,8 @@
   cpp:
       - '!'
       - '.contains('
+  ts:
+      - '.filter('
 
 # =============================================================================
 # Predicates
@@ -111,6 +131,8 @@
   cpp:
       - 'std::ranges::all_of'
       - '.contains('
+  ts:
+      - '.every('
 
 # supercopia checks if A is a superset of B
 - name: 'supercopia -> all_of reversed'
@@ -120,6 +142,8 @@
       setA.supercopia(setB)
   cpp:
       - 'std::ranges::all_of'
+  ts:
+      - '.every('
 
 # =============================================================================
 # Conversions
@@ -132,6 +156,8 @@
       set.inLista()
   cpp:
       - 'std::vector('
+  ts:
+      - '[...'
 
 # =============================================================================
 # Iteration
@@ -144,3 +170,5 @@
       set.perambula(pro x { scribe x })
   cpp:
       - 'std::ranges::for_each('
+  ts:
+      - '.forEach('

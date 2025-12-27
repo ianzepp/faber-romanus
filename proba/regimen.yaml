@@ -63,6 +63,21 @@
       - 'a();'
       - '} else if ((x == 2)) {'
 
+# sin is an alias for aliter si (else if)
+- name: 'sin alias for else-if'
+  input: |
+      si x == 1 { a() }
+      sin x == 2 { b() }
+      aliter { c() }
+  ts:
+      - 'if ((x == 1))'
+      - 'else if ((x == 2))'
+      - 'else {'
+  py:
+      - 'if (x == 1):'
+      - 'elif (x == 2):'
+      - 'else:'
+
 # =============================================================================
 # While Loops
 # =============================================================================
@@ -339,6 +354,8 @@
 # praefixum expression form evaluates at compile time
 - name: 'praefixum expression form'
   input: 'fixum size = praefixum(256 * 4)'
+  ts:
+      - 'const size = ((256 * 4))'
   cpp:
       - '(256 * 4)'
   zig:
@@ -351,6 +368,11 @@
         varia x = 10
         redde x * 2
       }
+  ts:
+      - '(() => {'
+      - 'let x = 10'
+      - 'return (x * 2)'
+      - '})()'
   cpp:
       - '[&]'
       - 'auto x = 10'

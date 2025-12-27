@@ -9,58 +9,72 @@
 # pone inserts or updates a key-value pair
 - name: 'pone -> insert_or_assign'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.pone("key", 42)
+    fixum tabula<textus, numerus> map = {}
+    map.pone("key", 42)
   cpp:
-      - '.insert_or_assign('
+    - '.insert_or_assign('
+  ts:
+    - '.set('
 
 # accipe retrieves a value by key (throws if not found)
 - name: 'accipe -> at'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.accipe("key")
+    fixum tabula<textus, numerus> map = {}
+    map.accipe("key")
   cpp:
-      - '.at('
+    - '.at('
+  ts:
+    - '.get('
 
 # habet checks if key exists
 - name: 'habet -> contains'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.habet("key")
+    fixum tabula<textus, numerus> map = {}
+    map.habet("key")
   cpp:
-      - '.contains('
+    - '.contains('
+  ts:
+    - '.has('
 
 # dele removes a key-value pair
 - name: 'dele -> erase'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.dele("key")
+    fixum tabula<textus, numerus> map = {}
+    map.dele("key")
   cpp:
-      - '.erase('
+    - '.erase('
+  ts:
+    - '.delete('
 
 # longitudo returns the number of entries
 - name: 'longitudo -> size'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.longitudo()
+    fixum tabula<textus, numerus> map = {}
+    map.longitudo()
   cpp:
-      - '.size()'
+    - '.size()'
+  ts:
+    - '.size'
 
 # vacua checks if the map is empty
 - name: 'vacua -> empty'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.vacua()
+    fixum tabula<textus, numerus> map = {}
+    map.vacua()
   cpp:
-      - '.empty()'
+    - '.empty()'
+  ts:
+    - '.size === 0'
 
 # purga clears the entire map
 - name: 'purga -> clear'
   input: |
-      varia tabula<textus, numerus> map = {}
-      map.purga()
+    varia tabula<textus, numerus> map = {}
+    map.purga()
   cpp:
-      - '.clear()'
+    - '.clear()'
+  ts:
+    - '.clear('
 
 # =============================================================================
 # Iteration
@@ -69,18 +83,22 @@
 # claves returns a view of all keys
 - name: 'claves -> views::keys'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.claves()
+    fixum tabula<textus, numerus> map = {}
+    map.claves()
   cpp:
-      - 'std::views::keys'
+    - 'std::views::keys'
+  ts:
+    - '.keys('
 
 # valores returns a view of all values
 - name: 'valores -> views::values'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.valores()
+    fixum tabula<textus, numerus> map = {}
+    map.valores()
   cpp:
-      - 'std::views::values'
+    - 'std::views::values'
+  ts:
+    - '.values('
 
 # =============================================================================
 # Extended Methods
@@ -89,25 +107,31 @@
 # accipeAut returns value if exists, otherwise default
 - name: 'accipeAut -> contains + at with default'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.accipeAut("key", 0)
+    fixum tabula<textus, numerus> map = {}
+    map.accipeAut("key", 0)
   cpp:
-      - '.contains('
-      - '.at('
+    - '.contains('
+    - '.at('
+  ts:
+    - '.get('
 
 # confla merges another map into this one
 - name: 'confla -> merge maps'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      fixum tabula<textus, numerus> other = {}
-      map.confla(other)
+    fixum tabula<textus, numerus> map = {}
+    fixum tabula<textus, numerus> other = {}
+    map.confla(other)
   cpp:
-      - 'for (auto& [k, v]'
+    - 'for (auto& [k, v]'
+  ts:
+    - '[...'
 
 # inLista converts map entries to a vector
 - name: 'inLista -> vector from map'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      map.inLista()
+    fixum tabula<textus, numerus> map = {}
+    map.inLista()
   cpp:
-      - 'std::vector('
+    - 'std::vector('
+  ts:
+    - '[...'

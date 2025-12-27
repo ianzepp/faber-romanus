@@ -13,6 +13,8 @@
   input: 'items.adde(1)'
   cpp:
       - '.push_back(1)'
+  ts:
+      - '.push('
 
 # addita returns a new list with the element appended (copy + push_back)
 - name: 'addita -> copy and push_back'
@@ -21,6 +23,8 @@
       - 'auto v = items'
       - 'v.push_back(1)'
       - 'return v'
+  ts:
+      - '[...'
 
 # praepone inserts at the beginning
 - name: 'praepone -> insert at begin'
@@ -28,6 +32,8 @@
   cpp:
       - '.insert('
       - '.begin()'
+  ts:
+      - '.unshift('
 
 # =============================================================================
 # Removing Elements
@@ -39,6 +45,8 @@
   cpp:
       - '.back()'
       - '.pop_back()'
+  ts:
+      - '.pop('
 
 # decapita removes and returns the first element
 - name: 'decapita -> erase at begin'
@@ -46,12 +54,16 @@
   cpp:
       - '.front()'
       - '.erase('
+  ts:
+      - '.shift('
 
 # purga clears the entire list
 - name: 'purga -> clear'
   input: 'items.purga()'
   cpp:
       - '.clear()'
+  ts:
+      - '.length = 0'
 
 # =============================================================================
 # Accessing Elements
@@ -62,30 +74,40 @@
   input: 'items.primus()'
   cpp:
       - '.front()'
+  ts:
+      - '[0]'
 
 # ultimus returns the last element
 - name: 'ultimus -> back'
   input: 'items.ultimus()'
   cpp:
       - '.back()'
+  ts:
+      - '.at('
 
 # accipe returns element at index (bounds-checked)
 - name: 'accipe -> at'
   input: 'items.accipe(0)'
   cpp:
       - '.at(0)'
+  ts:
+      - '[0]'
 
 # longitudo returns the size
 - name: 'longitudo -> size'
   input: 'items.longitudo()'
   cpp:
       - '.size()'
+  ts:
+      - '.length'
 
 # vacua returns whether the list is empty
 - name: 'vacua -> empty'
   input: 'items.vacua()'
   cpp:
       - '.empty()'
+  ts:
+      - '.length === 0'
 
 # =============================================================================
 # Searching
@@ -97,6 +119,8 @@
   cpp:
       - 'std::find('
       - '!= items.end()'
+  ts:
+      - '.includes('
 
 # indiceDe returns the index of an element
 - name: 'indiceDe -> std::find with distance'
@@ -104,6 +128,8 @@
   cpp:
       - 'std::find('
       - 'std::distance('
+  ts:
+      - '.indexOf('
 
 # =============================================================================
 # Transformations (C++23 ranges)
@@ -115,6 +141,8 @@
   cpp:
       - 'std::views::filter'
       - 'std::ranges::to<std::vector>'
+  ts:
+      - '.filter('
 
 # mappata transforms elements using views::transform
 - name: 'mappata -> views::transform'
@@ -122,6 +150,8 @@
   cpp:
       - 'std::views::transform'
       - 'std::ranges::to<std::vector>'
+  ts:
+      - '.map('
 
 # inversa returns reversed copy
 - name: 'inversa -> views::reverse'
@@ -129,6 +159,8 @@
   cpp:
       - 'std::views::reverse'
       - 'std::ranges::to<std::vector>'
+  ts:
+      - '.reverse('
 
 # prima takes first n elements
 - name: 'prima -> views::take'
@@ -136,6 +168,8 @@
   cpp:
       - 'std::views::take(5)'
       - 'std::ranges::to<std::vector>'
+  ts:
+      - '.slice('
 
 # omitte drops first n elements
 - name: 'omitte -> views::drop'
@@ -143,6 +177,8 @@
   cpp:
       - 'std::views::drop(2)'
       - 'std::ranges::to<std::vector>'
+  ts:
+      - '.slice('
 
 # =============================================================================
 # Predicates
@@ -153,12 +189,16 @@
   input: 'items.omnes(pro x: x > 0)'
   cpp:
       - 'std::ranges::all_of('
+  ts:
+      - '.every('
 
 # aliquis checks if any element matches predicate
 - name: 'aliquis -> ranges::any_of'
   input: 'items.aliquis(pro x: x > 0)'
   cpp:
       - 'std::ranges::any_of('
+  ts:
+      - '.some('
 
 # =============================================================================
 # Mutating Operations
@@ -169,12 +209,16 @@
   input: 'items.ordina()'
   cpp:
       - 'std::ranges::sort(items)'
+  ts:
+      - '.sort('
 
 # inverte reverses the list in-place
 - name: 'inverte -> ranges::reverse'
   input: 'items.inverte()'
   cpp:
       - 'std::ranges::reverse(items)'
+  ts:
+      - '.reverse('
 
 # =============================================================================
 # Numeric Aggregation
@@ -185,18 +229,24 @@
   input: 'nums.summa()'
   cpp:
       - 'std::accumulate('
+  ts:
+      - '.reduce('
 
 # minimus returns the minimum element
 - name: 'minimus -> ranges::min_element'
   input: 'nums.minimus()'
   cpp:
       - 'std::ranges::min_element('
+  ts:
+      - 'Math.min(...'
 
 # maximus returns the maximum element
 - name: 'maximus -> ranges::max_element'
   input: 'nums.maximus()'
   cpp:
       - 'std::ranges::max_element('
+  ts:
+      - 'Math.max(...'
 
 # =============================================================================
 # Iteration
@@ -207,6 +257,8 @@
   input: 'items.perambula(pro x { scribe x })'
   cpp:
       - 'std::ranges::for_each('
+  ts:
+      - '.forEach('
 
 # =============================================================================
 # Header Includes
@@ -217,15 +269,21 @@
   input: 'items.continet(5)'
   cpp:
       - '#include <algorithm>'
+  ts:
+      - '.includes('
 
 # Ranges methods add ranges header
 - name: 'ranges methods add ranges header'
   input: 'items.filtrata(pro x: x > 0)'
   cpp:
       - '#include <ranges>'
+  ts:
+      - '.filter('
 
 # Numeric methods add numeric header
 - name: 'numeric methods add numeric header'
   input: 'nums.summa()'
   cpp:
       - '#include <numeric>'
+  ts:
+      - '.reduce('
