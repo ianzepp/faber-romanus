@@ -194,12 +194,30 @@
   input: 'genus counter { nexum numerus count: 0 }'
   ts:
       - '#count = 0;'
+  zig:
+      - 'const counter = struct {'
+      - 'count: i64 = 0,'
+      - 'const Self = @This();'
+      - 'pub fn init(overrides: anytype) Self {'
+      - 'const self = Self{'
+      - '.count = if (@hasField(@TypeOf(overrides), "count")) overrides.count else 0,'
+      - '};'
+      - 'return self;'
 
 # nexum emits getter
 - name: 'nexum getter'
   input: 'genus counter { nexum numerus count: 0 }'
   ts:
       - 'get count(): number { return this.#count; }'
+  zig:
+      - 'const counter = struct {'
+      - 'count: i64 = 0,'
+      - 'const Self = @This();'
+      - 'pub fn init(overrides: anytype) Self {'
+      - 'const self = Self{'
+      - '.count = if (@hasField(@TypeOf(overrides), "count")) overrides.count else 0,'
+      - '};'
+      - 'return self;'
 
 # nexum emits setter with invalidation
 - name: 'nexum setter with invalidation'
@@ -208,6 +226,15 @@
       - 'set count(v: number)'
       - 'this.#count = v'
       - "__invalidate?.('count')"
+  zig:
+      - 'const counter = struct {'
+      - 'count: i64 = 0,'
+      - 'const Self = @This();'
+      - 'pub fn init(overrides: anytype) Self {'
+      - 'const self = Self{'
+      - '.count = if (@hasField(@TypeOf(overrides), "count")) overrides.count else 0,'
+      - '};'
+      - 'return self;'
 
 # nexum works with different types
 - name: 'nexum with textus'
@@ -216,6 +243,15 @@
       - '#name = "anon";'
       - 'get name(): string { return this.#name; }'
       - 'set name(v: string)'
+  zig:
+      - 'const user = struct {'
+      - 'name: []const u8 = "anon",'
+      - 'const Self = @This();'
+      - 'pub fn init(overrides: anytype) Self {'
+      - 'const self = Self{'
+      - '.name = if (@hasField(@TypeOf(overrides), "name")) overrides.name else "anon",'
+      - '};'
+      - 'return self;'
 
 # nexum without initial value
 - name: 'nexum without initial value'
@@ -224,6 +260,15 @@
       - '#elapsed;'
       - 'get elapsed(): number'
       - 'set elapsed(v: number)'
+  zig:
+      - 'const timer = struct {'
+      - 'elapsed: i64 = undefined,'
+      - 'const Self = @This();'
+      - 'pub fn init(overrides: anytype) Self {'
+      - 'const self = Self{'
+      - '.elapsed = if (@hasField(@TypeOf(overrides), "elapsed")) overrides.elapsed else undefined,'
+      - '};'
+      - 'return self;'
 
 # Mixed nexum and regular fields
 - name: 'mixed nexum and regular fields'
@@ -239,6 +284,19 @@
       - '#count = 0;'
       - 'get count(): number'
       - 'set count(v: number)'
+  zig:
+      - 'const widget = struct {'
+      - 'id: []const u8 = "x",'
+      - 'count: i64 = 0,'
+      - 'active: bool = true,'
+      - 'const Self = @This();'
+      - 'pub fn init(overrides: anytype) Self {'
+      - 'const self = Self{'
+      - '.id = if (@hasField(@TypeOf(overrides), "id")) overrides.id else "x",'
+      - '.count = if (@hasField(@TypeOf(overrides), "count")) overrides.count else 0,'
+      - '.active = if (@hasField(@TypeOf(overrides), "active")) overrides.active else true,'
+      - '};'
+      - 'return self;'
 
 # =============================================================================
 # Pactum (Interface/Protocol)
@@ -275,6 +333,10 @@
       - 'interface Calculator'
       - 'adde(a: number, b: number): number;'
       - 'minue(a: number, b: number): number;'
+  zig:
+      - '// pactum Calculator: interface contract (Zig uses duck typing)'
+      - '//   requires fn adde(a: i64, b: i64) i64'
+      - '//   requires fn minue(a: i64, b: i64) i64'
 
 # pactum with async method
 - name: 'pactum with async method'
@@ -285,6 +347,9 @@
   ts:
       - 'interface DataFetcher'
       - 'fetch(url: string): Promise<string>;'
+  zig:
+      - '// pactum DataFetcher: interface contract (Zig uses duck typing)'
+      - '//   requires fn fetch(url: []const u8) []const u8'
 
 # pactum with generator method
 - name: 'pactum with generator method'
@@ -295,6 +360,9 @@
   ts:
       - 'interface NumberGenerator'
       - 'generate(max: number): Generator<number>;'
+  zig:
+      - '// pactum NumberGenerator: interface contract (Zig uses duck typing)'
+      - '//   requires fn generate(max: i64) i64'
 
 # pactum with async generator method
 - name: 'pactum with async generator method'
@@ -305,6 +373,9 @@
   ts:
       - 'interface StreamReader'
       - 'read(): AsyncGenerator<string>;'
+  zig:
+      - '// pactum StreamReader: interface contract (Zig uses duck typing)'
+      - '//   requires fn read() []const u8'
 
 # pactum with type parameters
 - name: 'pactum with type parameters'
@@ -317,6 +388,10 @@
       - 'interface Container<T>'
       - 'get(): T;'
       - 'set(value: T): void;'
+  zig:
+      - '// pactum Container: interface contract (Zig uses duck typing)'
+      - '//   requires fn get() T'
+      - '//   requires fn set(value: T) void'
 
 # implet makes a class implement an interface
 - name: 'genus implements pactum'
@@ -336,3 +411,11 @@
   py:
       - 'class Greeter(Protocol):'
       - 'class FriendlyGreeter(Greeter):'
+  zig:
+      - '// pactum Greeter: interface contract (Zig uses duck typing)'
+      - '//   requires fn greet(name: []const u8) []const u8'
+      - 'const FriendlyGreeter = struct {'
+      - 'const Self = @This();'
+      - 'pub fn greet(self: *const Self, name: []const u8) []const u8 {'
+      - 'return ("Hello, " ++ name);'
+      - '};'

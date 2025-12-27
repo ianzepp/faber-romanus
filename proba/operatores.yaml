@@ -141,6 +141,9 @@
       - 'x += 1'
   py:
       - 'x += 1'
+  zig:
+      - 'var x: i64 = 0;'
+      - 'x += 1;'
 
 # -= operator - same in both targets
 - name: 'compound subtract'
@@ -151,6 +154,9 @@
       - 'x -= 1'
   py:
       - 'x -= 1'
+  zig:
+      - 'var x: i64 = 10;'
+      - 'x -= 1;'
 
 # &= bitwise AND assignment
 - name: 'compound bitwise AND'
@@ -161,6 +167,9 @@
       - 'flags &= 0x0F'
   py:
       - 'flags &= 0x0F'
+  zig:
+      - 'var flags: i64 = 0xFF;'
+      - 'flags &= 0x0F;'
 
 # |= bitwise OR assignment
 - name: 'compound bitwise OR'
@@ -171,6 +180,9 @@
       - 'flags |= 0x01'
   py:
       - 'flags |= 0x01'
+  zig:
+      - 'var flags: i64 = 0;'
+      - 'flags |= 0x01;'
 
 # =============================================================================
 # Ternary Operator
@@ -183,18 +195,24 @@
   py: '1 if True else 0'
   cpp:
       - '(true ? 1 : 0)'
+  zig:
+      - '_ = if (true) 1 else 0;'
 
 # Latin sic/secus syntax for ternary
 - name: 'ternary with sic secus'
   input: 'verum sic 1 secus 0'
   ts: 'true ? 1 : 0;'
   py: '1 if True else 0'
+  zig:
+      - '_ = if (true) 1 else 0;'
 
 # Ternary in variable initialization
 - name: 'ternary in variable'
   input: 'varia x = verum ? 1 : 0'
   ts: 'let x = true ? 1 : 0;'
   py: 'x = 1 if True else 0'
+  zig:
+      - 'var x: i64 = if (true) 1 else 0;'
 
 # =============================================================================
 # Comparison Operators

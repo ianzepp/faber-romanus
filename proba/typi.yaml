@@ -18,6 +18,8 @@
   input: 'typus StringList = lista<textus>'
   ts: 'type StringList = Array<string>;'
   py: 'StringList = list[str]'
+  zig:
+      - 'const StringList = [][]const u8;'
 
 # typeof captures the type of a value (TS only - Python uses Any)
 - name: 'typeof type alias'
@@ -26,16 +28,23 @@
       typus ConfigTypus = typus config
   ts:
       - 'type ConfigTypus = typeof config;'
+  zig:
+      - 'const config = .{ .debug = true };'
+      - 'const ConfigTypus = anytype;'
 
 # Numeric type parameters are ignored in TS (no fixed-width integers)
 - name: 'type with numeric parameter ignored'
   input: 'typus SmallNum = numerus<32>'
   ts: 'type SmallNum = number;'
+  zig:
+      - 'const SmallNum = numerus;'
 
 # Size type parameters (i32, u64) preserved but ignored in TS
 - name: 'type with size type parameter'
   input: 'typus Int32 = numerus<i32>'
   ts: 'type Int32 = number<i32>;'
+  zig:
+      - 'const Int32 = numerus;'
 
 # =============================================================================
 # Primitive Type Mappings
@@ -46,6 +55,8 @@
   input: 'typus Ratio = fractus'
   ts: 'type Ratio = number;'
   py: 'Ratio = float'
+  zig:
+      - 'const Ratio = f64;'
 
 # decimus is arbitrary precision decimal (requires import)
 - name: 'decimus maps to Decimal'
@@ -56,24 +67,32 @@
   py:
       - 'from decimal import Decimal'
       - 'Price = Decimal'
+  zig:
+      - 'const Price = f128;'
 
 # octeti is byte array
 - name: 'octeti maps to Uint8Array'
   input: 'typus Buffer = octeti'
   ts: 'type Buffer = Uint8Array;'
   py: 'Buffer = bytes'
+  zig:
+      - 'const Buffer = []u8;'
 
 # magnus is arbitrary precision integer (bigint in TS, int in Python)
 - name: 'magnus maps to bigint'
   input: 'typus BigNum = magnus'
   ts: 'type BigNum = bigint;'
   py: 'BigNum = int'
+  zig:
+      - 'const BigNum = i128;'
 
 # magnus variable with bigint literal
 - name: 'magnus variable with literal'
   input: 'fixum magnus huge = 99999999999999999999n'
   ts: 'const huge: bigint = 99999999999999999999n;'
   py: 'huge: int = 99999999999999999999'
+  zig:
+      - 'const m_huge: i128 = 99999999999999999999;'
 
 # numquam is the never type (function never returns)
 - name: 'numquam maps to never'
@@ -82,18 +101,25 @@
       - 'function moritur(): never'
   py:
       - 'def moritur() -> NoReturn:'
+  zig:
+      - 'fn moritur() !noreturn {'
+      - 'return error.Error;'
 
 # ignotum is the unknown type
 - name: 'ignotum maps to unknown'
   input: 'typus Mystery = ignotum'
   ts: 'type Mystery = unknown;'
   py: 'Mystery = Any'
+  zig:
+      - 'const Mystery = anytype;'
 
 # ignotum variable accepts any value
 - name: 'ignotum variable'
   input: 'varia ignotum x = 42'
   ts: 'let x: unknown = 42;'
   py: 'x: Any = 42'
+  zig:
+      - 'var x: anytype = 42;'
 
 # =============================================================================
 # Union Types
@@ -132,6 +158,8 @@
       - 'string | null'
   py:
       - 'str | None'
+  zig:
+      - 'const m_name: ?[]const u8 = null;'
 
 # =============================================================================
 # Enums (ordo)

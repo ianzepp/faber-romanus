@@ -12,6 +12,8 @@
   py: 'x = 1'
   cpp:
       - 'const auto x = 1'
+  zig:
+      - 'const m_x = 1;'
 
 # varia declares a mutable binding (let in TS, simple assignment in Python)
 - name: 'let declaration'
@@ -20,6 +22,8 @@
   py: 'nomen = "Marcus"'
   cpp:
       - 'auto nomen = std::string("Marcus")'
+  zig:
+      - 'var nomen: []const u8 = "Marcus";'
 
 # Type annotations are emitted in both targets
 - name: 'const with type annotation'
@@ -28,6 +32,8 @@
   py: 'x: int = 42'
   cpp:
       - 'const int64_t x = 42'
+  zig:
+      - 'const m_x: i64 = 42;'
 
 # figendum is fixum + implicit await (const with async initialization)
 - name: 'const with await'
@@ -38,6 +44,10 @@
       - 'const data = await fetchData()'
   py:
       - 'data = await fetchData()'
+  zig:
+      - 'fn fetchData() ![]const u8 {'
+      - 'return "data";'
+      - 'const data = fetchData();'
 
 # variandum is varia + implicit await (let with async initialization)
 - name: 'let with await'
@@ -48,6 +58,10 @@
       - 'let result = await getResult()'
   py:
       - 'result = await getResult()'
+  zig:
+      - 'fn getResult() !i64 {'
+      - 'return 42;'
+      - 'const result = getResult();'
 
 # =============================================================================
 # Special Expressions
@@ -135,6 +149,8 @@
       - '1 + 2'
       - '"active":'
       - 'True'
+  zig:
+      - 'const data = .{ .sum = (1 + 2), .active = true };'
 
 # =============================================================================
 # Array Literals
@@ -165,24 +181,32 @@
   input: 'fixum x = 0xFF'
   ts: 'const x = 0xFF;'
   py: 'x = 0xFF'
+  zig:
+      - 'const m_x = 0xFF;'
 
 # Hex in binary expressions
 - name: 'hex in expression'
   input: '0xFF & 0x0F'
   ts: '(0xFF & 0x0F);'
   py: '(0xFF & 0x0F)'
+  zig:
+      - '_ = (0xFF & 0x0F);'
 
 # BigInt hex literals (n suffix) - Python strips suffix since ints are arbitrary precision
 - name: 'hex bigint'
   input: 'fixum big = 0xFFFFFFFFFFn'
   ts: 'const big = 0xFFFFFFFFFFn;'
   py: 'big = 0xFFFFFFFFFF'
+  zig:
+      - 'const m_big = 0xFFFFFFFFFF;'
 
 # Lowercase hex is preserved
 - name: 'lowercase hex'
   input: 'fixum val = 0xabcdef'
   ts: 'const val = 0xabcdef;'
   py: 'val = 0xabcdef'
+  zig:
+      - 'const m_val = 0xabcdef;'
 
 # =============================================================================
 # Template Literals
@@ -193,6 +217,8 @@
   input: 'fixum msg = `hello world`'
   ts: 'const msg = `hello world`;'
   py: 'msg = f"hello world"'
+  zig:
+      - 'const m_msg = "hello world";'
 
 # Template interpolation syntax differs between targets
 - name: 'template with interpolation'
@@ -203,6 +229,9 @@
       - 'const greeting = `Hello, ${name}!`'
   py:
       - 'greeting = f"Hello, ${name}!"'
+  zig:
+      - 'const m_name = "Marcus";'
+      - 'const m_greeting = "Hello, ${name}!";'
 
 # =============================================================================
 # Scribe Statements
@@ -223,6 +252,8 @@
   py: 'print("a", "b", "c")'
   cpp:
       - 'std::print("{} {} {}\n"'
+  zig:
+      - 'std.debug.print("{s} {s} {s}\n", .{ "a", "b", "c" });'
 
 # Expressions are evaluated before printing
 - name: 'scribe with expression'

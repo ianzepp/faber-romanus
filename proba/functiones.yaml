@@ -34,6 +34,9 @@
   cpp:
       - 'std::string greet()'
       - 'return std::string("hello")'
+  zig:
+      - 'fn greet() []const u8 {'
+      - 'return "hello";'
 
 # =============================================================================
 # Async Functions
@@ -59,6 +62,9 @@
       - 'async function fetch(): Promise<string>'
   py:
       - 'async def fetch() -> Awaitable[str]:'
+  zig:
+      - 'fn fetch() ![]const u8 {'
+      - 'return "data";'
 
 # =============================================================================
 # Generator Functions
@@ -71,6 +77,9 @@
       - 'function* range(): Generator<number>'
   py:
       - 'def range() -> Iterator[int]:'
+  zig:
+      - 'fn range() i64 {'
+      - 'return 1;'
 
 # fient is async generator (wraps in AsyncGenerator/AsyncIterator)
 - name: 'async generator function'
@@ -79,6 +88,9 @@
       - 'async function* stream(): AsyncGenerator<string>'
   py:
       - 'async def stream() -> AsyncIterator[str]:'
+  zig:
+      - 'fn stream() ![]const u8 {'
+      - 'return "chunk";'
 
 # =============================================================================
 # Yield/Await
@@ -91,6 +103,9 @@
       - 'yield 1'
   py:
       - 'yield 1'
+  zig:
+      - 'fn range() i64 {'
+      - '_ = try 1;'
 
 # cede in async context becomes await
 - name: 'cede in async function'
@@ -113,6 +128,8 @@
   py: 'lambda x: x'
   cpp:
       - '[&](auto x) { return x; }'
+  zig:
+      - '_ = @compileError("Arrow functions not supported in Zig - use ''pro x -> Type: expr'' syntax");'
 
 # Arrow with block body
 - name: 'arrow with block'
@@ -121,6 +138,8 @@
       - '(x) =>'
       - 'return x;'
   py: 'lambda x: x'
+  zig:
+      - '_ = @compileError("Arrow functions not supported in Zig - use ''pro x -> Type: expr'' syntax");'
 
 # =============================================================================
 # Lambda Expressions (pro)
@@ -131,24 +150,32 @@
   input: 'pro x redde x * 2'
   ts: '(x) => (x * 2);'
   py: 'lambda x: (x * 2)'
+  zig:
+      - '_ = @compileError("Lambda requires return type annotation for Zig target: pro x -> Type: expr");'
 
 # Multiple parameters separated by comma
 - name: 'multi param lambda'
   input: 'pro x, y redde x + y'
   ts: '(x, y) => (x + y);'
   py: 'lambda x, y: (x + y)'
+  zig:
+      - '_ = @compileError("Lambda requires return type annotation for Zig target: pro x -> Type: expr");'
 
 # Zero parameters - empty param list
 - name: 'zero param lambda'
   input: 'pro redde 42'
   ts: '() => 42;'
   py: 'lambda : 42'
+  zig:
+      - '_ = @compileError("Lambda requires return type annotation for Zig target: pro x -> Type: expr");'
 
 # Lambda assigned to variable
 - name: 'lambda in variable'
   input: 'fixum double = pro x redde x * 2'
   ts: 'const double = (x) => (x * 2);'
   py: 'double = lambda x: (x * 2)'
+  zig:
+      - 'const double = @compileError("Lambda requires return type annotation for Zig target: pro x -> Type: expr");'
 
 # Lambda passed as callback argument
 - name: 'lambda as callback'
@@ -169,3 +196,5 @@
   py:
       - 'def noop():'
       - 'pass'
+  zig:
+      - 'fn noop() void {}'

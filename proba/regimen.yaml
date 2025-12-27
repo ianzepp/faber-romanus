@@ -170,6 +170,9 @@
       - 'break;'
   py:
       - 'break'
+  zig:
+      - 'while (true) {'
+      - 'break;'
 
 # perge is continue
 - name: 'continue statement'
@@ -181,6 +184,9 @@
       - 'continue;'
   py:
       - 'continue'
+  zig:
+      - 'while (true) {'
+      - 'continue;'
 
 # =============================================================================
 # Return
@@ -207,6 +213,9 @@
       - 'return;'
   py:
       - 'return'
+  zig:
+      - 'fn f() void {'
+      - 'return;'
 
 # =============================================================================
 # Assert

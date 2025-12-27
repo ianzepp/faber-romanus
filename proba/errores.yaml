@@ -122,6 +122,8 @@
       - 'let x = 1'
   py:
       - 'x = 1'
+  zig:
+      - 'var x: i64 = 1;'
 
 # fac with cape wraps in try/catch
 - name: 'fac with cape'

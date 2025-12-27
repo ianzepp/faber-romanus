@@ -10,6 +10,10 @@
   input: 'ex "@hono/hono" importa Hono, Context'
   ts: 'import { Hono, Context } from "@hono/hono";'
   py: 'from @hono/hono import Hono, Context'
+  zig:
+      - 'const _@hono/hono = @import("@hono/hono");'
+      - 'const Hono = _@hono/hono.Hono;'
+      - 'const Context = _@hono/hono.Context;'
 
 # Wildcard import
 - name: 'wildcard import'
@@ -17,6 +21,8 @@
   ts:
       - 'import * as'
       - '@lodash/lodash'
+  zig:
+      - 'const @lodash/lodash = @import("@lodash/lodash");'
 
 # =============================================================================
 # Norma Intrinsics (TS-specific)
@@ -29,6 +35,9 @@
   ts:
       not_contains:
           - 'import'
+  zig:
+      - 'const _norma/tempus = @import("norma/tempus");'
+      - 'const nunc = _norma/tempus.nunc;'
 
 # nunc() becomes Date.now() in TS
 - name: 'nunc compiles to Date.now'
@@ -40,6 +49,10 @@
           - 'const now = Date.now()'
       not_contains:
           - 'import'
+  zig:
+      - 'const _norma/tempus = @import("norma/tempus");'
+      - 'const nunc = _norma/tempus.nunc;'
+      - 'const now = nunc();'
 
 # SECUNDUM is a duration constant (1000ms)
 - name: 'SECUNDUM compiles to literal'
@@ -51,6 +64,10 @@
           - 'const sec = 1000'
       not_contains:
           - 'import'
+  zig:
+      - 'const _norma/tempus = @import("norma/tempus");'
+      - 'const SECUNDUM = _norma/tempus.SECUNDUM;'
+      - 'const sec = SECUNDUM;'
 
 # dormi() becomes Promise with setTimeout
 - name: 'dormi compiles to Promise setTimeout'
@@ -64,6 +81,12 @@
           - 'await new Promise(r => setTimeout(r, (5 * 1000)))'
       not_contains:
           - 'import'
+  zig:
+      - 'const _norma/tempus = @import("norma/tempus");'
+      - 'const dormi = _norma/tempus.dormi;'
+      - 'const SECUNDUM = _norma/tempus.SECUNDUM;'
+      - 'fn wait() !void {'
+      - '_ = try dormi((5 * SECUNDUM));'
 
 # All duration constants compile to millisecond literals
 - name: 'duration constants compile to literals'
@@ -83,3 +106,15 @@
           - 'const e = 86400000'
       not_contains:
           - 'import'
+  zig:
+      - 'const _norma/tempus = @import("norma/tempus");'
+      - 'const MILLISECUNDUM = _norma/tempus.MILLISECUNDUM;'
+      - 'const SECUNDUM = _norma/tempus.SECUNDUM;'
+      - 'const MINUTUM = _norma/tempus.MINUTUM;'
+      - 'const HORA = _norma/tempus.HORA;'
+      - 'const DIES = _norma/tempus.DIES;'
+      - 'const a = MILLISECUNDUM;'
+      - 'const b = SECUNDUM;'
+      - 'const c = MINUTUM;'
+      - 'const d = HORA;'
+      - 'const e = DIES;'
