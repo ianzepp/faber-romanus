@@ -137,53 +137,51 @@ Note: The object literal uses name-colon-value syntax (like all Faber object lit
 
 ### Pattern Matching
 
-Use `elige` for exhaustive matching with `ex`/`pro` syntax:
+Use `discerne` for exhaustive matching with `si`/`pro` syntax:
 
-```
-elige event {
-    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
-    ex Keypress pro key { scribe "pressed " + key }
-    ex Quit { mori "goodbye" }
+```fab
+discerne event {
+    si Click pro x, y { scribe "clicked at " + x + ", " + y }
+    si Keypress pro key { scribe "pressed " + key }
+    si Quit { mori "goodbye" }
 }
 ```
 
-The syntax is `ex VariantName pro bindings { body }`:
+**Etymology:** `discerne` (imperative of `discerno`) means "distinguish!" — paired with `discretio` (distinction), the type it matches.
 
-- `ex` = "from this variant" (extraction)
+The syntax is `si VariantName pro bindings { body }`:
+
+- `si` = "if this variant" (conditional match)
 - `pro` = "binding these names"
-- For unit variants (no payload), omit `pro`: `ex Quit { ... }`
-
-This parallels the existing iteration syntax: `ex items pro item { ... }`
+- For unit variants (no payload), omit `pro`: `si Quit { ... }`
 
 The compiler enforces exhaustiveness — all variants must be handled.
 
 #### With Binding
 
-```
-elige result {
-    ex Ok pro value { redde value }
-    ex Err pro error { iace error }
+```fab
+discerne result {
+    si Ok pro value { redde value }
+    si Err pro error { iace error }
 }
 ```
 
 Only the fields you name are bound. Binding order matches declaration order.
 
-#### Mixed Switches
+#### Value Matching with `elige`
 
-`si` remains for value matching, `ex` for variant extraction:
+For simple value matching (not variant extraction), use `elige`:
 
-```
+```fab
 elige status {
     si "pending" { ... }      // value match (string)
     si "active" { ... }
     aliter { ... }
 }
-
-elige result {
-    ex Ok pro v { redde v }   // variant match
-    ex Err pro e { iace e }
-}
 ```
+
+`elige` = "choose" — for selecting among values.
+`discerne` = "distinguish" — for matching `discretio` variants.
 
 ### Target Mappings
 
@@ -195,10 +193,10 @@ elige result {
 
 ```fab
 // Faber source:
-elige event {
-    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
-    ex Keypress pro key { scribe "pressed " + key }
-    ex Quit { mori "goodbye" }
+discerne event {
+    si Click pro x, y { scribe "clicked at " + x + ", " + y }
+    si Keypress pro key { scribe "pressed " + key }
+    si Quit { mori "goodbye" }
 }
 ```
 
@@ -228,10 +226,10 @@ switch (event.tag) {
 
 ```fab
 // Faber source:
-elige event {
-    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
-    ex Keypress pro key { scribe "pressed " + key }
-    ex Quit { mori "goodbye" }
+discerne event {
+    si Click pro x, y { scribe "clicked at " + x + ", " + y }
+    si Keypress pro key { scribe "pressed " + key }
+    si Quit { mori "goodbye" }
 }
 ```
 
@@ -263,10 +261,10 @@ switch (event) {
 
 ```fab
 // Faber source:
-elige event {
-    ex Click pro x, y { scribe "clicked at " + x + ", " + y }
-    ex Keypress pro key { scribe "pressed " + key }
-    ex Quit { mori "goodbye" }
+discerne event {
+    si Click pro x, y { scribe "clicked at " + x + ", " + y }
+    si Keypress pro key { scribe "pressed " + key }
+    si Quit { mori "goodbye" }
 }
 ```
 
@@ -321,7 +319,7 @@ match event {
 1. **Tuple-style variants:** Should `Some(T)` be allowed as shorthand for `Some { T value }`?
 2. **Methods on discretio:** Can variants have associated methods?
 3. **Nested patterns:** How deep can pattern matching go?
-4. **Guard clauses:** Should `ex Click pro x, y si x > 0 { ... }` be supported?
+4. **Guard clauses:** Should `si Click pro x, y ubi x > 0 { ... }` be supported?
 
 ---
 
@@ -338,9 +336,13 @@ variantFields := (typeAnnotation IDENTIFIER (',' typeAnnotation IDENTIFIER)*)?
 ### Pattern Matching Grammar Extension
 
 ```ebnf
-// Extends existing switchCase for discretio patterns
-switchCase := 'si' expression (blockStmt | 'ergo' expression)   // value match
-            | 'ex' IDENTIFIER ('pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt  // variant match
+// elige for value matching
+eligeStmt := 'elige' expression '{' eligeCase* defaultCase? '}'
+eligeCase := 'si' expression (blockStmt | 'ergo' expression)
+
+// discerne for variant matching (discretio types)
+discerneStmt := 'discerne' expression '{' discerneCase* '}'
+discerneCase := 'si' IDENTIFIER ('pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt
 ```
 
 ### AST Nodes (Implemented)
@@ -348,7 +350,7 @@ switchCase := 'si' expression (blockStmt | 'ergo' expression)   // value match
 - `DiscretioDeclaration` — the type declaration (`fons/parser/ast.ts`)
 - `VariantDeclaration` — each variant within discretio
 - `VariantField` — type-first field declaration within a variant
-- `VariantCase` — `ex Variant pro bindings { }` in elige
+- `VariantCase` — `si Variant pro bindings { }` in discerne
 
 ### Compiler Pipeline
 

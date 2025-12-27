@@ -305,10 +305,10 @@ const Event = union(enum) {
 
 Pattern matching:
 
-```faber
-elige event {
-    ex Click pro x, y { scribe x, y }
-    ex Quit { mori "goodbye" }
+```fab
+discerne event {
+    si Click pro x, y { scribe x, y }
+    si Quit { mori "goodbye" }
 }
 ```
 

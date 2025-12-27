@@ -85,28 +85,15 @@ ex fetchData() figendum { result }   // await + destructure
 
 Extract fields **from** an object/expression.
 
-### Variant Matching
-
-```fab
-elige event {
-    ex Click pro x, y { scribe(x, y) }
-    ex Keypress pro key { scribe(key) }
-    ex Quit { mori("goodbye") }
-}
-```
-
-Extract fields **from** a matched variant.
-
 ### Summary
 
-| Pattern                                | Meaning                         |
-| -------------------------------------- | ------------------------------- |
-| `ex module importa ...`                | Import from module              |
-| `ex source pro var { }`                | Iterate from source             |
-| `ex source transforms pro var { }`     | Iterate from transformed source |
-| `ex source transforms` (assigned)      | Collection expression           |
-| `ex source fixum { pattern }`          | Destructure from source         |
-| `ex Variant pro fields { }` (in elige) | Match variant, bind fields      |
+| Pattern                            | Meaning                         |
+| ---------------------------------- | ------------------------------- |
+| `ex module importa ...`            | Import from module              |
+| `ex source pro var { }`            | Iterate from source             |
+| `ex source transforms pro var { }` | Iterate from transformed source |
+| `ex source transforms` (assigned)  | Collection expression           |
+| `ex source fixum { pattern }`      | Destructure from source         |
 
 ---
 
@@ -265,12 +252,12 @@ fixum add = pro a, b: a + b
 ### Variant Field Binding
 
 ```fab
-elige event {
-    ex Click pro x, y { scribe(x, y) }
+discerne event {
+    si Click pro x, y { scribe(x, y) }
 }
 ```
 
-**For** fields `x` and `y`, bind them from the variant.
+**For** fields `x` and `y`, bind them from the matched variant. Note: variant matching uses `discerne`/`si`, not `ex`. See below.
 
 ### Internal Parameter Name
 
@@ -289,7 +276,7 @@ functio move(de Point[] from pro source, in Point[] to pro dest) {
 | ---------------------------- | ------------------------ |
 | `ex source pro var { }`      | Bind each element as var |
 | `pro params: expr`           | Lambda with params       |
-| `ex Variant pro fields { }`  | Bind variant fields      |
+| `si Variant pro fields { }`  | Bind variant fields      |
 | `Type external pro internal` | Internal parameter name  |
 
 ---
@@ -302,9 +289,6 @@ The same preposition means different things based on position:
 // 'ex' at statement start = iteration/import
 ex items pro item { }
 
-// 'ex' after 'elige' case = variant match
-elige x { ex Click pro a, b { } }
-
 // 'pro' after 'ex' = iteration binding
 ex items pro item { }
 
@@ -313,6 +297,9 @@ pro x: x + 1
 
 // 'pro' after param type = internal name
 functio f(textus name pro n) { }
+
+// 'pro' after 'si' in discerne = variant field binding
+discerne event { si Click pro x, y { } }
 ```
 
 This mirrors Latin, where word order is flexible because declensions carry grammatical role. Faber uses position instead of declensions, but the principle is the same: **context determines role**.
@@ -341,23 +328,22 @@ ad url ("GET") fiet Response qua resp { }
 
 ## Implementation Status
 
-| Preposition | Context                    | Status     |
-| ----------- | -------------------------- | ---------- |
-| `ex`        | Import                     | Done       |
-| `ex`        | Iteration (`ex...pro`)     | Done       |
-| `ex`        | Destructuring              | Done       |
-| `ex`        | Variant matching           | Done       |
-| `ex`        | Collection DSL             | Not done   |
-| `de`        | Key iteration (`de...pro`) | Done       |
-| `de`        | Borrowed parameter         | Done (Zig) |
-| `de`        | Novum source               | Done       |
-| `in`        | Mutation block             | Not done   |
-| `in`        | Mutable parameter          | Done (Zig) |
-| `ad`        | HTTP dispatch              | Partial    |
-| `pro`       | Iteration binding          | Done       |
-| `pro`       | Lambda parameter           | Done       |
-| `pro`       | Variant binding            | Done       |
-| `pro`       | Internal param name        | Not done   |
+| Preposition | Context                      | Status     |
+| ----------- | ---------------------------- | ---------- |
+| `ex`        | Import                       | Done       |
+| `ex`        | Iteration (`ex...pro`)       | Done       |
+| `ex`        | Destructuring                | Done       |
+| `ex`        | Collection DSL               | Not done   |
+| `de`        | Key iteration (`de...pro`)   | Done       |
+| `de`        | Borrowed parameter           | Done (Zig) |
+| `de`        | Novum source                 | Done       |
+| `in`        | Mutation block               | Not done   |
+| `in`        | Mutable parameter            | Done (Zig) |
+| `ad`        | HTTP dispatch                | Partial    |
+| `pro`       | Iteration binding            | Done       |
+| `pro`       | Lambda parameter             | Done       |
+| `pro`       | Variant binding (`discerne`) | Not done   |
+| `pro`       | Internal param name          | Not done   |
 
 ---
 
