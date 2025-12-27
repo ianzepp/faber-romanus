@@ -114,6 +114,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `erratum` (error)         |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `cursor<T>` (iterator)    |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | `ignotum` (unknown)       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
+| `curator` (allocator)     |    [-]     | [x] |  [-]   | [ ]  | [ ]  |  [-]  |
 | Nullable types (`T?`)     |    [x]     | [x] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Union types (`unio<A,B>`) |    [x]     | [~] |  [x]   | [ ]  | [ ]  |  [ ]  |
 | Generic type params       |    [x]     | [ ] |  [x]   | [ ]  | [ ]  |  [ ]  |
@@ -340,6 +341,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Collection imports      |    [-]     | [ ] |  [ ]   | [ ]  | [ ]  |  [-]  |
 | Async imports           |    [-]     | [ ] |  [ ]   | [ ]  | [ ]  |  [-]  |
 | Arena allocator         |    [-]     | [x] |  [-]   | [ ]  | [ ]  |  [-]  |
+| Curator tracking        |    [-]     | [x] |  [-]   | [ ]  | [ ]  |  [-]  |
 
 ## Standard Library Intrinsics
 
@@ -478,7 +480,7 @@ No block braces (indentation-based), no `new` keyword, `asyncio` for async, `typ
 
 ### Zig (0.11+)
 
-No classes (structs with methods), no interfaces (duck typing), no exceptions (error unions), no generators, comptime generics. `genus` becomes `const Name = struct { ... };`.
+No classes (structs with methods), no interfaces (duck typing), no exceptions (error unions), no generators, comptime generics. `genus` becomes `const Name = struct { ... };`. Memory management via `curator` type which maps to `std.mem.Allocator` — collection methods automatically use the allocator from function parameters or the default arena in `main()`.
 
 ### Rust (2021 edition)
 
