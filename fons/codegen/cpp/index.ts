@@ -46,6 +46,8 @@ import type {
     Statement,
     Expression,
     ImportaDeclaration,
+    ImportSpecifier,
+    DestructureDeclaration,
     VariaDeclaration,
     FunctioDeclaration,
     GenusDeclaration,
@@ -295,6 +297,8 @@ struct _ScopeGuard {
         switch (node.type) {
             case 'ImportaDeclaration':
                 return genImportaDeclaration(node);
+            case 'DestructureDeclaration':
+                return genDestructureDeclaration(node);
             case 'VariaDeclaration':
                 return genVariaDeclaration(node);
             case 'FunctioDeclaration':
@@ -365,6 +369,46 @@ struct _ScopeGuard {
     }
 
     /**
+     * Generate object destructuring declaration.
+     *
+     * TRANSFORMS:
+     *   ex persona fixum nomen, aetas -> const auto& _tmp = persona; const auto& nomen = _tmp.nomen; ...
+     *   ex persona fixum nomen ut n -> const auto& n = _tmp.nomen;
+     *   ex promise figendum result -> const auto& _tmp = promise; const auto& result = _tmp.result;
+     *
+     * WHY: C++ doesn't have native object destructuring. We expand to
+     *      temporary variable + field access for each specifier.
+     */
+    function genDestructureDeclaration(node: DestructureDeclaration): string {
+        const lines: string[] = [];
+        const isAsync = node.kind === 'figendum' || node.kind === 'variandum';
+        const isConst = node.kind === 'fixum' || node.kind === 'figendum';
+        const constPrefix = isConst ? 'const ' : '';
+
+        // Generate source expression (ignore async - C++ handles differently)
+        const sourceExpr = genExpression(node.source);
+
+        // Create temp variable to hold the source
+        lines.push(`${ind()}${constPrefix}auto& _tmp = ${sourceExpr};`);
+
+        // Extract each property
+        for (const spec of node.specifiers) {
+            const importedName = spec.imported.name;
+            const localName = spec.local.name;
+
+            if (spec.rest) {
+                // Rest pattern: not directly supported in C++, emit TODO
+                lines.push(`${ind()}// TODO: rest pattern for ${localName}`);
+            } else {
+                // Regular property: extract from temp
+                lines.push(`${ind()}${constPrefix}auto& ${localName} = _tmp.${importedName};`);
+            }
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
      * Generate variable declaration.
      *
      * TRANSFORMS:
@@ -375,11 +419,6 @@ struct _ScopeGuard {
      */
     function genVariaDeclaration(node: VariaDeclaration): string {
         const isConst = node.kind === 'fixum';
-
-        // Handle destructuring (not directly supported in C++, expand it)
-        if (node.name.type === 'ObjectPattern') {
-            return genObjectDestructuringDeclaration(node);
-        }
 
         // Handle array destructuring (expand to indexed access)
         if (node.name.type === 'ArrayPattern') {
@@ -400,36 +439,6 @@ struct _ScopeGuard {
         const init = node.init ? ` = ${genExpression(node.init)}` : '';
 
         return `${ind()}${constPrefix}${typeSpec} ${name}${init};`;
-    }
-
-    /**
-     * Generate object destructuring as multiple declarations.
-     *
-     * TRANSFORMS:
-     *   fixum { a, b } = obj -> const auto& a = obj.a; const auto& b = obj.b;
-     */
-    function genObjectDestructuringDeclaration(node: VariaDeclaration): string {
-        if (node.name.type !== 'ObjectPattern') {
-            throw new Error('Expected ObjectPattern');
-        }
-
-        const lines: string[] = [];
-        const isConst = node.kind === 'fixum';
-        const constPrefix = isConst ? 'const ' : '';
-        const initExpr = node.init ? genExpression(node.init) : 'undefined';
-
-        // Create temp variable
-        lines.push(`${ind()}${constPrefix}auto& _tmp = ${initExpr};`);
-
-        // Extract each property
-        for (const prop of node.name.properties) {
-            const key = prop.key.name;
-            const localName = prop.value.name;
-
-            lines.push(`${ind()}${constPrefix}auto& ${localName} = _tmp.${key};`);
-        }
-
-        return lines.join('\n');
     }
 
     /**

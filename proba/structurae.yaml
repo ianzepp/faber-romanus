@@ -2,12 +2,12 @@
 # Covers: genus, pactum, destructuring, novum, ego, nexum
 
 # =============================================================================
-# Object Destructuring
+# Object Destructuring (brace-less syntax with ut aliasing)
 # =============================================================================
 
-# Extract named properties from object
+# Extract named properties from object using ex-prefix syntax
 - name: 'simple object destructuring'
-  input: 'fixum { nomen, aetas } = user'
+  input: 'ex user fixum nomen, aetas'
   ts: 'const { nomen, aetas } = user;'
   py:
       - 'nomen = user["nomen"]'
@@ -21,9 +21,9 @@
       - 'const auto& nomen = _tmp.nomen;'
       - 'const auto& aetas = _tmp.aetas;'
 
-# Rename during destructuring with colon
+# Rename during destructuring with ut (as)
 - name: 'destructuring with rename'
-  input: 'fixum { nomen: localName } = user'
+  input: 'ex user fixum nomen ut localName'
   ts: 'const { nomen: localName } = user;'
   py:
       - 'localName = user["nomen"]'
@@ -33,7 +33,7 @@
 
 # Mutable destructuring uses varia
 - name: 'mutable destructuring'
-  input: 'varia { count } = data'
+  input: 'ex data varia count'
   ts: 'let { count } = data;'
   cpp:
       - 'auto& _tmp = data;'

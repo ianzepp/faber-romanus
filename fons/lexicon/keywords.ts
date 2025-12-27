@@ -228,7 +228,11 @@ export const keywords: KeywordEntry[] = [
     { latin: 'ad', meaning: 'to', category: 'preposition' },
     { latin: 'per', meaning: 'by/through', category: 'preposition' },
     // WHY: "qua" (as, in the capacity of) for type assertions
-    { latin: 'qua', meaning: 'as', category: 'preposition' },
+    { latin: 'qua', meaning: 'as (type)', category: 'preposition' },
+    // WHY: "ut" (as) for aliasing in imports and destructuring
+    //      ex norma importa scribe ut s
+    //      ex persona fixum nomen ut n
+    { latin: 'ut', meaning: 'as (alias)', category: 'preposition' },
     // WHY: "vel" (or) for default values in destructuring
     { latin: 'vel', meaning: 'or', category: 'operator' },
     // WHY: "ante" (before) and "usque" (up to) for range operators

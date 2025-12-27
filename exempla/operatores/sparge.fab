@@ -32,6 +32,6 @@ logAll("Messages:", "one", "two", "three")
 
 // Rest in destructuring: collect remaining properties
 fixum persona = { nomen: "Marcus", aetas: 30, urbs: "Roma" }
-fixum { nomen, ceteri cetera } = persona
+ex persona fixum nomen, ceteri cetera
 scribe "Nomen:", nomen
 scribe "Cetera:", cetera

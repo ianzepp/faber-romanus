@@ -46,6 +46,8 @@ import type {
     Statement,
     Expression,
     ImportaDeclaration,
+    ImportSpecifier,
+    DestructureDeclaration,
     VariaDeclaration,
     FunctioDeclaration,
     GenusDeclaration,
@@ -241,6 +243,8 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         switch (node.type) {
             case 'ImportaDeclaration':
                 return genImportaDeclaration(node);
+            case 'DestructureDeclaration':
+                return genDestructureDeclaration(node);
             case 'VariaDeclaration':
                 return genVariaDeclaration(node);
             case 'FunctioDeclaration':
@@ -324,7 +328,15 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
             return `${ind()}import * as ${source} from "${source}"${semi ? ';' : ''}`;
         }
 
-        const names = node.specifiers.map(s => s.name).join(', ');
+        // WHY: ImportSpecifier has imported/local - emit "imported as local" when different
+        const names = node.specifiers
+            .map(s => {
+                if (s.imported.name === s.local.name) {
+                    return s.imported.name;
+                }
+                return `${s.imported.name} as ${s.local.name}`;
+            })
+            .join(', ');
 
         return `${ind()}import { ${names} } from "${source}"${semi ? ';' : ''}`;
     }
@@ -335,12 +347,15 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
      * TRANSFORMS:
      *   varia x: numerus = 5 -> let x: number = 5
      *   fixum y: textus = "hello" -> const y: string = "hello"
-     *   fixum { nomen, aetas } = persona -> const { nomen, aetas } = persona
+     *   fixum [a, b, c] = coords -> const [a, b, c] = coords
      *   figendum data = fetchData() -> const data = await fetchData()
      *   variandum result = fetch() -> let result = await fetch()
      *
      * WHY: Async bindings (figendum/variandum) imply await without explicit cede.
      *      The gerundive form ("that which will be fixed/varied") signals async intent.
+     *
+     * NOTE: Object destructuring now uses DestructureDeclaration with ex-prefix:
+     *       ex persona fixum nomen, aetas -> const { nomen, aetas } = persona
      */
     function genVariaDeclaration(node: VariaDeclaration): string {
         // Map kind to JS keyword and determine if async
@@ -349,22 +364,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
 
         let name: string;
 
-        if (node.name.type === 'ObjectPattern') {
-            // Generate object destructuring pattern with rest support
-            const props = node.name.properties.map(prop => {
-                // Rest pattern: ceteri restName -> ...restName
-                if (prop.rest) {
-                    return `...${prop.value.name}`;
-                }
-                if (prop.key.name === prop.value.name) {
-                    return prop.key.name;
-                }
-
-                return `${prop.key.name}: ${prop.value.name}`;
-            });
-
-            name = `{ ${props.join(', ')} }`;
-        } else if (node.name.type === 'ArrayPattern') {
+        if (node.name.type === 'ArrayPattern') {
             // Generate array destructuring pattern with rest support
             // [a, b, ceteri rest] -> [a, b, ...rest]
             // [_, b, _] -> [, b, ]
@@ -393,6 +393,42 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
         }
 
         return `${ind()}${kind} ${name}${typeAnno}${init}${semi ? ';' : ''}`;
+    }
+
+    /**
+     * Generate object destructuring declaration.
+     *
+     * TRANSFORMS:
+     *   ex persona fixum nomen, aetas -> const { nomen, aetas } = persona
+     *   ex persona fixum nomen ut n -> const { nomen: n } = persona
+     *   ex persona fixum nomen, ceteri rest -> const { nomen, ...rest } = persona
+     *   ex promise figendum result -> const { result } = await promise
+     *
+     * WHY: Brace-less syntax in Faber maps to brace destructuring in JS.
+     *      'ut' aliases map to colon renaming in JS destructuring.
+     */
+    function genDestructureDeclaration(node: DestructureDeclaration): string {
+        const isAsync = node.kind === 'figendum' || node.kind === 'variandum';
+        const kind = node.kind === 'varia' || node.kind === 'variandum' ? 'let' : 'const';
+
+        // Generate destructuring pattern from specifiers
+        const props = node.specifiers.map(spec => {
+            // Rest pattern: ceteri rest -> ...rest
+            if (spec.rest) {
+                return `...${spec.local.name}`;
+            }
+            // Alias: nomen ut n -> nomen: n
+            if (spec.imported.name !== spec.local.name) {
+                return `${spec.imported.name}: ${spec.local.name}`;
+            }
+            // Same name
+            return spec.imported.name;
+        });
+
+        const pattern = `{ ${props.join(', ')} }`;
+        const source = isAsync ? `await ${genExpression(node.source)}` : genExpression(node.source);
+
+        return `${ind()}${kind} ${pattern} = ${source}${semi ? ';' : ''}`;
     }
 
     /**

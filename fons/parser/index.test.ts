@@ -98,89 +98,88 @@ describe('parser', () => {
     });
 
     describe('destructuring', () => {
-        test('basic destructuring with fixum', () => {
-            const { program } = parseCode('fixum { name, age } = person');
+        // Object destructuring uses ex-prefix brace-less syntax
+        test('ex object destructuring with fixum', () => {
+            const { program } = parseCode('ex person fixum name, age');
             const decl = program!.body[0] as any;
 
-            expect(decl.type).toBe('VariaDeclaration');
+            expect(decl.type).toBe('DestructureDeclaration');
             expect(decl.kind).toBe('fixum');
-            expect(decl.name.type).toBe('ObjectPattern');
-            expect(decl.name.properties).toHaveLength(2);
-            expect(decl.name.properties[0].key.name).toBe('name');
-            expect(decl.name.properties[1].key.name).toBe('age');
+            expect(decl.specifiers).toHaveLength(2);
+            expect(decl.specifiers[0].imported.name).toBe('name');
+            expect(decl.specifiers[0].local.name).toBe('name');
+            expect(decl.specifiers[1].imported.name).toBe('age');
+            expect(decl.source.name).toBe('person');
         });
 
-        test('destructuring with rename', () => {
-            const { program } = parseCode('fixum { name: userName } = person');
+        test('ex object destructuring with ut alias', () => {
+            const { program } = parseCode('ex person fixum name ut userName');
             const decl = program!.body[0] as any;
 
-            expect(decl.name.properties[0].key.name).toBe('name');
-            expect(decl.name.properties[0].value.name).toBe('userName');
+            expect(decl.type).toBe('DestructureDeclaration');
+            expect(decl.specifiers[0].imported.name).toBe('name');
+            expect(decl.specifiers[0].local.name).toBe('userName');
         });
 
-        test('ex destructuring with fixum', () => {
-            const { program } = parseCode('ex response fixum { status, data }');
+        test('ex object destructuring with varia', () => {
+            const { program } = parseCode('ex config varia host, port');
             const decl = program!.body[0] as any;
 
-            expect(decl.type).toBe('VariaDeclaration');
-            expect(decl.kind).toBe('fixum');
-            expect(decl.name.type).toBe('ObjectPattern');
-            expect(decl.name.properties).toHaveLength(2);
-            expect(decl.name.properties[0].key.name).toBe('status');
-            expect(decl.name.properties[1].key.name).toBe('data');
-            expect(decl.init.name).toBe('response');
-        });
-
-        test('ex destructuring with varia', () => {
-            const { program } = parseCode('ex config varia { host, port }');
-            const decl = program!.body[0] as any;
-
-            expect(decl.type).toBe('VariaDeclaration');
+            expect(decl.type).toBe('DestructureDeclaration');
             expect(decl.kind).toBe('varia');
-            expect(decl.name.type).toBe('ObjectPattern');
-            expect(decl.init.name).toBe('config');
+            expect(decl.specifiers).toHaveLength(2);
+            expect(decl.source.name).toBe('config');
         });
 
-        test('ex destructuring with rename', () => {
-            const { program } = parseCode('ex response fixum { status: responseStatus, data: responseData }');
+        test('ex object destructuring with multiple ut aliases', () => {
+            const { program } = parseCode('ex response fixum status ut responseStatus, data ut responseData');
             const decl = program!.body[0] as any;
 
-            expect(decl.name.properties[0].key.name).toBe('status');
-            expect(decl.name.properties[0].value.name).toBe('responseStatus');
-            expect(decl.name.properties[1].key.name).toBe('data');
-            expect(decl.name.properties[1].value.name).toBe('responseData');
+            expect(decl.type).toBe('DestructureDeclaration');
+            expect(decl.specifiers[0].imported.name).toBe('status');
+            expect(decl.specifiers[0].local.name).toBe('responseStatus');
+            expect(decl.specifiers[1].imported.name).toBe('data');
+            expect(decl.specifiers[1].local.name).toBe('responseData');
         });
 
-        test('ex destructuring from function call', () => {
-            const { program } = parseCode('ex getUser() fixum { name, email }');
+        test('ex object destructuring from function call', () => {
+            const { program } = parseCode('ex getUser() fixum name, email');
             const decl = program!.body[0] as any;
 
-            expect(decl.type).toBe('VariaDeclaration');
-            expect(decl.init.type).toBe('CallExpression');
-            expect(decl.init.callee.name).toBe('getUser');
+            expect(decl.type).toBe('DestructureDeclaration');
+            expect(decl.source.type).toBe('CallExpression');
+            expect(decl.source.callee.name).toBe('getUser');
         });
 
-        test('ex destructuring from member access', () => {
-            const { program } = parseCode('ex response.data fixum { items, count }');
+        test('ex object destructuring from member access', () => {
+            const { program } = parseCode('ex response.data fixum items, count');
             const decl = program!.body[0] as any;
 
-            expect(decl.type).toBe('VariaDeclaration');
-            expect(decl.init.type).toBe('MemberExpression');
-            expect(decl.init.object.name).toBe('response');
-            expect(decl.init.property.name).toBe('data');
+            expect(decl.type).toBe('DestructureDeclaration');
+            expect(decl.source.type).toBe('MemberExpression');
+            expect(decl.source.object.name).toBe('response');
+            expect(decl.source.property.name).toBe('data');
         });
 
-        // Invalid destructuring patterns
-        test('Fail when using JS spread syntax ...rest', () => {
-            const { errors } = parseCode('fixum { nomen, ...rest } = user');
+        test('ex object destructuring with ceteri rest', () => {
+            const { program } = parseCode('ex person fixum name, ceteri rest');
+            const decl = program!.body[0] as any;
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(decl.type).toBe('DestructureDeclaration');
+            expect(decl.specifiers).toHaveLength(2);
+            expect(decl.specifiers[0].imported.name).toBe('name');
+            expect(decl.specifiers[0].rest).toBeFalsy();
+            expect(decl.specifiers[1].imported.name).toBe('rest');
+            expect(decl.specifiers[1].rest).toBe(true);
         });
 
-        test('Fail when using JS default value syntax', () => {
-            const { errors } = parseCode('fixum { a = 1 } = obj');
+        test('ex async destructuring with figendum', () => {
+            const { program } = parseCode('ex fetchData() figendum result');
+            const decl = program!.body[0] as any;
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(decl.type).toBe('DestructureDeclaration');
+            expect(decl.kind).toBe('figendum');
+            expect(decl.specifiers[0].imported.name).toBe('result');
         });
 
         // Array destructuring is now supported
@@ -2760,8 +2759,9 @@ describe('parser', () => {
             expect(decl.type).toBe('ImportaDeclaration');
             expect(decl.source).toBe('norma/tempus');
             expect(decl.specifiers).toHaveLength(2);
-            expect(decl.specifiers[0].name).toBe('nunc');
-            expect(decl.specifiers[1].name).toBe('dormi');
+            expect(decl.specifiers[0].imported.name).toBe('nunc');
+            expect(decl.specifiers[0].local.name).toBe('nunc');
+            expect(decl.specifiers[1].imported.name).toBe('dormi');
         });
 
         test('wildcard import', () => {
@@ -2778,7 +2778,7 @@ describe('parser', () => {
             const decl = program!.body[0] as any;
 
             expect(decl.specifiers).toHaveLength(1);
-            expect(decl.specifiers[0].name).toBe('nunc');
+            expect(decl.specifiers[0].imported.name).toBe('nunc');
         });
 
         test('import with constants', () => {
@@ -2786,9 +2786,32 @@ describe('parser', () => {
             const decl = program!.body[0] as any;
 
             expect(decl.specifiers).toHaveLength(3);
-            expect(decl.specifiers[0].name).toBe('SECUNDUM');
-            expect(decl.specifiers[1].name).toBe('MINUTUM');
-            expect(decl.specifiers[2].name).toBe('HORA');
+            expect(decl.specifiers[0].imported.name).toBe('SECUNDUM');
+            expect(decl.specifiers[1].imported.name).toBe('MINUTUM');
+            expect(decl.specifiers[2].imported.name).toBe('HORA');
+        });
+
+        test('import with ut alias', () => {
+            const { program } = parseCode('ex norma importa scribe ut s, lege ut l');
+            const decl = program!.body[0] as any;
+
+            expect(decl.type).toBe('ImportaDeclaration');
+            expect(decl.specifiers).toHaveLength(2);
+            expect(decl.specifiers[0].imported.name).toBe('scribe');
+            expect(decl.specifiers[0].local.name).toBe('s');
+            expect(decl.specifiers[1].imported.name).toBe('lege');
+            expect(decl.specifiers[1].local.name).toBe('l');
+        });
+
+        test('import with mixed aliases', () => {
+            const { program } = parseCode('ex norma importa scribe ut s, lege');
+            const decl = program!.body[0] as any;
+
+            expect(decl.specifiers).toHaveLength(2);
+            expect(decl.specifiers[0].imported.name).toBe('scribe');
+            expect(decl.specifiers[0].local.name).toBe('s');
+            expect(decl.specifiers[1].imported.name).toBe('lege');
+            expect(decl.specifiers[1].local.name).toBe('lege'); // no alias, same name
         });
     });
 

@@ -44,6 +44,7 @@ import type {
     Statement,
     Expression,
     ImportaDeclaration,
+    DestructureDeclaration,
     VariaDeclaration,
     FunctioDeclaration,
     TypeAliasDeclaration,
@@ -373,18 +374,20 @@ export function analyze(program: Program): SemanticResult {
         }
 
         for (const specifier of node.specifiers) {
-            const exportInfo = exports[specifier.name];
+            const importedName = specifier.imported.name;
+            const localName = specifier.local.name;
+            const exportInfo = exports[importedName];
 
             if (!exportInfo) {
                 const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NotExportedFromModule];
 
-                error(`${text(specifier.name, moduleName)}\n${help}`, specifier.position);
+                error(`${text(importedName, moduleName)}\n${help}`, specifier.position);
 
                 continue;
             }
 
-            currentScope.symbols.set(specifier.name, {
-                name: specifier.name,
+            currentScope.symbols.set(localName, {
+                name: localName,
                 type: exportInfo.type,
                 kind: exportInfo.kind,
                 mutable: false,
@@ -562,9 +565,13 @@ export function analyze(program: Program): SemanticResult {
                 // WHY: 'hoc' (this) type depends on enclosing class context
                 return UNKNOWN;
 
-            case 'UtExpression':
-                // WHY: Type cast asserts a type, so return the target type
-                return resolveExpression(node.expression);
+            case 'QuaExpression': {
+                // WHY: Type cast asserts a type, resolve inner and return target type
+                resolveExpression(node.expression);
+                const targetType = resolveTypeAnnotation(node.targetType);
+                node.resolvedType = targetType;
+                return targetType;
+            }
 
             case 'PraefixumExpression':
                 // WHY: praefixum is compile-time evaluated, return underlying type
@@ -1199,6 +1206,11 @@ export function analyze(program: Program): SemanticResult {
                 analyzeCuraStatement(node);
                 break;
 
+            case 'DestructureDeclaration':
+                // Object destructuring with ex-prefix syntax
+                analyzeDestructureDeclaration(node);
+                break;
+
             default: {
                 const _exhaustive: never = node;
                 break;
@@ -1213,26 +1225,6 @@ export function analyze(program: Program): SemanticResult {
     }
 
     function analyzeVariaDeclaration(node: VariaDeclaration): void {
-        // Handle object destructuring pattern
-        if (node.name.type === 'ObjectPattern') {
-            if (node.init) {
-                resolveExpression(node.init);
-            }
-
-            // Define each property as a variable
-            for (const prop of node.name.properties) {
-                define({
-                    name: prop.value.name,
-                    type: UNKNOWN,
-                    kind: 'variable',
-                    mutable: node.kind === 'varia' || node.kind === 'variandum',
-                    position: prop.position,
-                });
-            }
-
-            return;
-        }
-
         // Handle array destructuring pattern
         if (node.name.type === 'ArrayPattern') {
             if (node.init) {
@@ -1490,6 +1482,30 @@ export function analyze(program: Program): SemanticResult {
 
         // TODO: Register each variant as a constructor function
         // TODO: Track variant fields for pattern matching validation
+    }
+
+    /**
+     * Analyze destructure declaration (ex-prefix object destructuring).
+     *
+     * WHY: DestructureDeclaration extracts properties from an object into bindings.
+     *      ex persona fixum nomen, aetas -> const { nomen, aetas } = persona
+     */
+    function analyzeDestructureDeclaration(node: DestructureDeclaration): void {
+        // Resolve the source expression
+        resolveExpression(node.source);
+
+        // Define each specifier as a variable
+        for (const specifier of node.specifiers) {
+            const localName = specifier.local.name;
+
+            define({
+                name: localName,
+                type: UNKNOWN, // TODO: Infer from source object type
+                kind: 'variable',
+                mutable: node.kind === 'varia' || node.kind === 'variandum',
+                position: specifier.position,
+            });
+        }
     }
 
     function analyzeProbandumStatement(node: ProbandumStatement): void {

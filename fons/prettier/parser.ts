@@ -24,6 +24,10 @@ import type {
     EligeCasus,
     CustodiClause,
     CapeClause,
+    ImportSpecifier,
+    ArrayPattern,
+    ArrayPatternElement,
+    VariantCase,
 } from '../parser/ast.ts';
 import type { Token } from '../tokenizer/types.ts';
 import { tokenize } from '../tokenizer/index.ts';
@@ -78,6 +82,10 @@ export type AstNode =
     | EligeCasus
     | CustodiClause
     | CapeClause
+    | ImportSpecifier
+    | ArrayPattern
+    | ArrayPatternElement
+    | VariantCase
     | CommentNode;
 
 // =============================================================================

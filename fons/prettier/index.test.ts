@@ -47,9 +47,9 @@ describe('prettier plugin', () => {
             expect(result).toBe('figendum data = fetchData()\n');
         });
 
-        test('destructuring pattern', async () => {
-            const result = await format('fixum { a, b } = obj');
-            expect(result).toBe('fixum { a, b } = obj\n');
+        test('array destructuring pattern', async () => {
+            const result = await format('fixum [a, b] = arr');
+            expect(result).toBe('fixum [a, b] = arr\n');
         });
     });
 
@@ -159,14 +159,33 @@ describe('prettier plugin', () => {
         });
 
         test('import declaration', async () => {
-            // NOTE: Parser currently only captures first specifier (parser bug)
             const result = await format('ex norma importa scribe');
             expect(result).toBe('ex norma importa scribe\n');
+        });
+
+        test('import with multiple specifiers', async () => {
+            const result = await format('ex norma importa scribe, lege');
+            expect(result).toBe('ex norma importa scribe, lege\n');
+        });
+
+        test('import with alias', async () => {
+            const result = await format('ex norma importa scribe ut s');
+            expect(result).toBe('ex norma importa scribe ut s\n');
         });
 
         test('wildcard import', async () => {
             const result = await format('ex norma importa *');
             expect(result).toBe('ex norma importa *\n');
+        });
+
+        test('destructure declaration', async () => {
+            const result = await format('ex persona fixum nomen, aetas');
+            expect(result).toBe('ex persona fixum nomen, aetas\n');
+        });
+
+        test('destructure with alias', async () => {
+            const result = await format('ex persona fixum nomen ut n, aetas ut a');
+            expect(result).toBe('ex persona fixum nomen ut n, aetas ut a\n');
         });
 
         test('type alias', async () => {

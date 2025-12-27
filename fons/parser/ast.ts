@@ -80,6 +80,7 @@ export interface Program extends BaseNode {
  */
 export type Statement =
     | ImportaDeclaration
+    | DestructureDeclaration
     | VariaDeclaration
     | FunctioDeclaration
     | GenusDeclaration
@@ -114,25 +115,74 @@ export type Statement =
 // ---------------------------------------------------------------------------
 
 /**
+ * Import specifier with optional alias.
+ *
+ * GRAMMAR (in EBNF):
+ *   importSpecifier := IDENTIFIER ('ut' IDENTIFIER)?
+ *
+ * WHY: Separates the imported name from the local binding name.
+ *      Used by both ImportaDeclaration and DestructureDeclaration.
+ *
+ * Examples:
+ *   scribe                -> imported=scribe, local=scribe
+ *   scribe ut s           -> imported=scribe, local=s
+ *   nomen ut n            -> imported=nomen, local=n
+ */
+export interface ImportSpecifier extends BaseNode {
+    type: 'ImportSpecifier';
+    imported: Identifier;
+    local: Identifier;
+    rest?: boolean; // WHY: For ceteri (rest) patterns in destructuring
+}
+
+/**
  * Import declaration statement.
  *
  * GRAMMAR (in EBNF):
- *   importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (importSpec | '*')
- *   importSpec := IDENTIFIER (',' IDENTIFIER)*
+ *   importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (specifierList | '*')
+ *   specifierList := importSpecifier (',' importSpecifier)*
+ *   importSpecifier := IDENTIFIER ('ut' IDENTIFIER)?
  *
  * INVARIANT: Either specifiers is non-empty OR wildcard is true.
  * INVARIANT: source is never empty string.
  *
  * Examples:
- *   ex norma importa scribe, lege       -> source="norma", specifiers=[scribe, lege]
- *   ex "norma/tempus" importa nunc      -> source="norma/tempus", specifiers=[nunc]
- *   ex norma importa *                  -> source="norma", wildcard=true
+ *   ex norma importa scribe, lege         -> source="norma", specifiers=[{scribe,scribe}, {lege,lege}]
+ *   ex norma importa scribe ut s          -> source="norma", specifiers=[{scribe,s}]
+ *   ex "norma/tempus" importa nunc        -> source="norma/tempus", specifiers=[{nunc,nunc}]
+ *   ex norma importa *                    -> source="norma", wildcard=true
  */
 export interface ImportaDeclaration extends BaseNode {
     type: 'ImportaDeclaration';
     source: string;
-    specifiers: Identifier[];
+    specifiers: ImportSpecifier[];
     wildcard: boolean;
+}
+
+/**
+ * Destructuring declaration statement.
+ *
+ * GRAMMAR (in EBNF):
+ *   destructDecl := 'ex' expression bindingKeyword specifierList
+ *   bindingKeyword := 'fixum' | 'varia' | 'figendum' | 'variandum'
+ *   specifierList := importSpecifier (',' importSpecifier)*
+ *   importSpecifier := 'ceteri'? IDENTIFIER ('ut' IDENTIFIER)?
+ *
+ * WHY: Extracts properties from objects into individual bindings.
+ *      Uses same specifier format as imports for consistency.
+ *      Async variants (figendum/variandum) imply await on source.
+ *
+ * Examples:
+ *   ex persona fixum nomen, aetas           -> extract nomen, aetas
+ *   ex persona fixum nomen ut n, aetas ut a -> extract with aliases
+ *   ex persona fixum nomen, ceteri rest     -> extract nomen, collect rest
+ *   ex promise figendum result              -> await + extract
+ */
+export interface DestructureDeclaration extends BaseNode {
+    type: 'DestructureDeclaration';
+    source: Expression;
+    kind: 'fixum' | 'varia' | 'figendum' | 'variandum';
+    specifiers: ImportSpecifier[];
 }
 
 // ---------------------------------------------------------------------------
@@ -218,12 +268,16 @@ export interface ArrayPatternElement extends BaseNode {
  * Variable declaration statement.
  *
  * GRAMMAR (in EBNF):
- *   varDecl := ('varia' | 'fixum' | 'figendum' | 'variandum') (IDENTIFIER | objectPattern) (':' typeAnnotation)? ('=' expression)?
+ *   varDecl := ('varia' | 'fixum' | 'figendum' | 'variandum') typeAnnotation? IDENTIFIER ('=' expression)?
+ *   arrayDestruct := ('varia' | 'fixum' | 'figendum' | 'variandum') arrayPattern '=' expression
  *
  * INVARIANT: kind is Latin keyword, not target language (let/const).
  * INVARIANT: Either typeAnnotation or init SHOULD be present (but not enforced by parser).
  *
  * WHY: Preserves Latin keywords for semantic phase to map to target semantics.
+ *
+ * NOTE: Object destructuring uses DestructureDeclaration with ex-prefix syntax:
+ *       ex persona fixum nomen, aetas (NOT fixum { nomen, aetas } = persona)
  *
  * Async bindings (figendum/variandum) imply await without explicit cede:
  *   figendum = "that which will be fixed" (gerundive) -> const x = await ...
@@ -236,9 +290,8 @@ export interface ArrayPatternElement extends BaseNode {
  *   variandum → let x = await (TS), assignment (Py), N/A (Zig)
  *
  * Examples:
- *   varia x: numerus = 5
+ *   varia numerus x = 5
  *   fixum SALVE = "ave"
- *   fixum { nomen, aetas } = persona
  *   fixum [a, b, c] = coords
  *   figendum data = fetchData()
  *   variandum result = fetchInitial()
@@ -246,7 +299,7 @@ export interface ArrayPatternElement extends BaseNode {
 export interface VariaDeclaration extends BaseNode {
     type: 'VariaDeclaration';
     kind: 'varia' | 'fixum' | 'figendum' | 'variandum';
-    name: Identifier | ObjectPattern | ArrayPattern;
+    name: Identifier | ArrayPattern;
     typeAnnotation?: TypeAnnotation;
     init?: Expression;
 }

@@ -52,6 +52,8 @@ import type {
     Statement,
     Expression,
     ImportaDeclaration,
+    ImportSpecifier,
+    DestructureDeclaration,
     VariaDeclaration,
     FunctioDeclaration,
     GenusDeclaration,
@@ -84,7 +86,6 @@ import type {
     ArrowFunctionExpression,
     AssignmentExpression,
     NovumExpression,
-    EgoExpression,
     Identifier,
     Literal,
     Parameter,
@@ -454,6 +455,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         switch (node.type) {
             case 'ImportaDeclaration':
                 return genImportaDeclaration(node);
+            case 'DestructureDeclaration':
+                return genDestructureDeclaration(node);
             case 'VariaDeclaration':
                 return genVariaDeclaration(node);
             case 'FunctioDeclaration':
@@ -513,6 +516,8 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      *   ex norma importa scribe, lege -> const _norma = @import("norma");
      *                                     const scribe = _norma.scribe;
      *                                     const lege = _norma.lege;
+     *   ex norma importa scribe ut s -> const _norma = @import("norma");
+     *                                    const s = _norma.scribe;
      *
      * TARGET: Zig uses @import() builtin. Specific imports create const bindings.
      */
@@ -529,7 +534,49 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
 
         lines.push(`${ind()}const ${modVar} = @import("${source}");`);
         for (const spec of node.specifiers) {
-            lines.push(`${ind()}const ${spec.name} = ${modVar}.${spec.name};`);
+            // WHY: ImportSpecifier has imported/local - use local for binding, imported for access
+            const localName = spec.local.name;
+            const importedName = spec.imported.name;
+            lines.push(`${ind()}const ${localName} = ${modVar}.${importedName};`);
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Generate object destructuring declaration.
+     *
+     * TRANSFORMS:
+     *   ex persona fixum nomen, aetas -> const _tmp = persona; const nomen = _tmp.nomen; const aetas = _tmp.aetas;
+     *   ex persona fixum nomen ut n -> const _tmp = persona; const n = _tmp.nomen;
+     *   ex persona fixum nomen, ceteri rest -> const _tmp = persona; const nomen = _tmp.nomen; // rest not directly supported
+     *
+     * TARGET: Zig doesn't have native object destructuring, so we expand to field access.
+     *
+     * NOTE: figendum/variandum async variants are not applicable in Zig since it doesn't
+     *       have async/await like JS. We treat them the same as fixum/varia.
+     */
+    function genDestructureDeclaration(node: DestructureDeclaration): string {
+        const kind = node.kind === 'varia' || node.kind === 'variandum' ? 'var' : 'const';
+        const sourceExpr = genExpression(node.source);
+        const lines: string[] = [];
+
+        // Create a temp var to hold the object, then extract fields
+        const tempVar = `_tmp`;
+        lines.push(`${ind()}const ${tempVar} = ${sourceExpr};`);
+
+        for (const spec of node.specifiers) {
+            const localName = spec.local.name;
+            const importedName = spec.imported.name;
+
+            // WHY: rest patterns (ceteri) aren't directly supported in Zig
+            // We'd need to iterate over remaining fields which isn't straightforward
+            if (spec.rest) {
+                lines.push(`${ind()}// ceteri (rest) not supported in Zig: ${localName}`);
+                continue;
+            }
+
+            lines.push(`${ind()}${kind} ${localName} = ${tempVar}.${importedName};`);
         }
 
         return lines.join('\n');
@@ -546,11 +593,13 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      * TRANSFORMS:
      *   varia x: numerus = 5 -> var x: i64 = 5;
      *   fixum y: textus = "hello" -> const m_y: []const u8 = "hello"; (module-level)
-     *   fixum { a, b } = obj -> const a = obj.a; const b = obj.b;
+     *   fixum [a, b] = arr -> const a = arr[0]; const b = arr[1];
      *
      * TARGET: Zig requires explicit types for var (mutable) declarations.
      *         Const can infer but we add type for clarity.
-     *         Zig doesn't have destructuring, so we expand to multiple statements.
+     *         Zig doesn't have destructuring, so we expand to indexed access.
+     *
+     * NOTE: Object destructuring now uses DestructureDeclaration, not VariaDeclaration.
      *
      * WHY: Module-level constants use m_ prefix to avoid shadowing conflicts
      *      with function parameters. Zig forbids a param named 'x' if there's a
@@ -558,26 +607,6 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
      */
     function genVariaDeclaration(node: VariaDeclaration): string {
         const kind = node.kind === 'varia' ? 'var' : 'const';
-
-        // Handle object pattern destructuring
-        if (node.name.type === 'ObjectPattern') {
-            const initExpr = node.init ? genExpression(node.init) : 'undefined';
-            const lines: string[] = [];
-
-            // Create a temp var to hold the object, then destructure
-            const tempVar = `_tmp`;
-
-            lines.push(`${ind()}const ${tempVar} = ${initExpr};`);
-
-            for (const prop of node.name.properties) {
-                const key = prop.key.name;
-                const localName = prop.value.name;
-
-                lines.push(`${ind()}${kind} ${localName} = ${tempVar}.${key};`);
-            }
-
-            return lines.join('\n');
-        }
 
         // Handle array pattern destructuring
         // Zig doesn't have native destructuring, so we expand to indexed access

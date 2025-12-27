@@ -3,12 +3,13 @@
 // =============================================================================
 //
 // Destructuring extracts properties from objects into individual bindings.
-// The 'ex' (from) syntax parallels iteration: ex SOURCE VERB BINDING
+// The 'ex' (from) syntax parallels imports: ex SOURCE BINDING specifiers
 //
 // GRAMMAR:
-// ex object fixum { prop1, prop2 }
-// ex object fixum { prop: alias }
-// ex object varia { prop1, prop2 }
+// ex object fixum prop1, prop2
+// ex object fixum prop ut alias
+// ex object varia prop1, prop2
+// ex object fixum prop1, ceteri rest
 //
 // WHY DESTRUCTURING:
 // - Extract multiple values in one statement
@@ -24,24 +25,24 @@ fixum person = { name: "Marcus", age: 30, city: "Roma" }
 
 // Extract properties into variables
 // Reads: "from person, take (const) name and age"
-ex person fixum { name, age }
+ex person fixum name, age
 
 scribe name
 scribe age
 
 // Partial destructuring
-ex person fixum { city }
+ex person fixum city
 scribe city
 
 // =============================================================================
-// DESTRUCTURING WITH RENAME
+// DESTRUCTURING WITH RENAME (ut alias)
 // =============================================================================
 
 fixum user = { name: "Julia", email: "julia@roma.com" }
 
-// Rename during destructuring
+// Rename during destructuring using 'ut' (as)
 // Reads: "from user, take name as userName and email as userEmail"
-ex user fixum { name: userName, email: userEmail }
+ex user fixum name ut userName, email ut userEmail
 
 scribe userName
 scribe userEmail
@@ -49,7 +50,7 @@ scribe userEmail
 // Multiple renames
 fixum config = { host: "localhost", port: 8080 }
 
-ex config fixum { host: serverHost, port: serverPort }
+ex config fixum host ut serverHost, port ut serverPort
 
 scribe serverHost
 scribe serverPort
@@ -61,7 +62,7 @@ scribe serverPort
 fixum data = { count: 100, active: verum }
 
 // Use varia for mutable bindings
-ex data varia { count, active }
+ex data varia count, active
 
 scribe count
 scribe active
@@ -83,7 +84,7 @@ scribe active
 
 // Destructure inline from object literals
 fixum claudia = { name: "Claudia", age: 28 }
-ex claudia fixum { name: claudiaName, age: claudiaAge }
+ex claudia fixum name ut claudiaName, age ut claudiaAge
 scribe "User:", claudiaName, "Age:", claudiaAge
 
 // =============================================================================
@@ -92,10 +93,10 @@ scribe "User:", claudiaName, "Age:", claudiaAge
 
 fixum profile = { user: { name: "Gaius", id: 42 }, settings: { theme: "dark" } }
 
-// Destructure nested objects
-ex profile fixum { user: profileUser, settings }
-ex profileUser fixum { name: profileName, id: profileId }
-ex settings fixum { theme }
+// Destructure nested objects (step by step)
+ex profile fixum user ut profileUser, settings
+ex profileUser fixum name ut profileName, id ut profileId
+ex settings fixum theme
 
 scribe profileName
 scribe profileId
@@ -107,14 +108,14 @@ scribe theme
 
 // Destructure from inline object
 fixum coordinates = { x: 10, y: 20 }
-ex coordinates fixum { x, y }
+ex coordinates fixum x, y
 
 scribe x
 scribe y
 
 // Destructure from object literal
 fixum userInfo = { name: "Marcus", email: "marcus@roma.com", verified: verum }
-ex userInfo fixum { name: registeredName, verified }
+ex userInfo fixum name ut registeredName, verified
 
 scribe registeredName
 scribe verified
@@ -134,7 +135,7 @@ fixum largeObject = {
 }
 
 // Extract only what you need
-ex largeObject fixum { id: productId, name: productName, price }
+ex largeObject fixum id ut productId, name ut productName, price
 
 scribe productId
 scribe productName
@@ -145,7 +146,7 @@ scribe price
 // =============================================================================
 
 // Future: default values for missing properties
-// ex options fixum { timeout = 5000, retries = 3 }
+// ex options fixum timeout vel 5000, retries vel 3
 // Uses defaults if properties don't exist
 
 // =============================================================================
@@ -163,7 +164,7 @@ scribe status
 scribe responseData
 
 // With destructuring (concise):
-ex response fixum { status: responseStatus, data: respData }
+ex response fixum status ut responseStatus, data ut respData
 
 scribe responseStatus
 scribe respData
@@ -174,7 +175,7 @@ scribe respData
 
 // Configuration object pattern
 fixum connectOptions = { host: "example.com", port: 443, secure: verum }
-ex connectOptions fixum { host: connHost, port: connPort, secure }
+ex connectOptions fixum host ut connHost, port ut connPort, secure
 
 si secure {
     scribe "Connecting securely to", connHost, connPort
@@ -185,9 +186,21 @@ aliter {
 
 // API response pattern
 fixum successResponse = { status: 200, data: "OK", erratum: nihil }
-ex successResponse fixum { status: respStatus, data: respPayload }
+ex successResponse fixum status ut respStatus, data ut respPayload
 scribe "Success:", respStatus, respPayload
 
 fixum errorResponse = { status: 404, data: nihil, erratum: "Not found" }
-ex errorResponse fixum { status: errStatus, erratum: errMsg }
+ex errorResponse fixum status ut errStatus, erratum ut errMsg
 scribe "Error:", errStatus, errMsg
+
+// =============================================================================
+// REST PATTERNS (ceteri)
+// =============================================================================
+
+fixum fullUser = { id: 1, name: "Marcus", email: "m@r.com", role: "admin" }
+
+// Extract id, collect the rest
+ex fullUser fixum id, ceteri userDetails
+
+scribe id
+scribe userDetails

@@ -124,6 +124,8 @@ import type {
     Literal,
     RangeExpression,
     ConditionalExpression,
+    ImportSpecifier,
+    DestructureDeclaration,
     ObjectPattern,
     ObjectPatternProperty,
     ArrayPattern,
@@ -694,14 +696,60 @@ export function parse(tokens: Token[]): ParserResult {
     // ---------------------------------------------------------------------------
 
     /**
+     * Parse a single import/destructure specifier with optional alias.
+     *
+     * GRAMMAR:
+     *   specifier := 'ceteri'? IDENTIFIER ('ut' IDENTIFIER)?
+     *
+     * WHY: Shared between imports and destructuring.
+     *      'ceteri' (rest) is only valid in destructuring contexts.
+     *      'ut' provides aliasing: nomen ut n
+     *
+     * Examples:
+     *   scribe             -> imported=scribe, local=scribe
+     *   scribe ut s        -> imported=scribe, local=s
+     *   ceteri rest        -> imported=rest, local=rest, rest=true
+     */
+    function parseSpecifier(): ImportSpecifier {
+        const position = peek().position;
+
+        // Check for rest pattern: ceteri restName
+        let rest = false;
+        if (checkKeyword('ceteri')) {
+            advance(); // consume 'ceteri'
+            rest = true;
+        }
+
+        // WHY: Names can be keywords (ex norma importa scribe)
+        const imported = parseIdentifierOrKeyword();
+        let local = imported;
+
+        // Check for alias: name ut alias
+        if (checkKeyword('ut')) {
+            advance(); // consume 'ut'
+            local = parseIdentifierOrKeyword();
+        }
+
+        return {
+            type: 'ImportSpecifier',
+            imported,
+            local,
+            rest: rest || undefined,
+            position,
+        };
+    }
+
+    /**
      * Parse import declaration.
      *
      * GRAMMAR:
-     *   importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (identifierList | '*')
-     *   identifierList := IDENTIFIER (',' IDENTIFIER)*
+     *   importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (specifierList | '*')
+     *   specifierList := specifier (',' specifier)*
+     *   specifier := IDENTIFIER ('ut' IDENTIFIER)?
      *
      * Examples:
      *   ex norma importa scribe, lege
+     *   ex norma importa scribe ut s, lege ut l
      *   ex "norma/tempus" importa nunc, dormi
      *   ex norma importa *
      */
@@ -728,11 +776,10 @@ export function parse(tokens: Token[]): ParserResult {
             return { type: 'ImportaDeclaration', source, specifiers: [], wildcard: true, position };
         }
 
-        const specifiers: Identifier[] = [];
+        const specifiers: ImportSpecifier[] = [];
 
-        // WHY: Import names can be keywords (ex norma importa scribe)
         do {
-            specifiers.push(parseIdentifierOrKeyword());
+            specifiers.push(parseSpecifier());
         } while (match('COMMA'));
 
         return { type: 'ImportaDeclaration', source, specifiers, wildcard: false, position };
@@ -742,7 +789,8 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse variable declaration.
      *
      * GRAMMAR:
-     *   varDecl := ('varia' | 'fixum') (objectPattern '=' expression | typeAnnotation IDENTIFIER | IDENTIFIER) ('=' expression)?
+     *   varDecl := ('varia' | 'fixum' | 'figendum' | 'variandum') typeAnnotation? IDENTIFIER ('=' expression)?
+     *   arrayDestruct := ('varia' | 'fixum' | 'figendum' | 'variandum') arrayPattern '=' expression
      *
      * WHY: Type-first syntax: "fixum textus nomen = value" or "fixum nomen = value"
      *      Latin 'varia' (let it be) for mutable, 'fixum' (fixed) for immutable.
@@ -753,21 +801,18 @@ export function parse(tokens: Token[]): ParserResult {
      * Async bindings (figendum/variandum) work the same way syntactically,
      * but imply await on the initializer during codegen.
      *
-     * DESTRUCTURING: Two equivalent syntaxes are supported:
-     *   1. Direct assignment: fixum { nomen, aetas } = user
-     *   2. Ex-prefix (Latin): ex user fixum { nomen, aetas }
+     * OBJECT DESTRUCTURING: Use ex-prefix syntax (produces DestructureDeclaration):
+     *   ex persona fixum nomen, aetas
+     *   ex persona fixum nomen ut n, aetas ut a
      *
-     * Both produce the same AST. The ex-prefix form reads more naturally
-     * in Latin: "from user, take (const) nomen and aetas".
-     *
-     * Rest patterns use 'ceteri' (Latin "the rest"):
-     *   fixum { nomen, ceteri rest } = user
+     * ARRAY DESTRUCTURING: Uses bracket pattern (still VariaDeclaration):
+     *   fixum [a, b, c] = coords
      *
      * NOT SUPPORTED (will produce parser errors):
      *   - JS spread: { ...rest }
      *   - Python unpack: { *rest } or { **rest }
      *   - TS-style annotation: fixum nomen: textus = "x" (use: fixum textus nomen = "x")
-     *   - Array destructuring: fixum [a, b] = arr
+     *   - Brace object destructuring: fixum { a, b } = obj (use: ex obj fixum a, b)
      *   - Increment/decrement: x++, ++x, x--, --x
      *   - Compound assignment: x += 1, x -= 1, x *= 2, x /= 2
      */
@@ -778,13 +823,10 @@ export function parse(tokens: Token[]): ParserResult {
         advance(); // varia, fixum, figendum, or variandum
 
         let typeAnnotation: TypeAnnotation | undefined;
-        let name: Identifier | ObjectPattern | ArrayPattern;
+        let name: Identifier | ArrayPattern;
 
-        // Check for object destructuring pattern: fixum { a, b } = obj
-        if (check('LBRACE')) {
-            name = parseObjectPattern();
-        } else if (check('LBRACKET')) {
-            // Array destructuring pattern: fixum [a, b] = arr
+        // Array destructuring pattern: fixum [a, b] = arr
+        if (check('LBRACKET')) {
             name = parseArrayPattern();
         } else if (isTypeName(peek())) {
             typeAnnotation = parseTypeAnnotation();
@@ -1943,14 +1985,18 @@ export function parse(tokens: Token[]): ParserResult {
      * - VariaDeclaration (destructuring): ex SOURCE (fixum|varia|figendum|variandum) { props }
      *
      * GRAMMAR:
-     *   exStmt := 'ex' expression (forBinding | destructBinding)
+     *   exStmt := 'ex' expression (forBinding | destructBinding | arrayDestructBinding)
      *   forBinding := ('pro' | 'fit' | 'fiet') IDENTIFIER (blockStmt | 'ergo' statement) catchClause?
-     *   destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') objectPattern
+     *   destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') specifierList
+     *   arrayDestructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') arrayPattern
+     *   specifierList := specifier (',' specifier)*
+     *   specifier := 'ceteri'? IDENTIFIER ('ut' IDENTIFIER)?
      *
      * WHY: 'ex' (from/out of) introduces both iteration and extraction:
      *      - Iteration: ex items pro item { ... } (for each item from items)
-     *      - Destructuring: ex response fixum { data } (extract data from response)
-     *      - Async destructuring: ex promise figendum { result } (await + extract)
+     *      - Object destructuring: ex persona fixum nomen, aetas (extract properties)
+     *      - Array destructuring: ex coords fixum [x, y, z] (extract by position)
+     *      - Async destructuring: ex promise figendum result (await + extract)
      *
      * The binding keywords encode mutability and async semantics:
      *      - fixum: immutable binding (const)
@@ -1961,10 +2007,13 @@ export function parse(tokens: Token[]): ParserResult {
      * Examples:
      *   ex numeri pro n { ... }              // for-loop (sync)
      *   ex numeri fiet n { ... }             // for-await-of loop (async)
-     *   ex response fixum { status, data }   // destructuring (sync)
-     *   ex fetchData() figendum { result }   // destructuring (async, awaits first)
+     *   ex persona fixum nomen, aetas        // object destructuring
+     *   ex persona fixum nomen ut n          // object destructuring with alias
+     *   ex persona fixum nomen, ceteri rest  // object destructuring with rest
+     *   ex coords fixum [x, y, z]            // array destructuring
+     *   ex fetchData() figendum result       // async destructuring
      */
-    function parseExStatement(): IteratioStatement | VariaDeclaration {
+    function parseExStatement(): IteratioStatement | VariaDeclaration | DestructureDeclaration {
         const position = peek().position;
 
         expectKeyword('ex', ParserErrorCode.InvalidExDeStart);
@@ -1973,18 +2022,22 @@ export function parse(tokens: Token[]): ParserResult {
 
         // Dispatch based on what follows the expression
         if (checkKeyword('fixum') || checkKeyword('varia') || checkKeyword('figendum') || checkKeyword('variandum')) {
-            // Destructuring: ex source fixum { ... } or ex source fixum [ ... ]
-            // async variants: ex source figendum { ... } or ex source figendum [ ... ]
             const kind = advance().keyword as 'varia' | 'fixum' | 'figendum' | 'variandum';
 
-            let name: ObjectPattern | ArrayPattern;
+            // Array destructuring: ex coords fixum [x, y, z]
             if (check('LBRACKET')) {
-                name = parseArrayPattern();
-            } else {
-                name = parseObjectPattern();
+                const name = parseArrayPattern();
+                return { type: 'VariaDeclaration', kind, name, init: source, position };
             }
 
-            return { type: 'VariaDeclaration', kind, name, init: source, position };
+            // Object destructuring: ex persona fixum nomen, aetas
+            // WHY: Brace-less syntax matches import pattern: ex norma importa scribe, lege
+            const specifiers: ImportSpecifier[] = [];
+            do {
+                specifiers.push(parseSpecifier());
+            } while (match('COMMA'));
+
+            return { type: 'DestructureDeclaration', source, kind, specifiers, position };
         }
 
         // Otherwise it's a for-loop: ex source pro/fit/fiet variable { }

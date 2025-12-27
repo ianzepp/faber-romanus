@@ -1,7 +1,7 @@
 ---
 status: partial
 targets: [ts, py, zig, cpp, rs]
-note: Core prepositions (ex, de, in, pro, qua) implemented. Collection DSL, ad dispatch, and ut aliasing not yet implemented.
+note: Core prepositions (ex, de, in, pro, qua, ut) implemented. Collection DSL and ad dispatch not yet implemented.
 updated: 2024-12
 ---
 
@@ -91,11 +91,12 @@ Same as iteration transforms, but assigned instead of iterated. Context (assignm
 ### Destructuring
 
 ```fab
-ex response fixum { status, data }
-ex fetchData() figendum { result }   // await + destructure
+ex response fixum status, data
+ex response fixum status ut s, data ut d   // with aliases
+ex fetchData() figendum result             // await + destructure
 ```
 
-Extract fields **from** an object/expression.
+Extract fields **from** an object/expression. Uses brace-less syntax matching imports.
 
 ### Summary
 
@@ -105,7 +106,8 @@ Extract fields **from** an object/expression.
 | `ex source pro var { }`            | Iterate from source             |
 | `ex source transforms pro var { }` | Iterate from transformed source |
 | `ex source transforms` (assigned)  | Collection expression           |
-| `ex source fixum { pattern }`      | Destructure from source         |
+| `ex source fixum name, email`      | Destructure from source         |
+| `ex source fixum name ut alias`    | Destructure with alias          |
 
 ---
 
@@ -299,6 +301,16 @@ discerne event {
 
 **For** fields `x` and `y`, bind them from the matched variant.
 
+### Response Binding
+
+```fab
+ad "https://api.example.com/users" ("GET") fiet Response pro resp {
+    scribe(resp.status)
+}
+```
+
+Bind the response **as** `resp`.
+
 ### Summary
 
 | Pattern                     | Meaning                  |
@@ -313,7 +325,7 @@ discerne event {
 
 **Latin:** "as, like"
 
-> **Status:** Not yet implemented. The examples below describe intended behavior.
+> **Status:** Implemented for imports and destructuring. Parameter aliases not yet implemented.
 
 `ut` renames identifiers. It says "call this AS that name."
 
@@ -331,13 +343,13 @@ Import `scribe` **as** `s`.
 ### Destructuring Alias
 
 ```fab
-fixum { nomen ut n, aetas ut a } = persona
+ex persona fixum nomen ut n, aetas ut a
 scribe(n, a)
 ```
 
-Bind field `nomen` **as** `n`.
+Extract field `nomen` and bind it **as** `n`. Note the brace-less syntax — destructuring uses the same comma-separated pattern as imports.
 
-### Parameter Alias
+### Parameter Alias (Future)
 
 ```fab
 functio move(de Point[] from ut source, in Point[] to ut dest) {
@@ -346,15 +358,15 @@ functio move(de Point[] from ut source, in Point[] to ut dest) {
 }
 ```
 
-External name `from`, internally known **as** `source`.
+External name `from`, internally known **as** `source`. (Not yet implemented.)
 
 ### Summary
 
-| Pattern                     | Meaning                 |
-| --------------------------- | ----------------------- |
-| `importa name ut alias`     | Import alias            |
-| `{ field ut alias }`        | Destructuring alias     |
-| `Type external ut internal` | Parameter internal name |
+| Pattern                       | Meaning                 | Status   |
+| ----------------------------- | ----------------------- | -------- |
+| `importa name ut alias`       | Import alias            | Done     |
+| `ex obj fixum field ut alias` | Destructuring alias     | Done     |
+| `Type external ut internal`   | Parameter internal name | Not done |
 
 ---
 
@@ -371,16 +383,6 @@ fixum value = getData() qua textus
 ```
 
 Treat the result **as** `textus`. (Assertion, not conversion.)
-
-### Response Binding
-
-```fab
-ad "https://api.example.com/users" ("GET") fiet Response qua resp {
-    scribe(resp.status)
-}
-```
-
-Bind the response **as** `resp`.
 
 ### Type Assertion
 
@@ -413,9 +415,6 @@ ex items pro item { }
 // 'pro' at expression start = lambda
 pro x: x + 1
 
-// 'pro' after param type = internal name
-functio f(textus name pro n) { }
-
 // 'pro' after 'si' in discerne = variant field binding
 discerne event { si Click pro x, y { } }
 ```
@@ -438,8 +437,8 @@ functio f(de textus external ut internal) { }
 // Import and rename
 ex norma importa scribe ut s { }
 
-// Extract from source into bindings
-ex response fixum { data }
+// Extract from source into bindings (brace-less)
+ex response fixum status, data
 
 // Send to destination, bind response
 ad url ("GET") fiet Response pro resp { }
@@ -465,8 +464,8 @@ ad url ("GET") fiet Response pro resp { }
 | `pro`       | Lambda parameter             | Done           |
 | `pro`       | Variant binding (`discerne`) | Done           |
 | `pro`       | Ad result binding            | Not done       |
-| `ut`        | Import alias                 | Not done       |
-| `ut`        | Destructuring alias          | Not done       |
+| `ut`        | Import alias                 | Done           |
+| `ut`        | Destructuring alias          | Done           |
 | `ut`        | Parameter alias              | Not done       |
 | `qua`       | Type assertion               | Done           |
 

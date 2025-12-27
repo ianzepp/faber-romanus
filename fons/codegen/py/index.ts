@@ -54,6 +54,8 @@ import type {
     Statement,
     Expression,
     ImportaDeclaration,
+    ImportSpecifier,
+    DestructureDeclaration,
     VariaDeclaration,
     FunctioDeclaration,
     GenusDeclaration,
@@ -258,6 +260,8 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
         switch (node.type) {
             case 'ImportaDeclaration':
                 return genImportaDeclaration(node);
+            case 'DestructureDeclaration':
+                return genDestructureDeclaration(node);
             case 'VariaDeclaration':
                 return genVariaDeclaration(node);
             case 'FunctioDeclaration':
@@ -317,6 +321,7 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
      * TRANSFORMS:
      *   ex norma importa * -> import norma
      *   ex norma importa scribe, lege -> from norma import scribe, lege
+     *   ex norma importa scribe ut s -> from norma import scribe as s
      */
     function genImportaDeclaration(node: ImportaDeclaration): string {
         const source = node.source;
@@ -325,7 +330,16 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
             return `${ind()}import ${source}`;
         }
 
-        const names = node.specifiers.map(s => s.name).join(', ');
+        // WHY: ImportSpecifier has imported/local - emit "imported as local" when different
+        const names = node.specifiers
+            .map(s => {
+                if (s.imported.name === s.local.name) {
+                    return s.imported.name;
+                }
+                return `${s.imported.name} as ${s.local.name}`;
+            })
+            .join(', ');
+
         return `${ind()}from ${source} import ${names}`;
     }
 
@@ -335,45 +349,19 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
      * TRANSFORMS:
      *   varia x: numerus = 5 -> x: int = 5
      *   fixum y: textus = "hello" -> y: str = "hello"
-     *   fixum { nomen, aetas } = persona -> nomen = persona.nomen; aetas = persona.aetas
+     *   fixum [a, b, c] = coords -> a, b, c = coords
      *   figendum data = fetchData() -> data = await fetchData()
      *   variandum result = getResult() -> result = await getResult()
      *
      * WHY: Python has no const, so both varia and fixum become simple assignment.
      * WHY: Async bindings (figendum/variandum) imply await without explicit cede.
+     *
+     * NOTE: Object destructuring now uses DestructureDeclaration with ex-prefix:
+     *       ex persona fixum nomen, aetas -> nomen, aetas = persona["nomen"], persona["aetas"]
      */
     function genVariaDeclaration(node: VariaDeclaration): string {
         // Check if this is an async binding (figendum/variandum)
         const isAsync = node.kind === 'figendum' || node.kind === 'variandum';
-
-        // Handle object pattern destructuring
-        if (node.name.type === 'ObjectPattern') {
-            const initExpr = node.init ? genExpression(node.init) : 'None';
-            const awaitPrefix = isAsync ? 'await ' : '';
-            const lines: string[] = [];
-
-            // Separate regular properties from rest property
-            const regularProps = node.name.properties.filter(p => !p.rest);
-            const restProp = node.name.properties.find(p => p.rest);
-
-            // Generate regular property extractions
-            for (const prop of regularProps) {
-                const key = prop.key.name;
-                const localName = prop.value.name;
-                lines.push(`${ind()}${localName} = ${awaitPrefix}${initExpr}["${key}"]`);
-            }
-
-            // Generate rest collection (remaining properties after extracting named ones)
-            // WHY: Python doesn't have native rest destructuring, so we manually collect
-            //      the remaining keys using dict comprehension
-            if (restProp) {
-                const restName = restProp.value.name;
-                const excludeKeys = regularProps.map(p => `"${p.key.name}"`).join(', ');
-                lines.push(`${ind()}${restName} = {k: v for k, v in ${awaitPrefix}${initExpr}.items() if k not in [${excludeKeys}]}`);
-            }
-
-            return lines.join('\n');
-        }
 
         // Handle array pattern destructuring
         // Python supports tuple unpacking: a, b, *rest = arr
@@ -405,6 +393,50 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
 
         const init = node.init ? ` = ${genExpression(node.init)}` : '';
         return `${ind()}${name}${typeAnno}${init}`;
+    }
+
+    /**
+     * Generate object destructuring declaration.
+     *
+     * TRANSFORMS:
+     *   ex persona fixum nomen, aetas -> nomen, aetas = persona["nomen"], persona["aetas"]
+     *   ex persona fixum nomen ut n -> n = persona["nomen"]
+     *   ex persona fixum nomen, ceteri rest -> nomen = persona["nomen"]; rest = {k: v for ...}
+     *   ex promise figendum result -> result = (await promise)["result"]
+     *
+     * WHY: Python lacks native object destructuring, so we emit multiple assignments.
+     *      For rest patterns (ceteri), we use dict comprehension to collect remaining keys.
+     */
+    function genDestructureDeclaration(node: DestructureDeclaration): string {
+        const isAsync = node.kind === 'figendum' || node.kind === 'variandum';
+        const awaitPrefix = isAsync ? 'await ' : '';
+        const sourceExpr = genExpression(node.source);
+        // WHY: Wrap in parens for async to ensure await applies to source, not index
+        const source = isAsync ? `(${awaitPrefix}${sourceExpr})` : sourceExpr;
+
+        const lines: string[] = [];
+
+        // Separate regular specifiers from rest specifier
+        const regularSpecs = node.specifiers.filter(s => !s.rest);
+        const restSpec = node.specifiers.find(s => s.rest);
+
+        // Generate regular property extractions
+        for (const spec of regularSpecs) {
+            const imported = spec.imported.name;
+            const local = spec.local.name;
+            lines.push(`${ind()}${local} = ${source}["${imported}"]`);
+        }
+
+        // Generate rest collection (remaining properties after extracting named ones)
+        // WHY: Python doesn't have native rest destructuring, so we manually collect
+        //      the remaining keys using dict comprehension
+        if (restSpec) {
+            const restName = restSpec.local.name;
+            const excludeKeys = regularSpecs.map(s => `"${s.imported.name}"`).join(', ');
+            lines.push(`${ind()}${restName} = {k: v for k, v in ${source}.items() if k not in [${excludeKeys}]}`);
+        }
+
+        return lines.join('\n');
     }
 
     /**

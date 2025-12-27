@@ -33,7 +33,6 @@ import type {
     OrdoMember,
     OrdoDeclaration,
     FieldDeclaration,
-    ComputedFieldDeclaration,
     GenusDeclaration,
     PactumDeclaration,
     PactumMethod,
@@ -42,6 +41,10 @@ import type {
     FacBlockStatement,
     LambdaExpression,
     EgoExpression,
+    ImportSpecifier,
+    DestructureDeclaration,
+    ArrayPattern,
+    ArrayPatternElement,
 } from '../parser/ast.ts';
 import type { AstNode, PrettierProgram } from './parser.ts';
 
@@ -77,6 +80,10 @@ export function faberPrint(path: AstPath<AstNode>, options: FaberOptions, print:
         // Statements
         case 'ImportaDeclaration':
             return printImportaDeclaration(path, options, print);
+        case 'ImportSpecifier':
+            return printImportSpecifier(path, options, print);
+        case 'DestructureDeclaration':
+            return printDestructureDeclaration(path, options, print);
         case 'VariaDeclaration':
             return printVariaDeclaration(path, options, print);
         case 'FunctioDeclaration':
@@ -91,8 +98,6 @@ export function faberPrint(path: AstPath<AstNode>, options: FaberOptions, print:
             return printGenusDeclaration(path, options, print);
         case 'FieldDeclaration':
             return printFieldDeclaration(path, options, print);
-        case 'ComputedFieldDeclaration':
-            return printComputedFieldDeclaration(path, options, print);
         case 'PactumDeclaration':
             return printPactumDeclaration(path, options, print);
         case 'PactumMethod':
@@ -177,6 +182,10 @@ export function faberPrint(path: AstPath<AstNode>, options: FaberOptions, print:
             return printObjectPattern(path, options, print);
         case 'ObjectPatternProperty':
             return printObjectPatternProperty(path, options, print);
+        case 'ArrayPattern':
+            return printArrayPattern(path, options, print);
+        case 'ArrayPatternElement':
+            return printArrayPatternElement(path, options, print);
         case 'ObjectProperty':
             return printObjectProperty(path, options, print);
         case 'EligeCasus':
@@ -243,7 +252,7 @@ function printImportaDeclaration(path: AstPath<AstNode>, options: FaberOptions, 
         return ['ex ', node.source, ' importa *'];
     }
 
-    const specifiers = path.map(print, 'specifiers');
+    const specifiers = path.map(print as any, 'specifiers') as Doc[];
     const threshold = getBreakThreshold(options);
 
     if (specifiers.length >= threshold) {
@@ -251,6 +260,34 @@ function printImportaDeclaration(path: AstPath<AstNode>, options: FaberOptions, 
     }
 
     return ['ex ', node.source, ' importa ', join(', ', specifiers)];
+}
+
+function printImportSpecifier(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    const node = path.getValue() as any;
+
+    // If imported and local are the same, just print the name
+    if (node.imported.name === node.local.name) {
+        return node.imported.name;
+    }
+
+    // Otherwise print with 'ut' alias: imported ut local
+    return [node.imported.name, ' ut ', node.local.name];
+}
+
+function printDestructureDeclaration(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    const node = path.getValue() as any;
+    const parts: Doc[] = ['ex ', path.call(print as any, 'source'), ' ', node.kind, ' '];
+
+    const specifiers = path.map(print as any, 'specifiers') as Doc[];
+    const threshold = getBreakThreshold(options);
+
+    if (specifiers.length >= threshold) {
+        parts.push(indent([softline, join([',', line], specifiers)]));
+    } else {
+        parts.push(join(', ', specifiers));
+    }
+
+    return group(parts);
 }
 
 function printVariaDeclaration(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
@@ -835,6 +872,28 @@ function printObjectPatternProperty(path: AstPath<AstNode>, options: FaberOption
     }
 
     return [path.call(print, 'key'), ': ', path.call(print, 'value')];
+}
+
+function printArrayPattern(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    const elements = path.map(print as any, 'elements');
+    return ['[', join(', ', elements), ']'];
+}
+
+function printArrayPatternElement(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    const node = path.getValue() as any;
+
+    // Skip element (underscore)
+    if (node.skip) {
+        return '_';
+    }
+
+    // Rest element (ceteri pattern)
+    if (node.rest) {
+        return ['ceteri ', path.call(print as any, 'name')];
+    }
+
+    // Regular element
+    return path.call(print as any, 'name');
 }
 
 function printRangeExpression(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {

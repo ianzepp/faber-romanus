@@ -25,17 +25,37 @@ statement := importDecl | varDecl | funcDecl | typeAliasDecl | ifStmt | whileStm
 
 > Uses lookahead to determine statement type via keyword inspection.
 
+### Specifier
+
+```ebnf
+specifier := 'ceteri'? IDENTIFIER ('ut' IDENTIFIER)?
+```
+
+> Shared between imports and destructuring.
+> 'ceteri' (rest) is only valid in destructuring contexts.
+> 'ut' provides aliasing: nomen ut n
+
+**Examples:**
+
+```fab
+scribe             -> imported=scribe, local=scribe
+scribe ut s        -> imported=scribe, local=s
+ceteri rest        -> imported=rest, local=rest, rest=true
+```
+
 ### Importa Declaration
 
 ```ebnf
-importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (identifierList | '*')
-identifierList := IDENTIFIER (',' IDENTIFIER)*
+importDecl := 'ex' (STRING | IDENTIFIER) 'importa' (specifierList | '*')
+specifierList := specifier (',' specifier)*
+specifier := IDENTIFIER ('ut' IDENTIFIER)?
 ```
 
 **Examples:**
 
 ```fab
 ex norma importa scribe, lege
+ex norma importa scribe ut s, lege ut l
 ex "norma/tempus" importa nunc, dormi
 ex norma importa *
 ```
@@ -43,7 +63,8 @@ ex norma importa *
 ### Varia Declaration
 
 ```ebnf
-varDecl := ('varia' | 'fixum') (objectPattern '=' expression | typeAnnotation IDENTIFIER | IDENTIFIER) ('=' expression)?
+varDecl := ('varia' | 'fixum' | 'figendum' | 'variandum') typeAnnotation? IDENTIFIER ('=' expression)?
+arrayDestruct := ('varia' | 'fixum' | 'figendum' | 'variandum') arrayPattern '=' expression
 ```
 
 > Type-first syntax: "fixum textus nomen = value" or "fixum nomen = value"
@@ -237,15 +258,19 @@ dum x > 0 ergo x = x - 1
 ### Ex Statement
 
 ```ebnf
-exStmt := 'ex' expression (forBinding | destructBinding)
+exStmt := 'ex' expression (forBinding | destructBinding | arrayDestructBinding)
 forBinding := ('pro' | 'fit' | 'fiet') IDENTIFIER (blockStmt | 'ergo' statement) catchClause?
-destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') objectPattern
+destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') specifierList
+arrayDestructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') arrayPattern
+specifierList := specifier (',' specifier)*
+specifier := 'ceteri'? IDENTIFIER ('ut' IDENTIFIER)?
 ```
 
 > 'ex' (from/out of) introduces both iteration and extraction:
 > - Iteration: ex items pro item { ... } (for each item from items)
-> - Destructuring: ex response fixum { data } (extract data from response)
-> - Async destructuring: ex promise figendum { result } (await + extract)
+> - Object destructuring: ex persona fixum nomen, aetas (extract properties)
+> - Array destructuring: ex coords fixum [x, y, z] (extract by position)
+> - Async destructuring: ex promise figendum result (await + extract)
 > 
 > The binding keywords encode mutability and async semantics:
 > - fixum: immutable binding (const)
@@ -258,8 +283,11 @@ destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') objectPattern
 ```fab
 ex numeri pro n { ... }              // for-loop (sync)
 ex numeri fiet n { ... }             // for-await-of loop (async)
-ex response fixum { status, data }   // destructuring (sync)
-ex fetchData() figendum { result }   // destructuring (async, awaits first)
+ex persona fixum nomen, aetas        // object destructuring
+ex persona fixum nomen ut n          // object destructuring with alias
+ex persona fixum nomen, ceteri rest  // object destructuring with rest
+ex coords fixum [x, y, z]            // array destructuring
+ex fetchData() figendum result       // async destructuring
 ```
 
 ### De Statement
