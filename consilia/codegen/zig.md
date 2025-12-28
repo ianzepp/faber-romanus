@@ -349,6 +349,78 @@ switch (event) {
 4. **String concat** - Runtime `+` needs allocator; only comptime works
 5. **Nullable unwrap** - Requires explicit `.?`, `orelse`, `if (x) |val|`
 
+## Current Blockers
+
+Tested against `exempla/` files: **8/47 compile successfully** (2025-12).
+
+| Blocker | Files | Fix | Priority |
+| ------- | ----- | --- | -------- |
+| Array literals `.{}` not iterable | ~10 | Use `[_]T{}` for arrays, `.{}` only for tuples | High |
+| String concat `++` at runtime | ~8 | Use `std.fmt.allocPrint` with allocator | High |
+| Unused function parameters | ~8 | Prefix with `_` or add `_ = param;` | Medium |
+| `var` never mutated | ~3 | Detect and use `const` instead | Medium |
+| Lambda return type required | ~2 | Emit `@compileError` or infer from context | Low |
+| `verum`/`falsum` in type context | ~2 | Map to `true`/`false` in all contexts | Low |
+| `discretio` field syntax | ~1 | Fix colon vs equals in union fields | Low |
+
+### Array Literals
+
+**Problem:** `.{ 1, 2, 3 }` creates a tuple (comptime-only), not an iterable array.
+
+```zig
+// Current (broken)
+const numbers = .{ 1, 2, 3 };
+for (numbers) |n| { }  // error: unable to resolve comptime value
+
+// Needed
+const numbers = [_]i64{ 1, 2, 3 };
+for (&numbers) |n| { }  // works
+```
+
+**Fix:** Detect array literal context and emit `[_]T{}` syntax. Requires knowing element type.
+
+### String Concatenation
+
+**Problem:** `++` is comptime-only. Runtime concat needs allocator.
+
+```zig
+// Current (broken for runtime values)
+return (("Salve, " ++ name) ++ "!");  // error if name is runtime
+
+// Needed
+return std.fmt.allocPrint(alloc, "Salve, {s}!", .{name}) catch @panic("OOM");
+```
+
+**Fix:** Detect runtime string concat and use `std.fmt.allocPrint`. Complex because it changes the expression structure entirely.
+
+### Unused Parameters
+
+**Problem:** Zig errors on unused function parameters.
+
+```zig
+// Current (broken)
+fn foo(x: i64, y: i64) i64 { return x; }  // error: unused parameter 'y'
+
+// Needed
+fn foo(x: i64, _: i64) i64 { return x; }  // or use _ = y;
+```
+
+**Fix:** Either prefix unused params with `_` in codegen, or add `_ = param;` statements. Requires tracking which params are actually used in the body.
+
+### Var Never Mutated
+
+**Problem:** Zig errors on `var` that's never reassigned.
+
+```zig
+// Current (broken)
+var x: i64 = 5;  // error: local variable is never mutated
+
+// Needed
+const x: i64 = 5;
+```
+
+**Fix:** Track mutations during codegen and emit `const` when variable is never reassigned.
+
 ## Future Work
 
 **High priority:**
@@ -369,6 +441,9 @@ switch (event) {
 
 ## Recently Completed
 
+- Division/modulo operators → `@divTrunc`, `@mod` (Zig requires explicit signed ops)
+- Range iteration → native `for (0..n) |i|` syntax (Zig 0.11+)
+- Stepped ranges → block-scoped `while` to avoid redeclaration
 - `curator` type → `std.mem.Allocator`
 - `cura arena/page fit X` → ArenaAllocator/page_allocator
 - `curatorStack` for tracking active allocator in nested scopes
