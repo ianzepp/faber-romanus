@@ -20,77 +20,77 @@
 # cura ante becomes beforeEach in TS, comment in Rust
 - name: cura ante hook
   faber: |
-    cura ante {
-      lexer = init()
-    }
+      cura ante {
+        lexer = init()
+      }
   expect:
-    ts:
-      - "beforeEach(() => {"
-      - "lexer = init();"
-    rs:
-      - "// setup_each:"
-      - "lexer = init();"
+      ts:
+          - 'beforeEach(() => {'
+          - 'lexer = init();'
+      rs:
+          - '// setup_each:'
+          - 'lexer = init();'
 
 # cura ante omnia becomes beforeAll in TS
 - name: cura ante omnia hook
   faber: |
-    cura ante omnia {
-      db = connect()
-    }
+      cura ante omnia {
+        db = connect()
+      }
   expect:
-    ts:
-      - "beforeAll(() => {"
-      - "db = connect();"
-    rs:
-      - "// setup_all:"
-      - "db = connect();"
+      ts:
+          - 'beforeAll(() => {'
+          - 'db = connect();'
+      rs:
+          - '// setup_all:'
+          - 'db = connect();'
 
 # cura post becomes afterEach in TS
 - name: cura post hook
   faber: |
-    cura post {
-      cleanup()
-    }
+      cura post {
+        cleanup()
+      }
   expect:
-    ts:
-      - "afterEach(() => {"
-      - "cleanup();"
-    rs:
-      - "// teardown_each:"
-      - "cleanup();"
+      ts:
+          - 'afterEach(() => {'
+          - 'cleanup();'
+      rs:
+          - '// teardown_each:'
+          - 'cleanup();'
 
 # cura post omnia becomes afterAll in TS
 - name: cura post omnia hook
   faber: |
-    cura post omnia {
-      db.close()
-    }
+      cura post omnia {
+        db.close()
+      }
   expect:
-    ts:
-      - "afterAll(() => {"
-      - "db.close();"
-    rs:
-      - "// teardown_all:"
-      - "db.close();"
+      ts:
+          - 'afterAll(() => {'
+          - 'db.close();'
+      rs:
+          - '// teardown_all:'
+          - 'db.close();'
 
 # Multiple statements in hook body
 - name: cura ante with multiple statements
   faber: |
-    cura ante {
-      varia lexer = novum Lexer()
-      lexer.init()
-      scribe "ready"
-    }
+      cura ante {
+        varia lexer = novum Lexer()
+        lexer.init()
+        scribe "ready"
+      }
   expect:
-    ts:
-      - "beforeEach(() => {"
-      - "let lexer = new Lexer();"
-      - "lexer.init();"
-      - 'console.log("ready");'
-    rs:
-      - "// setup_each:"
-      - "let mut lexer = Lexer::new();"
-      - "lexer.init();"
+      ts:
+          - 'beforeEach(() => {'
+          - 'let lexer = new Lexer();'
+          - 'lexer.init();'
+          - 'console.log("ready");'
+      rs:
+          - '// setup_each:'
+          - 'let mut lexer = Lexer::new();'
+          - 'lexer.init();'
 
 # =============================================================================
 # CuraStatement - Scoped Resource Management
@@ -99,172 +99,172 @@
 # Basic scoped resource with fit binding
 - name: cura with fit binding
   faber: |
-    cura aperi("file.txt") fit fd {
-      lege(fd)
-    }
+      cura aperi("file.txt") fit fd {
+        lege(fd)
+      }
   expect:
-    ts:
-      - "{"
-      - 'const fd = aperi("file.txt");'
-      - "try {"
-      - "lege(fd);"
-      - "finally {"
-      - "fd.solve?.();"
-    rs:
-      - 'let fd = aperi(String::from("file.txt"));'
-      - "{"
-      - "lege(fd);"
+      ts:
+          - '{'
+          - 'const fd = aperi("file.txt");'
+          - 'try {'
+          - 'lege(fd);'
+          - 'finally {'
+          - 'fd.solve?.();'
+      rs:
+          - 'let fd = aperi(String::from("file.txt"));'
+          - '{'
+          - 'lege(fd);'
 
 # Async resource with fiet
 - name: cura with async resource
   faber: |
-    cura connect(url) fiet conn {
-      cede conn.query(sql)
-    }
+      cura connect(url) fiet conn {
+        cede conn.query(sql)
+      }
   expect:
-    ts:
-      - "{"
-      - "const conn = await connect(url);"
-      - "try {"
-      - "await conn.query(sql);"
-      - "finally {"
-      - "conn.solve?.();"
-    rs:
-      - "let conn = connect(url).await;"
-      - "{"
-      - "conn.query(sql).await;"
+      ts:
+          - '{'
+          - 'const conn = await connect(url);'
+          - 'try {'
+          - 'await conn.query(sql);'
+          - 'finally {'
+          - 'conn.solve?.();'
+      rs:
+          - 'let conn = connect(url).await;'
+          - '{'
+          - 'conn.query(sql).await;'
 
 # Resource with catch clause
 - name: cura with cape clause
   faber: |
-    cura resource() fit r {
-      use(r)
-    }
-    cape err {
-      handleError(err)
-    }
+      cura resource() fit r {
+        use(r)
+      }
+      cape err {
+        handleError(err)
+      }
   expect:
-    ts:
-      - "{"
-      - "const r = resource();"
-      - "try {"
-      - "use(r);"
-      - "catch (err) {"
-      - "handleError(err);"
-      - "finally {"
-      - "r.solve?.();"
-    rs:
-      - "let r = resource();"
-      - "{"
-      - "use(r);"
+      ts:
+          - '{'
+          - 'const r = resource();'
+          - 'try {'
+          - 'use(r);'
+          - 'catch (err) {'
+          - 'handleError(err);'
+          - 'finally {'
+          - 'r.solve?.();'
+      rs:
+          - 'let r = resource();'
+          - '{'
+          - 'use(r);'
 
 # Nested resource management
 - name: nested cura statements
   faber: |
-    cura openFile("input.txt") fit inFile {
-      cura openFile("output.txt") fit outFile {
-        copy(inFile, outFile)
+      cura openFile("input.txt") fit inFile {
+        cura openFile("output.txt") fit outFile {
+          copy(inFile, outFile)
+        }
       }
-    }
   expect:
-    ts:
-      - 'const inFile = openFile("input.txt");'
-      - "try {"
-      - 'const outFile = openFile("output.txt");'
-      - "try {"
-      - "copy(inFile, outFile);"
-      - "finally {"
-      - "outFile.solve?.();"
-      - "finally {"
-      - "inFile.solve?.();"
-    rs:
-      - 'let inFile = openFile(String::from("input.txt"));'
-      - 'let outFile = openFile(String::from("output.txt"));'
-      - "{"
-      - "copy(inFile, outFile);"
+      ts:
+          - 'const inFile = openFile("input.txt");'
+          - 'try {'
+          - 'const outFile = openFile("output.txt");'
+          - 'try {'
+          - 'copy(inFile, outFile);'
+          - 'finally {'
+          - 'outFile.solve?.();'
+          - 'finally {'
+          - 'inFile.solve?.();'
+      rs:
+          - 'let inFile = openFile(String::from("input.txt"));'
+          - 'let outFile = openFile(String::from("output.txt"));'
+          - '{'
+          - 'copy(inFile, outFile);'
 
 # Multiple statements in resource body
 - name: cura with multiple body statements
   faber: |
-    cura mutex.lock() fit guard {
-      counter += 1
-      scribe counter
-      redde counter
-    }
+      cura mutex.lock() fit guard {
+        counter += 1
+        scribe counter
+        redde counter
+      }
   expect:
-    ts:
-      - "const guard = mutex.lock();"
-      - "try {"
-      - "counter += 1;"
-      - "console.log(counter);"
-      - "return counter;"
-      - "finally {"
-      - "guard.solve?.();"
-    rs:
-      - "let guard = mutex.lock();"
-      - "{"
-      - "counter += 1;"
-      - "println!"
-      - "return counter;"
+      ts:
+          - 'const guard = mutex.lock();'
+          - 'try {'
+          - 'counter += 1;'
+          - 'console.log(counter);'
+          - 'return counter;'
+          - 'finally {'
+          - 'guard.solve?.();'
+      rs:
+          - 'let guard = mutex.lock();'
+          - '{'
+          - 'counter += 1;'
+          - 'println!'
+          - 'return counter;'
 
 # Resource with complex expression
 - name: cura with complex resource expression
   faber: |
-    cura novum Database(config.url) fit db {
-      db.init()
-    }
+      cura novum Database(config.url) fit db {
+        db.init()
+      }
   expect:
-    ts:
-      - "const db = new Database(config.url);"
-      - "try {"
-      - "db.init();"
-      - "finally {"
-      - "db.solve?.();"
-    rs:
-      - "let db = Database::new();"
-      - "{"
-      - "db.init();"
+      ts:
+          - 'const db = new Database(config.url);'
+          - 'try {'
+          - 'db.init();'
+          - 'finally {'
+          - 'db.solve?.();'
+      rs:
+          - 'let db = Database::new();'
+          - '{'
+          - 'db.init();'
 
 # Empty resource body
 - name: cura with empty body
   faber: 'cura getResource() fit r { }'
   expect:
-    ts:
-      - "const r = getResource();"
-      - "try {}"
-      - "finally {"
-      - "r.solve?.();"
-    rs:
-      - "let r = getResource();"
-      - "{"
+      ts:
+          - 'const r = getResource();'
+          - 'try {}'
+          - 'finally {'
+          - 'r.solve?.();'
+      rs:
+          - 'let r = getResource();'
+          - '{'
 
 # Async resource with catch and multiple operations
 - name: async cura with cape and operations
   faber: |
-    cura acquire(lock) fiet handle {
-      varia data = cede fetch()
-      process(data)
-      redde data
-    }
-    cape err {
-      mone "Failed:", err
-      iace err
-    }
+      cura acquire(lock) fiet handle {
+        varia data = cede fetch()
+        process(data)
+        redde data
+      }
+      cape err {
+        mone "Failed:", err
+        iace err
+      }
   expect:
-    ts:
-      - "const handle = await acquire(lock);"
-      - "try {"
-      - "let data = await fetch();"
-      - "process(data);"
-      - "return data;"
-      - "catch (err) {"
-      - 'console.warn("Failed:", err);'
-      - "throw err;"
-      - "finally {"
-      - "handle.solve?.();"
-    rs:
-      - "let handle = acquire(lock).await;"
-      - "{"
-      - "let mut data = fetch().await;"
-      - "process(data);"
-      - "return data;"
+      ts:
+          - 'const handle = await acquire(lock);'
+          - 'try {'
+          - 'let data = await fetch();'
+          - 'process(data);'
+          - 'return data;'
+          - 'catch (err) {'
+          - 'console.warn("Failed:", err);'
+          - 'throw err;'
+          - 'finally {'
+          - 'handle.solve?.();'
+      rs:
+          - 'let handle = acquire(lock).await;'
+          - '{'
+          - 'let mut data = fetch().await;'
+          - 'process(data);'
+          - 'return data;'

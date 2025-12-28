@@ -12,43 +12,43 @@
 - name: simple break
   faber: 'rumpe'
   expect:
-    ts:
-      - "break;"
-    py:
-      - "break"
-    rs:
-      - "break;"
-    cpp:
-      - "break;"
-    zig:
-      - "break;"
+      ts:
+          - 'break;'
+      py:
+          - 'break'
+      rs:
+          - 'break;'
+      cpp:
+          - 'break;'
+      zig:
+          - 'break;'
 
 # Break in loop context
 - name: break in while loop
   faber: |
-    dum verum {
-      si x > 10 {
-        rumpe
+      dum verum {
+        si x > 10 {
+          rumpe
+        }
       }
-    }
   expect:
-    ts:
-      - "while (true)"
-      - "if ((x > 10))"
-      - "break;"
-    py:
-      - "while True:"
-      - "if (x > 10):"
-      - "break"
-    rs:
-      - "while true"
-      - "if (x > 10)"
-      - "break;"
-    cpp:
-      - "while (true)"
-      - "if ((x > 10))"
-      - "break;"
-    zig:
-      - "while (true)"
-      - "if ((x > 10))"
-      - "break;"
+      ts:
+          - 'while (true)'
+          - 'if ((x > 10))'
+          - 'break;'
+      py:
+          - 'while True:'
+          - 'if (x > 10):'
+          - 'break'
+      rs:
+          - 'while true'
+          - 'if (x > 10)'
+          - 'break;'
+      cpp:
+          - 'while (true)'
+          - 'if ((x > 10))'
+          - 'break;'
+      zig:
+          - 'while (true)'
+          - 'if ((x > 10))'
+          - 'break;'
