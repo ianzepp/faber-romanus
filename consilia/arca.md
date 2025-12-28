@@ -1,13 +1,42 @@
 ---
 status: planned
-targets: [ts, py]
-note: Database query DSL design. Not yet implemented.
+targets: [ts, py, zig]
+note: Database standard library. Not yet implemented.
 updated: 2025-12
 ---
 
-# Arca - Database Query DSL
+# Arca - Database Standard Library
+
+Latin: *arca* — chest, strongbox, treasury. Where data is stored and retrieved.
 
 ## Overview
+
+Arca is Faber's database standard library, providing:
+
+1. **Query DSL** — Latin-native syntax for database operations
+2. **Connection management** — Unified API across database backends
+3. **Embedded storage** — SQLite compiled into Zig binaries (no external dependencies)
+4. **Target backends** — PostgreSQL, MySQL, SQLite adapters per compilation target
+
+The library uses Faber's preposition semantics: `de` for read-only queries, `in` for mutations.
+
+---
+
+## Library Components
+
+| Component   | Purpose                              | Targets          |
+| ----------- | ------------------------------------ | ---------------- |
+| `arca.sql`  | Raw SQL execution                    | all              |
+| `arca.dsl`  | Query DSL (quaere, muta, adde, dele) | all              |
+| `arca.lite` | Embedded SQLite                      | zig (statically linked) |
+| `arca.pg`   | PostgreSQL driver                    | ts, py           |
+| `arca.my`   | MySQL driver                         | ts, py           |
+
+For self-hosted Faber (Zig target), `arca.lite` provides a fully embedded database with no runtime dependencies — the SQLite amalgamation compiles directly into the binary.
+
+---
+
+## Query DSL
 
 Faber provides a unified syntax for database queries using the `de` preposition (read-only context) combined with query-specific constructs. Three forms are supported:
 
@@ -421,6 +450,52 @@ See `consilia/cura.md` for the full `cura` grammar and well-known curator kinds.
 | Learning curve | New syntax                    | Known SQL                  |
 
 **Recommendation:** Use DSL for simple single-table queries. Use raw SQL for anything involving joins, subqueries, or complex aggregations.
+
+---
+
+## Embedded SQLite (Zig Target)
+
+For the Zig compilation target, `arca.lite` embeds SQLite directly into the binary using the SQLite amalgamation (`sqlite3.c`). This enables self-hosted Faber to have persistent storage without external dependencies.
+
+### Connection
+
+```fab
+import arca.lite
+
+functio main() {
+    cura arca.lite.aperi("data.db") fit db {
+        // db is available for queries/mutations
+        de db.users quaere fit user {
+            scribe user.nomen
+        }
+    }
+}
+```
+
+The `cura` block ensures the database handle is properly closed on exit.
+
+### Implementation
+
+Zig's `@cImport` compiles the SQLite amalgamation directly:
+
+```zig
+const sqlite = @cImport({
+    @cInclude("sqlite3.h");
+});
+```
+
+The Faber codegen emits Zig code that calls into this C API, with memory managed through `cura` blocks and Zig allocators.
+
+### Trade-offs
+
+| Aspect         | Embedded SQLite      | External Database    |
+| -------------- | -------------------- | -------------------- |
+| Dependencies   | None (compiled in)   | Driver + server      |
+| Deployment     | Single binary        | Multi-component      |
+| Concurrency    | Single-writer        | Full ACID            |
+| Scale          | Local/embedded       | Network/distributed  |
+
+For self-hosted tooling (compiler, LSP, package manager), embedded SQLite is ideal — no external services required.
 
 ---
 
