@@ -11,6 +11,7 @@
  * ENVIRONMENT VARIABLES
  *   STRICT_COVERAGE=1           Fail if ANY test is missing target expectations
  *   STRICT_COVERAGE=<pattern>   Fail only for tests matching regex pattern
+ *   COVERAGE_DETAILS=1          Show per-suite breakdown in coverage report
  *
  * EXAMPLES
  *   STRICT_COVERAGE=1 bun test proba/runner.test.ts
@@ -49,7 +50,7 @@
  * COVERAGE REPORT
  *   Printed after all tests showing:
  *   - Missing expectations by target (ts: N tests, py: N tests, ...)
- *   - Details by suite with specific test names
+ *   - Details by suite with specific test names (when COVERAGE_DETAILS=1)
  */
 
 import { describe, test, expect, afterAll } from 'bun:test';
@@ -319,11 +320,13 @@ afterAll(() => {
         }
     }
 
-    console.log('\nDetails by suite:');
-    for (const [suite, gaps] of bySuite) {
-        console.log(`\n  ${suite}:`);
-        for (const gap of gaps) {
-            console.log(`    - ${gap.test}: missing ${gap.missingTargets.join(', ')}`);
+    if (process.env.COVERAGE_DETAILS) {
+        console.log('\nDetails by suite:');
+        for (const [suite, gaps] of bySuite) {
+            console.log(`\n  ${suite}:`);
+            for (const gap of gaps) {
+                console.log(`    - ${gap.test}: missing ${gap.missingTargets.join(', ')}`);
+            }
         }
     }
 
