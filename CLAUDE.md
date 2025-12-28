@@ -89,15 +89,11 @@ Faber uses a consistent `keyword expr VERB name { body }` pattern:
 
 ## Directory Structure
 
-- `fons/` — compiler source ("source, spring")
-    - `lexicon/` — keywords, types, nouns, verbs
-    - `tokenizer/` — lexical analysis
-    - `parser/` — syntax analysis, AST
-    - `semantic/` — type checking
-    - `codegen/` — target code generation (ts, py, zig, cpp)
+- `fons/` — compiler source (lexicon, tokenizer, parser, semantic, codegen)
+- `proba/` — tests mirroring fons/ structure
 - `exempla/` — example .fab programs
 - `consilia/` — design documents (not authoritative)
-- `grammatica/` — auto-generated grammar docs by category
+- `grammatica/` — auto-generated grammar docs
 
 ### Codegen Layout
 
@@ -128,32 +124,7 @@ Each YAML file tests all targets (ts, py, rs, cpp, zig) with per-target expectat
 
 ### Test File Structure
 
-```yaml
-# proba/codegen/statements/si.yaml
-- name: simple if with verum
-  faber: |
-      si verum {
-        scribe "yes"
-      }
-  expect:
-      ts:
-          - 'if (true)'
-          - 'console.log("yes")'
-      py:
-          - 'if True:'
-          - 'print("yes")'
-      rs:
-          - 'if true'
-          - 'println!'
-      cpp:
-          - 'if (true)'
-      zig:
-          - 'if (true)'
-  skip: [cpp] # Optional: skip specific targets
-```
-
-**Expectation formats:**
-
+See any file in `proba/codegen/` for format. Expectation formats:
 - `string` — exact match (after trimming)
 - `string[]` — all fragments must be present (contains)
 - `{ exact: string }` — exact match
@@ -183,52 +154,10 @@ The colon `:` is used only for default values in genus properties, not for type 
 
 ## Code Standards
 
-**Documentation Tags** (in comments):
-
-- `WHY:` — reasoning, not mechanics
-- `EDGE:` — edge cases handled
-- `TARGET:` — target-specific behavior
-- `GRAMMAR:` — EBNF for parser functions
+**Documentation Tags** (in addition to global): `TARGET:` — target-specific behavior, `GRAMMAR:` — EBNF for parser functions.
 
 **Error Handling**: Never crash on malformed input. Collect errors and continue.
 
-## Agent Delegation
-
-The primary agent is the general; sub-agents are infantry. Delegate execution to preserve context for design and judgment.
-
-**When to delegate:**
-
-- Repetitive transformations across many files (extracting methods, migrations)
-- Tasks that follow a pattern already understood
-- Work that would bloat context with details you won't reference again
-- Parallelizable units (e.g., four codegens at once)
-
-**When NOT to delegate:**
-
-- Quick single-file edits (spinning up an agent costs more than doing it)
-- Tasks requiring judgment calls mid-execution
-- Exploratory work where the approach isn't yet clear
-
-**Briefing quality determines success.** Vague prompts return wrong results. Include:
-
-- Exact file paths (source, destination, references)
-- A working example to follow
-- Specific transformations required
-- What NOT to modify
-- Verification steps (e.g., "run `bun test` after")
-
-**Trust but verify.** After agents complete:
-
-- Type-check (`bun run tsc --noEmit`)
-- Run tests (`bun test`)
-- Fix issues yourself rather than re-delegating small repairs
-
-The trade-off is always: context cost of doing it yourself vs. effort to brief an agent properly.
-
 ## Communication Style
 
-Sporadically include Latin phrases:
-
-- "Opus perfectum est" (the work is complete)
-- "Bene factum" (well done)
-- "Errare humanum est" (to err is human)
+Sporadically include Latin phrases (e.g., "Opus perfectum est", "Bene factum").
