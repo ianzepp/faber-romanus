@@ -11,14 +11,14 @@ updated: 2024-12
 
 | Feature                | Status   | Notes                             |
 | ---------------------- | -------- | --------------------------------- |
-| `cura ... fit` syntax  | Done     | Parser + AST                      |
-| `cura cede` async      | Done     | Async resource acquisition        |
+| `cura ... fit` syntax  | Done     | Parser + AST (needs grammar update) |
+| `cura ... fiet` async  | Not Done | Replaces `cura cede` syntax       |
 | `cura ... cape` errors | Done     | Optional catch clause             |
 | TypeScript codegen     | Done     | try/finally with solve?.()        |
 | Zig `curatorStack`     | Partial  | Functions only; not `cura` blocks |
 | `curatum` param        | Not Done | Allocator in function signature   |
 | `curatum` callsite     | Not Done | Per-call allocator override       |
-| `curator` interface    | Not Done | Semantic validation for `solve`   |
+| `curator` keyword      | Not Done | Allocator category in cura blocks |
 | Python codegen         | Not Done | with statement                    |
 | Rust codegen           | Not Done | RAII / Drop                       |
 
@@ -37,40 +37,65 @@ For GC targets (TypeScript, Python), allocators are irrelevant. The compiler ign
 
 ## Etymology
 
-| Keyword   | Meaning                       | Role                            |
-| --------- | ----------------------------- | ------------------------------- |
-| `cura`    | "care, concern"               | Block that manages a resource   |
-| `curator` | "one who cares for, steward"  | Interface for managed resources |
-| `curatum` | "having been cared for" (PPP) | Allocator annotation            |
-| `solve`   | "release, free"               | Cleanup method                  |
+| Keyword   | Meaning                       | Role                              |
+| --------- | ----------------------------- | --------------------------------- |
+| `cura`    | "care, concern"               | Block that manages a resource     |
+| `curator` | "one who cares for, steward"  | Allocator category keyword        |
+| `curatum` | "having been cared for" (PPP) | Allocator annotation              |
+| `fit`     | "it becomes" (sync)           | Sync resource binding             |
+| `fiet`    | "it will become" (async)      | Async resource binding            |
+| `solve`   | "release, free"               | Cleanup method                    |
 
 ---
 
-## The Three Mechanisms
+## Syntax
 
-### 1. `cura ... fit` — Block Scope (Primary)
+All `cura` blocks follow a uniform grammar:
 
-Establishes a resource/allocator for a block. This is the default mechanism.
+```ebnf
+curaStmt := 'cura' expression ('fit' | 'fiet') IDENTIFIER blockStmt catchClause?
+```
+
+- `fit` — sync resource acquisition
+- `fiet` — async resource acquisition
+
+The binding is always created and available in the block scope.
+
+---
+
+## The Three Use Cases
+
+### 1. Allocators — `cura curator fit <strategy>`
+
+For memory allocators on non-GC targets (Zig, C++, Rust):
 
 ```fab
-cura arena() fit alloc {
+cura curator fit arena {
     varia items: textus[] = []
-    items.adde("hello")        // uses 'alloc' implicitly
-    items.adde("world")        // uses 'alloc' implicitly
+    items.adde("hello")        // uses 'arena' implicitly via curatorStack
+    items.adde("world")
+
+    // Explicit access for Zig interop:
+    zigLibrary.init(arena)     // pass allocator directly when needed
 }
 // arena freed, all allocations released
 ```
 
-**How it works:** The binding name (`alloc`) is pushed onto an internal `curatorStack`. Any allocation operations within the block use the current stack top. On block exit, the stack pops and cleanup runs.
+**How it works:**
+1. The `curator` keyword signals allocator scoping
+2. The binding (`arena`) is pushed onto the `curatorStack`
+3. Operations within the block use the stack top implicitly
+4. The binding is also available as a variable for explicit access (Zig interop)
+5. On block exit: stack pops, cleanup runs
 
 Nesting works naturally:
 
 ```fab
-cura arena() fit outer {
+cura curator fit outer {
     varia a: textus[] = []
     a.adde("one")              // uses 'outer'
 
-    cura arena() fit inner {
+    cura curator fit inner {
         varia b: textus[] = []
         b.adde("two")          // uses 'inner'
     }
@@ -80,6 +105,14 @@ cura arena() fit outer {
 }
 // outer freed
 ```
+
+**Allocator strategies:**
+
+| Strategy | Zig Mapping                          |
+| -------- | ------------------------------------ |
+| `arena`  | `std.heap.ArenaAllocator`            |
+| `page`   | `std.heap.page_allocator`            |
+| `alloc`  | Default (context-dependent)          |
 
 ### 2. `curatum` — Allocator Annotation (Escape Hatch)
 
