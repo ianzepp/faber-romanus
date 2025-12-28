@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Format source code with Prettier
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+if [[ "${1:-}" == "--check" ]]; then
+    prettier --check "fons/**/*.ts" "proba/**/*.yaml"
+else
+    prettier --write "fons/**/*.ts" "proba/**/*.yaml"
+fi
