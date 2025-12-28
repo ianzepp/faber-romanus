@@ -75,6 +75,13 @@ interface CoverageGap {
 
 const coverageGaps: CoverageGap[] = [];
 
+// Track which tests actually ran (to filter coverage report)
+const testsRun = new Set<string>();
+
+function testKey(suite: string, test: string): string {
+    return `${suite}::${test}`;
+}
+
 // Strict mode: fail on missing targets
 // STRICT_COVERAGE=1 means all tests, STRICT_COVERAGE=pattern means regex match
 const strictCoverage = process.env.STRICT_COVERAGE;
@@ -216,6 +223,7 @@ function runTestFile(filePath: string, suiteName: string): void {
                     if (isSkipped) continue;
 
                     test(tc.name, () => {
+                        testsRun.add(testKey(suiteName, tc.name));
                         const input = getInput(tc);
                         const output = compile(input.trim(), target);
                         checkOutput(output, expected);
@@ -276,7 +284,10 @@ for (const { path, name } of yamlFiles) {
 
 // Print coverage report after all tests
 afterAll(() => {
-    if (coverageGaps.length === 0) {
+    // Filter to only gaps for tests that actually ran
+    const relevantGaps = coverageGaps.filter(gap => testsRun.has(testKey(gap.suite, gap.test)));
+
+    if (relevantGaps.length === 0) {
         console.log('\n✓ Full target coverage: all tests have expectations for all targets\n');
         return;
     }
@@ -287,7 +298,7 @@ afterAll(() => {
 
     // Group by suite
     const bySuite = new Map<string, CoverageGap[]>();
-    for (const gap of coverageGaps) {
+    for (const gap of relevantGaps) {
         const list = bySuite.get(gap.suite) ?? [];
         list.push(gap);
         bySuite.set(gap.suite, list);
@@ -295,7 +306,7 @@ afterAll(() => {
 
     // Summary by target
     const targetCounts: Record<Target, number> = { ts: 0, py: 0, cpp: 0, rs: 0, zig: 0 };
-    for (const gap of coverageGaps) {
+    for (const gap of relevantGaps) {
         for (const t of gap.missingTargets) {
             targetCounts[t]++;
         }
@@ -317,6 +328,6 @@ afterAll(() => {
     }
 
     console.log('\n' + '='.repeat(70));
-    console.log(`Total: ${coverageGaps.length} tests with incomplete coverage`);
+    console.log(`Total: ${relevantGaps.length} tests with incomplete coverage`);
     console.log('='.repeat(70) + '\n');
 });
