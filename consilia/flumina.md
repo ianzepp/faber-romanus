@@ -1,11 +1,24 @@
-# Flumina: Streams-First Architecture
+# Flumina: Streams-First Architecture (Verb Syntax)
 
 **Status:** Phases 1-3 Complete (TypeScript target)
 **Phase 4:** Deferred (Zig/Rust/C++ targets)
 
+This document covers the **verb syntax** (`fit`/`fiet`/`fiunt`/`fient`) with the Responsum stream protocol. For the **arrow syntax** (`->`) with `futura`/`cursor` prefixes, see `async.md`.
+
+## Two Syntax Systems
+
+Faber has two mutually exclusive syntax patterns for function return types:
+
+| Syntax System | Return Clause                | Prefixes Allowed   | Protocol         |
+| ------------- | ---------------------------- | ------------------ | ---------------- |
+| Arrow         | `-> T`                       | `futura`, `cursor` | Direct return    |
+| Verb          | `fit`/`fiet`/`fiunt`/`fient` | None               | Responsum stream |
+
+**They cannot be mixed.** Using `futura`/`cursor` with verb syntax is a parser error (P191).
+
 ## Overview
 
-Flumina makes streams the fundamental execution model. All `fit`/`fiunt`/`fiet`/`fient` functions use the `Responsum` protocol internally, while callers see raw values.
+Flumina makes streams the fundamental execution model. All verb-syntax functions use the `Responsum` protocol internally, while callers see raw values.
 
 | Verb    | Sync/Async | Cardinality | Boundary    | Return Type         |
 | ------- | ---------- | ----------- | ----------- | ------------------- |
@@ -16,32 +29,25 @@ Flumina makes streams the fundamental execution model. All `fit`/`fiunt`/`fiet`/
 
 The `->` arrow syntax bypasses the protocol entirely for zero-overhead direct returns.
 
-### Two Syntax Patterns
+## Examples
 
-**Verb syntax** (stream protocol, Responsum wrapper):
+**Verb syntax** (this document — stream protocol, Responsum wrapper):
 
 ```fab
-functio getId() fit textus { redde "abc" }     // sync, single (utFit)
+functio getId() fit textus { redde "abc" }        // sync, single (utFit)
 functio items() fiunt numerus { cede 1; cede 2 }  // sync, multi (utFiunt)
-functio fetch() fiet textus { redde data }     // async, single (utFiet)
-functio stream() fient textus { cede data }    // async, multi (utFient)
+functio fetch() fiet textus { redde data }        // async, single (utFiet)
+functio stream() fient textus { cede data }       // async, multi (utFient)
 ```
 
-**Arrow syntax** (direct returns, traditional semantics):
+**Arrow syntax** (see async.md — direct returns, traditional semantics):
 
 ```fab
-functio getId() -> textus { redde "abc" }            // sync, direct return
-futura functio fetch() -> textus { redde data }      // async, direct return
-cursor functio items() -> numerus { cede 1; cede 2 } // sync, traditional yield
+functio getId() -> textus { redde "abc" }              // sync, direct return
+futura functio fetch() -> textus { redde data }        // async, direct return
+cursor functio items() -> numerus { cede 1; cede 2 }   // sync, traditional yield
 futura cursor functio stream() -> textus { cede data } // async, traditional async yield
 ```
-
-**Important**: `futura`/`cursor` prefixes cannot be combined with verbs:
-
-- ✗ `futura functio f() fit T` (ERROR: prefixes only with arrow)
-- ✗ `cursor functio f() fiunt T` (ERROR: prefixes only with arrow)
-- ✓ `functio f() fiet T` (verb carries semantic info)
-- ✓ `futura functio f() -> T` (arrow uses prefix semantics)
 
 ## The Responsum Protocol
 
