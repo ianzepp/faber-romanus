@@ -144,7 +144,7 @@ Default values only make sense for **owned** parameters. Borrowed (`de`) and mut
 functio greet(textus name vel "Mundus")
 
 // Invalid - borrowed can't have default (no owned storage for default)
-functio greet(de textus name vel "Mundus")  // error
+functio greet(de textus displayName ut name vel "Mundus")  // error
 
 // Invalid - mutable borrow can't have default (nothing to mutate)
 functio process(in numerus[] items vel [])  // error
