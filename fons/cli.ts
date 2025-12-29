@@ -94,7 +94,7 @@ Usage:
 Commands:
   compile, finge <file>  Compile .fab file to target language
   run, curre <file>      Compile and execute (TS target only)
-  check, proba <file>    Check for errors without compiling
+  check, proba <file>    Check for errors (with -t, also validates target compiles)
   format, forma <file>   Format source file with Prettier
 
 Options:
@@ -112,9 +112,11 @@ Examples:
   faber compile hello.fab --target zig        # Compile to Zig
   faber compile hello.fab -t py -o hello.py   # Compile to Python
   faber run hello.fab                         # Compile to TS and execute
+  faber check hello.fab                       # Check for parse/semantic errors
+  faber check hello.fab -t zig                # Also validate Zig compiles
   faber format hello.fab                      # Format file in place
   faber format hello.fab --check              # Check if file is formatted
-  echo 'scribe "hello"' | faber compile        # Compile from stdin
+  echo 'scribe "hello"' | faber compile       # Compile from stdin
 `);
 }
 
@@ -298,15 +300,18 @@ async function run(inputFile: string): Promise<void> {
 /**
  * Validate source file for errors without generating code.
  *
- * PHASES RUN: Tokenizer and parser only (skips codegen for performance)
+ * PHASES RUN: Tokenizer, parser, and semantic analysis.
+ * If a target is specified, also generates code and validates with the target compiler.
  *
- * USE CASE: Fast syntax validation in editor plugins or pre-commit hooks
+ * USE CASE: Fast syntax validation in editor plugins or pre-commit hooks.
+ *           With -t flag, validates generated code compiles on target.
  *
  * OUTPUT: Reports error count and positions, exits 0 if no errors
  *
  * @param inputFile - Path to .fab source file
+ * @param target - Optional target to validate generated code against
  */
-async function check(inputFile: string): Promise<void> {
+async function check(inputFile: string, target?: CodegenTarget): Promise<void> {
     const source = await readSource(inputFile);
     const displayName = getDisplayName(inputFile);
 
@@ -328,15 +333,102 @@ async function check(inputFile: string): Promise<void> {
     }));
     const allErrors = [...normalizedTokenErrors, ...parseErrors, ...semanticErrors];
 
-    if (allErrors.length === 0) {
-        console.log(`${displayName}: No errors`);
-    } else {
+    if (allErrors.length > 0) {
         console.log(`${displayName}: ${allErrors.length} error(s)`);
         for (const err of allErrors) {
             console.log(`  ${err.position.line}:${err.position.column} - ${err.message}`);
         }
 
         process.exit(1);
+    }
+
+    // If no target specified, we're done
+    if (!target) {
+        console.log(`${displayName}: No errors`);
+        return;
+    }
+
+    // Generate code and validate with target compiler
+    if (!program) {
+        console.error('Failed to parse program');
+        process.exit(1);
+    }
+
+    let code: string;
+    try {
+        code = generate(program, { target });
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`Codegen error (${target}): ${message}`);
+        process.exit(1);
+    }
+
+    const exitCode = await verifyWithTarget(code, target, displayName);
+    if (exitCode !== 0) {
+        process.exit(1);
+    }
+
+    console.log(`${displayName}: No errors (${target})`);
+}
+
+/**
+ * Verify generated code compiles with the target compiler.
+ *
+ * WHY: Each target has different validation commands:
+ * - zig: `zig ast-check` for syntax, would need build for full validation
+ * - rs: `rustc --emit=metadata` for type checking without codegen
+ * - cpp: `g++ -fsyntax-only` for syntax validation
+ * - py: `python -m py_compile` for syntax validation
+ * - ts: `bun build --no-bundle` for type checking
+ *
+ * @returns Exit code from the compiler (0 = success)
+ */
+async function verifyWithTarget(code: string, target: CodegenTarget, displayName: string): Promise<number> {
+    const EXT: Record<CodegenTarget, string> = {
+        zig: '.zig',
+        rs: '.rs',
+        cpp: '.cpp',
+        py: '.py',
+        ts: '.ts',
+    };
+
+    const tempFile = `/tmp/faber-${Date.now()}${EXT[target]}`;
+
+    try {
+        await Bun.write(tempFile, code);
+
+        // Target-specific validation commands
+        const checkCmd: Record<CodegenTarget, string[]> = {
+            zig: ['zig', 'ast-check', tempFile],
+            rs: ['rustc', '--emit=metadata', '--out-dir=/tmp', tempFile],
+            cpp: ['g++', '-fsyntax-only', '-std=c++20', tempFile],
+            py: ['python3', '-m', 'py_compile', tempFile],
+            ts: ['bun', 'build', '--no-bundle', tempFile],
+        };
+
+        const proc = Bun.spawn(checkCmd[target], {
+            stdout: 'pipe',
+            stderr: 'pipe',
+        });
+
+        const exitCode = await proc.exited;
+
+        if (exitCode !== 0) {
+            const stderr = await new Response(proc.stderr).text();
+            console.error(`${displayName}: ${target} compiler errors:`);
+            console.error(stderr);
+        }
+
+        return exitCode;
+    } finally {
+        // Clean up temp file
+        try {
+            await Bun.write(tempFile, '');
+            const { unlink } = await import('node:fs/promises');
+            await unlink(tempFile);
+        } catch {
+            // Ignore cleanup errors
+        }
     }
 }
 
@@ -421,11 +513,12 @@ if (command === '-v' || command === '--version') {
 let inputFile: string | undefined;
 let outputFile: string | undefined;
 let target: CodegenTarget = DEFAULT_TARGET;
+let targetExplicit = false;
 let checkOnly = false;
 
 // WHY: Scan all args, options can appear anywhere, non-option is the file
 for (let i = 1; i < args.length; i++) {
-    const arg = args[i];
+    const arg = args[i]!;
 
     if (arg === '-o' || arg === '--output') {
         outputFile = args[++i];
@@ -438,14 +531,15 @@ for (let i = 1; i < args.length; i++) {
         }
 
         target = t as CodegenTarget;
+        targetExplicit = true;
     } else if (arg === '-c' || arg === '--check') {
         checkOnly = true;
-    } else if (!arg.startsWith('-') || arg === '-') {
-        // Non-option arg is the file, or explicit '-' for stdin
-        inputFile = arg;
-    } else {
+    } else if (arg.startsWith('-') && arg !== '-') {
         console.error(`Error: Unknown option '${arg}'`);
         process.exit(1);
+    } else {
+        // Non-option arg is the file, or explicit '-' for stdin
+        inputFile = arg;
     }
 }
 
@@ -472,7 +566,8 @@ switch (command) {
         break;
     case 'check':
     case 'proba':
-        await check(effectiveInputFile);
+        // WHY: Pass target only if explicitly specified via -t flag
+        await check(effectiveInputFile, targetExplicit ? target : undefined);
         break;
     case 'format':
     case 'forma':

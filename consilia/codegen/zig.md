@@ -359,7 +359,7 @@ Tested against `exempla/` files: **8/47 compile successfully** (2025-12).
 | Array literals `.{}` not iterable | ~10   | Use `[_]T{}` for arrays, `.{}` only for tuples | High     |
 | String concat `++` at runtime     | ~8    | **RESOLVED** - Use `scriptum()`                | Done     |
 | Unused function parameters        | ~8    | Prefix with `_` or add `_ = param;`            | Medium   |
-| `var` never mutated               | ~3    | Detect and use `const` instead                 | Medium   |
+| `var` never mutated               | ~3    | Fix source: use `fixum` instead of `varia`     | N/A      |
 | Lambda return type required       | ~2    | Emit `@compileError` or infer from context     | Low      |
 | `verum`/`falsum` in type context  | ~2    | Map to `true`/`false` in all contexts          | Low      |
 | `discretio` field syntax          | ~1    | Fix colon vs equals in union fields            | Low      |
@@ -420,14 +420,10 @@ fn foo(x: i64, _: i64) i64 { return x; }  // or use _ = y;
 **Problem:** Zig errors on `var` that's never reassigned.
 
 ```zig
-// Current (broken)
 var x: i64 = 5;  // error: local variable is never mutated
-
-// Needed
-const x: i64 = 5;
 ```
 
-**Fix:** Track mutations during codegen and emit `const` when variable is never reassigned.
+**Fix:** This is a source error, not a codegen issue. If the programmer wrote `varia` but never mutates the variable, the Faber source is wrong - use `fixum` instead. Zig correctly enforces what should be true across all targets.
 
 ## Future Work
 
