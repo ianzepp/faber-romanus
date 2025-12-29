@@ -98,6 +98,42 @@ ex fetchData() figendum result             // await + destructure
 
 Extract fields **from** an object/expression. Uses brace-less syntax matching imports.
 
+### Return Type Borrow Source (Systems Targets)
+
+When a function returns a borrowed value (`de` return type), and multiple parameters are borrowed, `ex` specifies which parameter(s) the return borrows from:
+
+```fab
+// Single source - return borrows from 'a'
+functio first(de textus a, de textus b) -> de textus ex a {
+    redde a
+}
+
+// Multiple sources - return could borrow from either
+functio pick(de textus a, de textus b, bivalens flag) -> de textus ex a, b {
+    si flag { redde a } aliter { redde b }
+}
+```
+
+**When `ex` is required:**
+
+- Return type has `de` (borrowed)
+- Multiple parameters have `de`
+
+**When `ex` is optional:**
+
+- Only one `de` parameter exists - source is unambiguous
+
+**Target mappings:**
+
+```rust
+// ex a, b -> both share lifetime 'a
+fn pick<'a>(a: &'a str, b: &'a str, flag: bool) -> &'a str {
+    if flag { a } else { b }
+}
+```
+
+For Zig/C++, `ex` serves as documentation - these languages lack explicit lifetime syntax but the intent is communicated.
+
 ### Summary
 
 | Pattern                            | Meaning                         |
@@ -108,6 +144,8 @@ Extract fields **from** an object/expression. Uses brace-less syntax matching im
 | `ex source transforms` (assigned)  | Collection expression           |
 | `ex source fixum name, email`      | Destructure from source         |
 | `ex source fixum name ut alias`    | Destructure with alias          |
+| `-> de Type ex param`              | Return borrows from param       |
+| `-> de Type ex a, b`               | Return borrows from a and/or b  |
 
 ---
 
@@ -154,12 +192,32 @@ fixum person = novum Persona de props
 
 Create new instance, taking initial values **from** an expression.
 
+### Borrowed Return Type (Systems Targets)
+
+```fab
+functio getName(de User user) -> de textus {
+    redde user.name
+}
+```
+
+The return type is borrowed - caller receives a reference into existing data, not a new allocation.
+
+**Target mappings:**
+
+- Zig: `fn getName(user: *const User) []const u8`
+- Rust: `fn get_name(user: &User) -> &str`
+- C++: `const std::string& getName(const User& user)`
+- TS/Py: ignored (returns copy/reference as normal)
+
+When multiple `de` parameters exist, use `ex` to specify the source. See `ex` section above.
+
 ### Summary
 
 | Pattern                 | Meaning                      |
 | ----------------------- | ---------------------------- |
 | `de object pro key { }` | Iterate keys from object     |
 | `de Type param`         | Borrowed/read-only parameter |
+| `-> de Type`            | Borrowed return type         |
 | `novum Type de expr`    | Initialize from expression   |
 
 ---
@@ -454,8 +512,10 @@ ad url ("GET") fiet Response pro resp { }
 | `ex`        | Iteration (`ex...pro`)       | Done           |
 | `ex`        | Destructuring                | Done           |
 | `ex`        | Collection DSL               | Not done       |
+| `ex`        | Return borrow source         | Not done       |
 | `de`        | Key iteration (`de...pro`)   | Done           |
 | `de`        | Borrowed parameter           | Done (Zig/C++) |
+| `de`        | Borrowed return type         | Not done       |
 | `de`        | Novum source                 | Done           |
 | `in`        | Mutation block               | Done           |
 | `in`        | Mutable parameter            | Done (Zig/C++) |
