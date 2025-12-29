@@ -60,7 +60,7 @@
       rs:
           - 'struct Persona'
           - 'pub nomen: String,'
-          - 'pub aetas: f64,'
+          - 'pub aetas: i64,'
       cpp:
           - 'struct Persona'
           - 'std::string nomen'

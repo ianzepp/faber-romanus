@@ -132,7 +132,7 @@
   ts: 'const count: number = 42;'
   py: 'count: int = 42'
   rs:
-      - 'let count: f64 = 42;'
+      - 'let count: i64 = 42;'
 
 - name: 'lowercase bivalens type'
   input: 'fixum bivalens flag = verum'
@@ -147,7 +147,7 @@
   ts: 'const nums: Array<number> = [1, 2, 3];'
   py: 'nums: list[int] = [1, 2, 3]'
   rs:
-      - 'let nums: Vec<f64> = vec![1, 2, 3];'
+      - 'let nums: Vec<i64> = vec![1, 2, 3];'
 
 # Map with lowercase types
 - name: 'lowercase tabula type'

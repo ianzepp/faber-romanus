@@ -79,7 +79,7 @@
           - 'Event = Event_Click | Event_Keypress | Event_Quit'
       rs:
           - 'enum Event'
-          - 'Click { x: f64, y: f64 },'
+          - 'Click { x: i64, y: i64 },'
           - 'Keypress { key: String },'
           - 'Quit,'
       cpp:

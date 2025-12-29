@@ -100,7 +100,7 @@
       py:
           - 'def add(a: int, b: int) -> int:'
       rs:
-          - 'fn add(a: f64, b: f64) -> f64'
+          - 'fn add(a: i64, b: i64) -> i64'
       cpp:
           - 'int64_t add(int64_t a, int64_t b)'
       zig:
@@ -156,7 +156,7 @@
       py:
           - 'def range() -> Iterator[int]:'
       rs:
-          - 'fn range() -> f64'
+          - 'fn range() -> i64'
       cpp:
           - 'int64_t range()'
       zig:
@@ -181,12 +181,13 @@
 # Yield/Await (cede keyword)
 # =============================================================================
 
-# cede in generator context becomes yield
+# cede in generator context becomes yield respond.item() (Responsum protocol)
 - name: cede as yield in generator
   faber: 'functio range() fiunt numerus { cede 1 }'
   expect:
       ts:
-          - 'yield 1'
+          - 'yield respond.item(1)'
+          - 'yield respond.done()'
       py:
           - 'yield 1'
       rs:
@@ -224,7 +225,7 @@
       py:
           - '*nums: list[int]'
       rs:
-          - 'fn sum(nums: Vec<f64>)'
+          - 'fn sum(nums: Vec<i64>)'
       cpp:
           - 'void sum(const std::vector<int64_t>& nums)'
 
@@ -330,7 +331,7 @@
           - 'return 1'
           - 'return (n * factorial((n - 1)))'
       rs:
-          - 'fn factorial(n: f64) -> f64'
+          - 'fn factorial(n: i64) -> i64'
           - 'if (n <= 1)'
           - 'return 1'
           - 'return (n * factorial((n - 1)))'
@@ -395,7 +396,7 @@
           - 'def makeAdder(x: int):'
           - 'return lambda y: (x + y)'
       rs:
-          - 'fn makeAdder(x: f64)'
+          - 'fn makeAdder(x: i64)'
           - 'return |y| (x + y)'
       cpp:
           - 'void makeAdder(int64_t x)'
@@ -426,8 +427,8 @@
           - 'return (y * 2)'
           - 'return inner(x)'
       rs:
-          - 'fn outer(x: f64) -> f64'
-          - 'fn inner(y: f64) -> f64'
+          - 'fn outer(x: i64) -> i64'
+          - 'fn inner(y: i64) -> i64'
           - 'return (y * 2)'
           - 'return inner(x)'
       cpp:

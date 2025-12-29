@@ -27,7 +27,7 @@
       ts: 'const num = (input as number);'
       py: 'num = input'
       rs:
-          - 'let num = input as f64;'
+          - 'let num = input as i64;'
 
 - name: cast call result
   faber: fixum result = getData() qua textus
@@ -91,4 +91,4 @@
       ts: 'const maybe = (value as number | null);'
       py: 'maybe = value'
       rs:
-          - 'let maybe = value as Option<f64>;'
+          - 'let maybe = value as Option<i64>;'

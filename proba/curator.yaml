@@ -31,7 +31,7 @@
       - 'fn create(alloc: std.mem.Allocator) i64'
       - 'return 42;'
   rs:
-      - 'fn create(alloc: curator) -> f64'
+      - 'fn create(alloc: curator) -> i64'
       - 'return 42;'
   skip: [ts, py, cpp]
 

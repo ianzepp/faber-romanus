@@ -78,7 +78,7 @@
           - 'def compare(self, other: int) -> int: ...'
       rs:
           - 'trait Comparable'
-          - 'fn compare(&self, other: f64) -> f64;'
+          - 'fn compare(&self, other: i64) -> i64;'
       cpp:
           - 'concept Comparable'
       zig:
@@ -267,7 +267,7 @@
           - 'def compare(self, other: T) -> int: ...'
       rs:
           - 'trait Comparable<T>'
-          - 'fn compare(&self, other: T) -> f64;'
+          - 'fn compare(&self, other: T) -> i64;'
       cpp:
           - 'concept Comparable'
       zig:

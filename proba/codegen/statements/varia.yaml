@@ -59,7 +59,7 @@
       py:
           - 'count: int = 0'
       rs:
-          - 'let mut count: f64 = 0;'
+          - 'let mut count: i64 = 0;'
       cpp:
           - 'int64_t count = 0;'
       zig:
@@ -188,7 +188,7 @@
       py:
           - 'counter: int'
       rs:
-          - 'let mut counter: f64;'
+          - 'let mut counter: i64;'
       cpp:
           - 'int64_t counter;'
       zig:

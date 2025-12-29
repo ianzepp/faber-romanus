@@ -61,7 +61,7 @@ import { genScriptumExpression } from './expressions/scriptum';
  */
 const typeMap: Record<string, string> = {
     textus: 'String',
-    numerus: 'f64',
+    numerus: 'i64',
     fractus: 'f64',
     magnus: 'i128',
     bivalens: 'bool',

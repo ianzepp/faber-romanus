@@ -34,7 +34,7 @@
       py:
           - 'Count = int'
       rs:
-          - 'type Count = f64;'
+          - 'type Count = i64;'
       cpp:
           - 'using Count = int64_t;'
       zig:
@@ -83,7 +83,7 @@
       py:
           - 'Cache = dict[str, int]'
       rs:
-          - 'type Cache = HashMap<String, f64>;'
+          - 'type Cache = HashMap<String, i64>;'
       cpp:
           - 'using Cache = std::unordered_map<std::string, int64_t>;'
       zig:
