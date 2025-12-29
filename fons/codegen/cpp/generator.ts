@@ -256,11 +256,13 @@ export class CppGenerator {
      *      de = "from/concerning" = const reference (read-only)
      *      in = "into" = mutable reference (will be modified)
      *      Dual naming (textus location ut loc) uses internal name (alias) in generated code.
+     *      Default values (vel) generate = default syntax.
      */
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name
         const name = node.alias?.name ?? node.name.name;
         const preposition = node.preposition;
+        const defaultVal = node.defaultValue ? ` = ${this.genExpression(node.defaultValue)}` : '';
 
         if (node.typeAnnotation) {
             const type = this.genType(node.typeAnnotation);
@@ -268,38 +270,38 @@ export class CppGenerator {
             // Explicit prepositions override default behavior
             if (preposition === 'de') {
                 // de = const reference (borrowed, read-only)
-                return `const ${type}& ${name}`;
+                return `const ${type}& ${name}${defaultVal}`;
             }
 
             if (preposition === 'in') {
                 // in = mutable reference (will be modified)
-                return `${type}& ${name}`;
+                return `${type}& ${name}${defaultVal}`;
             }
 
             // Default: pass strings and vectors by const reference
             if (type === 'std::string' || type.startsWith('std::vector')) {
-                return `const ${type}& ${name}`;
+                return `const ${type}& ${name}${defaultVal}`;
             }
 
             // Rest parameters become initializer_list
             if (node.rest) {
-                return `std::initializer_list<${type}> ${name}`;
+                return `std::initializer_list<${type}> ${name}${defaultVal}`;
             }
 
-            return `${type} ${name}`;
+            return `${type} ${name}${defaultVal}`;
         }
 
         // No type annotation - use auto (requires C++20 abbreviated function template)
         // Still respect prepositions
         if (preposition === 'de') {
-            return `const auto& ${name}`;
+            return `const auto& ${name}${defaultVal}`;
         }
 
         if (preposition === 'in') {
-            return `auto& ${name}`;
+            return `auto& ${name}${defaultVal}`;
         }
 
-        return `auto ${name}`;
+        return `auto ${name}${defaultVal}`;
     }
 
     /**

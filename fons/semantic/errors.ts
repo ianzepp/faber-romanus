@@ -47,6 +47,7 @@ export enum SemanticErrorCode {
     IncompatibleComparison = 'S008',
     CedeOutsideAsyncOrGenerator = 'S009',
     AwaitOutsideAsync = 'S010',
+    DefaultWithBorrowedParam = 'S011',
 }
 
 // =============================================================================
@@ -99,5 +100,9 @@ export const SEMANTIC_ERRORS = {
     [SemanticErrorCode.AwaitOutsideAsync]: {
         text: (keyword: string) => `'${keyword}' requires an async function context`,
         help: "Use 'fiet' or 'fient' to declare an async function.",
+    },
+    [SemanticErrorCode.DefaultWithBorrowedParam]: {
+        text: (preposition: string) => `Cannot use default value with '${preposition}' (borrowed) parameter`,
+        help: "Default values require owned parameters. Remove the 'de' or 'in' preposition, or remove the default value.",
     },
 } as const;

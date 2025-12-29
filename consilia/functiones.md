@@ -4,13 +4,13 @@ Design decisions for function declarations, parameters, and call syntax. For own
 
 ## Status
 
-| Feature                | Status      | Notes                               |
-| ---------------------- | ----------- | ----------------------------------- |
-| Basic functions        | Done        | `functio name() { }`                |
-| Typed parameters       | Done        | `functio f(textus name) { }`        |
-| Ownership prepositions | Done        | `de`/`in` for borrow semantics      |
-| Dual parameter naming  | Done        | Swift-style external/internal names |
-| Default values (`vel`) | Not started | `textus name vel "default"`         |
+| Feature                | Status | Notes                               |
+| ---------------------- | ------ | ----------------------------------- |
+| Basic functions        | Done   | `functio name() { }`                |
+| Typed parameters       | Done   | `functio f(textus name) { }`        |
+| Ownership prepositions | Done   | `de`/`in` for borrow semantics      |
+| Dual parameter naming  | Done   | Swift-style external/internal names |
+| Default values (`vel`) | Done   | `textus name vel "default"`         |
 
 ## Dual Parameter Naming
 

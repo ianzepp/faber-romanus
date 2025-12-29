@@ -508,7 +508,7 @@
           - 'std::print("{}'
       zig:
           - 'fn greet(loc: []const u8)'
-          - 'std.debug.print("{any}'
+          - 'std.debug.print("{s}'
 
 # Dual naming with preposition
 - name: dual parameter naming with preposition
@@ -546,3 +546,77 @@
           - 'void copy(const std::string& source, const std::string& to)'
       zig:
           - 'fn copy(source: []const u8, to: []const u8)'
+
+# =============================================================================
+# Default Parameter Values (vel)
+# =============================================================================
+# Default values use 'vel' (Latin "or"): textus name vel "World"
+# TS/Py/C++ support native defaults; Rust/Zig do not (ignored)
+
+# Basic default value - string
+- name: default parameter value string
+  faber: 'functio greet(textus name vel "World") { scribe name }'
+  expect:
+      ts:
+          - 'function greet(name: string = "World")'
+          - 'console.log(name)'
+      py:
+          - 'def greet(name: str = "World"):'
+          - 'print(name)'
+      rs:
+          # Rust doesn't support default params - value ignored
+          - 'fn greet(name: &str)'
+      cpp:
+          - 'void greet(const std::string& name = std::string("World"))'
+      zig:
+          # Zig doesn't support default params - value ignored
+          - 'fn greet(name: []const u8)'
+
+# Default value - numeric
+- name: default parameter value numeric
+  faber: 'functio count(numerus n vel 10) -> numerus { redde n }'
+  expect:
+      ts:
+          - 'function count(n: number = 10): number'
+          - 'return n'
+      py:
+          - 'def count(n: int = 10) -> int:'
+          - 'return n'
+      rs:
+          - 'fn count(n: i64) -> i64'
+      cpp:
+          - 'int64_t count(int64_t n = 10)'
+      zig:
+          - 'fn count(n: i64) i64'
+
+# Default with dual naming
+- name: default with dual naming
+  faber: 'functio greet(textus location ut loc vel "Roma") { scribe loc }'
+  expect:
+      ts:
+          - 'function greet(loc: string = "Roma")'
+          - 'console.log(loc)'
+      py:
+          - 'def greet(loc: str = "Roma"):'
+          - 'print(loc)'
+      rs:
+          - 'fn greet(loc: &str)'
+      cpp:
+          - 'void greet(const std::string& loc = std::string("Roma"))'
+      zig:
+          - 'fn greet(loc: []const u8)'
+
+# Mixed default and non-default params
+- name: mixed default and non-default parameters
+  faber: 'functio greet(textus greeting, textus name vel "World") { scribe greeting }'
+  expect:
+      ts:
+          - 'function greet(greeting: string, name: string = "World")'
+      py:
+          - 'def greet(greeting: str, name: str = "World"):'
+      rs:
+          - 'fn greet(greeting: &str, name: &str)'
+      cpp:
+          - 'void greet(const std::string& greeting, const std::string& name = std::string("World"))'
+      zig:
+          - 'fn greet(greeting: []const u8, name: []const u8)'

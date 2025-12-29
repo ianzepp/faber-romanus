@@ -244,6 +244,8 @@ export class RsGenerator {
      * WHY: Rust uses name: Type syntax like Latin.
      *      References (&) and mutability (mut) depend on usage.
      *      Dual naming (textus location ut loc) uses internal name (alias) in generated code.
+     *      NOTE: Rust doesn't support default parameters natively. Default values are ignored.
+     *            Use Option<T> and unwrap_or() for optional parameters in Rust.
      */
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name

@@ -1259,7 +1259,15 @@ export function parse(tokens: Token[]): ParserResult {
             alias = parseIdentifier();
         }
 
-        return { type: 'Parameter', name, alias, typeAnnotation, preposition, rest, position };
+        // Check for default value: 'vel' introduces default expression
+        // textus name vel "World" -> defaults to "World" if not provided
+        let defaultValue: Expression | undefined;
+        if (checkKeyword('vel')) {
+            advance(); // consume 'vel'
+            defaultValue = parseExpression();
+        }
+
+        return { type: 'Parameter', name, alias, defaultValue, typeAnnotation, preposition, rest, position };
     }
 
     /**

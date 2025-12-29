@@ -524,6 +524,73 @@ describe('parser', () => {
             expect(fn.params[0].name.name).toBe('name');
             expect(fn.params[0].alias).toBeUndefined();
         });
+
+        test('function with default parameter value (vel)', () => {
+            const { program, errors } = parseCode(`
+        functio greet(textus name vel "World") {
+          scribe(name)
+        }
+      `);
+            expect(errors).toHaveLength(0);
+            const fn = program!.body[0] as any;
+
+            expect(fn.params[0].name.name).toBe('name');
+            expect(fn.params[0].typeAnnotation.name).toBe('textus');
+            expect(fn.params[0].defaultValue).toBeDefined();
+            expect(fn.params[0].defaultValue.type).toBe('Literal');
+            expect(fn.params[0].defaultValue.value).toBe('World');
+        });
+
+        test('function with numeric default value', () => {
+            const { program, errors } = parseCode(`
+        functio count(numerus n vel 10) {
+          redde n
+        }
+      `);
+            expect(errors).toHaveLength(0);
+            const fn = program!.body[0] as any;
+
+            expect(fn.params[0].name.name).toBe('n');
+            expect(fn.params[0].defaultValue.value).toBe(10);
+        });
+
+        test('function with dual naming and default value', () => {
+            const { program, errors } = parseCode(`
+        functio greet(textus location ut loc vel "Roma") {
+          scribe(loc)
+        }
+      `);
+            expect(errors).toHaveLength(0);
+            const fn = program!.body[0] as any;
+
+            expect(fn.params[0].name.name).toBe('location');
+            expect(fn.params[0].alias.name).toBe('loc');
+            expect(fn.params[0].defaultValue.value).toBe('Roma');
+        });
+
+        test('function with mixed default and non-default params', () => {
+            const { program, errors } = parseCode(`
+        functio greet(textus greeting, textus name vel "World") {
+          scribe(greeting + name)
+        }
+      `);
+            expect(errors).toHaveLength(0);
+            const fn = program!.body[0] as any;
+
+            expect(fn.params[0].defaultValue).toBeUndefined();
+            expect(fn.params[1].defaultValue.value).toBe('World');
+        });
+
+        test('function param without default has undefined defaultValue', () => {
+            const { program } = parseCode(`
+        functio greet(textus name) {
+          scribe(name)
+        }
+      `);
+            const fn = program!.body[0] as any;
+
+            expect(fn.params[0].defaultValue).toBeUndefined();
+        });
     });
 
     describe('if statements', () => {

@@ -475,6 +475,8 @@ export class ZigGenerator {
      * WHY: Zig requires type annotations on all parameters.
      *      Rest parameters use ... prefix syntax.
      *      Dual naming (textus location ut loc) uses internal name (alias) in generated code.
+     *      NOTE: Zig doesn't support default parameters. Default values are ignored.
+     *            Use optional parameters (?T) with orelse for default behavior in Zig.
      */
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name

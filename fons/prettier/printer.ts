@@ -1120,5 +1120,10 @@ function printParameter(path: AstPath<AstNode>, options: FaberOptions, print: (p
         parts.push(' ut ', path.call(print, 'alias'));
     }
 
+    // Default value - textus name vel "World"
+    if (node.defaultValue) {
+        parts.push(' vel ', path.call(print, 'defaultValue'));
+    }
+
     return parts;
 }

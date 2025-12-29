@@ -398,17 +398,25 @@ export interface FunctioDeclaration extends BaseNode {
  *   'ut' introduces an internal alias: name is external (callsite), alias is internal (body).
  *   textus location ut loc    -> caller uses 'location', body uses 'loc'
  *
+ * Default values:
+ *   'vel' introduces a default value expression.
+ *   textus name vel "World"   -> defaults to "World" if not provided
+ *   NOTE: Defaults are invalid with de/in prepositions (borrowed params can't have defaults)
+ *
  * Examples:
  *   textus nomen              -> regular param
  *   de textus source          -> borrowed/read-only param
  *   in lista<T> items         -> mutable borrow param
  *   ceteri lista<textus> args -> rest param (...args: string[])
  *   textus location ut loc    -> dual naming (external: location, internal: loc)
+ *   textus name vel "World"   -> default value
+ *   textus loc ut l vel "Roma" -> dual naming with default
  */
 export interface Parameter extends BaseNode {
     type: 'Parameter';
     name: Identifier;
     alias?: Identifier;
+    defaultValue?: Expression;
     typeAnnotation?: TypeAnnotation;
     case?: Case;
     preposition?: string;

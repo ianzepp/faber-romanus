@@ -1321,6 +1321,14 @@ export function analyze(program: Program): SemanticResult {
     }
 
     function analyzeFunctioDeclaration(node: FunctioDeclaration): void {
+        // Validate parameters: borrowed params (de/in) cannot have defaults
+        for (const param of node.params) {
+            if (param.defaultValue && (param.preposition === 'de' || param.preposition === 'in')) {
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.DefaultWithBorrowedParam];
+                error(`${text(param.preposition)}\n${help}`, param.position);
+            }
+        }
+
         // Build function type from parameters and return type
         const paramTypes: SemanticType[] = node.params.map(p => (p.typeAnnotation ? resolveTypeAnnotation(p.typeAnnotation) : UNKNOWN));
         const returnType = node.returnType ? resolveTypeAnnotation(node.returnType) : VACUUM;
@@ -1348,12 +1356,18 @@ export function analyze(program: Program): SemanticResult {
         currentFunctionAsync = node.async;
         currentFunctionGenerator = node.generator;
 
-        // Define parameters
+        // Define parameters (use alias if present for internal name)
         for (let i = 0; i < node.params.length; i++) {
             const param = node.params[i]!;
+            const paramName = param.alias?.name ?? param.name.name;
+
+            // Resolve default value expression if present
+            if (param.defaultValue) {
+                resolveExpression(param.defaultValue);
+            }
 
             define({
-                name: param.name.name,
+                name: paramName,
                 type: paramTypes[i]!,
                 kind: 'parameter',
                 mutable: false,
