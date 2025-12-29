@@ -427,6 +427,21 @@ describe('parser', () => {
             expect(fn.params[0].name.name).toBe('items');
         });
 
+        test('function with user-defined array type parameter', () => {
+            const { program } = parseCode(`
+        functio process(de Point[] points) {
+          scribe(points)
+        }
+      `);
+            const fn = program!.body[0] as any;
+
+            expect(fn.params[0].preposition).toBe('de');
+            expect(fn.params[0].typeAnnotation.name).toBe('lista');
+            expect(fn.params[0].typeAnnotation.arrayShorthand).toBe(true);
+            expect(fn.params[0].typeAnnotation.typeParameters[0].name).toBe('Point');
+            expect(fn.params[0].name.name).toBe('points');
+        });
+
         test('function with preposition and user-defined type', () => {
             const { program } = parseCode(`
         functio moveTo(in coordinate destination) {

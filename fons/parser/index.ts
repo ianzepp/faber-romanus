@@ -1242,8 +1242,12 @@ export function parse(tokens: Token[]): ParserResult {
         // WHY: Use lookahead to detect user-defined types, not just builtins.
         // If we see IDENT followed by IDENT, first is type, second is name.
         // If we see IDENT followed by <, it's a generic type.
+        // If we see IDENT followed by [, it's an array type (e.g., Point[]).
         const hasTypeAnnotation =
-            isTypeName(peek()) || (check('IDENTIFIER') && peek(1).type === 'IDENTIFIER') || (check('IDENTIFIER') && peek(1).type === 'LESS');
+            isTypeName(peek()) ||
+            (check('IDENTIFIER') && peek(1).type === 'IDENTIFIER') ||
+            (check('IDENTIFIER') && peek(1).type === 'LESS') ||
+            (check('IDENTIFIER') && peek(1).type === 'LBRACKET');
 
         if (hasTypeAnnotation) {
             typeAnnotation = parseTypeAnnotation();
