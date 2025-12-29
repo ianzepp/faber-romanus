@@ -242,7 +242,9 @@ export class RsGenerator {
      * Generate function parameter.
      *
      * WHY: Rust uses name: Type syntax like Latin.
-     *      References (&) and mutability (mut) depend on usage.
+     *      Latin prepositions encode ownership semantics:
+     *      de = "from/concerning" = borrowed reference (&T)
+     *      in = "into" = mutable reference (&mut T)
      *      Dual naming (textus location ut loc) uses internal name (alias) in generated code.
      *      NOTE: Rust doesn't support default parameters natively. Default values are ignored.
      *            Use Option<T> and unwrap_or() for optional parameters in Rust.
@@ -250,14 +252,94 @@ export class RsGenerator {
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name
         const name = node.alias?.name ?? node.name.name;
-        const type = node.typeAnnotation ? this.genType(node.typeAnnotation) : '_';
-
-        // WHY: Strings typically passed as &str for borrowing
-        if (type === 'String') {
-            return `${name}: &str`;
-        }
+        const preposition = node.preposition;
+        const type = node.typeAnnotation ? this.genTypeWithPreposition(node.typeAnnotation, preposition) : '_';
 
         return `${name}: ${type}`;
+    }
+
+    /**
+     * Generate type with ownership preposition applied.
+     *
+     * TRANSFORMS:
+     *   (none) textus -> &str (default borrow for strings)
+     *   (none) textus? -> Option<String> (nullable owned)
+     *   (none) lista<T> -> Vec<T> (owned)
+     *   de textus -> &str (borrowed, read-only)
+     *   de lista<T> -> &Vec<T> (borrowed reference to vec)
+     *   in textus -> &mut String (mutable borrow)
+     *   in lista<T> -> &mut Vec<T> (mutable reference to vec)
+     */
+    genTypeWithPreposition(node: TypeAnnotation, preposition?: string): string {
+        const baseType = this.genType(node);
+        const typeName = node.name;
+
+        // de = borrowed (read-only reference)
+        if (preposition === 'de') {
+            return this.genBorrowedType(typeName, baseType, node.nullable);
+        }
+
+        // in = mutable borrow
+        if (preposition === 'in') {
+            return this.genMutableType(typeName, baseType, node.nullable);
+        }
+
+        // No preposition: default behavior
+        // Nullable types stay as Option<T>
+        if (node.nullable) {
+            return baseType;
+        }
+
+        // Non-nullable strings default to &str for ergonomics
+        if (typeName === 'textus') {
+            return '&str';
+        }
+
+        return baseType;
+    }
+
+    /**
+     * Generate borrowed (read-only) type for 'de' preposition.
+     *
+     * TRANSFORMS:
+     *   de textus -> &str
+     *   de textus? -> Option<&str>
+     *   de lista<T> -> &Vec<T>
+     *   de tabula<K,V> -> &HashMap<K,V>
+     *   de T -> &T (user types)
+     */
+    genBorrowedType(typeName: string, baseType: string, nullable?: boolean): string {
+        // Strings borrow as &str (more idiomatic than &String)
+        if (typeName === 'textus') {
+            const inner = '&str';
+            return nullable ? `Option<${inner}>` : inner;
+        }
+
+        // All other types: add & prefix
+        const inner = `&${baseType.replace(/^Option<(.+)>$/, '$1')}`;
+        return nullable ? `Option<${inner}>` : inner;
+    }
+
+    /**
+     * Generate mutable type for 'in' preposition.
+     *
+     * TRANSFORMS:
+     *   in textus -> &mut String
+     *   in textus? -> Option<&mut String>
+     *   in lista<T> -> &mut Vec<T>
+     *   in tabula<K,V> -> &mut HashMap<K,V>
+     *   in T -> &mut T (user types)
+     */
+    genMutableType(typeName: string, baseType: string, nullable?: boolean): string {
+        // Mutable string needs String, not str (str is immutable)
+        if (typeName === 'textus') {
+            const inner = '&mut String';
+            return nullable ? `Option<${inner}>` : inner;
+        }
+
+        // All other types: add &mut prefix
+        const inner = `&mut ${baseType.replace(/^Option<(.+)>$/, '$1')}`;
+        return nullable ? `Option<${inner}>` : inner;
     }
 
     /**

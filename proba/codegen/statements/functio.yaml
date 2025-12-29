@@ -145,7 +145,7 @@
       py:
           - 'def read(points: list[Point]):'
       rs:
-          - 'fn read(points: Vec<Point>)'
+          - 'fn read(points: &Vec<Point>)'
       cpp:
           - 'void read(const std::vector<Point>& points)'
       zig:
@@ -160,7 +160,7 @@
       py:
           - 'def modify(items: list[int]):'
       rs:
-          - 'fn modify(items: Vec<i64>)'
+          - 'fn modify(items: &mut Vec<i64>)'
       cpp:
           - 'void modify(std::vector<int64_t>& items)'
       zig:
@@ -399,7 +399,7 @@
       py:
           - 'def mutate(target: str):'
       rs:
-          - 'fn mutate(target: &str)'
+          - 'fn mutate(target: &mut String)'
       cpp:
           - 'std::string& target'
       zig:
@@ -414,8 +414,8 @@
       py:
           - 'def update(source: str, target: str):'
       rs:
-          # Rust ignores prepositions - both become &str (default for textus)
-          - 'fn update(source: &str, target: &str)'
+          # de = &str (borrowed), in = &mut String (mutable borrow)
+          - 'fn update(source: &str, target: &mut String)'
       cpp:
           - 'const std::string& source'
           - 'std::string& target'
