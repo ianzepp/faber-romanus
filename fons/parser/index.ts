@@ -147,6 +147,7 @@ import type {
     PraefixumExpression,
     CollectionDSLTransform,
     CollectionDSLExpression,
+    ScriptumExpression,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
 import { ParserErrorCode, PARSER_ERRORS } from './errors';
@@ -3588,6 +3589,10 @@ export function parse(tokens: Token[]): ParserResult {
             return parsePraefixumExpression();
         }
 
+        if (matchKeyword('scriptum')) {
+            return parseScriptumExpression();
+        }
+
         return parseQuaExpression();
     }
 
@@ -3633,6 +3638,51 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         return { type: 'PraefixumExpression', body, position };
+    }
+
+    /**
+     * Parse format string expression.
+     *
+     * GRAMMAR:
+     *   scriptumExpr := 'scriptum' '(' STRING (',' expression)* ')'
+     *
+     * WHY: "scriptum" (that which has been written) is the perfect passive participle
+     *      of scribere. While scribe outputs to console, scriptum returns a formatted string.
+     *
+     * WHY: Format string is passed through verbatim to target. User must use target-appropriate
+     *      placeholders ({} for Zig/Rust, %s/%d for C++, etc.). Faber does not translate.
+     *
+     * Examples:
+     *   scriptum("Hello, {}", name)
+     *   scriptum("{} + {} = {}", a, b, a + b)
+     */
+    function parseScriptumExpression(): ScriptumExpression {
+        const position = tokens[current - 1]!.position; // Position of 'scriptum' we just consumed
+
+        expect('LPAREN', ParserErrorCode.ExpectedOpeningParen);
+
+        // First argument must be the format string literal
+        const formatToken = peek();
+        if (formatToken.type !== 'STRING') {
+            error(ParserErrorCode.ExpectedString, 'scriptum requires a format string literal as first argument');
+        }
+        advance();
+        const format: Literal = {
+            type: 'Literal',
+            value: formatToken.value,
+            raw: `"${formatToken.value}"`,
+            position: formatToken.position,
+        };
+
+        // Parse remaining arguments
+        const args: Expression[] = [];
+        while (match('COMMA')) {
+            args.push(parseExpression());
+        }
+
+        expect('RPAREN', ParserErrorCode.ExpectedClosingParen);
+
+        return { type: 'ScriptumExpression', format, arguments: args, position };
     }
 
     /**

@@ -95,7 +95,7 @@ functio createUser(name, email, age) -> textus {
         }
     }
 
-    redde "User created: " + name
+    redde scriptum("User created: {}", name)
 }
 
 scribe createUser("Marcus", "marcus@roma.com", 30)
@@ -176,7 +176,7 @@ functio processData(data) -> textus {
         }
     }
 
-    redde "Processing: " + data
+    redde scriptum("Processing: {}", data)
 }
 
 // BAD: Single simple check (just use si directly)

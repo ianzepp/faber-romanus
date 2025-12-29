@@ -28,7 +28,7 @@ genus Persona {
 
     // ego.field accesses instance data
     functio describe() -> textus {
-        redde ego.nomen + " est " + ego.aetas + " annorum"
+        redde scriptum("{} est {} annorum", ego.nomen, ego.aetas)
     }
 }
 
@@ -80,7 +80,7 @@ genus Builder {
     }
 
     functio appendLine(textus s) -> Builder {
-        ego.result = ego.result + s + "\n"
+        ego.result = scriptum("{}{}\n", ego.result, s)
         redde ego
     }
 

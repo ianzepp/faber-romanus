@@ -51,6 +51,7 @@ import { genAssignmentExpression } from './expressions/assignment';
 import { genNovumExpression } from './expressions/novum';
 import { genEstExpression } from './expressions/est';
 import { genPraefixumExpression } from './expressions/praefixum';
+import { genScriptumExpression } from './expressions/scriptum';
 
 /**
  * Map Latin type names to Python type hints.
@@ -236,6 +237,8 @@ export class PyGenerator {
                 return genEstExpression(node, this);
             case 'PraefixumExpression':
                 return genPraefixumExpression(node, this);
+            case 'ScriptumExpression':
+                return genScriptumExpression(node, this);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }

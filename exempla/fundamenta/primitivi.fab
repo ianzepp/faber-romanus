@@ -38,7 +38,7 @@ scribe name
 
 // String in function parameters
 functio welcome(textus userName) -> textus {
-    redde "Welcome, " + userName + "!"
+    redde scriptum("Welcome, {}!", userName)
 }
 
 scribe welcome("Julia")
@@ -46,7 +46,7 @@ scribe welcome("Julia")
 // String concatenation
 fixum textus first = "Hello"
 fixum textus second = "World"
-fixum textus combined = first + " " + second
+fixum textus combined = scriptum("{} {}", first, second)
 
 scribe combined
 
@@ -204,7 +204,7 @@ fixum numerus documentedNumber = 100
 
 functio describe(textus name, numerus age, bivalens active) -> textus {
     fixum status = active ? "active" : "inactive"
-    redde name + " is " + age + " years old (" + status + ")"
+    redde scriptum("{} is {} years old ({})", name, age, status)
 }
 
 scribe describe("Marcus", 30, verum)

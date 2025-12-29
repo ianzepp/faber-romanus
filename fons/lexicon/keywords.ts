@@ -131,6 +131,10 @@ export const keywords: KeywordEntry[] = [
     { latin: 'scribe', meaning: 'print', category: 'control' },
     { latin: 'vide', meaning: 'debug', category: 'control' },
     { latin: 'mone', meaning: 'warn', category: 'control' },
+    // WHY: "scriptum" (that which has been written) for string formatting
+    //      Perfect passive participle of scribere - the noun form of the action
+    //      scribe = write to output, scriptum = create a formatted string
+    { latin: 'scriptum', meaning: 'format string', category: 'control' },
     { latin: 'cede', meaning: 'await', category: 'control' },
 
     // ---------------------------------------------------------------------------

@@ -172,6 +172,16 @@ export function faberPrint(path: AstPath<AstNode>, options: FaberOptions, print:
             return printNovumExpression(path, options, print);
         case 'LambdaExpression':
             return printLambdaExpression(path, options, print);
+        case 'PraefixumExpression':
+            return printPraefixumExpression(path, options, print);
+        case 'ScriptumExpression':
+            return printScriptumExpression(path, options, print);
+        case 'CollectionDSLExpression':
+            return printCollectionDSLExpression(path, options, print);
+        case 'EstExpression':
+            return printEstExpression(path, options, print);
+        case 'QuaExpression':
+            return printQuaExpression(path, options, print);
 
         // Type nodes
         case 'TypeAnnotation':
@@ -1001,6 +1011,47 @@ function printNovumExpression(path: AstPath<AstNode>, options: FaberOptions, pri
     }
 
     return ['novum ', path.call(print, 'callee'), '(', join(', ', args), ')'];
+}
+
+function printPraefixumExpression(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    const node = path.getValue() as any;
+    if (node.body?.type === 'BlockStatement') {
+        return ['praefixum ', path.call(print, 'body')];
+    }
+    return ['praefixum(', path.call(print, 'body'), ')'];
+}
+
+function printScriptumExpression(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    const node = path.getValue() as any;
+    const args = path.map(print, 'arguments');
+    const threshold = getBreakThreshold(options);
+
+    if (args.length >= threshold) {
+        return group(['scriptum(', path.call(print, 'format'), ',', indent([line, join([',', line], args)]), softline, ')']);
+    }
+
+    const allArgs = [path.call(print, 'format'), ...args];
+    return ['scriptum(', join(', ', allArgs), ')'];
+}
+
+function printCollectionDSLExpression(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    const node = path.getValue() as any;
+    const parts: Doc[] = ['ex ', path.call(print, 'source')];
+    for (const transform of node.transforms || []) {
+        parts.push(' ', transform.verb);
+        if (transform.argument) {
+            parts.push(' ', path.call(print, 'transforms', node.transforms.indexOf(transform), 'argument'));
+        }
+    }
+    return parts;
+}
+
+function printEstExpression(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    return [path.call(print, 'expression'), ' est ', path.call(print, 'typeAnnotation')];
+}
+
+function printQuaExpression(path: AstPath<AstNode>, options: FaberOptions, print: (path: AstPath<AstNode>) => Doc): Doc {
+    return [path.call(print, 'expression'), ' qua ', path.call(print, 'targetType')];
 }
 
 // =============================================================================

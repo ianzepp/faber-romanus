@@ -10,7 +10,7 @@
 // - redde: Return statement
 // - fixum: Immutable constant binding
 // - scribe: Output statement (console.log)
-// - String concatenation with +
+// - scriptum: Format string expression
 //
 // GRAMMAR:
 // functio <name>(<params>) -> <type> { <body> }
@@ -21,7 +21,7 @@
 // returns a string, a constant binding, and output to console.
 
 functio salve(nomen) -> textus {
-    redde "Salve, " + nomen + "!"
+    redde scriptum("Salve, {}!", nomen)
 }
 
 fixum nomen = "Mundus"

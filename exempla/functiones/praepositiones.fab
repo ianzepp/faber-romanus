@@ -29,7 +29,7 @@
 // Rust: &str, Zig: []const u8
 
 functio greet(de textus name) -> textus {
-    redde "Salve, " + name + "!"
+    redde scriptum("Salve, {}!", name)
 }
 
 scribe greet("Marcus")  // "Salve, Marcus!"
@@ -117,12 +117,12 @@ genus Persona {
 
     // Method with borrowed self (implicit de ego)
     functio describe() -> textus {
-        redde ego.nomen + " (" + ego.aetas + ")"
+        redde scriptum("{} ({})", ego.nomen, ego.aetas)
     }
 
     // Method that borrows a string parameter
     functio saluta(de textus otherNomen) -> textus {
-        redde ego.nomen + " salutat " + otherNomen
+        redde scriptum("{} salutat {}", ego.nomen, otherNomen)
     }
 }
 

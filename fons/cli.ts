@@ -235,7 +235,15 @@ async function compile(inputFile: string, target: CodegenTarget, outputFile?: st
     // Code Generation
     // ---------------------------------------------------------------------------
 
-    const output = generate(program, { target });
+    let output: string;
+    try {
+        output = generate(program, { target });
+    } catch (err) {
+        // WHY: Codegen errors (e.g., unsupported target features) should display cleanly
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`Codegen error (${target}): ${message}`);
+        process.exit(1);
+    }
 
     if (outputFile) {
         await Bun.write(outputFile, output);

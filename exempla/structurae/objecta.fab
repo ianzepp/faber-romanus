@@ -42,7 +42,7 @@ scribe config.port
 scribe config.secure
 
 // Access in expressions
-fixum url = config.host + ":" + config.port
+fixum url = scriptum("{}:{}", config.host, config.port)
 scribe url
 
 // =============================================================================

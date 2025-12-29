@@ -114,7 +114,7 @@ typus ProductName = textus
 typus ProductPrice = numerus
 
 functio formatProduct(textus id, textus name, numerus price) -> textus {
-    redde "Product: " + id + " - " + name
+    redde scriptum("Product: {} - {}", id, name)
 }
 
 typus Username = textus

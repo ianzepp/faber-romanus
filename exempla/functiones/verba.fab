@@ -28,7 +28,7 @@
 
 // Sync function with explicit 'fit' - equivalent to '->'
 functio greet(textus name) fit textus {
-    redde "Salve, " + name + "!"
+    redde scriptum("Salve, {}!", name)
 }
 
 functio addere(numerus a, numerus b) fit numerus {
@@ -45,12 +45,12 @@ scribe addere(5, 3)
 // Async function using 'fiet' - equivalent to 'futura functio ... -> T'
 functio fetchUser(textus id) fiet textus {
     // Simulated async operation
-    redde "User " + id
+    redde scriptum("User {}", id)
 }
 
 functio loadData(textus url) fiet textus {
     fixum user = cede fetchUser(url)
-    redde "Loaded: " + user
+    redde scriptum("Loaded: {}", user)
 }
 
 // =============================================================================

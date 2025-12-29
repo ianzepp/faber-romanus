@@ -135,7 +135,7 @@ genus fullName {
 
     functio creo() {
         // Compute derived field
-        ego.displayName = ego.firstName + " " + ego.lastName
+        ego.displayName = scriptum("{} {}", ego.firstName, ego.lastName)
     }
 }
 

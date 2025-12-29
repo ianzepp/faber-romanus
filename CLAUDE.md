@@ -87,6 +87,24 @@ Faber uses a consistent `keyword expr VERB name { body }` pattern:
 | `fiunt` |  no   |    yes    | "they become"      |
 | `fient` |  yes  |    yes    | "they will become" |
 
+### String Formatting
+
+Use `scriptum()` for formatted strings (required for Zig, works on all targets):
+
+```fab
+fixum greeting = scriptum("Hello, {}!", name)
+```
+
+| Target | Output                                             |
+| ------ | -------------------------------------------------- |
+| TS     | `` `Hello, ${name}!` ``                            |
+| Python | `"Hello, {}!".format(name)`                        |
+| Rust   | `format!("Hello, {}!", name)`                      |
+| C++    | `std::format("Hello, {}!", name)`                  |
+| Zig    | `std.fmt.allocPrint(alloc, "Hello, {}!", .{name})` |
+
+Format strings pass through verbatim — use target-appropriate placeholders.
+
 ## Directory Structure
 
 - `fons/` — compiler source (lexicon, tokenizer, parser, semantic, codegen)
@@ -125,6 +143,7 @@ Each YAML file tests all targets (ts, py, rs, cpp, zig) with per-target expectat
 ### Test File Structure
 
 See any file in `proba/codegen/` for format. Expectation formats:
+
 - `string` — exact match (after trimming)
 - `string[]` — all fragments must be present (contains)
 - `{ exact: string }` — exact match

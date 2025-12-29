@@ -145,7 +145,7 @@ The `ZigGenerator` class tracks the active allocator name via a stack:
 ```ts
 class ZigGenerator {
     depth = 0;
-    curatorStack: string[] = ['alloc'];  // default allocator
+    curatorStack: string[] = ['alloc']; // default allocator
 
     getCurator(): string {
         return this.curatorStack[this.curatorStack.length - 1] ?? 'alloc';
@@ -164,6 +164,7 @@ class ZigGenerator {
 ```
 
 Push on:
+
 - `cura arena/page fit X` block entry
 - Function entry when a `curator` param exists
 
@@ -353,15 +354,15 @@ switch (event) {
 
 Tested against `exempla/` files: **8/47 compile successfully** (2025-12).
 
-| Blocker | Files | Fix | Priority |
-| ------- | ----- | --- | -------- |
-| Array literals `.{}` not iterable | ~10 | Use `[_]T{}` for arrays, `.{}` only for tuples | High |
-| String concat `++` at runtime | ~8 | Use `std.fmt.allocPrint` with allocator | High |
-| Unused function parameters | ~8 | Prefix with `_` or add `_ = param;` | Medium |
-| `var` never mutated | ~3 | Detect and use `const` instead | Medium |
-| Lambda return type required | ~2 | Emit `@compileError` or infer from context | Low |
-| `verum`/`falsum` in type context | ~2 | Map to `true`/`false` in all contexts | Low |
-| `discretio` field syntax | ~1 | Fix colon vs equals in union fields | Low |
+| Blocker                           | Files | Fix                                            | Priority |
+| --------------------------------- | ----- | ---------------------------------------------- | -------- |
+| Array literals `.{}` not iterable | ~10   | Use `[_]T{}` for arrays, `.{}` only for tuples | High     |
+| String concat `++` at runtime     | ~8    | **RESOLVED** - Use `scriptum()`                | Done     |
+| Unused function parameters        | ~8    | Prefix with `_` or add `_ = param;`            | Medium   |
+| `var` never mutated               | ~3    | Detect and use `const` instead                 | Medium   |
+| Lambda return type required       | ~2    | Emit `@compileError` or infer from context     | Low      |
+| `verum`/`falsum` in type context  | ~2    | Map to `true`/`false` in all contexts          | Low      |
+| `discretio` field syntax          | ~1    | Fix colon vs equals in union fields            | Low      |
 
 ### Array Literals
 
@@ -379,19 +380,26 @@ for (&numbers) |n| { }  // works
 
 **Fix:** Detect array literal context and emit `[_]T{}` syntax. Requires knowing element type.
 
-### String Concatenation
+### String Concatenation (RESOLVED)
 
 **Problem:** `++` is comptime-only. Runtime concat needs allocator.
 
-```zig
-// Current (broken for runtime values)
-return (("Salve, " ++ name) ++ "!");  // error if name is runtime
+**Solution:** Use `scriptum()` for formatted strings. String `+` on Zig target now throws a compile error with guidance.
 
-// Needed
-return std.fmt.allocPrint(alloc, "Salve, {s}!", .{name}) catch @panic("OOM");
+```faber
+// Error: String concatenation with '+' is not supported for Zig target
+fixum greeting = "Hello, " + name
+
+// Correct: Use scriptum()
+fixum greeting = scriptum("Hello, {s}!", name)
 ```
 
-**Fix:** Detect runtime string concat and use `std.fmt.allocPrint`. Complex because it changes the expression structure entirely.
+```zig
+// Generated output
+const greeting = std.fmt.allocPrint(alloc, "Hello, {s}!", .{name}) catch @panic("OOM");
+```
+
+Format strings pass through verbatim - users must use Zig format specifiers (`{s}` for strings, `{d}` for integers, `{any}` for unknown).
 
 ### Unused Parameters
 

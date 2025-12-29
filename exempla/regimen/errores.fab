@@ -86,7 +86,7 @@ functio initializeSystem(objectum config) -> textus {
 functio handleStatus(textus status) -> bivalens {
     si status == "ok" { redde verum }
     si status == "error" { redde falsum }
-    mori "unknown status: " + status
+    mori scriptum("unknown status: {}", status)
 }
 
 // =============================================================================

@@ -1,5 +1,5 @@
 functio salve(nomen) -> textus {
-    redde "Salve, " + nomen + "!"
+    redde scriptum("Salve, {}!", nomen)
 }
 
 scribe salve("Marcus")

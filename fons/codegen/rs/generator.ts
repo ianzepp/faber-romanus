@@ -54,6 +54,7 @@ import { genNovumExpression } from './expressions/novum';
 import { genQuaExpression } from './expressions/qua';
 import { genEstExpression } from './expressions/est';
 import { genPraefixumExpression } from './expressions/praefixum';
+import { genScriptumExpression } from './expressions/scriptum';
 
 /**
  * Map Latin type names to Rust type names.
@@ -221,6 +222,8 @@ export class RsGenerator {
                 return genEstExpression(node, this);
             case 'PraefixumExpression':
                 return genPraefixumExpression(node, this);
+            case 'ScriptumExpression':
+                return genScriptumExpression(node, this);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }

@@ -53,14 +53,14 @@ scribe negate(falsum)
 
 // Two parameters of same type
 functio concatena(textus a, textus b) -> textus {
-    redde a + " " + b
+    redde scriptum("{} {}", a, b)
 }
 
 scribe concatena("Salve", "Mundus")
 
 // Mixed parameter types
 functio describe(textus nomen, numerus aetas) -> textus {
-    redde nomen + " est " + aetas + " annos"
+    redde scriptum("{} est {} annos", nomen, aetas)
 }
 
 scribe describe("Marcus", 30)
@@ -90,7 +90,7 @@ functio greetOptional(textus? name) -> textus {
         redde "Salve, Ignotus!"
     }
 
-    redde "Salve, " + name + "!"
+    redde scriptum("Salve, {}!", name)
 }
 
 scribe greetOptional("Marcus")

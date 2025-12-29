@@ -58,7 +58,7 @@ functio processName(textus? name) -> textus {
         redde "No name provided"
     }
 
-    redde "Name: " + name
+    redde scriptum("Name: {}", name)
 }
 
 scribe processName("Julia")
@@ -86,7 +86,7 @@ functio greet(textus? name) -> textus {
         redde "Salve, Ignotus!"
     }
 
-    redde "Salve, " + name + "!"
+    redde scriptum("Salve, {}!", name)
 }
 
 scribe greet("Marcus")
@@ -97,14 +97,14 @@ functio describe(textus? name, numerus? age) -> textus {
     varia result = ""
 
     si nonnulla name {
-        result = "Name: " + name
+        result = scriptum("Name: {}", name)
     }
 
     si nonnulla age {
         si nonnulla name {
-            result = result + ", "
+            result = scriptum("{}, ", result)
         }
-        result = result + "Age: " + age
+        result = scriptum("{}Age: {}", result, age)
     }
 
     si nulla name et nulla age {

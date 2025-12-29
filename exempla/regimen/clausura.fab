@@ -133,7 +133,7 @@ incrementOuter()  // 3
 // Closure capturing function parameter
 functio createGreeter(textus prefix) {
     // The lambda captures 'prefix' from the enclosing scope
-    fixum greet = pro name: prefix + ", " + name + "!"
+    fixum greet = pro name: scriptum("{}, {}!", prefix, name)
     scribe greet("Marcus")
     scribe greet("Julia")
 }

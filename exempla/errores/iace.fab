@@ -97,7 +97,7 @@ functio handleStatus(status) {
             iace "Status is error"
         }
         aliter {
-            iace "Unknown status: " + status
+            iace scriptum("Unknown status: {}", status)
         }
     }
 }
@@ -325,7 +325,7 @@ functio findItem(items, target) {
 
 functio goodErrorMessages(value, context) {
     si value < 0 {
-        iace "Invalid value: " + value + " (must be >= 0) in " + context
+        iace scriptum("Invalid value: {} (must be >= 0) in {}", value, context)
     }
 }
 

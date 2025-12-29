@@ -179,8 +179,12 @@
       zig:
           - '@divTrunc(((a + b) * (c - d)), ((e + f) - (g * h)))'
 
+# WHY: String concat with + is intentionally unsupported for Zig target.
+#      Users should use scriptum() for formatted strings instead.
+#      See proba/codegen/expressions/scriptum.yaml for Zig string formatting tests.
 - name: string concatenation
   faber: '"hello" + " " + "world"'
+  skip: [zig]
   expect:
       ts: '(("hello" + " ") + "world");'
       py: '(("hello" + " ") + "world")'
@@ -188,8 +192,6 @@
           - '((String::from("hello") + String::from(" ")) + String::from("world"));'
       cpp:
           - '((std::string("hello") + std::string(" ")) + std::string("world"))'
-      zig:
-          - '(("hello" ++ " ") ++ "world")'
 
 - name: modulo operator
   faber: 10 % 3

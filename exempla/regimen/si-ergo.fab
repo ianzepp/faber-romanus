@@ -79,7 +79,7 @@ scribe absolutus(42)
 // =============================================================================
 
 functio greet(name) {
-    scribe "Salve, " + name
+    scribe scriptum("Salve, {}", name)
 }
 
 fixum hasName = verum

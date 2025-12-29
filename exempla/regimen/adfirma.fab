@@ -171,13 +171,13 @@ functio processAge(numerus age) -> textus {
         }
     }
 
-    redde "Age: " + age
+    redde scriptum("Age: {}", age)
 }
 
 // adfirma: for invariants that should never fail
 functio processValidAge(numerus age) -> textus {
     adfirma age >= 0, "age must be non-negative"
-    redde "Age: " + age
+    redde scriptum("Age: {}", age)
 }
 
 scribe processAge(-5)

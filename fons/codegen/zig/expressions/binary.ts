@@ -22,11 +22,13 @@ export function genBinaryExpression(node: BinaryExpression, g: ZigGenerator): st
     const right = g.genExpression(node.right);
 
     // Handle string concatenation with + operator
+    // WHY: Zig's ++ operator is comptime-only. Runtime string concat needs an allocator.
+    //      Instead of silently emitting broken code, throw an error guiding users to scriptum().
     if (node.operator === '+' && (g.isStringType(node.left) || g.isStringType(node.right))) {
-        // For compile-time known strings, use ++ operator
-        // Note: This only works for comptime-known strings in Zig
-        // Runtime string concatenation would require an allocator
-        return `(${left} ++ ${right})`;
+        throw new Error(
+            `String concatenation with '+' is not supported for Zig target. ` +
+                `Use scriptum("format {}", arg) instead. Example: scriptum("Hello, {}", name)`,
+        );
     }
 
     // Handle string comparison with == or ===

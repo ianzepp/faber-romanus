@@ -25,13 +25,13 @@
 // Async function with promise return
 futura functio fetchData(url) -> textus {
     // In real code, this would use actual async operations
-    redde "Data from " + url
+    redde scriptum("Data from {}", url)
 }
 
 // Async function that awaits other async calls
 futura functio processData(source) -> textus {
     fixum data = cede fetchData(source)
-    redde "Processed: " + data
+    redde scriptum("Processed: {}", data)
 }
 
 // =============================================================================
@@ -39,17 +39,17 @@ futura functio processData(source) -> textus {
 // =============================================================================
 
 futura functio loadUser(id) -> textus {
-    redde "User " + id
+    redde scriptum("User {}", id)
 }
 
 futura functio loadPosts(userId) -> textus {
-    redde "Posts for " + userId
+    redde scriptum("Posts for {}", userId)
 }
 
 futura functio getUserWithPosts(id) -> textus {
     fixum user = cede loadUser(id)
     fixum posts = cede loadPosts(user)
-    redde user + " - " + posts
+    redde scriptum("{} - {}", user, posts)
 }
 
 // =============================================================================

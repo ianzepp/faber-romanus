@@ -63,8 +63,8 @@ scribe 10 + 20
 scribe 5 * 8
 scribe 100 - 25
 
-// String concatenation
-scribe "Salve, " + "Mundus!"
+// String formatting
+scribe scriptum("Salve, {}!", "Mundus")
 
 // Function results
 functio double(x) -> numerus {

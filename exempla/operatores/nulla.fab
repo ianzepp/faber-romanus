@@ -174,7 +174,7 @@ functio processData(data) -> textus {
         }
     }
 
-    redde "Processing: " + data
+    redde scriptum("Processing: {}", data)
 }
 
 scribe processData("sample")
@@ -192,7 +192,7 @@ functio createRecord(name, email) -> textus {
         }
     }
 
-    redde "Record created for " + name
+    redde scriptum("Record created for {}", name)
 }
 
 scribe createRecord("Marcus", "marcus@roma.com")

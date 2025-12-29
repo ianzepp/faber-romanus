@@ -25,13 +25,13 @@ discretio Result<T, E> {
 functio handle_event(Event event) -> nihil {
     discerne event {
         si Click pro x, y {
-            scribe "Click at " + x + ", " + y
+            scribe scriptum("Click at {}, {}", x, y)
         }
         si Keypress pro key {
-            scribe "Key pressed: " + key
+            scribe scriptum("Key pressed: {}", key)
         }
         si Resize pro width, height {
-            scribe "Resized to " + width + "x" + height
+            scribe scriptum("Resized to {}x{}", width, height)
         }
         si Quit {
             mori "Exiting"

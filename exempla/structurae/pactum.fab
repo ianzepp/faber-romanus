@@ -33,7 +33,7 @@ pactum Salutator {
 // Genus that fulfills the pactum
 genus AmicusSalutator implet Salutator {
     functio salve(textus nomen) -> textus {
-        redde "Salve, " + nomen + "!"
+        redde scriptum("Salve, {}!", nomen)
     }
 }
 
@@ -81,11 +81,11 @@ pactum DataFetcher {
 genus HttpFetcher implet DataFetcher {
     futura functio fetch(textus url) -> textus {
         // In real code, would make HTTP request
-        redde "data from " + url
+        redde scriptum("data from {}", url)
     }
 
     futura functio post(textus url, textus data) -> textus {
-        redde "posted to " + url
+        redde scriptum("posted to {}", url)
     }
 }
 
@@ -147,7 +147,7 @@ genus Point implet Stringifiable {
     numerus y: 0
 
     functio toTextus() -> textus {
-        redde "(" + ego.x + ", " + ego.y + ")"
+        redde scriptum("({}, {})", ego.x, ego.y)
     }
 }
 
@@ -179,7 +179,7 @@ genus FileLogger implet Logger {
 
     functio log(textus message) {
         // Would write to file
-        scribe "[FILE] " + message
+        scribe scriptum("[FILE] {}", message)
     }
 }
 

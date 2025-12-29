@@ -118,7 +118,7 @@ scribe displayName
 
 // Conditional formatting
 fixum count = 5
-fixum message = count == 1 ? "1 item" : count + " items"
+fixum message = count == 1 ? "1 item" : scriptum("{} items", count)
 scribe message
 
 // Status mapping

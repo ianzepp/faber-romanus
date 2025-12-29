@@ -36,7 +36,7 @@ ex numbers pro n {
 fixum names = ["Marcus", "Julia", "Claudia"]
 
 ex names pro name {
-    scribe "Salve, " + name
+    scribe scriptum("Salve, {}", name)
 }
 
 // =============================================================================

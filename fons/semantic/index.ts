@@ -595,6 +595,15 @@ export function analyze(program: Program): SemanticResult {
                 node.resolvedType = node.source.resolvedType || UNKNOWN;
                 return node.resolvedType;
 
+            case 'ScriptumExpression':
+                // WHY: Format string expression always returns textus
+                // Resolve all argument expressions for type checking
+                for (const arg of node.arguments) {
+                    resolveExpression(arg);
+                }
+                node.resolvedType = TEXTUS;
+                return TEXTUS;
+
             default: {
                 const _exhaustive: never = node;
 

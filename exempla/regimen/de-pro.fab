@@ -35,7 +35,7 @@ de persona pro clavis {
 
 // Access values using the key
 de persona pro clavis {
-    scribe clavis + ": " + persona[clavis]
+    scribe scriptum("{}: {}", clavis, persona[clavis])
 }
 
 // =============================================================================
@@ -52,7 +52,7 @@ fixum config = {
 // List all configuration keys
 scribe "Configuration options:"
 de config pro key {
-    scribe "  - " + key
+    scribe scriptum("  - {}", key)
 }
 
 // =============================================================================
@@ -116,8 +116,8 @@ fixum nested = {
 
 // Iterate top-level keys
 de nested pro section {
-    scribe "Section: " + section
+    scribe scriptum("Section: {}", section)
     de nested[section] pro key {
-        scribe "  " + key + ": " + nested[section][key]
+        scribe scriptum("  {}: {}", key, nested[section][key])
     }
 }

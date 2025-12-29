@@ -55,6 +55,7 @@ import { genNovumExpression } from './expressions/novum';
 import { genQuaExpression } from './expressions/qua';
 import { genEstExpression } from './expressions/est';
 import { genPraefixumExpression } from './expressions/praefixum';
+import { genScriptumExpression } from './expressions/scriptum';
 import { genCollectionDSLExpression } from './expressions/collection-dsl';
 
 /**
@@ -239,6 +240,8 @@ export class TsGenerator {
                 return genEstExpression(node, this);
             case 'PraefixumExpression':
                 return genPraefixumExpression(node, this);
+            case 'ScriptumExpression':
+                return genScriptumExpression(node, this);
             case 'CollectionDSLExpression':
                 return genCollectionDSLExpression(node, this);
             default:

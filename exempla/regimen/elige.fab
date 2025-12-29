@@ -127,7 +127,7 @@ functio processCommand(cmd) {
             scribe "Restarting..."
         }
         aliter {
-            iace "Unknown command: " + cmd
+            iace scriptum("Unknown command: {}", cmd)
         }
     }
 }

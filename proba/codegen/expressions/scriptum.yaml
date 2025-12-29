@@ -1,0 +1,72 @@
+# Scriptum expressions - format string functionality
+# Maps Faber scriptum() to target-language format string equivalents
+
+- name: scriptum with single argument
+  faber: 'scriptum("Hello, {}", name)'
+  expect:
+      ts:
+          - '`Hello, ${name}`'
+      py:
+          - '"Hello, {}".format(name)'
+      rs:
+          - 'format!("Hello, {}", name)'
+      cpp:
+          - 'std::format("Hello, {}", name)'
+      zig:
+          - 'std.fmt.allocPrint(alloc, "Hello, {}", .{ name }) catch @panic("OOM")'
+
+- name: scriptum with multiple arguments
+  faber: 'scriptum("{} + {} = {}", a, b, c)'
+  expect:
+      ts:
+          - '`${a} + ${b} = ${c}`'
+      py:
+          - '"{} + {} = {}".format(a, b, c)'
+      rs:
+          - 'format!("{} + {} = {}", a, b, c)'
+      cpp:
+          - 'std::format("{} + {} = {}", a, b, c)'
+      zig:
+          - 'std.fmt.allocPrint(alloc, "{} + {} = {}", .{ a, b, c }) catch @panic("OOM")'
+
+- name: scriptum with no arguments (constant string)
+  faber: 'scriptum("Hello, World!")'
+  expect:
+      ts:
+          - '"Hello, World!"'
+      py:
+          - '"Hello, World!"'
+      rs:
+          - '"Hello, World!".to_string()'
+      cpp:
+          - '"Hello, World!"'
+      zig:
+          - '"Hello, World!"'
+
+- name: scriptum in variable assignment
+  faber: 'fixum greeting = scriptum("Hello, {}", name)'
+  expect:
+      ts:
+          - 'const greeting = `Hello, ${name}`'
+      py:
+          - 'greeting = "Hello, {}".format(name)'
+      rs:
+          - 'let greeting = format!("Hello, {}", name)'
+      cpp:
+          - 'const auto greeting = std::format("Hello, {}", name)'
+      zig:
+          - 'const greeting = std.fmt.allocPrint(alloc, "Hello, {}", .{ name }) catch @panic("OOM")'
+
+- name: scriptum with expression argument
+  faber: 'scriptum("Result: {}", a + b)'
+  expect:
+      ts:
+          - '`Result: ${(a + b)}`'
+      py:
+          - '"Result: {}".format((a + b))'
+      rs:
+          - 'format!("Result: {}", (a + b))'
+      cpp:
+          - 'std::format("Result: {}", (a + b))'
+      zig:
+          - 'std.fmt.allocPrint(alloc, "Result: {}", .{ (a + b) }) catch @panic("OOM")'

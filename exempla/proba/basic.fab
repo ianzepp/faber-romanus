@@ -25,7 +25,7 @@ probandum "Arithmetic" {
 probandum "String Operations" {
     probandum "concatenation" {
         proba "joins two strings" {
-            fixum result = "hello" + " " + "world"
+            fixum result = scriptum("{} {}", "hello", "world")
             adfirma result est "hello world"
         }
     }

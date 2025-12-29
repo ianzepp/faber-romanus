@@ -29,7 +29,7 @@ genus salutator {
     textus name: "Mundus"
 
     functio saluta() -> textus {
-        redde "Salve, " + ego.name + "!"
+        redde scriptum("Salve, {}!", ego.name)
     }
 }
 
@@ -261,11 +261,11 @@ genus persona {
     textus lastName
 
     functio fullName() -> textus {
-        redde ego.firstName + " " + ego.lastName
+        redde scriptum("{} {}", ego.firstName, ego.lastName)
     }
 
     functio greet() -> textus {
-        redde "Salve, my name is " + ego.fullName()
+        redde scriptum("Salve, my name is {}", ego.fullName())
     }
 }
 
