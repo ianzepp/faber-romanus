@@ -1,6 +1,6 @@
 # Flumina: Streams-First Architecture
 
-**Status:** Phase 1 Complete
+**Status:** Phase 2 Complete
 **Inspiration:** Monk OS syscall architecture
 
 ## Vision
@@ -489,22 +489,209 @@ No `unwrap()`, no ceremony. The `drain()` is inside `getId()`.
 - The `inFlumina` context flag tracks whether we're inside a `fit` function body
 - The `returnVerb` field in the AST preserves which syntax was used
 
-### Phase 2: `fiunt` Functions (Deferred)
+### Phase 2: `fiunt` Functions (TS Target Only) — COMPLETE
 
-Decision pending: Does caller see `Responsum<T>` or raw `T`?
+**Decision:** `Responsum` is the universal internal protocol. Caller sees raw values.
 
-Options:
+#### Design Rationale
 
-- **A)** `fiunt` yields raw `T`, protocol is internal only
-- **B)** `fiunt` yields `Responsum<T>`, caller uses `collect()` or iterates with protocol awareness
+The tension: we want `Responsum` everywhere internally (consistency, interceptability, future-proofing), but callers shouldn't deal with protocol wrappers.
+
+**Solution:** Two boundary helpers that convert protocol to target-idiomatic iteration:
+
+| Verb    | Internal                | Boundary  | External    |
+| ------- | ----------------------- | --------- | ----------- |
+| `fit`   | `yield respond.ok(x)`   | `drain()` | Returns `T` |
+| `fiunt` | `yield respond.item(x)` | `flow()`  | Yields `T`  |
+
+This maps naturally to different target error models:
+
+| Target     | Error Model                   | `flow()` Converts To   |
+| ---------- | ----------------------------- | ---------------------- |
+| TypeScript | Exceptions                    | `throw new Error(...)` |
+| Python     | Exceptions                    | `raise Exception(...)` |
+| Rust       | `Result<T, E>`                | `Err(e)`               |
+| Zig        | Error unions                  | Error return           |
+| C++        | Exceptions or `std::expected` | Either model           |
+
+#### Syntax
+
+```fab
+functio numeri() fiunt numerus {
+    cede 1
+    cede 2
+    cede 3
+}
+
+// Caller iterates raw values
+ex numeri() pro n {
+    scribe(n)  // n is numerus, not Responsum<numerus>
+}
+```
+
+#### Internal Protocol
+
+```fab
+functio numeri() fiunt numerus {
+    cede 1
+    iace Error("boom")
+    cede 3  // never reached
+}
+```
+
+Compiles to (internal generator):
+
+```typescript
+function* __numeri(): Generator<Responsum<number>> {
+    yield respond.item(1);
+    yield respond.error('EFAIL', 'boom');
+    yield respond.item(3);
+}
+```
+
+#### The `flow()` Boundary
+
+Converts protocol-aware generator to raw-value generator:
+
+```typescript
+function* flow<T>(gen: Generator<Responsum<T>>): Generator<T> {
+    for (const resp of gen) {
+        if (resp.op === 'res') yield resp.data;
+        else if (resp.op === 'error') throw new Error(`${resp.code}: ${resp.message}`);
+        else if (resp.op === 'factum') return;
+        else if (resp.op === 'bene') {
+            yield resp.data;
+            return;
+        }
+    }
+}
+```
+
+#### Generated Output
+
+```typescript
+function* numeri(): Generator<number> {
+    yield* flow(
+        (function* () {
+            yield respond.item(1);
+            yield respond.item(2);
+            yield respond.done();
+        })(),
+    );
+}
+```
+
+#### `cede*` for Delegation
+
+Forwards an entire stream:
+
+```fab
+functio omnia() fiunt numerus {
+    cede* prima()
+    cede* secunda()
+}
+```
+
+Compiles to:
+
+```typescript
+function* omnia(): Generator<number> {
+    yield* flow(
+        (function* () {
+            yield* inspice(prima());
+            yield* inspice(secunda());
+            yield respond.done();
+        })(),
+    );
+}
+```
+
+Where `inspice()` converts a raw-value generator back to protocol (for forwarding).
+
+#### Protocol Access
+
+When you need raw `Responsum` access (middleware, logging, error recovery):
+
+```fab
+ex inspice(source) pro resp {
+    discerne resp {
+        si Res pro x { processa(x) }
+        si Error pro e { log(e) }
+        si Factum { }
+    }
+}
+```
+
+#### Transformations
+
+| Faber Input       | Internal Protocol          | External Output                   |
+| ----------------- | -------------------------- | --------------------------------- |
+| `cede x`          | `yield respond.item(x)`    | `yield x` (via `flow()`)          |
+| `iace err`        | `yield respond.error(...)` | `throw Error(...)` (via `flow()`) |
+| `cede* other()`   | `yield* inspice(other())`  | Forwards all items                |
+| (end of function) | `yield respond.done()`     | Generator completes               |
+
+#### Files Modified
+
+| File                                    | Change                                                        |
+| --------------------------------------- | ------------------------------------------------------------- |
+| `fons/codegen/ts/index.ts`              | Added `flow()` helper to preamble                             |
+| `fons/codegen/ts/generator.ts`          | Added `inFiunt: boolean` context flag, updated CedeExpression |
+| `fons/codegen/ts/statements/functio.ts` | Detect `fiunt`, set `inFiunt`, wrap in `flow()`, emit done()  |
+| `fons/codegen/ts/statements/iace.ts`    | If `inFiunt`: emit `yield respond.error(...)`                 |
+
+Note: `cede` is handled via `CedeExpression` in generator.ts, not a separate statement file.
+
+#### Tests to Add
+
+Extend `proba/codegen/statements/flumina.yaml`:
+
+```yaml
+- name: fiunt function with cede
+  faber: |
+      functio items() fiunt textus {
+        cede "a"
+        cede "b"
+      }
+  expect:
+      ts:
+          contains:
+              - 'function* items(): Generator<string>'
+              - 'yield* flow('
+              - 'yield respond.item("a")'
+              - 'yield respond.item("b")'
+              - 'yield respond.done()'
+
+- name: fiunt function with iace
+  faber: |
+      functio items() fiunt textus {
+        cede "a"
+        iace "error"
+      }
+  expect:
+      ts:
+          contains:
+              - 'yield respond.item("a")'
+              - 'yield respond.error("EFAIL", "error")'
+```
 
 ### Phase 3: Async Variants (Deferred)
 
-`fiet` and `fient` follow same pattern with `async function*`.
+`fiet` and `fient` follow same pattern with `async function*` and async versions of `drain()`/`flow()`.
 
 ### Phase 4: Other Targets (Deferred)
 
-Zig/Rust/C++ require different strategies (state machines, callbacks, etc.).
+Zig/Rust/C++ use callbacks instead of generators, but emit the same `Responsum` protocol:
+
+```zig
+fn numeri(emit: *const fn(Responsum(i64)) void) void {
+    emit(respond.item(1));
+    emit(respond.item(2));
+    emit(respond.done());
+}
+```
+
+The `flow()` equivalent in these languages converts `respond.error()` to idiomatic error returns.
 
 ## References
 

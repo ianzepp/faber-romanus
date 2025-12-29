@@ -8,8 +8,9 @@
  *   mori error     -> throw new Panic(String(error))
  *
  * FLUMINA (streams-first):
- *   iace "message" (in fit) -> yield respond.error("EFAIL", "message"); return;
- *   mori "message" (in fit) -> throw new Panic("message") (unchanged - panics are fatal)
+ *   iace "message" (in fit)   -> yield respond.error("EFAIL", "message"); return;
+ *   iace "message" (in fiunt) -> yield respond.error("EFAIL", "message"); return;
+ *   mori "message" (in any)   -> throw new Panic("message") (unchanged - panics are fatal)
  *
  * WHY: mori indicates unrecoverable errors (like Rust's panic! or Zig's @panic).
  *      Using a dedicated Panic class allows catching panics separately from
@@ -35,8 +36,8 @@ export function genIaceStatement(node: IaceStatement, g: TsGenerator, semi: bool
         return `${g.ind()}throw new Panic(String(${expr}))${semi ? ';' : ''}`;
     }
 
-    // WHY: In flumina mode, iace yields an error response and exits the generator
-    if (g.inFlumina) {
+    // WHY: In flumina/fiunt mode, iace yields an error response and exits the generator
+    if (g.inFlumina || g.inFiunt) {
         // Extract message for error response
         let message: string;
         if (node.argument.type === 'Literal' && typeof node.argument.value === 'string') {

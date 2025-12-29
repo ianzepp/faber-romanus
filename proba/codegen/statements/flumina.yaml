@@ -136,7 +136,11 @@
               - 'drain'
               - 'respond.ok'
 
-- name: generator function not transformed
+# =============================================================================
+# fiunt Functions (multi-value streams with Responsum protocol)
+# =============================================================================
+
+- name: fiunt function with cede
   faber: |
       functio items() fiunt numerus {
         cede 1
@@ -147,8 +151,86 @@
       ts:
           contains:
               - 'function* items(): Generator<number>'
-              - 'yield 1'
-              - 'yield 2'
+              - 'yield* flow('
+              - 'yield respond.item(1)'
+              - 'yield respond.item(2)'
+              - 'yield respond.done()'
+
+- name: fiunt function with single cede
+  faber: |
+      functio single() fiunt textus {
+        cede "hello"
+      }
+  skip: [py, rs, cpp, zig]
+  expect:
+      ts:
+          contains:
+              - 'function* single(): Generator<string>'
+              - 'yield respond.item("hello")'
+              - 'yield respond.done()'
+
+- name: fiunt function with iace
+  faber: |
+      functio mayFail() fiunt numerus {
+        cede 1
+        iace "error occurred"
+      }
+  skip: [py, rs, cpp, zig]
+  expect:
+      ts:
+          contains:
+              - 'yield respond.item(1)'
+              - 'yield respond.error("EFAIL", "error occurred")'
+              - 'return;'
+
+- name: fiunt function with mori unchanged
+  faber: |
+      functio mustWork() fiunt numerus {
+        cede 1
+        mori "fatal"
+      }
+  skip: [py, rs, cpp, zig]
+  expect:
+      ts:
+          contains:
+              - 'yield respond.item(1)'
+              - 'throw new Panic("fatal")'
           not_contains:
-              - 'drain'
-              - 'respond'
+              - 'respond.error'
+
+- name: fiunt function with conditional cede
+  faber: |
+      functio conditional(bivalens flag) fiunt numerus {
+        si flag {
+          cede 1
+        }
+        cede 2
+      }
+  skip: [py, rs, cpp, zig]
+  expect:
+      ts:
+          contains:
+              - 'function* conditional(flag: boolean): Generator<number>'
+              - 'if (flag)'
+              - 'yield respond.item(1)'
+              - 'yield respond.item(2)'
+              - 'yield respond.done()'
+
+- name: fiunt function with loop
+  faber: |
+      functio range(numerus n) fiunt numerus {
+        varia numerus i = 0
+        dum i < n {
+          cede i
+          i = i + 1
+        }
+      }
+  skip: [py, rs, cpp, zig]
+  expect:
+      ts:
+          contains:
+              - 'function* range(n: number): Generator<number>'
+              - 'while ('
+              - 'i < n'
+              - 'yield respond.item(i)'
+              - 'yield respond.done()'

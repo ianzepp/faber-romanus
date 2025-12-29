@@ -9,10 +9,11 @@
  *
  * FLUMINA (streams-first):
  *   functio f() fit T { redde x } -> function f(): T { return drain(function* () { yield respond.ok(x); }); }
+ *   functio f() fiunt T { cede x } -> function* f(): Generator<T> { yield* flow((function* () { yield respond.item(x); yield respond.done(); })()); }
  *
- * WHY: `fit` verb triggers flumina (stream protocol), `->` uses direct return.
- *      This allows opt-in streaming for functions that benefit from the protocol,
- *      while keeping zero overhead for simple functions using `->`.
+ * WHY: `fit` verb triggers drain() (single-value stream), `fiunt` triggers flow() (multi-value stream).
+ *      Both use Responsum protocol internally, but caller sees raw values.
+ *      `->` arrow syntax uses direct return with zero overhead.
  */
 
 import type { FunctioDeclaration, BlockStatement } from '../../../parser/ast';
@@ -25,9 +26,10 @@ export function genFunctioDeclaration(node: FunctioDeclaration, g: TsGenerator):
     // Generate type parameters: prae typus T -> <T>
     const typeParams = node.typeParams ? g.genTypeParams(node.typeParams) : '';
 
-    // WHY: Only `fit` verb triggers flumina, not `->` arrow syntax
-    // This allows developers to opt-in to streaming protocol when needed
+    // WHY: `fit` triggers drain() (single-value), `fiunt` triggers flow() (multi-value)
+    // Both use Responsum protocol internally, `->` arrow syntax uses direct return
     const useFlumina = node.returnVerb === 'fit' && !node.isConstructor;
+    const useFiunt = node.returnVerb === 'fiunt' && !node.isConstructor;
 
     // Wrap return type based on async/generator semantics
     let returnType = '';
@@ -35,18 +37,19 @@ export function genFunctioDeclaration(node: FunctioDeclaration, g: TsGenerator):
         let baseType = g.genType(node.returnType);
         if (node.async && node.generator) {
             baseType = `AsyncGenerator<${baseType}>`;
-        } else if (node.generator) {
+        } else if (node.generator || useFiunt) {
+            // WHY: fiunt functions return Generator<T> (flow() unwraps internally)
             baseType = `Generator<${baseType}>`;
         } else if (node.async) {
             baseType = `Promise<${baseType}>`;
         }
-        // WHY: fit functions keep their original return type (drain unwraps internally)
         returnType = `: ${baseType}`;
     }
 
     // Track context for nested statement generation
     const prevInGenerator = g.inGenerator;
     const prevInFlumina = g.inFlumina;
+    const prevInFiunt = g.inFiunt;
 
     g.inGenerator = node.generator;
 
@@ -72,6 +75,31 @@ ${ind}  });
 ${ind}}`;
     }
 
+    if (useFiunt) {
+        // WHY: Enable fiunt mode so cede emits yield respond.item(), iace emits yield respond.error()
+        g.inFiunt = true;
+        g.inGenerator = true; // cede should emit yield, not await
+        g.features.flumina = true;
+
+        // Generate inner body statements
+        g.depth++;
+        const innerBody = node.body.body.map(stmt => g.genStatement(stmt)).join('\n');
+        g.depth--;
+
+        g.inFiunt = prevInFiunt;
+        g.inGenerator = prevInGenerator;
+
+        // WHY: Wrap body in flow((function* () { ... yield respond.done(); })()) for Responsum protocol
+        // The implicit respond.done() signals stream completion
+        const ind = g.ind();
+        return `${ind}function* ${name}${typeParams}(${params})${returnType} {
+${ind}  yield* flow((function* () {
+${innerBody}
+${ind}    yield respond.done();
+${ind}  })());
+${ind}}`;
+    }
+
     // Non-flumina path: arrow syntax, async, generator, or constructor
     const async = node.async ? 'async ' : '';
     const star = node.generator ? '*' : '';
@@ -79,6 +107,7 @@ ${ind}}`;
 
     g.inGenerator = prevInGenerator;
     g.inFlumina = prevInFlumina;
+    g.inFiunt = prevInFiunt;
 
     return `${g.ind()}${async}function${star} ${name}${typeParams}(${params})${returnType} ${body}`;
 }

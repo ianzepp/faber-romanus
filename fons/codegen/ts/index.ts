@@ -89,7 +89,7 @@ function genPreamble(g: TsGenerator): string {
         definitions.push('class Panic extends Error { name = "Panic"; }');
     }
 
-    // WHY: Flumina (streams-first) requires Responsum type, respond helpers, and drain()
+    // WHY: Flumina (streams-first) requires Responsum type, respond helpers, drain() and flow()
     if (g.features.flumina) {
         definitions.push(`type Responsum<T = unknown> =
   | { op: 'bene'; data: T }
@@ -110,6 +110,15 @@ function drain<T>(gen: () => Generator<Responsum<T>>): T {
     if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
   }
   throw new Error('EPROTO: No terminal response');
+}
+
+function* flow<T>(gen: Generator<Responsum<T>>): Generator<T> {
+  for (const resp of gen) {
+    if (resp.op === 'res') yield resp.data;
+    else if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
+    else if (resp.op === 'factum') return;
+    else if (resp.op === 'bene') { yield resp.data; return; }
+  }
 }`);
     }
 
