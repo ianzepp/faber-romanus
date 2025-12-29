@@ -1,9 +1,12 @@
-# Flumina (streams-first) - fit functions with Responsum protocol
-# Maps Faber fit functions to generator-wrapped drain() pattern
+# Flumina (streams-first) - fit/fiunt/fiet/fient functions with Responsum protocol
+# Maps Faber verbs to generator-wrapped ut* helpers:
+#   fit   -> utFit()   (sync single-value)
+#   fiunt -> utFiunt() (sync multi-value)
+#   fiet  -> utFiet()  (async single-value)
+#   fient -> utFient() (async multi-value)
 #
-# Phase 1: TS target only
-# - fit functions wrap body in drain(function* () { ... })
 # - redde becomes yield respond.ok(value)
+# - cede becomes yield respond.item(value)
 # - iace becomes yield respond.error(...); return;
 # - mori remains throw new Panic(...) (panics are fatal)
 
@@ -21,7 +24,7 @@
       ts:
           contains:
               - 'function getId(): string'
-              - 'return drain(function* ()'
+              - 'return utFit(function* ()'
               - 'yield respond.ok("abc")'
 
 - name: fit function with redde and param
@@ -34,7 +37,7 @@
       ts:
           contains:
               - 'function greet(name: string): string'
-              - 'return drain(function* ()'
+              - 'return utFit(function* ()'
               - 'yield respond.ok(name)'
 
 - name: fit function with no return value
@@ -133,7 +136,7 @@
               - 'async function fetchData(): Promise<string>'
               - 'return "data"'
           not_contains:
-              - 'drain'
+              - 'utFit'
               - 'respond.ok'
 
 # =============================================================================
@@ -151,7 +154,7 @@
       ts:
           contains:
               - 'function* items(): Generator<number>'
-              - 'yield* flow('
+              - 'yield* utFiunt('
               - 'yield respond.item(1)'
               - 'yield respond.item(2)'
               - 'yield respond.done()'
@@ -249,7 +252,7 @@
       ts:
           contains:
               - 'async function fetchData(): Promise<string>'
-              - 'return await drainAsync(async function* ()'
+              - 'return await utFiet(async function* ()'
               - 'yield respond.ok("data")'
 
 - name: fiet function with cede and redde
@@ -263,7 +266,7 @@
       ts:
           contains:
               - 'async function fetchAndReturn(): Promise<string>'
-              - 'drainAsync(async function* ()'
+              - 'utFiet(async function* ()'
               - 'await getData()'
               - 'yield respond.ok(result)'
 
@@ -308,7 +311,7 @@
       ts:
           contains:
               - 'async function* fetchItems(): AsyncGenerator<string>'
-              - 'yield* flowAsync('
+              - 'yield* utFient('
               - 'yield respond.item(await fetch("a"))'
               - 'yield respond.item(await fetch("b"))'
               - 'yield respond.done()'

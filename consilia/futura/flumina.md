@@ -331,7 +331,7 @@ The model is **sync generators** for `fit`/`fiunt`, **async generators** for `fi
 The mental model: sync file I/O blocks while the underlying library collects chunks, then returns the whole thing. `fit` does the same — the generator is internal plumbing, not exposed API.
 
 - **Caller sees values, not `Responsum`** — `fixum x = getId()` just works
-- **Generator is implementation detail** — The runtime drains internally
+- **Generator is implementation detail** — The runtime unwraps internally
 - **Protocol is uniform** — Everything speaks `Responsum` under the hood
 
 ### Runtime Helper Approach
@@ -341,7 +341,7 @@ Protocol logic lives in `norma/flumina.ts`, not inlined in each function. Reason
 1. **Single source of truth** — Protocol changes update one place
 2. **Backpressure ready** — Future enhancements don't require re-codegen
 3. **Clean output** — Generated code stays readable
-4. **Consistent debugging** — Stack traces point to `drain()`
+4. **Consistent debugging** — Stack traces point to `utFit()` / `utFiunt()` / etc.
 
 ## Implementation Plan
 
@@ -356,7 +356,7 @@ Protocol logic lives in `norma/flumina.ts`, not inlined in each function. Reason
 | Syntax | Semantics       | Codegen                                       | Use Case                              |
 | ------ | --------------- | --------------------------------------------- | ------------------------------------- |
 | `->`   | Direct return   | `return x`                                    | Simple functions, hot paths, interop  |
-| `fit`  | Stream protocol | `drain(function* () { yield respond.ok(x) })` | Functions that benefit from streaming |
+| `fit`  | Stream protocol | `utFit(function* () { yield respond.ok(x) })` | Functions that benefit from streaming |
 
 This allows developers to opt-in to the streaming protocol when needed, while keeping zero overhead for simple functions.
 
@@ -393,7 +393,7 @@ const respond = {
     item: <T>(data: T): Responsum<T> => ({ op: 'res', data }),
 };
 
-function drain<T>(gen: () => Generator<Responsum<T>>): T {
+function utFit<T>(gen: () => Generator<Responsum<T>>): T {
     for (const resp of gen()) {
         if (resp.op === 'bene') return resp.data;
         if (resp.op === 'error') throw new Error(`${resp.code}: ${resp.message}`);
@@ -406,7 +406,7 @@ function drain<T>(gen: () => Generator<Responsum<T>>): T {
 
 | Faber Input                       | Current TS Output                 | Phase 1 TS Output                                                            |
 | --------------------------------- | --------------------------------- | ---------------------------------------------------------------------------- |
-| `functio foo() fit T { redde x }` | `function foo(): T { return x; }` | `function foo(): T { return drain(function* () { yield respond.ok(x); }); }` |
+| `functio foo() fit T { redde x }` | `function foo(): T { return x; }` | `function foo(): T { return utFit(function* () { yield respond.ok(x); }); }` |
 | `redde x` (in `fit`)              | `return x;`                       | `yield respond.ok(x);`                                                       |
 | `redde` (in `fit`, no value)      | `return;`                         | `yield respond.ok(undefined);`                                               |
 | `iace "msg"` (in `fit`)           | `throw "msg";`                    | `yield respond.error("EFAIL", "msg"); return;`                               |
@@ -419,7 +419,7 @@ function drain<T>(gen: () => Generator<Responsum<T>>): T {
 | `fons/codegen/types.ts`                 | Add `flumina: boolean` to `RequiredFeatures`                                                    |
 | `fons/codegen/ts/index.ts`              | Add flumina preamble generation                                                                 |
 | `fons/codegen/ts/generator.ts`          | Add `inFlumina: boolean` context flag                                                           |
-| `fons/codegen/ts/statements/functio.ts` | Detect `fit` (sync, non-generator), set `inFlumina`, wrap body in `drain(function* () { ... })` |
+| `fons/codegen/ts/statements/functio.ts` | Detect `fit` (sync, non-generator), set `inFlumina`, wrap body in `utFit(function* () { ... })` |
 | `fons/codegen/ts/statements/redde.ts`   | If `inFlumina`: emit `yield respond.ok(...)`                                                    |
 | `fons/codegen/ts/statements/iace.ts`    | If `inFlumina` and not `fatal`: emit `yield respond.error(...); return;`                        |
 | `fons/parser/ast.ts`                    | Add `ReturnVerb` type and `returnVerb` field to `FunctioDeclaration`                            |
@@ -439,7 +439,7 @@ New file: `proba/codegen/statements/flumina.yaml`
       ts:
           contains:
               - 'function getId(): string'
-              - 'return drain(function* ()'
+              - 'return utFit(function* ()'
               - 'yield respond.ok("abc")'
 
 - name: fit function with iace
@@ -478,7 +478,7 @@ Compiles to:
 const x = getId();
 ```
 
-No `unwrap()`, no ceremony. The `drain()` is inside `getId()`.
+No `unwrap()`, no ceremony. The `utFit()` is inside `getId()`.
 
 #### Implementation Notes
 
@@ -499,20 +499,20 @@ The tension: we want `Responsum` everywhere internally (consistency, interceptab
 
 **Solution:** Two boundary helpers that convert protocol to target-idiomatic iteration:
 
-| Verb    | Internal                | Boundary  | External    |
-| ------- | ----------------------- | --------- | ----------- |
-| `fit`   | `yield respond.ok(x)`   | `drain()` | Returns `T` |
-| `fiunt` | `yield respond.item(x)` | `flow()`  | Yields `T`  |
+| Verb    | Internal                | Boundary    | External    |
+| ------- | ----------------------- | ----------- | ----------- |
+| `fit`   | `yield respond.ok(x)`   | `utFit()`   | Returns `T` |
+| `fiunt` | `yield respond.item(x)` | `utFiunt()` | Yields `T`  |
 
 This maps naturally to different target error models:
 
-| Target     | Error Model                   | `flow()` Converts To   |
-| ---------- | ----------------------------- | ---------------------- |
-| TypeScript | Exceptions                    | `throw new Error(...)` |
-| Python     | Exceptions                    | `raise Exception(...)` |
-| Rust       | `Result<T, E>`                | `Err(e)`               |
-| Zig        | Error unions                  | Error return           |
-| C++        | Exceptions or `std::expected` | Either model           |
+| Target     | Error Model                   | `utFiunt()` Converts To |
+| ---------- | ----------------------------- | ----------------------- |
+| TypeScript | Exceptions                    | `throw new Error(...)`  |
+| Python     | Exceptions                    | `raise Exception(...)`  |
+| Rust       | `Result<T, E>`                | `Err(e)`                |
+| Zig        | Error unions                  | Error return            |
+| C++        | Exceptions or `std::expected` | Either model            |
 
 #### Syntax
 
@@ -549,12 +549,12 @@ function* __numeri(): Generator<Responsum<number>> {
 }
 ```
 
-#### The `flow()` Boundary
+#### The `utFiunt()` Boundary
 
 Converts protocol-aware generator to raw-value generator:
 
 ```typescript
-function* flow<T>(gen: Generator<Responsum<T>>): Generator<T> {
+function* utFiunt<T>(gen: Generator<Responsum<T>>): Generator<T> {
     for (const resp of gen) {
         if (resp.op === 'res') yield resp.data;
         else if (resp.op === 'error') throw new Error(`${resp.code}: ${resp.message}`);
@@ -571,7 +571,7 @@ function* flow<T>(gen: Generator<Responsum<T>>): Generator<T> {
 
 ```typescript
 function* numeri(): Generator<number> {
-    yield* flow(
+    yield* utFiunt(
         (function* () {
             yield respond.item(1);
             yield respond.item(2);
@@ -596,7 +596,7 @@ Compiles to:
 
 ```typescript
 function* omnia(): Generator<number> {
-    yield* flow(
+    yield* utFiunt(
         (function* () {
             yield* inspice(prima());
             yield* inspice(secunda());
@@ -624,21 +624,21 @@ ex inspice(source) pro resp {
 
 #### Transformations
 
-| Faber Input       | Internal Protocol          | External Output                   |
-| ----------------- | -------------------------- | --------------------------------- |
-| `cede x`          | `yield respond.item(x)`    | `yield x` (via `flow()`)          |
-| `iace err`        | `yield respond.error(...)` | `throw Error(...)` (via `flow()`) |
-| `cede* other()`   | `yield* inspice(other())`  | Forwards all items                |
-| (end of function) | `yield respond.done()`     | Generator completes               |
+| Faber Input       | Internal Protocol          | External Output                      |
+| ----------------- | -------------------------- | ------------------------------------ |
+| `cede x`          | `yield respond.item(x)`    | `yield x` (via `utFiunt()`)          |
+| `iace err`        | `yield respond.error(...)` | `throw Error(...)` (via `utFiunt()`) |
+| `cede* other()`   | `yield* inspice(other())`  | Forwards all items                   |
+| (end of function) | `yield respond.done()`     | Generator completes                  |
 
 #### Files Modified
 
-| File                                    | Change                                                        |
-| --------------------------------------- | ------------------------------------------------------------- |
-| `fons/codegen/ts/index.ts`              | Added `flow()` helper to preamble                             |
-| `fons/codegen/ts/generator.ts`          | Added `inFiunt: boolean` context flag, updated CedeExpression |
-| `fons/codegen/ts/statements/functio.ts` | Detect `fiunt`, set `inFiunt`, wrap in `flow()`, emit done()  |
-| `fons/codegen/ts/statements/iace.ts`    | If `inFiunt`: emit `yield respond.error(...)`                 |
+| File                                    | Change                                                          |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `fons/codegen/ts/index.ts`              | Added `utFiunt()` helper to preamble                            |
+| `fons/codegen/ts/generator.ts`          | Added `inFiunt: boolean` context flag, updated CedeExpression   |
+| `fons/codegen/ts/statements/functio.ts` | Detect `fiunt`, set `inFiunt`, wrap in `utFiunt()`, emit done() |
+| `fons/codegen/ts/statements/iace.ts`    | If `inFiunt`: emit `yield respond.error(...)`                   |
 
 Note: `cede` is handled via `CedeExpression` in generator.ts, not a separate statement file.
 
@@ -657,7 +657,7 @@ Extend `proba/codegen/statements/flumina.yaml`:
       ts:
           contains:
               - 'function* items(): Generator<string>'
-              - 'yield* flow('
+              - 'yield* utFiunt('
               - 'yield respond.item("a")'
               - 'yield respond.item("b")'
               - 'yield respond.done()'
@@ -684,7 +684,7 @@ Extend `proba/codegen/statements/flumina.yaml`:
 #### Preamble Additions
 
 ```typescript
-async function drainAsync<T>(gen: () => AsyncGenerator<Responsum<T>>): Promise<T> {
+async function utFiet<T>(gen: () => AsyncGenerator<Responsum<T>>): Promise<T> {
     for await (const resp of gen()) {
         if (resp.op === 'bene') return resp.data;
         if (resp.op === 'error') throw new Error(`${resp.code}: ${resp.message}`);
@@ -692,7 +692,7 @@ async function drainAsync<T>(gen: () => AsyncGenerator<Responsum<T>>): Promise<T
     throw new Error('EPROTO: No terminal response');
 }
 
-async function* flowAsync<T>(gen: AsyncGenerator<Responsum<T>>): AsyncGenerator<T> {
+async function* utFient<T>(gen: AsyncGenerator<Responsum<T>>): AsyncGenerator<T> {
     for await (const resp of gen) {
         if (resp.op === 'res') yield resp.data;
         else if (resp.op === 'error') throw new Error(`${resp.code}: ${resp.message}`);
@@ -707,12 +707,12 @@ async function* flowAsync<T>(gen: AsyncGenerator<Responsum<T>>): AsyncGenerator<
 
 #### Transformations
 
-| Verb    | Internal                      | Boundary       | External Type       |
-| ------- | ----------------------------- | -------------- | ------------------- |
-| `fit`   | `yield respond.ok(x)`         | `drain()`      | `T`                 |
-| `fiunt` | `yield respond.item(x)`       | `flow()`       | `Generator<T>`      |
-| `fiet`  | `yield respond.ok(x)`         | `drainAsync()` | `Promise<T>`        |
-| `fient` | `yield respond.item(await x)` | `flowAsync()`  | `AsyncGenerator<T>` |
+| Verb    | Internal                      | Boundary    | External Type       |
+| ------- | ----------------------------- | ----------- | ------------------- |
+| `fit`   | `yield respond.ok(x)`         | `utFit()`   | `T`                 |
+| `fiunt` | `yield respond.item(x)`       | `utFiunt()` | `Generator<T>`      |
+| `fiet`  | `yield respond.ok(x)`         | `utFiet()`  | `Promise<T>`        |
+| `fient` | `yield respond.item(await x)` | `utFient()` | `AsyncGenerator<T>` |
 
 #### Examples
 
@@ -723,7 +723,7 @@ functio fetchData() fiet textus {
 }
 // Compiles to:
 // async function fetchData(): Promise<string> {
-//   return await drainAsync(async function* () {
+//   return await utFiet(async function* () {
 //     yield respond.ok(await getData());
 //   });
 // }
@@ -736,7 +736,7 @@ functio fetchAll(lista<textus> urls) fient textus {
 }
 // Compiles to:
 // async function* fetchAll(urls: Array<string>): AsyncGenerator<string> {
-//   yield* flowAsync((async function* () {
+//   yield* utFient((async function* () {
 //     for (const url of urls) {
 //       yield respond.item(await fetch(url));
 //     }
@@ -747,12 +747,12 @@ functio fetchAll(lista<textus> urls) fient textus {
 
 #### Files Modified
 
-| File                                    | Change                                         |
-| --------------------------------------- | ---------------------------------------------- |
-| `fons/codegen/ts/index.ts`              | Added `drainAsync()` and `flowAsync()` helpers |
-| `fons/codegen/ts/generator.ts`          | Added `inFiet` and `inFient` context flags     |
-| `fons/codegen/ts/statements/functio.ts` | Handle `fiet` and `fient` verbs                |
-| `fons/codegen/ts/statements/iace.ts`    | Extended to handle `fiet`/`fient` contexts     |
+| File                                    | Change                                     |
+| --------------------------------------- | ------------------------------------------ |
+| `fons/codegen/ts/index.ts`              | Added `utFiet()` and `utFient()` helpers   |
+| `fons/codegen/ts/generator.ts`          | Added `inFiet` and `inFient` context flags |
+| `fons/codegen/ts/statements/functio.ts` | Handle `fiet` and `fient` verbs            |
+| `fons/codegen/ts/statements/iace.ts`    | Extended to handle `fiet`/`fient` contexts |
 
 ### Phase 4: Other Targets (Deferred)
 
@@ -766,7 +766,7 @@ fn numeri(emit: *const fn(Responsum(i64)) void) void {
 }
 ```
 
-The `flow()` equivalent in these languages converts `respond.error()` to idiomatic error returns.
+The `utFiunt()` equivalent in these languages converts `respond.error()` to idiomatic error returns.
 
 ## References
 

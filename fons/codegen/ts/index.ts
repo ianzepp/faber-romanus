@@ -89,7 +89,8 @@ function genPreamble(g: TsGenerator): string {
         definitions.push('class Panic extends Error { name = "Panic"; }');
     }
 
-    // WHY: Flumina (streams-first) requires Responsum type, respond helpers, drain() and flow()
+    // WHY: Flumina (streams-first) requires Responsum type, respond helpers, and ut* boundary helpers
+    // Helper naming: ut + verb (utFit, utFiunt, utFiet, utFient) = "as [verb]"
     if (g.features.flumina) {
         definitions.push(`type Responsum<T = unknown> =
   | { op: 'bene'; data: T }
@@ -104,7 +105,7 @@ const respond = {
   item: <T>(data: T): Responsum<T> => ({ op: 'res', data }),
 };
 
-function drain<T>(gen: () => Generator<Responsum<T>>): T {
+function utFit<T>(gen: () => Generator<Responsum<T>>): T {
   for (const resp of gen()) {
     if (resp.op === 'bene') return resp.data;
     if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
@@ -112,7 +113,7 @@ function drain<T>(gen: () => Generator<Responsum<T>>): T {
   throw new Error('EPROTO: No terminal response');
 }
 
-function* flow<T>(gen: Generator<Responsum<T>>): Generator<T> {
+function* utFiunt<T>(gen: Generator<Responsum<T>>): Generator<T> {
   for (const resp of gen) {
     if (resp.op === 'res') yield resp.data;
     else if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
@@ -121,7 +122,7 @@ function* flow<T>(gen: Generator<Responsum<T>>): Generator<T> {
   }
 }
 
-async function drainAsync<T>(gen: () => AsyncGenerator<Responsum<T>>): Promise<T> {
+async function utFiet<T>(gen: () => AsyncGenerator<Responsum<T>>): Promise<T> {
   for await (const resp of gen()) {
     if (resp.op === 'bene') return resp.data;
     if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
@@ -129,7 +130,7 @@ async function drainAsync<T>(gen: () => AsyncGenerator<Responsum<T>>): Promise<T
   throw new Error('EPROTO: No terminal response');
 }
 
-async function* flowAsync<T>(gen: AsyncGenerator<Responsum<T>>): AsyncGenerator<T> {
+async function* utFient<T>(gen: AsyncGenerator<Responsum<T>>): AsyncGenerator<T> {
   for await (const resp of gen) {
     if (resp.op === 'res') yield resp.data;
     else if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
