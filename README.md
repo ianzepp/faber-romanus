@@ -134,13 +134,13 @@ console.log(salve(nomen));
 
 | Target     | Tests | Status |
 | ---------- | ----: | :----: |
-| TypeScript |  1608 |  100%  |
-| Python     |   524 |  33%   |
-| Rust       |   517 |  32%   |
-| C++23      |   397 |  25%   |
-| Zig        |   350 |  22%   |
+| TypeScript |   751 |  100%  |
+| Python     |   604 |  80%   |
+| Rust       |   573 |  76%   |
+| C++23      |   468 |  62%   |
+| Zig        |   443 |  59%   |
 
-> Status % = passing tests / TypeScript baseline. Run `bun test proba/runner.test.ts -t "<target>"` to verify.
+> Status % = passing tests / TypeScript baseline. Run `bun test proba/runner.test.ts -t "@<target>"` to verify (e.g., `-t "@zig"`).
 
 Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not applicable, `[c]` convention (no compiler support needed)
 

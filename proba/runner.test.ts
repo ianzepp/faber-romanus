@@ -7,6 +7,11 @@
  * USAGE
  *   bun test proba/runner.test.ts              Run all tests + coverage report
  *   bun test proba/runner.test.ts -t "binary"  Run tests matching "binary"
+ *   bun test proba/runner.test.ts -t "@ts"     Run only TypeScript target tests
+ *   bun test proba/runner.test.ts -t "@py"     Run only Python target tests
+ *   bun test proba/runner.test.ts -t "@zig"    Run only Zig target tests
+ *   bun test proba/runner.test.ts -t "@rs"     Run only Rust target tests
+ *   bun test proba/runner.test.ts -t "@cpp"    Run only C++ target tests
  *
  * ENVIRONMENT VARIABLES
  *   STRICT_COVERAGE=1           Fail if ANY test is missing target expectations
@@ -192,7 +197,7 @@ function compileStrict(code: string): void {
     const { program: analyzedProgram, errors: semanticErrors } = analyze(program);
 
     if (semanticErrors.length > 0) {
-        const messages = semanticErrors.map(e => `${e.code}: ${e.message}`).join('; ');
+        const messages = semanticErrors.map(e => e.message).join('; ');
         throw new Error(`Semantic errors: ${messages}`);
     }
 }
@@ -206,13 +211,11 @@ function compileStrict(code: string): void {
 function checkOutput(output: string, expected: string | string[] | TargetExpectation): void {
     if (typeof expected === 'string') {
         expect(output.trim()).toBe(expected);
-    }
-    else if (Array.isArray(expected)) {
+    } else if (Array.isArray(expected)) {
         for (const fragment of expected) {
             expect(output).toContain(fragment);
         }
-    }
-    else {
+    } else {
         // Object form with contains/not_contains/exact
         if (expected.exact !== undefined) {
             expect(output.trim()).toBe(expected.exact);
@@ -242,11 +245,9 @@ function checkErrata(error: unknown, expected: ErrataExpectation): void {
     if (expected === true) {
         // Any error is fine
         return;
-    }
-    else if (typeof expected === 'string') {
+    } else if (typeof expected === 'string') {
         expect(message).toBe(expected);
-    }
-    else {
+    } else {
         for (const fragment of expected) {
             expect(message).toContain(fragment);
         }
@@ -285,8 +286,7 @@ function runTestFile(filePath: string, suiteName: string): void {
                     try {
                         compileStrict(input.trim());
                         throw new Error('Expected compilation to fail, but it succeeded');
-                    }
-                    catch (error) {
+                    } catch (error) {
                         // Don't catch our own "expected to fail" error
                         if (error instanceof Error && error.message.includes('Expected compilation to fail')) {
                             throw error;
@@ -298,8 +298,9 @@ function runTestFile(filePath: string, suiteName: string): void {
         });
 
         // Per-target output tests
+        // WHY: Use @target prefix for easy filtering: `bun test -t "@zig"`
         for (const target of TARGETS) {
-            describe(target, () => {
+            describe(`@${target}`, () => {
                 for (const tc of cases) {
                     // Skip errata tests in per-target loop
                     if (hasErrata(tc)) continue;

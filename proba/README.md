@@ -7,6 +7,11 @@ YAML-driven cross-target codegen tests for the Faber compiler.
 ```bash
 bun test                          # Run all tests
 bun test -t "binary"              # Run tests matching pattern
+bun test -t "@ts"                 # Run only TypeScript target tests
+bun test -t "@py"                 # Run only Python target tests
+bun test -t "@zig"                # Run only Zig target tests
+bun test -t "@rs"                 # Run only Rust target tests
+bun test -t "@cpp"                # Run only C++ target tests
 COVERAGE_DETAILS=1 bun test       # Show per-suite coverage breakdown
 STRICT_COVERAGE=1 bun test        # Fail on missing target expectations
 STRICT_COVERAGE="binary" bun test # Strict mode for matching tests only
