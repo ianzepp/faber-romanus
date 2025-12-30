@@ -1,7 +1,7 @@
 ---
 status: partial
 targets: [ts, py, zig, cpp]
-note: Core types and methods complete; DSL syntax and `per property` closures are planned
+note: Core types and methods complete; DSL syntax (see ab.md) and `per property` closures are planned
 updated: 2024-12
 ---
 
@@ -61,7 +61,7 @@ Functional methods (`filtrata`, `mappata`, `reducta`, etc.) emit `@compileError`
 
 **Not yet implemented (any target):**
 
-- [-] Collection DSL (`ex items filtra ubi...`) — requires parser work
+- [-] Collection DSL (`ex`/`ab` filtering) — see `ab.md`
 - [-] Closure syntax (`per property`, `{ .property }`) — requires parser work
 - [-] Tabula/copia literals — no syntax for `tabula { k: v }` or `copia { a, b }`
 
@@ -638,56 +638,7 @@ Many lodash-style methods need custom implementation for Zig.
 
 ## Collection DSL
 
-**Status: Not implemented**
-
-The `ex` preposition supports inline collection transforms before iteration. See `praepositiones.md` for the full preposition system.
-
-### Basic Concept
-
-```fab
-// Simple iteration
-ex items pro item { scribe(item) }
-
-// With inline transforms
-ex items filtra ubi active, ordina per nomen pro item { scribe(item) }
-
-// As expression (assigned)
-fixum result = ex items filtra ubi active, ordina per nomen
-```
-
-The `ex ... pro` frame stays constant. Transforms are optional and chain with commas.
-
-### DSL Verbs
-
-| Verb      | Meaning  | Method Equivalent |
-| --------- | -------- | ----------------- |
-| `filtra`  | filter   | `.filtrata()`     |
-| `ordina`  | sort     | `.ordinata()`     |
-| `collige` | pluck    | `.mappa()`        |
-| `grupa`   | group by | `.congrega()`     |
-| `prima`   | first n  | `.prima()`        |
-| `ultima`  | last n   | `.ultima()`       |
-| `summa`   | sum      | `.summa()`        |
-| `maximum` | max      | `.maximus()`      |
-| `minimum` | min      | `.minimus()`      |
-
-### DSL Prepositions
-
-| Preposition | Meaning | Use               |
-| ----------- | ------- | ----------------- |
-| `ubi`       | where   | filter condition  |
-| `per`       | by      | property selector |
-
-### Examples
-
-```fab
-fixum active = ex users filtra ubi activus
-fixum sorted = ex items ordina per pretium
-fixum total = ex prices summa
-fixum top5 = ex items ordina per pretium, prima 5
-```
-
-### Alternative: Method Chaining
+See `ab.md` for the collection filtering DSL using `ex`/`ab` prepositions.
 
 Until DSL is implemented, use method chaining:
 
