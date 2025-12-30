@@ -597,6 +597,19 @@ export function analyze(program: Program): SemanticResult {
                 node.resolvedType = node.source.resolvedType || UNKNOWN;
                 return node.resolvedType;
 
+            case 'AbExpression':
+                // WHY: Ab expressions (filtering DSL) resolve to their source type
+                // Filtering doesn't change the element type, only reduces the collection
+                resolveExpression(node.source);
+                if (node.filter && node.filter.hasUbi) {
+                    // Only resolve the condition if it's a full ubi expression
+                    // Boolean property shorthand (hasUbi: false) is just a property name,
+                    // not a variable reference, so we don't resolve it
+                    resolveExpression(node.filter.condition);
+                }
+                node.resolvedType = node.source.resolvedType || UNKNOWN;
+                return node.resolvedType;
+
             case 'ScriptumExpression':
                 // WHY: Format string expression always returns textus
                 // Resolve all argument expressions for type checking

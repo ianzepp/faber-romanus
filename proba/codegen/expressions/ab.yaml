@@ -1,0 +1,29 @@
+# Ab expression - collection filtering DSL
+# Maps 'ab' syntax to filter operations
+#
+# Note: ab is the dedicated DSL entry point for filtering
+# ex remains unchanged for iteration/import/destructuring
+
+- name: ab with boolean property shorthand
+  faber: fixum active = ab users activus
+  expect:
+      ts: 'const active = users.filter(_x => _x.activus);'
+  skip: [py, rs, cpp, zig, fab]
+
+- name: ab with negated boolean property
+  faber: fixum clean = ab users non banned
+  expect:
+      ts: 'const clean = users.filter(_x => !(_x.banned));'
+  skip: [py, rs, cpp, zig, fab]
+
+- name: ab with transforms
+  faber: fixum top2 = ab users activus, prima 2
+  expect:
+      ts: 'const top2 = users.filter(_x => _x.activus).slice(0, 2);'
+  skip: [py, rs, cpp, zig, fab]
+
+- name: ab with negated property and transforms
+  faber: fixum result = ab items non hidden, ultima 5
+  expect:
+      ts: 'const result = items.filter(_x => !(_x.hidden)).slice(-5);'
+  skip: [py, rs, cpp, zig, fab]

@@ -153,6 +153,7 @@ import type {
     PraefixumExpression,
     CollectionDSLTransform,
     CollectionDSLExpression,
+    AbExpression,
     ScriptumExpression,
 } from './ast';
 import { builtinTypes } from '../lexicon/types-builtin';
@@ -2386,6 +2387,66 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
+     * Parse 'ab' expression (collection filtering DSL).
+     *
+     * GRAMMAR:
+     *   abExpr := 'ab' expression filter? (',' transform)*
+     *   filter := ['non'] ('ubi' condition | identifier)
+     *   condition := expression
+     *
+     * WHY: 'ab' (away from) is the dedicated DSL entry point for filtering.
+     *      The 'ex' preposition remains unchanged for iteration/import/destructuring.
+     *      Include/exclude is handled via 'non' keyword.
+     *
+     * Examples:
+     *   ab users activus                     // boolean property shorthand
+     *   ab users non banned                  // negated boolean property
+     *   ab users ubi aetas >= 18             // condition with ubi
+     *   ab users non ubi banned et suspended // negated compound condition
+     *   ab users activus, prima 10           // filter + transforms
+     *   ab users activus pro user { }        // iteration form
+     */
+    function parseAbExpression(): AbExpression {
+        const position = peek().position;
+
+        expectKeyword('ab', ParserErrorCode.UnexpectedToken);
+
+        const source = parseExpression();
+
+        // Check for negation
+        const negated = matchKeyword('non');
+
+        // Check for filter (ubi or boolean property shorthand)
+        let filter: AbExpression['filter'];
+
+        if (matchKeyword('ubi')) {
+            // Full condition: ab users ubi aetas >= 18
+            const condition = parseExpression();
+            filter = { hasUbi: true, condition };
+        } else if (check('IDENTIFIER') && !checkKeyword('pro') && !checkKeyword('fit') && !checkKeyword('fiet') && !isDSLVerb()) {
+            // Boolean property shorthand: ab users activus
+            // But only if it's not a binding keyword or DSL verb
+            const propName = parseIdentifier();
+            filter = { hasUbi: false, condition: propName };
+        }
+
+        // Parse optional transforms
+        let transforms: CollectionDSLTransform[] | undefined;
+        if (match('COMMA') || isDSLVerb()) {
+            transforms = parseDSLTransforms();
+        }
+
+        return {
+            type: 'AbExpression',
+            source,
+            negated,
+            filter,
+            transforms: transforms && transforms.length > 0 ? transforms : undefined,
+            position,
+        };
+    }
+
+    /**
      * Parse 'de' statement (for-in loop).
      *
      * GRAMMAR:
@@ -4271,6 +4332,12 @@ export function parse(tokens: Token[]): ParserResult {
         //      it's a collection pipeline expression (no iteration)
         if (checkKeyword('ex')) {
             return parseCollectionDSLExpression();
+        }
+
+        // Ab expression (filtering DSL): ab users activus, ab users ubi aetas >= 18
+        // WHY: 'ab' is the dedicated DSL entry point for collection filtering
+        if (checkKeyword('ab')) {
+            return parseAbExpression();
         }
 
         // Number literal (decimal or hex)

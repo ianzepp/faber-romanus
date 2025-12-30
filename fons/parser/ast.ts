@@ -1608,6 +1608,49 @@ export interface CollectionDSLExpression extends BaseNode {
     transforms: CollectionDSLTransform[];
 }
 
+/**
+ * Ab expression - collection filtering DSL.
+ *
+ * GRAMMAR (in EBNF):
+ *   abExpr := 'ab' expression filter? (',' transform)*
+ *   filter := ['non'] ('ubi' condition | identifier)
+ *   condition := expression
+ *   transform := 'ordina' 'per' property [direction]
+ *              | 'prima' number
+ *              | 'ultima' number
+ *              | 'collige' property
+ *              | 'grupa' 'per' property
+ *
+ * WHY: 'ab' (away from) is the dedicated DSL entry point for filtering.
+ *      The 'ex' preposition remains unchanged for iteration/import/destructuring.
+ *      Include/exclude is handled via 'non' keyword: ab users activus vs ab users non banned.
+ *
+ * Examples:
+ *   ab users activus                    -> users.filter(u => u.activus)
+ *   ab users non banned                 -> users.filter(u => !u.banned)
+ *   ab users ubi aetas >= 18            -> users.filter(u => u.aetas >= 18)
+ *   ab users non ubi banned et suspended -> users.filter(u => !(u.banned && u.suspended))
+ *   ab users activus, prima 10          -> users.filter(u => u.activus).slice(0, 10)
+ *
+ * Iteration form:
+ *   ab users activus pro user { }       -> for (const user of users.filter(u => u.activus)) { }
+ */
+export interface AbExpression extends BaseNode {
+    type: 'AbExpression';
+    source: Expression;
+    /** Whether the filter is negated (non ubi vs ubi) */
+    negated: boolean;
+    /** Filter condition - either a property name (boolean shorthand) or full expression */
+    filter?: {
+        /** true if 'ubi' was used, false for boolean property shorthand */
+        hasUbi: boolean;
+        /** The filter condition expression */
+        condition: Expression;
+    };
+    /** Optional transforms after filtering */
+    transforms?: CollectionDSLTransform[];
+}
+
 // =============================================================================
 // EXPRESSION TYPES
 // =============================================================================
@@ -1639,6 +1682,7 @@ export type Expression =
     | LambdaExpression
     | PraefixumExpression
     | CollectionDSLExpression
+    | AbExpression
     | ScriptumExpression;
 
 // ---------------------------------------------------------------------------

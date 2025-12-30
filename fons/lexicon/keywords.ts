@@ -272,14 +272,23 @@ export const keywords: KeywordEntry[] = [
     { latin: 'ceteri', meaning: '...rest', category: 'operator' },
 
     // ---------------------------------------------------------------------------
-    // Collection DSL Verbs
+    // Collection DSL
     // ---------------------------------------------------------------------------
 
-    // WHY: DSL verbs for collection transforms in ex...pro statements
+    // WHY: 'ab' (away from) is the DSL entry point for collection filtering
+    //      All filtering uses ab; ex remains unchanged for iteration/import/destructuring
+    //      Include/exclude is handled via 'non' keyword for symmetric negation
+    { latin: 'ab', meaning: 'filter from', category: 'dsl' },
+    // WHY: 'ubi' (where) introduces filter conditions in ab expressions
+    { latin: 'ubi', meaning: 'where', category: 'dsl' },
+    // WHY: DSL verbs for collection transforms after filtering
     //      These provide concise syntax for common collection operations
     { latin: 'prima', meaning: 'first n', category: 'dsl' },
     { latin: 'ultima', meaning: 'last n', category: 'dsl' },
     { latin: 'summa', meaning: 'sum', category: 'dsl' },
+    { latin: 'ordina', meaning: 'sort', category: 'dsl' },
+    { latin: 'collige', meaning: 'pluck', category: 'dsl' },
+    { latin: 'grupa', meaning: 'group by', category: 'dsl' },
 ];
 
 // =============================================================================

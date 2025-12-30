@@ -1,7 +1,7 @@
 ---
-status: planned
+status: partial
 targets: [ts, py, zig, cpp, rs]
-note: Collection filtering DSL via the ab preposition
+note: Boolean property shorthand and transforms implemented for TS. Ubi conditions require explicit property access.
 updated: 2024-12
 ---
 
@@ -246,13 +246,16 @@ direction   = "ascendens" | "descendens"
 
 ## Implementation Status
 
-| Feature                       | Status   |
-| ----------------------------- | -------- |
-| `ab source ubi condition`     | Not done |
-| `ab source non ubi condition` | Not done |
-| Boolean property shorthand    | Not done |
-| Transform chaining            | Not done |
-| Aggregation                   | Not done |
+| Feature                                         | TS        | Py  | Zig | C++ | Rs  |
+| ----------------------------------------------- | --------- | --- | --- | --- | --- |
+| `ab source property` (boolean shorthand)        | Done      | -   | -   | -   | -   |
+| `ab source non property`                        | Done      | -   | -   | -   | -   |
+| Transform chaining (`prima`, `ultima`, `summa`) | Done      | -   | -   | -   | -   |
+| `ab source ubi condition`                       | Partial\* | -   | -   | -   | -   |
+| Aggregation (`ordina`, `grupa`, etc.)           | Not done  | -   | -   | -   | -   |
+| Iteration form (`ab...pro`)                     | Not done  | -   | -   | -   | -   |
+
+\*`ubi` conditions currently require explicit property access in the condition expression. Implicit property rewriting (where bare identifiers become `_x.property`) is not yet implemented.
 
 ---
 

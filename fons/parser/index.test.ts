@@ -2108,6 +2108,59 @@ describe('parser', () => {
         });
     });
 
+    describe('ab expression (filtering DSL)', () => {
+        test('ab with boolean property shorthand', () => {
+            const { program } = parseCode('fixum active = ab users activus');
+            const decl = program!.body[0] as any;
+
+            expect(decl.init.type).toBe('AbExpression');
+            expect(decl.init.source.name).toBe('users');
+            expect(decl.init.negated).toBe(false);
+            expect(decl.init.filter.hasUbi).toBe(false);
+            expect(decl.init.filter.condition.name).toBe('activus');
+        });
+
+        test('ab with negated boolean property', () => {
+            const { program } = parseCode('fixum clean = ab users non banned');
+            const decl = program!.body[0] as any;
+
+            expect(decl.init.type).toBe('AbExpression');
+            expect(decl.init.negated).toBe(true);
+            expect(decl.init.filter.hasUbi).toBe(false);
+            expect(decl.init.filter.condition.name).toBe('banned');
+        });
+
+        test('ab with ubi condition', () => {
+            const { program } = parseCode('fixum adults = ab users ubi aetas >= 18');
+            const decl = program!.body[0] as any;
+
+            expect(decl.init.type).toBe('AbExpression');
+            expect(decl.init.negated).toBe(false);
+            expect(decl.init.filter.hasUbi).toBe(true);
+            expect(decl.init.filter.condition.type).toBe('BinaryExpression');
+        });
+
+        test('ab with negated ubi condition', () => {
+            const { program } = parseCode('fixum excluded = ab users non ubi banned');
+            const decl = program!.body[0] as any;
+
+            expect(decl.init.type).toBe('AbExpression');
+            expect(decl.init.negated).toBe(true);
+            expect(decl.init.filter.hasUbi).toBe(true);
+        });
+
+        test('ab with transforms', () => {
+            const { program } = parseCode('fixum top2 = ab users activus, prima 2');
+            const decl = program!.body[0] as any;
+
+            expect(decl.init.type).toBe('AbExpression');
+            expect(decl.init.filter.condition.name).toBe('activus');
+            expect(decl.init.transforms).toHaveLength(1);
+            expect(decl.init.transforms[0].verb).toBe('prima');
+            expect(decl.init.transforms[0].argument.value).toBe(2);
+        });
+    });
+
     describe('edge cases - empty constructs', () => {
         test('empty block', () => {
             const { program } = parseCode('{}');
