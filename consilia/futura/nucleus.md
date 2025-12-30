@@ -242,11 +242,140 @@ async function run<T>(gen: AsyncIterable<Responsum<T>>): Promise<T> {
 }
 ```
 
+## Why Protocol on All Targets
+
+The Responsum protocol is not overhead—it's the unifying abstraction. Monk OS implements Response protocol in TypeScript for reasons that apply equally to Faber.
+
+### 1. Uniform Dispatch
+
+Every syscall returns `AsyncIterable<Responsum<T>>`, regardless of semantics:
+
+```typescript
+// Single value
+async function* fileOpen(...): AsyncIterable<Responsum<Fd>> {
+    yield respond.ok({ fd: 3 });
+}
+
+// Stream
+async function* readDir(...): AsyncIterable<Responsum<Entry>> {
+    yield respond.item({ name: 'file1.txt' });
+    yield respond.item({ name: 'file2.txt' });
+    yield respond.done();
+}
+
+// Error
+async function* fileStat(...): AsyncIterable<Responsum<Stat>> {
+    yield respond.error('ENOENT', 'File not found');
+}
+```
+
+The `ad` dispatcher doesn't need to know if a syscall is single-value, stream, sync, or async. It just routes and yields. Without protocol, dispatch becomes type chaos.
+
+### 2. Terminal vs Non-Terminal is Explicit
+
+Native generators don't distinguish "here's an item" from "I'm done":
+
+```typescript
+// Native - done is implicit (just stops iterating)
+async function* items(): AsyncIterable<Item> {
+    yield item1;
+    yield item2;
+}
+
+// Protocol - done is explicit
+async function* items(): AsyncIterable<Responsum<Item>> {
+    yield respond.item(item1);
+    yield respond.item(item2);
+    yield respond.done();  // Explicit terminal signal
+}
+```
+
+This matters for:
+- **Backpressure** — Executor knows stream ended vs stalled
+- **Cleanup** — Terminal op triggers resource release
+- **Partial errors** — `.err` after `.item` is distinguishable from normal end
+
+### 3. Errors Are Values, Not Exceptions
+
+```typescript
+// Without protocol - exceptions
+async function fileRead(path: string): Promise<string> {
+    if (!exists(path)) throw new Error('ENOENT');  // Exception
+    return content;
+}
+
+// With protocol - errors are values
+async function* fileRead(path: string): AsyncIterable<Responsum<string>> {
+    if (!exists(path)) {
+        yield respond.error('ENOENT', 'File not found');  // Value
+        return;
+    }
+    yield respond.ok(content);
+}
+```
+
+Why errors-as-values matters:
+- **No exception unwinding** — Predictable control flow
+- **Streaming errors** — Error after 100 items is just another yield
+- **Cross-target consistency** — Same semantics on TS, Zig, Rust
+- **Uniform logging** — Every response logged the same way
+
+### 4. Cross-Target Consistency
+
+Without protocol, targets diverge:
+
+```typescript
+// TS without protocol: exception
+try {
+    const content = await fileRead('missing.txt');
+} catch (e) { /* error handling */ }
+```
+
+```zig
+// Zig with protocol: Responsum.err
+switch (future.poll(&ctx)) {
+    .ok => |content| { ... },
+    .err => |e| { ... },
+}
+```
+
+Same Faber source, different runtime semantics. Bugs that only appear on one target.
+
+With protocol everywhere, same semantics:
+
+```typescript
+// TS with protocol: matches Zig
+for await (const resp of fileRead('missing.txt')) {
+    switch (resp.op) {
+        case 'ok': /* success - same as Zig .ok */
+        case 'err': /* error - same as Zig .err */
+    }
+}
+```
+
+### 5. Observability and Cancellation
+
+Every response is inspectable:
+
+```typescript
+for await (const resp of syscall('file:read', path)) {
+    logger.log(resp.op, resp.data);  // Uniform logging
+    metrics.record(resp.op);          // Uniform metrics
+}
+```
+
+Cancellation is explicit via protocol:
+- Consumer breaks from loop → triggers `iterator.return()`
+- Cleanup happens via terminal semantics
+- No dangling resources
+
+---
+
 ## Compilation Strategy
 
 ### TypeScript / Python
 
-Use native async. The nucleus is a thin wrapper:
+Use native async generators with Responsum protocol:
 
 ```fab
 ad "fasciculus:lege" ("file.txt") fiet textus pro content { ... }
@@ -257,16 +386,77 @@ Becomes:
 const content = await run(dispatch('fasciculus:lege', 'file.txt'));
 ```
 
-Or with direct codegen (preferred):
+The `run()` helper unwraps Responsum, throwing on `.err`:
+
 ```typescript
-const content = await fs.readFile('file.txt', 'utf-8');
+async function run<T>(gen: AsyncIterable<Responsum<T>>): Promise<T> {
+    for await (const resp of gen) {
+        switch (resp.op) {
+            case 'ok': return resp.data;
+            case 'err': throw new FaberError(resp.code, resp.message);
+            case 'item': continue;
+            case 'done': return undefined as T;
+            case 'pending': continue;
+        }
+    }
+    throw new Error('Generator ended without result');
+}
 ```
 
-The dispatcher exists for uniformity but can be bypassed for performance.
+**Direct codegen (`ad!`) is the escape hatch, not the default:**
 
-### Zig / Rust / C++
+```fab
+// Default: protocol (observable, consistent)
+ad "fasciculus:lege" ("file.txt") fiet textus pro content
 
-Compile to state machines. Each `fiet`/`fient` function becomes:
+// Escape hatch: direct (fast, loses observability)
+ad! "fasciculus:lege" ("file.txt") fiet textus pro content
+```
+
+Direct codegen bypasses dispatcher for performance-critical hot paths. Most code should use protocol for consistency and debuggability.
+
+### Rust
+
+Use native `async fn` with Responsum mapped to Rust idioms:
+
+| Responsum | Rust |
+|-----------|------|
+| `.ok(T)` | `Poll::Ready(Ok(T))` |
+| `.err(E)` | `Poll::Ready(Err(FaberError))` |
+| `.pending` | `Poll::Pending` |
+| `.item(T)` | `Some(Ok(T))` via Stream |
+| `.done` | `None` via Stream |
+
+```fab
+functio fetch(textus url) fiet Response {
+    ad "caelum:request" (url, "GET") fiet Response pro resp
+    redde resp
+}
+```
+
+Becomes:
+```rust
+pub async fn fetch(url: &str) -> Result<Response, FaberError> {
+    let resp = caelum::request(url, "GET").await?;
+    Ok(resp)
+}
+```
+
+Rust's compiler generates state machines for `async fn`. No manual state machine needed. The `?` operator maps to Responsum error propagation.
+
+For streaming (`fiunt`/`fient`):
+```rust
+pub fn items() -> impl Stream<Item = Result<Item, FaberError>> {
+    async_stream::stream! {
+        yield Ok(item1);
+        yield Ok(item2);
+    }
+}
+```
+
+### Zig / C++
+
+Compile to explicit state machines. Each `fiet`/`fient` function becomes:
 
 1. **State union** — captures locals at each suspend point
 2. **Poll function** — advances state machine, returns `Responsum<T>`
