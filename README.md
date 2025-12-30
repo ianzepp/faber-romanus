@@ -574,11 +574,11 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 
 | Feature                  | TypeScript | Zig | Python | Rust | C++23 |
 | ------------------------ | :--------: | :-: | :----: | :--: | :---: |
-| `nunc()` (current epoch) |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
-| `nunc_nano()` (nanos)    |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
-| `nunc_secunda()` (secs)  |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
-| `dormi ms` (sleep)       |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
-| Duration constants       |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
+| `nunc()` (current epoch) |    [x]     | [x] |  [ ]   | [x]  |  [ ]  |
+| `nunc_nano()` (nanos)    |    [x]     | [x] |  [ ]   | [x]  |  [ ]  |
+| `nunc_secunda()` (secs)  |    [x]     | [x] |  [ ]   | [x]  |  [ ]  |
+| `dormi ms` (sleep)       |    [x]     | [x] |  [ ]   | [x]  |  [ ]  |
+| Duration constants       |    [x]     | [x] |  [ ]   | [x]  |  [ ]  |
 
 ## Stdlib: File I/O (solum)
 

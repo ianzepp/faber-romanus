@@ -17,6 +17,7 @@ import type { RsGenerator } from '../generator';
 import { getListaMethod } from '../norma/lista';
 import { getCopiaMethod } from '../norma/copia';
 import { getMathesisFunction } from '../norma/mathesis';
+import { getTempusFunction } from '../norma/tempus';
 
 /**
  * Rust I/O intrinsic mappings.
@@ -82,6 +83,15 @@ export function genCallExpression(node: CallExpression, g: RsGenerator): string 
                 return mathesisFunc.rs(argsArray);
             }
             return mathesisFunc.rs;
+        }
+
+        // Check tempus functions (ex "norma/tempus" importa nunc, dormi, etc.)
+        const tempusFunc = getTempusFunction(name);
+        if (tempusFunc) {
+            if (typeof tempusFunc.rs === 'function') {
+                return tempusFunc.rs(argsArray);
+            }
+            return tempusFunc.rs;
         }
     }
 

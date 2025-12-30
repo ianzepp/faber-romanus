@@ -1,0 +1,124 @@
+# Tempus - Time stdlib functions
+# Tests for norma/tempus module functions and constants
+
+# =============================================================================
+# Time Functions
+# =============================================================================
+
+- name: nunc (milliseconds)
+  faber: |
+      fixum t = nunc()
+  expect:
+      ts: 'const t = Date.now();'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as i64;'
+      zig:
+          - 'const t = std.time.milliTimestamp();'
+
+- name: nunc_nano (nanoseconds)
+  faber: |
+      fixum t = nunc_nano()
+  expect:
+      ts: 'const t = BigInt(Date.now()) * 1000000n;'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos() as i64;'
+      zig:
+          - 'const t = std.time.nanoTimestamp();'
+
+- name: nunc_secunda (seconds)
+  faber: |
+      fixum t = nunc_secunda()
+  expect:
+      ts: 'const t = Math.floor(Date.now() / 1000);'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64;'
+      zig:
+          - 'const t = std.time.timestamp();'
+
+- name: dormi (sleep)
+  faber: |
+      dormi(100)
+  expect:
+      ts: 'new Promise(r => setTimeout(r, 100));'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'std::thread::sleep(std::time::Duration::from_millis(100 as u64));'
+      zig:
+          - 'std.time.sleep(100 * 1_000_000);'
+
+# =============================================================================
+# Duration Constants
+# =============================================================================
+
+- name: MILLISECUNDUM constant
+  faber: |
+      fixum d = MILLISECUNDUM
+  expect:
+      ts: 'const d = 1;'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let d = 1_i64;'
+      zig:
+          - 'const d = 1;'
+
+- name: SECUNDUM constant
+  faber: |
+      fixum d = SECUNDUM
+  expect:
+      ts: 'const d = 1000;'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let d = 1000_i64;'
+      zig:
+          - 'const d = 1000;'
+
+- name: MINUTUM constant
+  faber: |
+      fixum d = MINUTUM
+  expect:
+      ts: 'const d = 60000;'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let d = 60000_i64;'
+      zig:
+          - 'const d = 60000;'
+
+- name: HORA constant
+  faber: |
+      fixum d = HORA
+  expect:
+      ts: 'const d = 3600000;'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let d = 3600000_i64;'
+      zig:
+          - 'const d = 3600000;'
+
+- name: DIES constant
+  faber: |
+      fixum d = DIES
+  expect:
+      ts: 'const d = 86400000;'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'let d = 86400000_i64;'
+      zig:
+          - 'const d = 86400000;'
+
+# =============================================================================
+# Combined Usage
+# =============================================================================
+
+- name: sleep for one second
+  faber: |
+      dormi(SECUNDUM)
+  expect:
+      ts: 'new Promise(r => setTimeout(r, 1000));'
+      py: 'NOT_IMPLEMENTED'
+      rs:
+          - 'std::thread::sleep(std::time::Duration::from_millis(1000_i64 as u64));'
+      zig:
+          - 'std.time.sleep(1000 * 1_000_000);'

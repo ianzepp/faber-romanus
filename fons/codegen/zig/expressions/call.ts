@@ -22,6 +22,7 @@ import { getListaMethod } from '../norma/lista';
 import { getTabulaMethod } from '../norma/tabula';
 import { getCopiaMethod } from '../norma/copia';
 import { getMathesisFunction } from '../norma/mathesis';
+import { getTempusFunction } from '../norma/tempus';
 
 export function genCallExpression(node: CallExpression, g: ZigGenerator): string {
     // Helper to generate argument, handling spread
@@ -80,6 +81,15 @@ export function genCallExpression(node: CallExpression, g: ZigGenerator): string
                 return mathesisFunc.zig(argsArray);
             }
             return mathesisFunc.zig;
+        }
+
+        // Check tempus functions (ex "norma/tempus" importa nunc, dormi, etc.)
+        const tempusFunc = getTempusFunction(name);
+        if (tempusFunc) {
+            if (typeof tempusFunc.zig === 'function') {
+                return tempusFunc.zig(argsArray);
+            }
+            return tempusFunc.zig;
         }
     }
 
