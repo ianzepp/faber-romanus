@@ -36,6 +36,9 @@
       zig:
           - '// pactum Greeter'
           - '//   requires fn greet() []const u8'
+      fab:
+          - 'pactum Greeter'
+          - 'functio greet() -> textus'
 
 # Multiple methods
 - name: pactum with multiple methods
@@ -61,6 +64,10 @@
           - 'concept Readable'
       zig:
           - '// pactum Readable'
+      fab:
+          - 'pactum Readable'
+          - 'functio lege() -> textus'
+          - 'functio claude() -> vacuum'
 
 # =============================================================================
 # Method Parameters
@@ -83,6 +90,9 @@
           - 'concept Comparable'
       zig:
           - '// pactum Comparable'
+      fab:
+          - 'pactum Comparable'
+          - 'functio compare(numerus other) -> numerus'
 
 # =============================================================================
 # Type Parameters (Generics)
@@ -105,6 +115,9 @@
           - 'concept Container'
       zig:
           - '// pactum Container'
+      fab:
+          - 'pactum Container<T>'
+          - 'functio adde(T item) -> vacuum'
 
 # =============================================================================
 # Async Methods
@@ -127,6 +140,9 @@
           - 'concept Fetcher'
       zig:
           - '// pactum Fetcher'
+      fab:
+          - 'pactum Fetcher'
+          - 'futura functio fetch() -> textus'
 
 # =============================================================================
 # Empty Pactum
@@ -149,6 +165,8 @@
           - 'concept Marker'
       zig:
           - '// pactum Marker'
+      fab:
+          - 'pactum Marker'
 
 # =============================================================================
 # Edge Cases
@@ -174,6 +192,9 @@
           - 'concept Entity'
       zig:
           - '// pactum Entity'
+      fab:
+          - 'pactum Entity'
+          - 'functio id() -> textus'
 
 # Pactum with multiple type parameters
 - name: pactum with multiple type parameters
@@ -192,6 +213,9 @@
           - 'concept Mapper'
       zig:
           - '// pactum Mapper'
+      fab:
+          - 'pactum Mapper<K, V>'
+          - 'functio map(K key) -> V'
 
 # Pactum with many methods
 - name: pactum with many methods
@@ -229,6 +253,13 @@
           - 'concept Repository'
       zig:
           - '// pactum Repository'
+      fab:
+          - 'pactum Repository'
+          - 'functio crea() -> vacuum'
+          - 'functio lege() -> textus'
+          - 'functio renova() -> vacuum'
+          - 'functio dele() -> vacuum'
+          - 'functio inveni() -> textus'
 
 # Pactum with mixed async and sync methods
 - name: pactum with mixed async and sync methods
@@ -254,6 +285,10 @@
           - 'concept DataService'
       zig:
           - '// pactum DataService'
+      fab:
+          - 'pactum DataService'
+          - 'functio sync() -> textus'
+          - 'futura functio async() -> textus'
 
 # Pactum with generic constraint
 - name: pactum with generic constraint
@@ -272,6 +307,9 @@
           - 'concept Comparable'
       zig:
           - '// pactum Comparable'
+      fab:
+          - 'pactum Comparable<T>'
+          - 'functio compare(T other) -> numerus'
 
 # Pactum with void and value-returning methods
 - name: pactum with void and value-returning methods
@@ -305,3 +343,9 @@
           - 'concept Service'
       zig:
           - '// pactum Service'
+      fab:
+          - 'pactum Service'
+          - 'functio start() -> vacuum'
+          - 'functio status() -> textus'
+          - 'functio stop() -> vacuum'
+          - 'functio config() -> textus'

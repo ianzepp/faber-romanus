@@ -41,6 +41,9 @@
           - 'rubrum,'
           - 'viridis,'
           - 'caeruleum,'
+      fab:
+          - 'ordo Color'
+          - 'rubrum, viridis, caeruleum'
 
 # =============================================================================
 # Numeric Values
@@ -72,6 +75,11 @@
           - 'pendens = 0,'
           - 'actum = 1,'
           - 'finitum = 2,'
+      fab:
+          - 'ordo Status'
+          - 'pendens = 0'
+          - 'actum = 1'
+          - 'finitum = 2'
 
 # =============================================================================
 # String Values
@@ -97,6 +105,12 @@
           - 'enum class Direction'
       zig:
           - 'const Direction = enum'
+      fab:
+          - 'ordo Direction'
+          - 'north = "N"'
+          - 'south = "S"'
+          - 'east = "E"'
+          - 'west = "W"'
 
 # =============================================================================
 # Mixed Values
@@ -128,6 +142,11 @@
           - 'low = 1,'
           - 'medium,'
           - 'high = 10,'
+      fab:
+          - 'ordo Priority'
+          - 'low = 1'
+          - 'medium'
+          - 'high = 10'
 
 # =============================================================================
 # Edge Cases
@@ -143,6 +162,9 @@
       py:
           - 'class Singleton(Enum):'
           - 'OnlyOne = auto()'
+      fab:
+          - 'ordo Singleton'
+          - 'OnlyOne'
 
 # Ordo with many members (10+)
 - name: ordo with many members
@@ -155,6 +177,9 @@
           - 'class Month(Enum):'
           - 'Jan = auto()'
           - 'Dec = auto()'
+      fab:
+          - 'ordo Month'
+          - 'Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec'
 
 # Ordo with bitflag values
 - name: ordo with bitflag values
@@ -167,6 +192,11 @@
           - 'Execute = 4'
       py:
           - 'class Flags(Enum):'
+          - 'Read = 1'
+          - 'Write = 2'
+          - 'Execute = 4'
+      fab:
+          - 'ordo Flags'
           - 'Read = 1'
           - 'Write = 2'
           - 'Execute = 4'
@@ -185,6 +215,11 @@
           - 'Before = -1'
           - 'At = 0'
           - 'After = 1'
+      fab:
+          - 'ordo Offset'
+          - 'Before = -1'
+          - 'At = 0'
+          - 'After = 1'
 
 # Ordo with large values
 - name: ordo with large values
@@ -197,6 +232,11 @@
           - 'ServerError = 500'
       py:
           - 'class HttpStatus(Enum):'
+          - 'OK = 200'
+          - 'NotFound = 404'
+          - 'ServerError = 500'
+      fab:
+          - 'ordo HttpStatus'
           - 'OK = 200'
           - 'NotFound = 404'
           - 'ServerError = 500'
@@ -214,3 +254,6 @@
           - 'Medium = auto()'
           - 'High = auto()'
           - 'Critical = auto()'
+      fab:
+          - 'ordo Priority'
+          - 'Low, Medium, High, Critical'

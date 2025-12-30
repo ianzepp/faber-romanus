@@ -39,6 +39,10 @@
           - '}'
       zig:
           - 'const x = 42;'
+      fab:
+          - 'fac {'
+          - 'fixum x = 42'
+          - '}'
 
 # Do block with statement
 - name: fac block with statement
@@ -62,6 +66,10 @@
       zig:
           - 'std.debug.print("{s}\'
           - 'n", .{ "test" });'
+      fab:
+          - 'fac {'
+          - 'scribe "test"'
+          - '}'
 
 # =============================================================================
 # Do Block with Error Handling (cape)
@@ -100,6 +108,12 @@
           - '}'
       zig:
           - '// fac block with catch'
+      fab:
+          - 'fac {'
+          - 'riskyCall()'
+          - '} cape err {'
+          - 'scribe err'
+          - '}'
 
 # Do-catch with multiple statements
 - name: fac with multiple statements and cape
@@ -136,4 +150,11 @@
           - '}'
           - 'catch (const std::exception& e) {'
           - 'return'
+          - '}'
+      fab:
+          - 'fac {'
+          - 'fixum x = compute()'
+          - 'redde x'
+          - '} cape e {'
+          - 'redde nihil'
           - '}'

@@ -32,6 +32,8 @@
           - 'const _@hono/hono = @import("@hono/hono");'
           - 'const Hono = _@hono/hono.Hono;'
           - 'const Context = _@hono/hono.Context;'
+      fab:
+          - 'importa { Hono, Context } ex "@hono/hono"'
 
 # Single named import
 - name: single named import
@@ -47,6 +49,8 @@
       zig:
           - 'const _lodash = @import("lodash");'
           - 'const map = _lodash.map;'
+      fab:
+          - 'importa { map } ex "lodash"'
 
 # Wildcard import
 - name: wildcard import
@@ -61,6 +65,8 @@
       cpp: []
       zig:
           - 'const @std/crypto = @import("@std/crypto");'
+      fab:
+          - 'importa * ut @std/crypto ex "@std/crypto"'
 
 # =============================================================================
 # Import with Aliases (ut keyword)
@@ -80,6 +86,8 @@
       zig:
           - 'const _utils = @import("utils");'
           - 'const h = _utils.helper;'
+      fab:
+          - 'importa { helper ut h } ex "utils"'
 
 # Multiple imports with mixed aliases
 - name: imports with mixed aliases
@@ -97,6 +105,8 @@
           - 'const connect = _db.connect;'
           - 'const q = _db.query;'
           - 'const close = _db.close;'
+      fab:
+          - 'importa { connect, query ut q, close } ex "db"'
 
 # =============================================================================
 # Norma Intrinsic Imports (TypeScript/Rust only)
@@ -115,6 +125,8 @@
           - 'const _norma/tempus = @import("norma/tempus");'
           - 'const nunc = _norma/tempus.nunc;'
           - 'const SECUNDUM = _norma/tempus.SECUNDUM;'
+      fab:
+          - 'importa { nunc, SECUNDUM } ex "norma/tempus"'
 
 # norma wildcard import
 - name: norma wildcard import
@@ -127,6 +139,8 @@
       cpp: []
       zig:
           - 'const norma = @import("norma");'
+      fab:
+          - 'importa * ut norma ex "norma"'
 
 # =============================================================================
 # Multiple Import Statements
@@ -154,6 +168,9 @@
           - 'const _std/path = @import("std/path");'
           - 'const join = _std/path.join;'
           - 'const resolve = _std/path.resolve;'
+      fab:
+          - 'importa { Application } ex "@oak/oak"'
+          - 'importa { join, resolve } ex "std/path"'
 
 # =============================================================================
 # Edge Cases
@@ -173,6 +190,8 @@
       zig:
           - 'const _@types/node = @import("@types/node");'
           - 'const Process = _@types/node.Process;'
+      fab:
+          - 'importa { Process } ex "@types/node"'
 
 # Relative import path
 - name: relative import
@@ -188,6 +207,8 @@
       zig:
           - 'const _./utils = @import("./utils");'
           - 'const helper = _./utils.helper;'
+      fab:
+          - 'importa { helper } ex "./utils"'
 
 # All names aliased
 - name: all imports aliased
@@ -204,6 +225,8 @@
           - 'const _lib = @import("lib");'
           - 'const f = _lib.foo;'
           - 'const b = _lib.bar;'
+      fab:
+          - 'importa { foo ut f, bar ut b } ex "lib"'
 
 # Import with very long path
 - name: import with very long path
@@ -219,6 +242,8 @@
       zig:
           - 'const _@organization/package-name/deeply/nested/module = @import("@organization/package-name/deeply/nested/module");'
           - 'const thing = _@organization/package-name/deeply/nested/module.thing;'
+      fab:
+          - 'importa { thing } ex "@organization/package-name/deeply/nested/module"'
 
 # Import many named items (5+)
 - name: import many named items
@@ -239,6 +264,8 @@
           - 'const d = _utils.d;'
           - 'const e = _utils.e;'
           - 'const f = _utils.f;'
+      fab:
+          - 'importa { a, b, c, d, e, f } ex "utils"'
 
 # Import with multiple aliases
 - name: import with multiple aliases
@@ -256,6 +283,8 @@
           - 'const f = _mod.foo;'
           - 'const b = _mod.bar;'
           - 'const z = _mod.baz;'
+      fab:
+          - 'importa { foo ut f, bar ut b, baz ut z } ex "mod"'
 
 # Import from parent directory
 - name: import from parent directory
@@ -271,6 +300,8 @@
       zig:
           - 'const _../shared/utils = @import("../shared/utils");'
           - 'const helper = _../shared/utils.helper;'
+      fab:
+          - 'importa { helper } ex "../shared/utils"'
 
 # Import from sibling directory
 - name: import from sibling directory
@@ -286,6 +317,8 @@
       zig:
           - 'const _./sibling/module = @import("./sibling/module");'
           - 'const Component = _./sibling/module.Component;'
+      fab:
+          - 'importa { Component } ex "./sibling/module"'
 
 # Multiple imports from same source
 - name: multiple imports from same source
@@ -308,3 +341,6 @@
           - 'const foo = _common.foo;'
           - 'const _common = @import("common");'
           - 'const bar = _common.bar;'
+      fab:
+          - 'importa { foo } ex "common"'
+          - 'importa { bar } ex "common"'

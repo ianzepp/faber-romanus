@@ -14,6 +14,8 @@
           - '(256 * 4)'
       zig:
           - 'comptime ((256 * 4))'
+      fab:
+          - 'fixum size = praefixum(256 * 4)'
 
 - name: praefixum simple arithmetic
   faber: fixum val = praefixum(100 + 50)
@@ -26,6 +28,8 @@
           - '(100 + 50)'
       zig:
           - 'comptime ((100 + 50))'
+      fab:
+          - 'fixum val = praefixum(100 + 50)'
 
 - name: praefixum with multiplication
   faber: fixum buffer = praefixum(1024 * 8)
@@ -38,6 +42,8 @@
           - '(1024 * 8)'
       zig:
           - 'comptime ((1024 * 8))'
+      fab:
+          - 'fixum buffer = praefixum(1024 * 8)'
 
 - name: praefixum block form
   faber: |
@@ -66,3 +72,7 @@
       zig:
           - 'comptime blk:'
           - 'break :blk (x * 2)'
+      fab:
+          - 'praefixum {'
+          - 'varia x = 10'
+          - 'redde x * 2'

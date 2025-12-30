@@ -12,6 +12,8 @@
           - '!true;'
       zig:
           - '!true'
+      fab:
+          - 'non verum'
 
 - name: bitwise not
   faber: '~5'
@@ -24,6 +26,8 @@
           - '~5;'
       zig:
           - '~5'
+      fab:
+          - '~5'
 
 - name: negation literal
   faber: '-42'
@@ -35,6 +39,8 @@
       cpp:
           - '-42;'
       zig:
+          - '-42'
+      fab:
           - '-42'
 
 - name: nihil null check
@@ -51,6 +57,9 @@
           - 'if (nihilx)'
       zig:
           - '(x == null)'
+      fab:
+          - 'si nihil x'
+          - 'scribe'
 
 - name: nonnihil not null check
   faber: |
@@ -66,6 +75,9 @@
           - 'if (nonnihilx)'
       zig:
           - '(x != null)'
+      fab:
+          - 'si nonnihil x'
+          - 'scribe'
 
 - name: negativum less than zero
   faber: |
@@ -81,51 +93,70 @@
           - 'if ((x < 0))'
       zig:
           - '(x < 0)'
+      fab:
+          - 'si negativum x'
+          - 'scribe'
 
 - name: double negation logical
   faber: non non verum
   expect:
       ts: '!!true;'
       py: 'not not True'
+      fab:
+          - 'non non verum'
 
 - name: double bitwise not
   faber: '~~x'
   expect:
       ts: '~~x;'
       py: '~~x'
+      fab:
+          - '~~x'
 
 - name: negation of grouped expression
   faber: '-(a + b)'
   expect:
       ts: '-(a + b);'
       py: '-(a + b)'
+      fab:
+          - '-(a + b)'
 
 - name: non with grouped expression
   faber: non (a et b)
   expect:
       ts: '!(a && b);'
       py: 'not (a and b)'
+      fab:
+          - 'non (a et b)'
 
 - name: chained unary operators
   faber: non ~x
   expect:
       ts: '!~x;'
       py: 'not ~x'
+      fab:
+          - 'non ~x'
 
 - name: negation of call result
   faber: '-getValue()'
   expect:
       ts: '-getValue();'
       py: '-getValue()'
+      fab:
+          - '-getValue()'
 
 - name: non with member access
   faber: non obj.flag
   expect:
       ts: '!obj.flag;'
       py: 'not obj.flag'
+      fab:
+          - 'non obj.flag'
 
 - name: negation of member
   faber: '-obj.value'
   expect:
       ts: '-obj.value;'
       py: '-obj.value'
+      fab:
+          - '-obj.value'

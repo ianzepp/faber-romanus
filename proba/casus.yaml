@@ -17,6 +17,9 @@
   rs:
       - 'if true'
       - 'println!'
+  fab:
+      - 'si verum {'
+      - 'scribe("yes")'
 
 - name: 'lowercase fixum keyword'
   input: 'fixum x = 1'
@@ -24,6 +27,7 @@
   py: 'x = 1'
   rs:
       - 'let x = 1;'
+  fab: 'fixum x = 1'
 
 - name: 'lowercase varia keyword'
   input: 'varia y = 2'
@@ -31,6 +35,7 @@
   py: 'y = 2'
   rs:
       - 'let mut y = 2;'
+  fab: 'varia y = 2'
 
 - name: 'lowercase functio keyword'
   input: 'functio greet() { redde "hello" }'
@@ -41,6 +46,9 @@
   py:
       - 'def greet():'
       - 'return "hello"'
+  fab:
+      - 'functio greet() {'
+      - 'redde "hello"'
 
 - name: 'lowercase dum keyword'
   input: 'varia i = 0; dum i < 5 { i += 1 }'
@@ -58,6 +66,10 @@
       - 'let mut i = 0'
       - 'while (i < 5)'
       - 'i += 1'
+  fab:
+      - 'varia i = 0'
+      - 'dum i < 5 {'
+      - 'i += 1'
 
 - name: 'lowercase de-pro keywords'
   input: |
@@ -71,6 +83,9 @@
   py:
       - 'for item in items:'
       - 'print(item)'
+  fab:
+      - 'de items pro item {'
+      - 'scribe(item)'
 
 # =============================================================================
 # Uppercase identifiers are NOT keywords
@@ -83,6 +98,7 @@
   py: 'SI = "signal intelligence"'
   rs:
       - 'let SI = String::from("signal intelligence");'
+  fab: 'fixum SI = "signal intelligence"'
 
 # FIXUM is a valid identifier, not the 'const' keyword
 - name: 'FIXUM is identifier not keyword'
@@ -91,6 +107,7 @@
   py: 'FIXUM = 42'
   rs:
       - 'let FIXUM = 42;'
+  fab: 'fixum FIXUM = 42'
 
 # Mixed case identifiers work
 - name: 'Verum is identifier not keyword'
@@ -99,6 +116,7 @@
   py: 'Verum = "truth"'
   rs:
       - 'let Verum = String::from("truth");'
+  fab: 'fixum Verum = "truth"'
 
 - name: 'VERUM is identifier not keyword'
   input: 'fixum VERUM = falsum'
@@ -106,6 +124,7 @@
   py: 'VERUM = False'
   rs:
       - 'let VERUM = false;'
+  fab: 'fixum VERUM = falsum'
 
 # DUM as identifier
 - name: 'DUM is identifier not keyword'
@@ -114,6 +133,7 @@
   py: 'DUM = "while in Latin"'
   rs:
       - 'let DUM = String::from("while in Latin");'
+  fab: 'fixum DUM = "while in Latin"'
 
 # =============================================================================
 # Types are lowercase only
@@ -126,6 +146,7 @@
   py: 'msg: str = "hello"'
   rs:
       - 'let msg: String = String::from("hello");'
+  fab: 'fixum textus msg = "hello"'
 
 - name: 'lowercase numerus type'
   input: 'fixum numerus count = 42'
@@ -133,6 +154,7 @@
   py: 'count: int = 42'
   rs:
       - 'let count: i64 = 42;'
+  fab: 'fixum numerus count = 42'
 
 - name: 'lowercase bivalens type'
   input: 'fixum bivalens flag = verum'
@@ -140,6 +162,7 @@
   py: 'flag: bool = True'
   rs:
       - 'let flag: bool = true;'
+  fab: 'fixum bivalens flag = verum'
 
 # Array syntax with lowercase types
 - name: 'lowercase array type'
@@ -148,6 +171,7 @@
   py: 'nums: list[int] = [1, 2, 3]'
   rs:
       - 'let nums: Vec<i64> = vec![1, 2, 3];'
+  fab: 'fixum numerus[] nums = [1, 2, 3]'
 
 # Map with lowercase types
 - name: 'lowercase tabula type'
@@ -155,6 +179,7 @@
   skip: [rs]
   ts: 'const scores: Map<string, number> = {};'
   py: 'scores: dict[str, int] = {}'
+  fab: 'fixum tabula<textus, numerus> scores = {}'
 
 # Set with lowercase types
 - name: 'lowercase copia type'
@@ -162,6 +187,7 @@
   skip: [rs]
   ts: 'const names: Set<string> = {};'
   py: 'names: set[str] = {}'
+  fab: 'fixum copia<textus> names = {}'
 
 # =============================================================================
 # Constants with type-like names
@@ -174,6 +200,7 @@
   py: 'TEXTUS = "text type name"'
   rs:
       - 'let TEXTUS = String::from("text type name");'
+  fab: 'fixum TEXTUS = "text type name"'
 
 # NUMERUS as constant identifier
 - name: 'NUMERUS is identifier not type'
@@ -182,6 +209,7 @@
   py: 'NUMERUS = 123'
   rs:
       - 'let NUMERUS = 123;'
+  fab: 'fixum NUMERUS = 123'
 
 # Textus (PascalCase) as identifier
 - name: 'Textus is identifier not type'
@@ -190,6 +218,7 @@
   py: 'Textus = "PascalCase"'
   rs:
       - 'let Textus = String::from("PascalCase");'
+  fab: 'fixum Textus = "PascalCase"'
 
 # =============================================================================
 # Function names can use any case
@@ -204,6 +233,9 @@
   py:
       - 'def GetUser():'
       - 'return "user"'
+  fab:
+      - 'functio GetUser() {'
+      - 'redde "user"'
 
 - name: 'SCREAMING_SNAKE function name'
   input: 'functio GET_CONFIG() { redde {} }'
@@ -214,6 +246,9 @@
   py:
       - 'def GET_CONFIG():'
       - 'return {}'
+  fab:
+      - 'functio GET_CONFIG() {'
+      - 'redde {}'
 
 # =============================================================================
 # Operators are lowercase only
@@ -230,6 +265,9 @@
   rs:
       - 'let result'
       - 'true && false'
+  fab:
+      - 'fixum result'
+      - 'verum && falsum'
 
 - name: 'lowercase aut operator'
   input: 'fixum result = verum aut falsum'
@@ -242,6 +280,9 @@
   rs:
       - 'let result'
       - 'true || false'
+  fab:
+      - 'fixum result'
+      - 'verum || falsum'
 
 - name: 'lowercase non operator'
   input: 'fixum result = non verum'
@@ -249,3 +290,4 @@
   py: 'result = not True'
   rs:
       - 'let result = !true;'
+  fab: 'fixum result = non verum'

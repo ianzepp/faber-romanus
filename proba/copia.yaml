@@ -18,6 +18,9 @@
       - '.adde(5)'
   ts:
       - '.add('
+  fab:
+      - 'varia copia<numerus> set = {}'
+      - 'set.adde(5)'
 
 # habet checks if element exists in set
 - name: 'habet -> contains'
@@ -31,6 +34,9 @@
       - '.habet(5)'
   ts:
       - '.has('
+  fab:
+      - 'fixum copia<numerus> set = {}'
+      - 'set.habet(5)'
 
 # dele removes an element from the set
 - name: 'dele -> erase'
@@ -44,6 +50,9 @@
       - '.dele(5)'
   ts:
       - '.delete('
+  fab:
+      - 'varia copia<numerus> set = {}'
+      - 'set.dele(5)'
 
 # longitudo returns the number of elements
 - name: 'longitudo -> size'
@@ -57,6 +66,9 @@
       - '.longitudo()'
   ts:
       - '.size'
+  fab:
+      - 'fixum copia<numerus> set = {}'
+      - 'set.longitudo()'
 
 # vacua checks if the set is empty
 - name: 'vacua -> empty'
@@ -70,6 +82,9 @@
       - '.vacua()'
   ts:
       - '.size === 0'
+  fab:
+      - 'fixum copia<numerus> set = {}'
+      - 'set.vacua()'
 
 # purga clears the entire set
 - name: 'purga -> clear'
@@ -83,6 +98,9 @@
       - '.purga()'
   ts:
       - '.clear('
+  fab:
+      - 'varia copia<numerus> set = {}'
+      - 'set.purga()'
 
 # =============================================================================
 # Set Operations
@@ -102,6 +120,10 @@
       - '.unio(setB)'
   ts:
       - '[...'
+  fab:
+      - 'fixum copia<numerus> setA = {}'
+      - 'fixum copia<numerus> setB = {}'
+      - 'setA.unio(setB)'
 
 # intersectio returns the intersection of two sets
 - name: 'intersectio -> set intersection'
@@ -117,6 +139,10 @@
       - '.intersectio(setB)'
   ts:
       - '.filter('
+  fab:
+      - 'fixum copia<numerus> setA = {}'
+      - 'fixum copia<numerus> setB = {}'
+      - 'setA.intersectio(setB)'
 
 # differentia returns elements in A but not in B
 - name: 'differentia -> set difference'
@@ -132,6 +158,10 @@
       - '.differentia(setB)'
   ts:
       - '.filter('
+  fab:
+      - 'fixum copia<numerus> setA = {}'
+      - 'fixum copia<numerus> setB = {}'
+      - 'setA.differentia(setB)'
 
 # symmetrica returns elements in either set but not both
 - name: 'symmetrica -> symmetric difference'
@@ -147,6 +177,10 @@
       - '.symmetrica(setB)'
   ts:
       - '.filter('
+  fab:
+      - 'fixum copia<numerus> setA = {}'
+      - 'fixum copia<numerus> setB = {}'
+      - 'setA.symmetrica(setB)'
 
 # =============================================================================
 # Predicates
@@ -166,6 +200,10 @@
       - '.subcopia(setB)'
   ts:
       - '.every('
+  fab:
+      - 'fixum copia<numerus> setA = {}'
+      - 'fixum copia<numerus> setB = {}'
+      - 'setA.subcopia(setB)'
 
 # supercopia checks if A is a superset of B
 - name: 'supercopia -> all_of reversed'
@@ -180,6 +218,10 @@
       - '.supercopia(setB)'
   ts:
       - '.every('
+  fab:
+      - 'fixum copia<numerus> setA = {}'
+      - 'fixum copia<numerus> setB = {}'
+      - 'setA.supercopia(setB)'
 
 # =============================================================================
 # Conversions
@@ -197,6 +239,9 @@
       - '.inLista()'
   ts:
       - '[...'
+  fab:
+      - 'fixum copia<numerus> set = {}'
+      - 'set.inLista()'
 
 # =============================================================================
 # Iteration
@@ -214,3 +259,6 @@
       - '.perambula(|x|'
   ts:
       - '.forEach('
+  fab:
+      - 'fixum copia<numerus> set = {}'
+      - 'set.perambula(pro x { scribe x })'

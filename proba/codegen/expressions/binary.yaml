@@ -12,6 +12,8 @@
           - '(1 + 2)'
       zig:
           - '(1 + 2)'
+      fab:
+          - '1 + 2'
 
 - name: subtraction
   faber: 5 - 3
@@ -24,6 +26,8 @@
           - '(5 - 3)'
       zig:
           - '(5 - 3)'
+      fab:
+          - '5 - 3'
 
 - name: multiplication
   faber: 4 * 2
@@ -36,6 +40,8 @@
           - '(4 * 2)'
       zig:
           - '(4 * 2)'
+      fab:
+          - '4 * 2'
 
 - name: division
   faber: 10 / 2
@@ -48,6 +54,8 @@
           - '(10 / 2)'
       zig:
           - '@divTrunc(10, 2)'
+      fab:
+          - '10 / 2'
 
 - name: equality comparison
   faber: a == b
@@ -58,6 +66,8 @@
           - '(a == b);'
       cpp:
           - '(a == b)'
+      fab:
+          - 'a == b'
 
 - name: logical and with et
   faber: a et b
@@ -70,6 +80,8 @@
           - '(a && b)'
       zig:
           - '(a and b)'
+      fab:
+          - 'a && b'
 
 - name: operator precedence - multiplication before addition
   faber: 1 + 2 * 3
@@ -82,6 +94,8 @@
           - '(1 + (2 * 3))'
       zig:
           - '(1 + (2 * 3))'
+      fab:
+          - '1 + 2 * 3'
 
 - name: operator precedence with parentheses
   faber: (1 + 2) * 3
@@ -94,6 +108,8 @@
           - '((1 + 2) * 3)'
       zig:
           - '((1 + 2) * 3)'
+      fab:
+          - '(1 + 2) * 3'
 
 - name: logical aut (OR) operator
   faber: a aut b
@@ -106,6 +122,8 @@
           - '(a || b)'
       zig:
           - '(a or b)'
+      fab:
+          - 'a || b'
 
 - name: inequality comparison
   faber: a != b
@@ -118,6 +136,8 @@
           - '(a != b)'
       zig:
           - '(a != b)'
+      fab:
+          - 'a != b'
 
 - name: less than or equal
   faber: a <= b
@@ -130,6 +150,8 @@
           - '(a <= b)'
       zig:
           - '(a <= b)'
+      fab:
+          - 'a <= b'
 
 - name: greater than or equal
   faber: a >= b
@@ -142,6 +164,8 @@
           - '(a >= b)'
       zig:
           - '(a >= b)'
+      fab:
+          - 'a >= b'
 
 - name: mixed logical operators (precedence)
   faber: a et b aut c
@@ -154,6 +178,8 @@
           - '((a && b) || c)'
       zig:
           - '((a and b) or c)'
+      fab:
+          - 'a && b || c'
 
 - name: chained comparisons pattern
   faber: a < b et b < c
@@ -166,6 +192,8 @@
           - '((a < b) && (b < c))'
       zig:
           - '((a < b) and (b < c))'
+      fab:
+          - 'a < b && b < c'
 
 - name: deeply nested binary expressions
   faber: ((a + b) * (c - d)) / ((e + f) - (g * h))
@@ -178,6 +206,8 @@
           - '(((a + b) * (c - d)) / ((e + f) - (g * h)))'
       zig:
           - '@divTrunc(((a + b) * (c - d)), ((e + f) - (g * h)))'
+      fab:
+          - '(a + b) * (c - d) / ((e + f) - g * h)'
 
 # WHY: String concat with + is intentionally unsupported for Zig target.
 #      Users should use scriptum() for formatted strings instead.
@@ -192,6 +222,8 @@
           - '((String::from("hello") + String::from(" ")) + String::from("world"));'
       cpp:
           - '((std::string("hello") + std::string(" ")) + std::string("world"))'
+      fab:
+          - '"hello" + " " + "world"'
 
 - name: modulo operator
   faber: 10 % 3
@@ -204,6 +236,8 @@
           - '(10 % 3)'
       zig:
           - '@mod(10, 3)'
+      fab:
+          - '10 % 3'
 
 - name: nullish coalescing (vel)
   faber: value vel defaultValue
@@ -216,3 +250,5 @@
           - '(value != nullptr ? value : defaultValue)'
       zig:
           - '(value orelse defaultValue)'
+      fab:
+          - 'value ?? defaultValue'

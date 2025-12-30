@@ -31,6 +31,9 @@
       zig:
           - 'for (items) |item|'
           - 'process(item);'
+      fab:
+          - 'ex items pro item'
+          - 'process(item)'
 
 # =============================================================================
 # Range Loops
@@ -54,6 +57,9 @@
           - 'std::print'
       zig:
           - 'for (0..10) |i|'
+      fab:
+          - 'ex 0..10 pro i'
+          - 'scribe i'
 
 # Inclusive range (0 usque 10 means 0-10)
 - name: inclusive range loop
@@ -73,6 +79,9 @@
           - 'std::print'
       zig:
           - 'for (0..10 + 1) |i|'
+      fab:
+          - 'ex 0 usque 10 pro i'
+          - 'scribe i'
 
 # Range with step
 - name: range loop with step
@@ -92,6 +101,9 @@
       zig:
           - 'var i: usize = 0;'
           - 'while (i < 10) : (i += 2)'
+      fab:
+          - 'ex 0..10 per 2 pro i'
+          - 'scribe i'
 
 # =============================================================================
 # Async Iteration (fiet)
@@ -116,6 +128,9 @@
       zig:
           - 'for (stream) |chunk|'
           - 'process(chunk);'
+      fab:
+          - 'ex stream fiet chunk'
+          - 'process(chunk)'
 
 # =============================================================================
 # Break and Continue in Loops
@@ -148,6 +163,10 @@
           - 'for (items) |item|'
           - 'if (done)'
           - 'break;'
+      fab:
+          - 'ex items pro item'
+          - 'si done'
+          - 'rumpe'
 
 # Loop with continue
 - name: loop with continue
@@ -182,6 +201,11 @@
           - 'if (skip)'
           - 'continue;'
           - 'process(item);'
+      fab:
+          - 'ex items pro item'
+          - 'si skip'
+          - 'perge'
+          - 'process(item)'
 
 # =============================================================================
 # Edge Cases
@@ -197,6 +221,9 @@
       py:
           - 'for char in "hello":'
           - 'print(char)'
+      fab:
+          - 'ex "hello" pro char'
+          - 'scribe char'
 
 # Nested iteration (2 levels)
 - name: nested iteration
@@ -215,6 +242,10 @@
           - 'for a in outer:'
           - 'for b in inner:'
           - 'process(a, b)'
+      fab:
+          - 'ex outer pro a'
+          - 'ex inner pro b'
+          - 'process(a, b)'
 
 # Iterate with descending range
 - name: descending range loop
@@ -226,6 +257,9 @@
       py:
           - 'for i in range(10, 0, -1):'
           - 'print(i)'
+      fab:
+          - 'ex 10..0 per -1 pro i'
+          - 'scribe i'
 
 # Iterate over member expression
 - name: iterate over member expression
@@ -237,6 +271,9 @@
       py:
           - 'for item in obj.items:'
           - 'process(item)'
+      fab:
+          - 'ex obj.items pro item'
+          - 'process(item)'
 
 # Iterate over function result
 - name: iterate over function result
@@ -247,6 +284,9 @@
           - 'process(item)'
       py:
           - 'for item in getItems():'
+          - 'process(item)'
+      fab:
+          - 'ex getItems() pro item'
           - 'process(item)'
 
 # Iteration with rumpe in nested loop
@@ -268,6 +308,11 @@
           - 'for b in inner:'
           - 'if found:'
           - 'break'
+      fab:
+          - 'ex outer pro a'
+          - 'ex inner pro b'
+          - 'si found'
+          - 'rumpe'
 
 # Iteration with perge (continue with condition)
 - name: continue with condition
@@ -283,6 +328,11 @@
           - 'if item.skip:'
           - 'continue'
           - 'process(item)'
+      fab:
+          - 'ex items pro item'
+          - 'si item.skip'
+          - 'perge'
+          - 'process(item)'
 
 # Empty range iteration
 - name: empty range iteration
@@ -294,6 +344,9 @@
       py:
           - 'for i in range(5, 5):'
           - 'print(i)'
+      fab:
+          - 'ex 5..5 pro i'
+          - 'scribe i'
 
 # Large range iteration
 - name: large range iteration
@@ -304,4 +357,7 @@
           - 'process(i)'
       py:
           - 'for i in range(0, 1000):'
+          - 'process(i)'
+      fab:
+          - 'ex 0..1000 pro i'
           - 'process(i)'

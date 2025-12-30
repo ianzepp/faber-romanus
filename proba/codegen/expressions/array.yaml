@@ -12,6 +12,8 @@
           - 'const auto arr = {};'
       zig:
           - 'const arr = .{};'
+      fab:
+          - 'fixum arr = []'
 
 - name: array with elements
   faber: fixum nums = [1, 2, 3]
@@ -24,6 +26,8 @@
           - 'const auto nums = std::vector{1, 2, 3};'
       zig:
           - '.{ 1, 2, 3 }'
+      fab:
+          - 'fixum nums = [1, 2, 3]'
 
 - name: array with string elements
   faber: fixum names = ["a", "b", "c"]
@@ -36,6 +40,8 @@
           - 'std::vector{std::string("a"), std::string("b"), std::string("c")}'
       zig:
           - '.{ "a", "b", "c" }'
+      fab:
+          - 'fixum names = ["a", "b", "c"]'
 
 - name: spread in array
   faber: fixum combined = [sparge a, sparge b]
@@ -47,6 +53,10 @@
       cpp:
           # TODO: C++ spread is broken - should expand a and b into combined
           - 'const auto combined = {};'
+      fab:
+          - 'fixum combined = ['
+          - '...a'
+          - '...b'
 
 - name: deeply nested arrays (3 levels)
   faber: fixum matrix = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
@@ -59,6 +69,8 @@
           - 'const auto matrix = std::vector{std::vector{std::vector{1, 2}, std::vector{3, 4}}, std::vector{std::vector{5, 6}, std::vector{7, 8}}};'
       zig:
           - '.{ .{ .{ 1, 2 }, .{ 3, 4 } }, .{ .{ 5, 6 }, .{ 7, 8 } } }'
+      fab:
+          - 'fixum matrix = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]'
 
 - name: single element array
   faber: fixum single = [42]
@@ -71,6 +83,8 @@
           - 'const auto single = std::vector{42};'
       zig:
           - '.{ 42 }'
+      fab:
+          - 'fixum single = [42]'
 
 - name: spread in middle of array
   faber: fixum arr = [1, sparge middle, 2]
@@ -84,6 +98,9 @@
           - 'const auto arr = {};'
       zig:
           - '.{ 1, middle, 2 }'
+      fab:
+          - 'fixum arr = ['
+          - '...middle'
 
 - name: spread with function call
   faber: fixum arr = [sparge getItems(), 99]
@@ -97,6 +114,10 @@
           - 'const auto arr = {};'
       zig:
           - '.{ getItems(), 99 }'
+      fab:
+          - 'fixum arr = ['
+          - '...getItems()'
+          - '99'
 
 - name: mixed types in array
   faber: fixum mixed = [1, "text", verum, nihil]
@@ -104,6 +125,8 @@
   expect:
       ts: 'const mixed = [1, "text", true, null];'
       py: 'mixed = [1, "text", True, None]'
+      fab:
+          - 'fixum mixed = [1, "text", verum, nihil]'
 
 - name: array with trailing comma
   faber: fixum arr = [1, 2, 3,]
@@ -116,6 +139,8 @@
           - 'const auto arr = std::vector{1, 2, 3};'
       zig:
           - '.{ 1, 2, 3 }'
+      fab:
+          - 'fixum arr = [1, 2, 3]'
 
 - name: nested spread
   faber: fixum arr = [[sparge inner], outer]
@@ -129,6 +154,10 @@
           - 'const auto arr = {};'
       zig:
           - '.{ .{ inner }, outer }'
+      fab:
+          - 'fixum arr = ['
+          - '[...inner]'
+          - 'outer'
 
 - name: array of arrays
   faber: fixum grid = [[1, 2], [3, 4], [5, 6]]
@@ -141,6 +170,8 @@
           - 'const auto grid = std::vector{std::vector{1, 2}, std::vector{3, 4}, std::vector{5, 6}};'
       zig:
           - '.{ .{ 1, 2 }, .{ 3, 4 }, .{ 5, 6 } }'
+      fab:
+          - 'fixum grid = [[1, 2], [3, 4], [5, 6]]'
 
 - name: large array (many elements)
   faber: fixum nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -153,3 +184,5 @@
           - 'const auto nums = std::vector{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};'
       zig:
           - '.{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }'
+      fab:
+          - 'fixum nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]'

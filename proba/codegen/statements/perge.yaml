@@ -22,6 +22,8 @@
           - 'continue;'
       zig:
           - 'continue;'
+      fab:
+          - 'perge'
 
 # Continue in loop context
 - name: continue in while loop
@@ -52,3 +54,7 @@
           - 'while (true)'
           - 'if ((x < 0))'
           - 'continue;'
+      fab:
+          - 'dum verum'
+          - 'si x < 0'
+          - 'perge'

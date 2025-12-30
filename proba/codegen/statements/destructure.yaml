@@ -31,6 +31,8 @@
           - 'const _tmp = persona;'
           - 'const nomen = _tmp.nomen;'
           - 'const aetas = _tmp.aetas;'
+      fab:
+          - 'ex persona fixum nomen, aetas'
 
 # Mutable destructuring
 - name: extract with mutable binding
@@ -52,6 +54,8 @@
           - 'const _tmp = config;'
           - 'var host = _tmp.host;'
           - 'var port = _tmp.port;'
+      fab:
+          - 'ex config varia host, port'
 
 # =============================================================================
 # Destructuring with Aliases (ut)
@@ -77,6 +81,8 @@
           - 'const _tmp = persona;'
           - 'const n = _tmp.nomen;'
           - 'const a = _tmp.aetas;'
+      fab:
+          - 'ex persona fixum nomen ut n, aetas ut a'
 
 # =============================================================================
 # Destructuring with Rest (ceteri)
@@ -102,6 +108,8 @@
           - 'const _tmp = config;'
           - 'const host = _tmp.host;'
           - '// ceteri (rest) not supported in Zig: rest'
+      fab:
+          - 'ex config fixum host, ceteri rest'
 
 # =============================================================================
 # Async Destructuring (figendum/variandum)
@@ -127,6 +135,8 @@
           - 'const _tmp = fetchUser();'
           - 'const nomen = _tmp.nomen;'
           - 'const email = _tmp.email;'
+      fab:
+          - 'ex fetchUser() figendum nomen, email'
 
 # Async mutable destructuring
 - name: async destructuring with variandum
@@ -148,6 +158,8 @@
           - 'const _tmp = getConfig();'
           - 'var host = _tmp.host;'
           - 'var port = _tmp.port;'
+      fab:
+          - 'ex getConfig() variandum host, port'
 
 # =============================================================================
 # Edge Cases
@@ -169,6 +181,8 @@
       zig:
           - 'const _tmp = obj;'
           - 'const singleField = _tmp.singleField;'
+      fab:
+          - 'ex obj fixum singleField'
 
 # Destructure from nested access
 - name: destructure from nested access
@@ -190,6 +204,8 @@
           - 'const _tmp = response.data.user;'
           - 'const name = _tmp.name;'
           - 'const email = _tmp.email;'
+      fab:
+          - 'ex response.data.user fixum name, email'
 
 # Destructure function result
 - name: destructure function result
@@ -211,6 +227,8 @@
           - 'const _tmp = getConfig();'
           - 'const host = _tmp.host;'
           - 'const port = _tmp.port;'
+      fab:
+          - 'ex getConfig() fixum host, port'
 
 # Mixed alias and regular
 - name: mixed alias and regular fields
@@ -236,6 +254,8 @@
           - 'const a = _tmp.a;'
           - 'const bee = _tmp.b;'
           - 'const c = _tmp.c;'
+      fab:
+          - 'ex obj fixum a, b ut bee, c'
 
 # Destructure from computed access
 - name: destructure from computed access
@@ -257,6 +277,8 @@
           - 'const _tmp = objects[0];'
           - 'const id = _tmp.id;'
           - 'const name = _tmp.name;'
+      fab:
+          - 'ex objects[0] fixum id, name'
 
 # Destructure with rest and alias
 - name: destructure with rest and alias
@@ -278,6 +300,8 @@
           - 'const _tmp = obj;'
           - 'const f = _tmp.first;'
           - '// ceteri (rest) not supported in Zig: rest'
+      fab:
+          - 'ex obj fixum first ut f, ceteri rest'
 
 # Destructure many fields (5+)
 - name: destructure many fields
@@ -311,6 +335,8 @@
           - 'const c = _tmp.c;'
           - 'const d = _tmp.d;'
           - 'const e = _tmp.e;'
+      fab:
+          - 'ex config fixum a, b, c, d, e'
 
 # Mutable destructure with alias
 - name: mutable destructure with alias
@@ -332,3 +358,5 @@
           - 'const _tmp = obj;'
           - 'var ex = _tmp.x;'
           - 'var why = _tmp.y;'
+      fab:
+          - 'ex obj varia x ut ex, y ut why'

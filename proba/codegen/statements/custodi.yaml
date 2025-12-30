@@ -36,6 +36,10 @@
       zig:
           - 'if ((x == null))'
           - 'return;'
+      fab:
+          - 'custodi {'
+          - 'si x == nihil { redde }'
+          - '}'
 
 # Multiple guard clauses
 - name: multiple guard clauses
@@ -70,6 +74,11 @@
           - 'return null;'
           - 'if ((user.age < 0))'
           - 'return error.InvalidAge;'
+      fab:
+          - 'custodi {'
+          - 'si user == nihil { redde nihil }'
+          - 'si user.age < 0 { iace "Invalid age" }'
+          - '}'
 
 # =============================================================================
 # Guard with Complex Conditions
@@ -97,6 +106,10 @@
       zig:
           - 'if (((x < 0) or (x > 100)))'
           - 'return false;'
+      fab:
+          - 'custodi {'
+          - 'si x < 0 aut x > 100 { redde falsum }'
+          - '}'
 
 # Guard with method call
 - name: guard with method call
@@ -120,6 +133,10 @@
       zig:
           - 'if (!isValid(data))'
           - 'return;'
+      fab:
+          - 'custodi {'
+          - 'si non isValid(data) { redde }'
+          - '}'
 
 # =============================================================================
 # Guard with Different Exit Strategies
@@ -147,6 +164,10 @@
       zig:
           - 'if ((count < 1))'
           - 'return error.CountMustBePositive;'
+      fab:
+          - 'custodi {'
+          - 'si count < 1 { iace "Count must be positive" }'
+          - '}'
 
 # Guard with continue
 - name: guard with continue in loop
@@ -183,6 +204,13 @@
           - 'if (skip)'
           - 'continue;'
           - 'process();'
+      fab:
+          - 'dum verum {'
+          - 'custodi {'
+          - 'si skip { perge }'
+          - '}'
+          - 'process()'
+          - '}'
 
 # =============================================================================
 # Multiple Statements in Guard Body
@@ -224,6 +252,14 @@
           - 'std.debug.print("[WARN] {s}\n", .{ "Error occurred" });'
           - 'cleanup();'
           - 'return null;'
+      fab:
+          - 'custodi {'
+          - 'si error {'
+          - 'mone "Error occurred"'
+          - 'cleanup()'
+          - 'redde nihil'
+          - '}'
+          - '}'
 
 # =============================================================================
 # Edge Cases
@@ -247,6 +283,10 @@
           - 'if (dangerous) {}'
       zig:
           - 'if (dangerous) {}'
+      fab:
+          - 'custodi {'
+          - 'si dangerous { }'
+          - '}'
 
 # Three guards in sequence
 - name: three sequential guards
@@ -292,6 +332,12 @@
           - 'return 2;'
           - 'if (c)'
           - 'return 3;'
+      fab:
+          - 'custodi {'
+          - 'si a { redde 1 }'
+          - 'si b { redde 2 }'
+          - 'si c { redde 3 }'
+          - '}'
 
 # Guard with type check using non est
 - name: guard with type check
@@ -306,6 +352,10 @@
       py:
           - 'if not isinstance(user, AuthenticatedUser):'
           - 'return None'
+      fab:
+          - 'custodi {'
+          - 'si user non est AuthenticatedUser { redde nihil }'
+          - '}'
 
 # Guard with rumpe (break) in loop context
 - name: guard with rumpe in loop
@@ -327,6 +377,13 @@
           - 'if (item == None):'
           - 'break'
           - 'process(item)'
+      fab:
+          - 'ex items pro item {'
+          - 'custodi {'
+          - 'si item == nihil { rumpe }'
+          - '}'
+          - 'process(item)'
+          - '}'
 
 # Deeply nested null checks (3 levels)
 - name: deeply nested null checks
@@ -351,6 +408,12 @@
           - 'return'
           - 'if (x.data.value == None):'
           - 'return'
+      fab:
+          - 'custodi {'
+          - 'si x == nihil { redde }'
+          - 'si x.data == nihil { redde }'
+          - 'si x.data.value == nihil { redde }'
+          - '}'
 
 # Guard with multiple conditions per guard
 - name: guard with multiple conditions
@@ -365,6 +428,10 @@
       py:
           - 'if ((a == None) or (b == None)):'
           - 'return'
+      fab:
+          - 'custodi {'
+          - 'si a == nihil aut b == nihil { redde }'
+          - '}'
 
 # Guard with function call condition
 - name: guard with function call condition
@@ -379,6 +446,10 @@
       py:
           - 'if not isValid(input):'
           - 'return None'
+      fab:
+          - 'custodi {'
+          - 'si non isValid(input) { redde nihil }'
+          - '}'
 
 # Guard at start of function
 - name: guard at start of function
@@ -405,3 +476,11 @@
           - 'if (len(input) == 0):'
           - 'return None'
           - 'return input'
+      fab:
+          - 'functio validate(textus input) fit textus? {'
+          - 'custodi {'
+          - 'si input == nihil { redde nihil }'
+          - 'si input.length == 0 { redde nihil }'
+          - '}'
+          - 'redde input'
+          - '}'

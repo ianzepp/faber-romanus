@@ -32,6 +32,9 @@
       rs:
           - '// setup_each:'
           - 'lexer = init();'
+      fab:
+          - 'cura ante {'
+          - 'lexer = init()'
   skip: [py, cpp, zig]
 
 # cura ante omnia becomes beforeAll in TS
@@ -47,6 +50,9 @@
       rs:
           - '// setup_all:'
           - 'db = connect();'
+      fab:
+          - 'cura ante omnia {'
+          - 'db = connect()'
   skip: [py, cpp, zig]
 
 # cura post becomes afterEach in TS
@@ -62,6 +68,9 @@
       rs:
           - '// teardown_each:'
           - 'cleanup();'
+      fab:
+          - 'cura post {'
+          - 'cleanup()'
   skip: [py, cpp, zig]
 
 # cura post omnia becomes afterAll in TS
@@ -77,6 +86,9 @@
       rs:
           - '// teardown_all:'
           - 'db.close();'
+      fab:
+          - 'cura post omnia {'
+          - 'db.close()'
   skip: [py, cpp, zig]
 
 # Multiple statements in hook body
@@ -97,6 +109,11 @@
           - '// setup_each:'
           - 'let mut lexer = Lexer::new();'
           - 'lexer.init();'
+      fab:
+          - 'cura ante {'
+          - 'varia lexer = novum Lexer()'
+          - 'lexer.init()'
+          - 'scribe "ready"'
   skip: [py, cpp, zig]
 
 # =============================================================================
@@ -128,6 +145,9 @@
           - 'const fd = aperi("file.txt");'
           - 'defer fd.solve();'
           - 'lege(fd);'
+      fab:
+          - 'cura aperi("file.txt") fit fd {'
+          - 'lege(fd)'
   skip: [py, cpp]
 
 # Async resource with fiet
@@ -151,6 +171,9 @@
       zig:
           - 'const conn = try connect(url);'
           - 'defer conn.solve();'
+      fab:
+          - 'cura connect(url) fiet conn {'
+          - 'cede conn.query(sql)'
   skip: [py, cpp]
 
 # Resource with catch clause
@@ -180,6 +203,11 @@
           - 'const r = resource();'
           - 'defer r.solve();'
           - 'use(r);'
+      fab:
+          - 'cura resource() fit r {'
+          - 'use(r)'
+          - 'cape err {'
+          - 'handleError(err)'
   skip: [py, cpp]
 
 # Nested resource management
@@ -212,6 +240,10 @@
           - 'const outFile = openFile("output.txt");'
           - 'defer outFile.solve();'
           - 'copy(inFile, outFile);'
+      fab:
+          - 'cura openFile("input.txt") fit inFile {'
+          - 'cura openFile("output.txt") fit outFile {'
+          - 'copy(inFile, outFile)'
   skip: [py, cpp]
 
 # Multiple statements in resource body
@@ -242,6 +274,11 @@
           - 'defer guard.solve();'
           - 'counter += 1;'
           - 'return counter;'
+      fab:
+          - 'cura mutex.lock() fit guard {'
+          - 'counter += 1'
+          - 'scribe counter'
+          - 'redde counter'
   skip: [py, cpp]
 
 # Resource with complex expression
@@ -264,6 +301,9 @@
       zig:
           - 'defer db.solve();'
           - 'db.init();'
+      fab:
+          - 'cura novum Database(config.url) fit db {'
+          - 'db.init()'
   skip: [py, cpp]
 
 # Empty resource body
@@ -281,6 +321,8 @@
       zig:
           - 'const r = getResource();'
           - 'defer r.solve();'
+      fab:
+          - 'cura getResource() fit r {'
   skip: [py, cpp]
 
 # Async resource with catch and multiple operations
@@ -318,6 +360,14 @@
           - 'defer handle.solve();'
           - 'process(data);'
           - 'return data;'
+      fab:
+          - 'cura acquire(lock) fiet handle {'
+          - 'varia data = cede fetch()'
+          - 'process(data)'
+          - 'redde data'
+          - 'cape err {'
+          - 'mone "Failed:", err'
+          - 'iace err'
   skip: [py, cpp]
 
 # =============================================================================
@@ -342,6 +392,10 @@
           - 'var mem_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);'
           - 'defer mem_arena.deinit();'
           - 'const mem = mem_arena.allocator();'
+      fab:
+          - 'cura arena fit mem {'
+          - 'varia x = 42'
+          - 'process(x)'
   skip: [py, cpp]
 
 # Page allocator - TS/RS strip it (GC), Zig emits page_allocator
@@ -358,6 +412,9 @@
       zig:
           - 'const mem = std.heap.page_allocator;'
           - 'const buffer = allocate(1024);'
+      fab:
+          - 'cura page fit mem {'
+          - 'fixum buffer = allocate(1024)'
   skip: [py, cpp]
 
 # Nested arena blocks
@@ -390,6 +447,13 @@
           - 'var inner_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);'
           - 'defer inner_arena.deinit();'
           - 'const inner = inner_arena.allocator();'
+      fab:
+          - 'cura arena fit outer {'
+          - 'varia a = 1'
+          - 'process(a)'
+          - 'cura arena fit inner {'
+          - 'varia b = 2'
+          - 'process(b)'
   skip: [py, cpp]
 
 # Arena with pro binding (neutral)
@@ -408,4 +472,7 @@
           - 'defer alloc_arena.deinit();'
           - 'const alloc = alloc_arena.allocator();'
           - 'process(alloc);'
+      fab:
+          - 'cura arena pro alloc {'
+          - 'process(alloc)'
   skip: [py, cpp]

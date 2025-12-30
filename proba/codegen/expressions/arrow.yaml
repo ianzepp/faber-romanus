@@ -12,6 +12,8 @@
           - '[&](auto x) { return x; }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x): x'
 
 - name: arrow with expression body
   faber: (x) => x + 1
@@ -24,6 +26,8 @@
           - '[&](auto x) { return (x + 1); }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x): x + 1'
 
 - name: arrow with multiple params
   faber: (x, y) => x + y
@@ -36,6 +40,8 @@
           - '[&](auto x, auto y) { return (x + y); }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x, y): x + y'
 
 - name: arrow with block body
   faber: |
@@ -53,6 +59,9 @@
           - 'return (x * 2);'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x) {'
+          - 'redde x * 2'
 
 - name: arrow with no params
   faber: () => 42
@@ -65,6 +74,8 @@
           - '[&]() { return 42; }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (): 42'
 
 - name: arrow returning arrow (curried)
   faber: (x) => (y) => x + y
@@ -77,6 +88,8 @@
           - '[&](auto x) { return [&](auto y) { return (x + y); }; }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x): pro (y): x + y'
 
 - name: arrow with typed params
   faber: (numerus x, numerus y) => x + y
@@ -89,6 +102,8 @@
           - '[&](int64_t x, int64_t y) { return (x + y); }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (numerus x, numerus y): x + y'
 
 - name: arrow with rest param
   faber: (x, ceteri rest) => rest
@@ -101,6 +116,8 @@
           - '[&](auto x, auto rest) { return rest; }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x, ceteri rest): rest'
 
 - name: arrow with nested si block
   faber: |
@@ -126,6 +143,10 @@
           - 'return x;'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x) {'
+          - 'si x > 0 {'
+          - 'redde x'
 
 - name: arrow with member access
   faber: (obj) => obj.value
@@ -138,6 +159,8 @@
           - '[&](auto obj) { return obj.value; }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (obj): obj.value'
 
 - name: arrow with call
   faber: (x) => process(x)
@@ -150,3 +173,5 @@
           - '[&](auto x) { return process(x); }'
       zig:
           - '@compileError'
+      fab:
+          - 'pro (x): process(x)'

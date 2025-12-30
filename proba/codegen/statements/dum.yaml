@@ -28,6 +28,9 @@
           - 'std::print'
       zig:
           - 'while (true)'
+      fab:
+          - 'dum verum'
+          - 'scribe "loop"'
 
 # While with comparison
 - name: while with comparison
@@ -48,6 +51,9 @@
       zig:
           - 'while ((x > 0))'
           - 'x = x - 1;'
+      fab:
+          - 'dum x > 0'
+          - 'x = x - 1'
 
 # While with variable test
 - name: while with variable condition
@@ -68,6 +74,9 @@
       zig:
           - 'while (running)'
           - 'process();'
+      fab:
+          - 'dum running'
+          - 'process()'
 
 # =============================================================================
 # While with Break/Continue
@@ -100,6 +109,10 @@
           - 'while (true)'
           - 'if (done)'
           - 'break;'
+      fab:
+          - 'dum verum'
+          - 'si done'
+          - 'rumpe'
 
 # While with continue
 - name: while with continue
@@ -134,6 +147,11 @@
           - 'if (skip)'
           - 'continue;'
           - 'work();'
+      fab:
+          - 'dum running'
+          - 'si skip'
+          - 'perge'
+          - 'work()'
 
 # =============================================================================
 # While with Catch Clause (TypeScript/Python only)
@@ -169,6 +187,11 @@
       zig:
           - 'while (hasNext())'
           - 'processItem();'
+      fab:
+          - 'dum hasNext()'
+          - 'processItem()'
+          - 'cape err'
+          - 'handleError(err)'
 
 # =============================================================================
 # Edge Cases
@@ -197,6 +220,11 @@
           - 'process();'
           - 'if done'
           - 'break;'
+      fab:
+          - 'dum verum'
+          - 'process()'
+          - 'si done'
+          - 'rumpe'
 
 # While with iterator pattern
 - name: while with iterator pattern
@@ -211,6 +239,9 @@
       rs:
           - 'while iterator.hasNext()'
           - 'process(iterator.next());'
+      fab:
+          - 'dum iterator.hasNext()'
+          - 'process(iterator.next())'
 
 # Nested while loops
 - name: nested while loops
@@ -241,6 +272,12 @@
           - 'process();'
           - 'y = y - 1;'
           - 'x = x - 1;'
+      fab:
+          - 'dum x > 0'
+          - 'dum y > 0'
+          - 'process()'
+          - 'y = y - 1'
+          - 'x = x - 1'
 
 # While with multiple conditions
 - name: while with multiple conditions
@@ -255,6 +292,9 @@
       rs:
           - 'while ((x > 0) && (y < 100))'
           - 'process();'
+      fab:
+          - 'dum x > 0 et y < 100'
+          - 'process()'
 
 # While with method call condition
 - name: while with method call condition
@@ -269,6 +309,9 @@
       rs:
           - 'while queue.nonEmpty()'
           - 'process(queue.pop());'
+      fab:
+          - 'dum queue.nonEmpty()'
+          - 'process(queue.pop())'
 
 # While with decrement (countdown pattern)
 - name: while with decrement
@@ -290,6 +333,10 @@
           - 'while (count > 0)'
           - 'println!("{}", count)'
           - 'count = count - 1;'
+      fab:
+          - 'dum count > 0'
+          - 'scribe count'
+          - 'count = count - 1'
 
 # While with perge and rumpe together
 - name: while with perge and rumpe together
@@ -321,6 +368,13 @@
           - 'if done'
           - 'break;'
           - 'process();'
+      fab:
+          - 'dum verum'
+          - 'si skip'
+          - 'perge'
+          - 'si done'
+          - 'rumpe'
+          - 'process()'
 
 # Empty while body
 - name: empty while body
@@ -332,3 +386,5 @@
           - 'while condition:'
       rs:
           - 'while condition'
+      fab:
+          - 'dum condition'

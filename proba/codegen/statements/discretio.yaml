@@ -48,6 +48,11 @@
           - 'active,'
           - 'inactive,'
           - 'pending,'
+      fab:
+          - 'discretio Status'
+          - 'Active'
+          - 'Inactive'
+          - 'Pending'
 
 # =============================================================================
 # Variants with Payloads
@@ -95,6 +100,11 @@
           - 'click: struct { x: i64, y: i64 },'
           - 'keypress: struct { key: []const u8 },'
           - 'quit,'
+      fab:
+          - 'discretio Event'
+          - 'Click { numerus x, numerus y }'
+          - 'Keypress { textus key }'
+          - 'Quit'
 
 # =============================================================================
 # Generic Discretio
@@ -130,6 +140,10 @@
           - 'const Option = union(enum)'
           - 'some: struct { value: T },'
           - 'none,'
+      fab:
+          - 'discretio Option<T>'
+          - 'Some { T value }'
+          - 'None'
 
 # =============================================================================
 # Single Field Variant
@@ -161,6 +175,10 @@
           - 'const Result = union(enum)'
           - 'success: struct { message: []const u8 },'
           - 'failure: struct { error: []const u8 },'
+      fab:
+          - 'discretio Result'
+          - 'Success { textus message }'
+          - 'Failure { textus error }'
 
 # =============================================================================
 # Edge Cases
@@ -180,6 +198,10 @@
           - 'class Either_Right:'
           - 'value: R'
           - 'Either = Either_Left | Either_Right'
+      fab:
+          - 'discretio Either<L, R>'
+          - 'Left { L value }'
+          - 'Right { R value }'
 
 # Variant with many fields (4+)
 - name: discretio with many fields per variant
@@ -203,6 +225,10 @@
           - 'cx: int'
           - 'cy: int'
           - 'radius: int'
+      fab:
+          - 'discretio Shape'
+          - 'Rectangle { numerus x, numerus y, numerus width, numerus height }'
+          - 'Circle { numerus cx, numerus cy, numerus radius }'
 
 # Single variant only
 - name: discretio with single variant
@@ -215,6 +241,9 @@
           - 'class Wrapper_Value:'
           - 'x: int'
           - 'Wrapper = Wrapper_Value'
+      fab:
+          - 'discretio Wrapper'
+          - 'Value { numerus x }'
 
 # Mixed unit and payload variants
 - name: discretio with mixed unit and payload variants
@@ -245,6 +274,13 @@
           - 'class Message_Pong:'
           - 'class Message_Error:'
           - 'reason: str'
+      fab:
+          - 'discretio Message'
+          - 'Text { textus content }'
+          - 'Image { textus url, numerus width, numerus height }'
+          - 'Ping'
+          - 'Pong'
+          - 'Error { textus reason }'
 
 # Many variants (6+)
 - name: discretio with many variants
@@ -277,3 +313,12 @@
           - 'class Day_Saturday:'
           - 'class Day_Sunday:'
           - 'Day = Day_Monday | Day_Tuesday | Day_Wednesday | Day_Thursday | Day_Friday | Day_Saturday | Day_Sunday'
+      fab:
+          - 'discretio Day'
+          - 'Monday'
+          - 'Tuesday'
+          - 'Wednesday'
+          - 'Thursday'
+          - 'Friday'
+          - 'Saturday'
+          - 'Sunday'

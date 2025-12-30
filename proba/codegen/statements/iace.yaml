@@ -30,6 +30,8 @@
           - 'throw std::runtime_error("error occurred");'
       zig:
           - 'return error.ErrorOccurred;'
+      fab:
+          - 'iace "error occurred"'
 
 # Throw variable
 - name: throw variable
@@ -45,6 +47,8 @@
           - 'throw err;'
       zig:
           - 'return error.Err;'
+      fab:
+          - 'iace err'
 
 # =============================================================================
 # Fatal Errors (mori)
@@ -64,6 +68,8 @@
           - 'std::print(stderr, "FATAL: {}\n", "fatal error"); std::abort();'
       zig:
           - '@panic("fatal error");'
+      fab:
+          - 'mori "fatal error"'
 
 # Panic with variable
 - name: panic with variable
@@ -79,6 +85,8 @@
           - 'std::print(stderr, "FATAL: {}\n", msg); std::abort();'
       zig:
           - '@panic(msg);'
+      fab:
+          - 'mori msg'
 
 # =============================================================================
 # Edge Cases
@@ -92,6 +100,8 @@
           - 'throw new Error("message");'
       py:
           - 'raise Exception("message")'
+      fab:
+          - 'iace novum Error("message")'
 
 # Throw with template message
 - name: throw with template message
@@ -101,6 +111,8 @@
           - 'throw `Failed to process ${item.id}`;'
       py:
           - 'raise f"Failed to process {item.id}"'
+      fab:
+          - 'iace `Failed to process ${item.id}`'
 
 # Throw in conditional
 - name: throw in conditional
@@ -114,6 +126,10 @@
       py:
           - 'if (data is None):'
           - 'raise Exception("Data required")'
+      fab:
+          - 'si nihil data {'
+          - 'iace "Data required"'
+          - '}'
 
 # Panic with template
 - name: panic with template message
@@ -123,6 +139,8 @@
           - 'throw new Panic(String(`Critical failure at ${location}`));'
       py:
           - 'raise SystemExit(f"Critical failure at {location}")'
+      fab:
+          - 'mori `Critical failure at ${location}`'
 
 # Throw with variable (explicit edge case)
 - name: throw error message variable
@@ -132,6 +150,8 @@
           - 'throw errorMessage;'
       py:
           - 'raise errorMessage'
+      fab:
+          - 'iace errorMessage'
 
 # Throw with concatenated message
 - name: throw concatenated message
@@ -141,3 +161,5 @@
           - 'throw ("Error: " + message);'
       py:
           - 'raise ("Error: " + message)'
+      fab:
+          - 'iace "Error: " + message'

@@ -35,6 +35,9 @@
           # Zig prefixes module-level constants with m_
           - '// This is a comment'
           - 'const m_x = 5'
+      fab:
+          - '// This is a comment'
+          - 'fixum x = 5'
 
 # Multiple leading comments
 - name: multiple leading comments
@@ -51,6 +54,10 @@
           - '# First comment'
           - '# Second comment'
           - 'y = 10'
+      fab:
+          - '// First comment'
+          - '// Second comment'
+          - 'fixum y = 10'
 
 # =============================================================================
 # Trailing Comments
@@ -71,6 +78,8 @@
       zig:
           # Zig prefixes module-level constants with m_
           - 'const m_z = 42; // magic number'
+      fab:
+          - 'fixum z = 42 // magic number'
 
 # =============================================================================
 # Block Comments
@@ -95,6 +104,9 @@
           - '/* This is a block comment */'
       zig:
           - '// This is a block comment'
+      fab:
+          - '/* This is a block comment */'
+          - 'fixum a = 1'
 
 # =============================================================================
 # Doc Comments
@@ -117,6 +129,9 @@
               - '"""'
               - 'Greets the user'
               - 'def greet():'
+      fab:
+          - '/** Greets the user */'
+          - 'functio greet()'
 
 # =============================================================================
 # Comments in Control Structures
@@ -136,3 +151,6 @@
       py:
           - '# Check condition'
           - 'if True:'
+      fab:
+          - '// Check condition'
+          - 'si verum'

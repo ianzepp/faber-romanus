@@ -14,6 +14,8 @@
           - '{}'
       zig:
           - '.{}'
+      fab:
+          - 'fixum obj = {}'
 
 - name: object with string property
   faber: |
@@ -27,6 +29,8 @@
           - '.nomen = std::string("Marcus")'
       zig:
           - '.nomen = "Marcus"'
+      fab:
+          - 'fixum user = { nomen: "Marcus" }'
 
 - name: object with multiple properties
   faber: |
@@ -46,6 +50,8 @@
           - '.x = 1'
           - '.y = 2'
           - '.z = 3'
+      fab:
+          - 'fixum data = { x: 1, y: 2, z: 3 }'
 
 - name: object with expression values
   faber: |
@@ -66,6 +72,9 @@
       zig:
           - '.sum = (1 + 2)'
           - '.active = true'
+      fab:
+          - 'sum: 1 + 2'
+          - 'active: verum'
 
 - name: object with spread
   faber: |
@@ -76,6 +85,9 @@
       rs:
           - '..defaults'
           - 'extra: 42'
+      fab:
+          - 'sparge defaults'
+          - 'extra: 42'
 
 - name: method in object (lambda as property)
   faber: |
@@ -85,6 +97,8 @@
           - 'greet: (name) => name'
       py:
           - '"greet": lambda name: name'
+      fab:
+          - 'greet: pro name redde name'
 
 - name: deeply nested objects (4 levels)
   faber: |
@@ -92,6 +106,8 @@
   expect:
       ts: 'const deep = { a: { b: { c: { d: 1 } } } };'
       py: 'deep = {"a": {"b": {"c": {"d": 1}}}}'
+      fab:
+          - 'a: { b: { c: { d: 1 } } }'
 
 - name: multiple spreads in object
   faber: |
@@ -99,6 +115,11 @@
   expect:
       ts: 'const obj = { a: 1, ...middle, b: 2, ...end };'
       py: 'obj = {"a": 1, **middle, "b": 2, **end}'
+      fab:
+          - 'a: 1'
+          - 'sparge middle'
+          - 'b: 2'
+          - 'sparge end'
 
 - name: object with many properties (6+)
   faber: |
@@ -106,6 +127,8 @@
   expect:
       ts: 'const obj = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 };'
       py: 'obj = {"a": 1, "b": 2, "c": 3, "d": 4, "e": 5, "f": 6}'
+      fab:
+          - 'a: 1, b: 2, c: 3, d: 4, e: 5, f: 6'
 
 - name: object with arithmetic expression values
   faber: |
@@ -117,3 +140,6 @@
       py:
           - '"sum": (a + b)'
           - '"product": (a * b)'
+      fab:
+          - 'sum: a + b'
+          - 'product: a * b'

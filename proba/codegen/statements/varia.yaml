@@ -30,6 +30,8 @@
           - 'auto x = 5;'
       zig:
           - 'var x: i64 = 5;'
+      fab:
+          - 'varia x = 5'
 
 # Immutable variable without type (module-level for Zig)
 - name: immutable variable without type
@@ -45,6 +47,8 @@
           - 'const auto y = 10;'
       zig:
           - 'const m_y = 10;'
+      fab:
+          - 'fixum y = 10'
 
 # =============================================================================
 # Typed Variable Declarations
@@ -64,6 +68,8 @@
           - 'int64_t count = 0;'
       zig:
           - 'var count: i64 = 0;'
+      fab:
+          - 'varia numerus count = 0'
 
 # Immutable typed string (module-level for Zig)
 - name: immutable typed string
@@ -79,6 +85,8 @@
           - 'const std::string name = std::string("Marcus");'
       zig:
           - 'const m_name: []const u8 = "Marcus";'
+      fab:
+          - 'fixum textus name = "Marcus"'
 
 # =============================================================================
 # Async Variable Declarations (figendum/variandum)
@@ -98,6 +106,8 @@
           - 'auto data = fetchData();'
       zig:
           - 'const data = fetchData();'
+      fab:
+          - 'figendum data = fetchData()'
 
 # Mutable async binding
 - name: mutable async binding (variandum)
@@ -113,6 +123,8 @@
           - 'auto result = getResult();'
       zig:
           - 'const result = getResult();'
+      fab:
+          - 'variandum result = getResult()'
 
 # =============================================================================
 # Array Destructuring
@@ -138,6 +150,8 @@
           - 'const a = _tmp[0];'
           - 'const b = _tmp[1];'
           - 'const c = _tmp[2];'
+      fab:
+          - 'fixum [a, b, c] = coords'
 
 # Array destructuring with rest
 - name: array destructuring with rest
@@ -157,6 +171,8 @@
           - 'const _tmp = items;'
           - 'const first = _tmp[0];'
           - 'const rest = _tmp[1..];'
+      fab:
+          - 'fixum [first, ceteri rest] = items'
 
 # Array destructuring with skips
 - name: array destructuring with skips
@@ -174,6 +190,8 @@
       zig:
           - 'const _tmp = values;'
           - 'const second = _tmp[1];'
+      fab:
+          - 'fixum [_, second, _] = values'
 
 # =============================================================================
 # Variables Without Initializers
@@ -193,6 +211,8 @@
           - 'int64_t counter;'
       zig:
           - 'var counter: i64 = undefined;'
+      fab:
+          - 'varia numerus counter'
 
 # =============================================================================
 # Edge Cases
@@ -206,6 +226,8 @@
           - 'const result = items.filter(fn).map(fn2).first;'
       py:
           - 'result = items.filter(fn).map(fn2).first'
+      fab:
+          - 'fixum result = items.filter(fn).map(fn2).first'
 
 # Declaration with nullish coalescing
 - name: declaration with nullish coalescing
@@ -215,6 +237,8 @@
           - 'const name = (input ?? "default");'
       py:
           - 'name = (input if input is not None else "default")'
+      fab:
+          - 'fixum name = input vel "default"'
 
 # Destructure with many elements (5+)
 - name: destructure with many elements
@@ -224,6 +248,8 @@
           - 'const [a, b, c, d, e] = values;'
       py:
           - 'a, b, c, d, e = values'
+      fab:
+          - 'fixum [a, b, c, d, e] = values'
 
 # Declaration with spread copy (array)
 - name: declaration with array spread copy
@@ -233,6 +259,8 @@
           - 'const copy = [...original];'
       py:
           - 'copy = [*original]'
+      fab:
+          - 'fixum copy = [sparge original]'
 
 # Declaration with object spread copy
 - name: declaration with object spread copy
@@ -242,6 +270,8 @@
           - 'const copy = { ...original };'
       py:
           - 'copy = {**original}'
+      fab:
+          - 'fixum copy = { sparge original }'
 
 # Multiple declarations in sequence
 - name: multiple declarations in sequence
@@ -258,6 +288,10 @@
           - 'a = 1'
           - 'b = 2'
           - 'c = 3'
+      fab:
+          - 'fixum a = 1'
+          - 'fixum b = 2'
+          - 'fixum c = 3'
 
 # Declaration with binary expression
 - name: declaration with binary expression
@@ -267,6 +301,8 @@
           - 'const sum = ((a + b) + c);'
       py:
           - 'sum = ((a + b) + c)'
+      fab:
+          - 'fixum sum = a + b + c'
 
 # Declaration with lambda
 - name: declaration with lambda
@@ -276,6 +312,8 @@
           - 'const fn = (x) => (x * 2);'
       py:
           - 'fn = lambda x: (x * 2)'
+      fab:
+          - 'fixum fn = pro x redde x * 2'
 
 # Declaration with function call
 - name: declaration with function call
@@ -285,3 +323,5 @@
           - 'const data = fetchData();'
       py:
           - 'data = fetchData()'
+      fab:
+          - 'fixum data = fetchData()'

@@ -17,6 +17,9 @@
       - '.set('
   rs:
       - '.pone('
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.pone("key", 42)'
 
 # accipe retrieves a value by key (throws if not found)
 - name: 'accipe -> at'
@@ -29,6 +32,9 @@
       - '.get('
   rs:
       - '.accipe('
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.accipe("key")'
 
 # habet checks if key exists
 - name: 'habet -> contains'
@@ -41,6 +47,9 @@
       - '.has('
   rs:
       - '.habet('
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.habet("key")'
 
 # dele removes a key-value pair
 - name: 'dele -> erase'
@@ -53,6 +62,9 @@
       - '.delete('
   rs:
       - '.dele('
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.dele("key")'
 
 # longitudo returns the number of entries
 - name: 'longitudo -> size'
@@ -65,6 +77,9 @@
       - '.size'
   rs:
       - '.longitudo()'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.longitudo()'
 
 # vacua checks if the map is empty
 - name: 'vacua -> empty'
@@ -77,6 +92,9 @@
       - '.size === 0'
   rs:
       - '.vacua()'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.vacua()'
 
 # purga clears the entire map
 - name: 'purga -> clear'
@@ -89,6 +107,9 @@
       - '.clear('
   rs:
       - '.purga()'
+  fab:
+      - 'varia tabula<textus, numerus> map = {}'
+      - 'map.purga()'
 
 # =============================================================================
 # Iteration
@@ -105,6 +126,9 @@
       - '.keys('
   rs:
       - '.claves()'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.claves()'
 
 # valores returns a view of all values
 - name: 'valores -> views::values'
@@ -117,6 +141,9 @@
       - '.values('
   rs:
       - '.valores()'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.valores()'
 
 # =============================================================================
 # Extended Methods
@@ -134,6 +161,9 @@
       - '.get('
   rs:
       - '.accipeAut('
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.accipeAut("key", 0)'
 
 # confla merges another map into this one
 - name: 'confla -> merge maps'
@@ -147,6 +177,10 @@
       - '[...'
   rs:
       - '.confla(other)'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'fixum tabula<textus, numerus> other = {}'
+      - 'map.confla(other)'
 
 # inLista converts map entries to a vector
 - name: 'inLista -> vector from map'
@@ -159,3 +193,6 @@
       - '[...'
   rs:
       - '.inLista()'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.inLista()'

@@ -12,6 +12,8 @@
       py: 'name = data'
       rs:
           - 'let name = data as String;'
+      fab:
+          - 'fixum name = data qua textus'
 
 - name: cast member expression
   faber: fixum body = response.body qua objectum
@@ -20,6 +22,8 @@
       py: 'body = response.body'
       rs:
           - 'let body = response.body as objectum;'
+      fab:
+          - 'fixum body = response.body qua objectum'
 
 - name: cast to number
   faber: fixum num = input qua numerus
@@ -28,6 +32,8 @@
       py: 'num = input'
       rs:
           - 'let num = input as i64;'
+      fab:
+          - 'fixum num = input qua numerus'
 
 - name: cast call result
   faber: fixum result = getData() qua textus
@@ -36,6 +42,8 @@
       py: 'result = getData()'
       rs:
           - 'let result = getData() as String;'
+      fab:
+          - 'fixum result = getData() qua textus'
 
 - name: cast to boolean type
   faber: fixum flag = value qua logicum
@@ -44,6 +52,8 @@
       py: 'flag = value'
       rs:
           - 'let flag = value as logicum;'
+      fab:
+          - 'fixum flag = value qua logicum'
 
 - name: cast to array type
   faber: fixum items = data qua lista<textus>
@@ -52,6 +62,8 @@
       py: 'items = data'
       rs:
           - 'let items = data as Vec<String>;'
+      fab:
+          - 'fixum items = data qua lista<textus>'
 
 - name: cast to user-defined type
   faber: fixum user = obj qua UserType
@@ -60,6 +72,8 @@
       py: 'user = obj'
       rs:
           - 'let user = obj as UserType;'
+      fab:
+          - 'fixum user = obj qua UserType'
 
 - name: cast on optional chain
   faber: fixum name = user?.name qua textus
@@ -68,6 +82,8 @@
       py: 'name = (user.name if user is not None else None)'
       rs:
           - 'let name = user.as_ref().map(|x| x.name) as String;'
+      fab:
+          - 'fixum name = user?.name qua textus'
 
 - name: cast in expression
   faber: fixum len = (data qua textus).length
@@ -76,6 +92,8 @@
       py: 'len = len(data)'
       rs:
           - 'let len = data as String.length;'
+      fab:
+          - 'fixum len = (data qua textus).length'
 
 - name: cast with call result
   faber: fixum str = getValue() qua textus
@@ -84,6 +102,8 @@
       py: 'str = getValue()'
       rs:
           - 'let str = getValue() as String;'
+      fab:
+          - 'fixum str = getValue() qua textus'
 
 - name: cast to nullable
   faber: fixum maybe = value qua numerus?
@@ -92,3 +112,5 @@
       py: 'maybe = value'
       rs:
           - 'let maybe = value as Option<i64>;'
+      fab:
+          - 'fixum maybe = value qua numerus?'

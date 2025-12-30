@@ -35,6 +35,10 @@
           - 'mod tests {'
           - '#[test]'
           - 'fn adds_numbers()'
+      fab:
+          - 'probandum "Calculator"'
+          - 'proba "adds numbers"'
+          - 'adfirma verum'
 
 # Multiple tests in suite
 - name: probandum with multiple tests
@@ -54,6 +58,11 @@
           - 'mod tests {'
           - 'fn adds()'
           - 'fn subtracts()'
+      fab:
+          - 'probandum "Math"'
+          - 'proba "adds"'
+          - 'proba "subtracts"'
+          - 'adfirma verum'
 
 # =============================================================================
 # Setup/Teardown (cura blocks)
@@ -76,6 +85,11 @@
           - '// Test suite: Lexer'
           - '#[cfg(test)]'
           - 'mod tests {'
+      fab:
+          - 'probandum "Lexer"'
+          - 'cura ante'
+          - 'lexer = init()'
+          - 'proba "parses"'
   skip: [py, cpp, zig]
 
 # Suite with afterEach teardown
@@ -93,6 +107,11 @@
       rs:
           - '// Test suite: Database'
           - '#[cfg(test)]'
+      fab:
+          - 'probandum "Database"'
+          - 'cura post'
+          - 'cleanup()'
+          - 'proba "inserts"'
   skip: [py, cpp, zig]
 
 # Suite with beforeAll and afterAll
@@ -113,6 +132,13 @@
       rs:
           - '// Test suite: Server'
           - '#[cfg(test)]'
+      fab:
+          - 'probandum "Server"'
+          - 'cura ante omnia'
+          - 'server = start()'
+          - 'cura post omnia'
+          - 'server.stop()'
+          - 'proba "responds"'
   skip: [py, cpp, zig]
 
 # =============================================================================
@@ -139,6 +165,11 @@
           - '// Test suite: Inner'
           - '#[cfg(test)]'
           - 'mod tests {'
+      fab:
+          - 'probandum "Outer"'
+          - 'probandum "Inner"'
+          - 'proba "test"'
+          - 'adfirma verum'
 
 # =============================================================================
 # Mixed Content
@@ -166,6 +197,14 @@
           - '// Test suite: Complete'
           - '#[cfg(test)]'
           - 'mod tests {'
+      fab:
+          - 'probandum "Complete"'
+          - 'cura ante'
+          - 'setup()'
+          - 'proba "first"'
+          - 'proba "second"'
+          - 'cura post'
+          - 'teardown()'
 
 # =============================================================================
 # Edge Cases
@@ -192,6 +231,12 @@
           - '// Test suite: Level2'
           - '// Test suite: Level3'
           - 'fn deep_test()'
+      fab:
+          - 'probandum "Level1"'
+          - 'probandum "Level2"'
+          - 'probandum "Level3"'
+          - 'proba "deep test"'
+          - 'adfirma verum'
 
 # Suite with many tests (5+)
 - name: probandum with many tests
@@ -218,6 +263,13 @@
           - 'fn test3()'
           - 'fn test4()'
           - 'fn test5()'
+      fab:
+          - 'probandum "ManyTests"'
+          - 'proba "test1"'
+          - 'proba "test2"'
+          - 'proba "test3"'
+          - 'proba "test4"'
+          - 'proba "test5"'
 
 # Suite with setup initializing shared state
 - name: probandum with setup initializing state
@@ -238,6 +290,14 @@
           - '// Test suite: SharedState'
           - '#[cfg(test)]'
           - 'mod tests {'
+      fab:
+          - 'probandum "SharedState"'
+          - 'cura ante'
+          - 'counter = 0'
+          - 'proba "increments"'
+          - 'counter = counter + 1'
+          - 'proba "checks value"'
+          - 'adfirma counter == 0'
 
 # Suite with all hook types
 - name: probandum with all hook types
@@ -265,6 +325,17 @@
           - '// Test suite: AllHooks'
           - '#[cfg(test)]'
           - 'mod tests {'
+      fab:
+          - 'probandum "AllHooks"'
+          - 'cura ante omnia'
+          - 'globalSetup()'
+          - 'cura ante'
+          - 'eachSetup()'
+          - 'proba "runs"'
+          - 'cura post'
+          - 'eachTeardown()'
+          - 'cura post omnia'
+          - 'globalTeardown()'
 
 # Empty suite
 - name: empty probandum
@@ -275,3 +346,5 @@
       rs:
           - '// Test suite: Empty'
           - '#[cfg(test)]'
+      fab:
+          - 'probandum "Empty"'

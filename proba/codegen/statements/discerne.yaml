@@ -50,6 +50,12 @@
           - 'switch (status)'
           - '.active =>'
           - '.inactive =>'
+      fab:
+          - 'discerne status'
+          - 'si Active'
+          - 'si Inactive'
+          - 'scribe "active"'
+          - 'scribe "inactive"'
 
 # =============================================================================
 # Variants with Bindings
@@ -97,6 +103,13 @@
           - 'const x = payload.x;'
           - 'const y = payload.y;'
           - '.quit =>'
+      fab:
+          - 'discerne event'
+          - 'si Click pro x, y'
+          - 'scribe x'
+          - 'scribe y'
+          - 'si Quit'
+          - 'scribe "quit"'
 
 # =============================================================================
 # Single Binding
@@ -137,6 +150,12 @@
           - 'switch (result)'
           - '.success => |payload|'
           - 'const message = payload.message;'
+      fab:
+          - 'discerne result'
+          - 'si Success pro message'
+          - 'scribe message'
+          - 'si Failure pro error'
+          - 'mone error'
 
 # =============================================================================
 # Multiple Cases
@@ -177,3 +196,10 @@
           - '.rotate => |payload|'
           - '.scale => |payload|'
           - '.reset =>'
+      fab:
+          - 'discerne action'
+          - 'si Move pro x, y'
+          - 'si Rotate pro angle'
+          - 'si Scale pro factor'
+          - 'si Reset'
+          - 'scribe "reset"'

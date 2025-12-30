@@ -26,6 +26,10 @@
               - 'function getId(): string'
               - 'return asFit(function* ()'
               - 'yield respond.ok("abc")'
+      fab:
+          contains:
+              - 'functio getId() fit textus'
+              - 'redde "abc"'
 
 - name: fit function with redde and param
   faber: |
@@ -39,6 +43,10 @@
               - 'function greet(name: string): string'
               - 'return asFit(function* ()'
               - 'yield respond.ok(name)'
+      fab:
+          contains:
+              - 'functio greet(textus name) fit textus'
+              - 'redde name'
 
 - name: fit function with no return value
   faber: |
@@ -51,6 +59,10 @@
           contains:
               - 'function doWork(): void'
               - 'yield respond.ok(undefined)'
+      fab:
+          contains:
+              - 'functio doWork() fit vacuum'
+              - 'redde'
 
 # =============================================================================
 # Error Handling
@@ -69,6 +81,10 @@
               - 'return;'
           not_contains:
               - 'throw "not found"'
+      fab:
+          contains:
+              - 'functio mightFail() fit textus'
+              - 'iace "not found"'
 
 - name: fit function with mori unchanged
   faber: |
@@ -82,6 +98,10 @@
               - 'throw new Panic("fatal error")'
           not_contains:
               - 'respond.error'
+      fab:
+          contains:
+              - 'functio mustWork() fit textus'
+              - 'mori "fatal error"'
 
 # =============================================================================
 # Control Flow
@@ -103,6 +123,12 @@
               - 'if (ok)'
               - 'yield respond.ok("success")'
               - 'yield respond.ok("failure")'
+      fab:
+          contains:
+              - 'functio check(bivalens ok) fit textus'
+              - 'si ok'
+              - 'redde "success"'
+              - 'redde "failure"'
 
 - name: fit function with conditional error
   faber: |
@@ -119,6 +145,12 @@
               - 'yield respond.error("EFAIL", "negative not allowed")'
               - 'return;'
               - 'yield respond.ok(x)'
+      fab:
+          contains:
+              - 'functio validate(numerus x) fit numerus'
+              - 'si x < 0'
+              - 'iace "negative not allowed"'
+              - 'redde x'
 
 # =============================================================================
 # Non-flumina Functions (should NOT be transformed)
@@ -138,6 +170,10 @@
           not_contains:
               - 'asFit'
               - 'respond.ok'
+      fab:
+          contains:
+              - 'futura functio fetchData() -> textus'
+              - 'redde "data"'
 
 # =============================================================================
 # fiunt Functions (multi-value streams with Responsum protocol)
@@ -158,6 +194,11 @@
               - 'yield respond.item(1)'
               - 'yield respond.item(2)'
               - 'yield respond.done()'
+      fab:
+          contains:
+              - 'functio items() fiunt numerus'
+              - 'cede 1'
+              - 'cede 2'
 
 - name: fiunt function with single cede
   faber: |
@@ -171,6 +212,10 @@
               - 'function* single(): Generator<string>'
               - 'yield respond.item("hello")'
               - 'yield respond.done()'
+      fab:
+          contains:
+              - 'functio single() fiunt textus'
+              - 'cede "hello"'
 
 - name: fiunt function with iace
   faber: |
@@ -185,6 +230,11 @@
               - 'yield respond.item(1)'
               - 'yield respond.error("EFAIL", "error occurred")'
               - 'return;'
+      fab:
+          contains:
+              - 'functio mayFail() fiunt numerus'
+              - 'cede 1'
+              - 'iace "error occurred"'
 
 - name: fiunt function with mori unchanged
   faber: |
@@ -200,6 +250,11 @@
               - 'throw new Panic("fatal")'
           not_contains:
               - 'respond.error'
+      fab:
+          contains:
+              - 'functio mustWork() fiunt numerus'
+              - 'cede 1'
+              - 'mori "fatal"'
 
 - name: fiunt function with conditional cede
   faber: |
@@ -218,6 +273,12 @@
               - 'yield respond.item(1)'
               - 'yield respond.item(2)'
               - 'yield respond.done()'
+      fab:
+          contains:
+              - 'functio conditional(bivalens flag) fiunt numerus'
+              - 'si flag'
+              - 'cede 1'
+              - 'cede 2'
 
 - name: fiunt function with loop
   faber: |
@@ -237,6 +298,13 @@
               - 'i < n'
               - 'yield respond.item(i)'
               - 'yield respond.done()'
+      fab:
+          contains:
+              - 'functio range(numerus n) fiunt numerus'
+              - 'varia numerus i = 0'
+              - 'dum i < n'
+              - 'cede i'
+              - 'i = i + 1'
 
 # =============================================================================
 # fiet Functions (async single-value streams with Responsum protocol)
@@ -254,6 +322,10 @@
               - 'async function fetchData(): Promise<string>'
               - 'return await asFiet(async function* ()'
               - 'yield respond.ok("data")'
+      fab:
+          contains:
+              - 'functio fetchData() fiet textus'
+              - 'redde "data"'
 
 - name: fiet function with cede and redde
   faber: |
@@ -269,6 +341,11 @@
               - 'asFiet(async function* ()'
               - 'await getData()'
               - 'yield respond.ok(result)'
+      fab:
+          contains:
+              - 'functio fetchAndReturn() fiet textus'
+              - 'fixum result = cede getData()'
+              - 'redde result'
 
 - name: fiet function with iace
   faber: |
@@ -282,6 +359,10 @@
               - 'async function mightFail(): Promise<string>'
               - 'yield respond.error("EFAIL", "network error")'
               - 'return;'
+      fab:
+          contains:
+              - 'functio mightFail() fiet textus'
+              - 'iace "network error"'
 
 - name: fiet function with mori unchanged
   faber: |
@@ -295,6 +376,10 @@
               - 'throw new Panic("fatal")'
           not_contains:
               - 'respond.error'
+      fab:
+          contains:
+              - 'functio mustWork() fiet textus'
+              - 'mori "fatal"'
 
 # =============================================================================
 # fient Functions (async multi-value streams with Responsum protocol)
@@ -315,6 +400,11 @@
               - 'yield respond.item(await fetch("a"))'
               - 'yield respond.item(await fetch("b"))'
               - 'yield respond.done()'
+      fab:
+          contains:
+              - 'functio fetchItems() fient textus'
+              - 'cede fetch("a")'
+              - 'cede fetch("b")'
 
 - name: fient function with iace
   faber: |
@@ -330,6 +420,11 @@
               - 'yield respond.item(await fetch("a"))'
               - 'yield respond.error("EFAIL", "failed")'
               - 'return;'
+      fab:
+          contains:
+              - 'functio fetchMayFail() fient textus'
+              - 'cede fetch("a")'
+              - 'iace "failed"'
 
 - name: fient function with loop
   faber: |
@@ -346,3 +441,8 @@
               - 'for (const url of urls)'
               - 'yield respond.item(await fetch(url))'
               - 'yield respond.done()'
+      fab:
+          contains:
+              - 'functio fetchAll(lista<textus> urls) fient textus'
+              - 'ex urls pro url'
+              - 'cede fetch(url)'

@@ -22,6 +22,8 @@
           - 'break;'
       zig:
           - 'break;'
+      fab:
+          - 'rumpe'
 
 # Break in loop context
 - name: break in while loop
@@ -52,3 +54,7 @@
           - 'while (true)'
           - 'if ((x > 10))'
           - 'break;'
+      fab:
+          - 'dum verum'
+          - 'si x > 10'
+          - 'rumpe'

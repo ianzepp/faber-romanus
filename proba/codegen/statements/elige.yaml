@@ -55,6 +55,12 @@
           - 'a();'
           - 'else if ((x == 2))'
           - 'b();'
+      fab:
+          - 'elige x'
+          - 'si 1'
+          - 'a()'
+          - 'si 2'
+          - 'b()'
 
 # Elige with default case (aliter)
 - name: elige with default case
@@ -92,6 +98,12 @@
           - 'active();'
           - 'else {'
           - 'inactive();'
+      fab:
+          - 'elige status'
+          - 'si 1'
+          - 'active()'
+          - 'aliter'
+          - 'inactive()'
 
 # =============================================================================
 # String Cases
@@ -141,6 +153,14 @@
           - 'end();'
           - 'else {'
           - 'unknown();'
+      fab:
+          - 'elige cmd'
+          - 'si "start"'
+          - 'begin()'
+          - 'si "stop"'
+          - 'end()'
+          - 'aliter'
+          - 'unknown()'
 
 # =============================================================================
 # Multiple Statements in Cases
@@ -197,6 +217,14 @@
           - 'return x;'
           - 'else {'
           - 'return null;'
+      fab:
+          - 'elige mode'
+          - 'si 1'
+          - 'varia x = init()'
+          - 'process(x)'
+          - 'redde x'
+          - 'aliter'
+          - 'redde nihil'
 
 # =============================================================================
 # Elige with Expressions
@@ -236,6 +264,12 @@
           - 'zero();'
           - 'else if ((getValue() == 1))'
           - 'one();'
+      fab:
+          - 'elige getValue()'
+          - 'si 0'
+          - 'zero()'
+          - 'si 1'
+          - 'one()'
 
 # =============================================================================
 # Elige with Cape (Catch Clause)
@@ -263,6 +297,12 @@
           - 'case 1:'
           - 'action()'
           - 'except Exception as err:'
+          - 'handleError(err)'
+      fab:
+          - 'elige riskyValue()'
+          - 'si 1'
+          - 'action()'
+          - 'cape err'
           - 'handleError(err)'
 
 # =============================================================================
@@ -293,6 +333,10 @@
       zig:
           - '{'
           - 'fallback();'
+      fab:
+          - 'elige x'
+          - 'aliter'
+          - 'fallback()'
 
 # Empty case body
 - name: elige with empty case
@@ -326,6 +370,11 @@
           - 'if ((x == 1))'
           - 'else {'
           - 'action();'
+      fab:
+          - 'elige x'
+          - 'si 1'
+          - 'aliter'
+          - 'action()'
 
 # Elige with many cases (10+)
 - name: elige with many cases month mapping
@@ -376,6 +425,14 @@
           - 'return std::string("Dec");'
           - 'default: {'
           - 'return std::string("Unknown");'
+      fab:
+          - 'elige month'
+          - 'si 1'
+          - 'redde "Jan"'
+          - 'si 12'
+          - 'redde "Dec"'
+          - 'aliter'
+          - 'redde "Unknown"'
 
 # Elige as potential expression (return in every case)
 - name: elige with return in every case
@@ -422,6 +479,16 @@
           - 'return std::string("high");'
           - 'default: {'
           - 'return std::string("unknown");'
+      fab:
+          - 'elige level'
+          - 'si 1'
+          - 'redde "low"'
+          - 'si 2'
+          - 'redde "medium"'
+          - 'si 3'
+          - 'redde "high"'
+          - 'aliter'
+          - 'redde "unknown"'
 
 # Elige with boolean cases
 - name: elige with boolean cases
@@ -448,6 +515,12 @@
           - 'yes();'
           - 'case false: {'
           - 'no();'
+      fab:
+          - 'elige flag'
+          - 'si verum'
+          - 'yes()'
+          - 'si falsum'
+          - 'no()'
 
 # Elige with nested conditionals
 - name: elige with nested si inside case
@@ -499,6 +572,15 @@
           - 'nonPositive();'
           - 'case 2: {'
           - 'action();'
+      fab:
+          - 'elige mode'
+          - 'si 1'
+          - 'si x > 0'
+          - 'positive()'
+          - 'aliter'
+          - 'nonPositive()'
+          - 'si 2'
+          - 'action()'
 
 # Elige with member expression discriminant
 - name: elige with member expression discriminant
@@ -525,6 +607,12 @@
           - 'active();'
           - 'case 0: {'
           - 'inactive();'
+      fab:
+          - 'elige obj.status'
+          - 'si 1'
+          - 'active()'
+          - 'si 0'
+          - 'inactive()'
 
 # Elige with call returning each case
 - name: elige with function calls returning in cases
@@ -563,6 +651,14 @@
           - 'return getMedium();'
           - 'case 3: {'
           - 'return getHigh();'
+      fab:
+          - 'elige priority'
+          - 'si 1'
+          - 'redde getLow()'
+          - 'si 2'
+          - 'redde getMedium()'
+          - 'si 3'
+          - 'redde getHigh()'
 
 # Consecutive elige statements (single-line avoids parser issue with multiline consecutive elige)
 - name: consecutive elige statements
@@ -606,3 +702,14 @@
           - 'third();'
           - 'case 4: {'
           - 'fourth();'
+      fab:
+          - 'elige a'
+          - 'si 1'
+          - 'first()'
+          - 'si 2'
+          - 'second()'
+          - 'elige b'
+          - 'si 3'
+          - 'third()'
+          - 'si 4'
+          - 'fourth()'

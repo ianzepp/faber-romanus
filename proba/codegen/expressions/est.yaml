@@ -14,6 +14,8 @@
           - 'std::is_same_v<std::decay_t<decltype(x)>, std::string>'
       zig:
           - '@TypeOf(x) == []const u8'
+      fab:
+          - 'x est textus'
 
 - name: est with primitive number
   faber: fixum check = x est numerus
@@ -28,6 +30,8 @@
           - 'std::is_same_v<std::decay_t<decltype(x)>, int64_t>'
       zig:
           - '@TypeOf(x) == i64'
+      fab:
+          - 'x est numerus'
 
 - name: non est negated check
   faber: fixum check = x non est numerus
@@ -42,6 +46,8 @@
           - '!std::is_same_v<std::decay_t<decltype(x)>, int64_t>'
       zig:
           - '@TypeOf(x) != i64'
+      fab:
+          - 'x non est numerus'
 
 - name: est with user type
   faber: fixum check = obj est Persona
@@ -56,6 +62,8 @@
           - 'std::is_same_v<std::decay_t<decltype(obj)>, Persona>'
       zig:
           - '@TypeOf(obj) == Persona'
+      fab:
+          - 'obj est Persona'
 
 - name: est with array type
   faber: fixum check = x est lista<numerus>
@@ -64,6 +72,8 @@
           - 'Array.isArray(x)'
       py:
           - 'isinstance(x, list)'
+      fab:
+          - 'x est lista<numerus>'
 
 - name: est with nullable type
   faber: fixum check = x est textus?
@@ -72,6 +82,8 @@
           - 'typeof x === "string" || x === null'
       py:
           - 'isinstance(x, str) or x is None'
+      fab:
+          - 'x est textus?'
 
 - name: chained est checks
   faber: x est numerus et x > 0
@@ -88,6 +100,9 @@
       zig:
           - '@TypeOf(x) == i64'
           - 'x > 0'
+      fab:
+          - 'x est numerus'
+          - 'x > 0'
 
 - name: est in conditional
   faber: |
@@ -101,6 +116,9 @@
           - 'if (std::is_same_v<std::decay_t<decltype(data)>, std::string>)'
       zig:
           - 'if ((@TypeOf(data) == []const u8))'
+      fab:
+          - 'si data est textus'
+          - 'scribe data'
 
 - name: est with nihil
   faber: fixum isNull = x est nihil
@@ -109,6 +127,8 @@
           - 'x === null'
       py:
           - 'x is None'
+      fab:
+          - 'x est nihil'
 
 - name: est with bivalens
   faber: fixum isBool = x est bivalens
@@ -121,6 +141,8 @@
           - 'std::is_same_v<std::decay_t<decltype(x)>, bool>'
       zig:
           - '@TypeOf(x) == bool'
+      fab:
+          - 'x est bivalens'
 
 - name: non est with primitive
   faber: fixum notNum = x non est numerus
@@ -133,3 +155,5 @@
           - '!std::is_same_v<std::decay_t<decltype(x)>, int64_t>'
       zig:
           - '@TypeOf(x) != i64'
+      fab:
+          - 'x non est numerus'

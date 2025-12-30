@@ -14,6 +14,8 @@
           - 'Persona{}'
       zig:
           - 'Persona.init(.{})'
+      fab:
+          - 'novum Persona'
 
 - name: novum with positional arguments
   faber: 'fixum e = novum Error("message")'
@@ -26,6 +28,8 @@
           - 'Error(std::string("message"))'
       zig:
           - 'Error.init("message")'
+      fab:
+          - 'novum Error("message")'
 
 - name: novum with object literal overrides
   faber: 'fixum u = novum User { nomen: "Marcus", aetas: 30 }'
@@ -39,6 +43,8 @@
           - '.aetas = 30}'
       zig:
           - 'User.init(.{ .nomen = "Marcus", .aetas = 30 })'
+      fab:
+          - 'novum User de { nomen: "Marcus", aetas: 30 }'
 
 - name: novum with single property override
   faber: 'fixum item = novum Item { pretium: 99 }'
@@ -51,39 +57,53 @@
           - 'Item{.pretium = 99}'
       zig:
           - 'Item.init(.{ .pretium = 99 })'
+      fab:
+          - 'novum Item de { pretium: 99 }'
 
 - name: novum with spread in overrides
   faber: 'fixum u = novum User { sparge defaults, extra: 1 }'
   expect:
       ts: 'const u = new User({ ...defaults, extra: 1 });'
       py: 'u = User({**defaults, "extra": 1})'
+      fab:
+          - 'novum User de { sparge defaults, extra: 1 }'
 
 - name: novum with nested object
   faber: 'fixum c = novum Config { database: { host: "localhost" } }'
   expect:
       ts: 'const c = new Config({ database: { host: "localhost" } });'
       py: 'c = Config({"database": {"host": "localhost"}})'
+      fab:
+          - 'novum Config de { database: { host: "localhost" } }'
 
 - name: novum without parens (bare constructor)
   faber: 'fixum e = novum Error'
   expect:
       ts: 'const e = new Error();'
       py: 'e = Error()'
+      fab:
+          - 'novum Error'
 
 - name: chained novum (nested constructor)
   faber: 'fixum x = novum Outer(novum Inner())'
   expect:
       ts: 'const x = new Outer(new Inner());'
       py: 'x = Outer(Inner())'
+      fab:
+          - 'novum Outer(novum Inner())'
 
 - name: novum with many args
   faber: 'fixum p = novum Point(1, 2, 3, 4)'
   expect:
       ts: 'const p = new Point(1, 2, 3, 4);'
       py: 'p = Point(1, 2, 3, 4)'
+      fab:
+          - 'novum Point(1, 2, 3, 4)'
 
 - name: novum with expression arg
   faber: 'fixum r = novum Rectangle(width * 2, height * 2)'
   expect:
       ts: 'const r = new Rectangle((width * 2), (height * 2));'
       py: 'r = Rectangle((width * 2), (height * 2))'
+      fab:
+          - 'novum Rectangle(width * 2, height * 2)'

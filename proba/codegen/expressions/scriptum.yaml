@@ -14,6 +14,8 @@
           - 'std::format("Hello, {}", name)'
       zig:
           - 'std.fmt.allocPrint(alloc, "Hello, {}", .{ name }) catch @panic("OOM")'
+      fab:
+          - 'scriptum("Hello, {}", name)'
 
 - name: scriptum with multiple arguments
   faber: 'scriptum("{} + {} = {}", a, b, c)'
@@ -28,6 +30,8 @@
           - 'std::format("{} + {} = {}", a, b, c)'
       zig:
           - 'std.fmt.allocPrint(alloc, "{} + {} = {}", .{ a, b, c }) catch @panic("OOM")'
+      fab:
+          - 'scriptum("{} + {} = {}", a, b, c)'
 
 - name: scriptum with no arguments (constant string)
   faber: 'scriptum("Hello, World!")'
@@ -42,6 +46,8 @@
           - '"Hello, World!"'
       zig:
           - '"Hello, World!"'
+      fab:
+          - 'scriptum("Hello, World!")'
 
 - name: scriptum in variable assignment
   faber: 'fixum greeting = scriptum("Hello, {}", name)'
@@ -56,6 +62,8 @@
           - 'const auto greeting = std::format("Hello, {}", name)'
       zig:
           - 'const greeting = std.fmt.allocPrint(alloc, "Hello, {}", .{ name }) catch @panic("OOM")'
+      fab:
+          - 'fixum greeting = scriptum("Hello, {}", name)'
 
 - name: scriptum with expression argument
   faber: 'scriptum("Result: {}", a + b)'
@@ -70,3 +78,5 @@
           - 'std::format("Result: {}", (a + b))'
       zig:
           - 'std.fmt.allocPrint(alloc, "Result: {}", .{ (a + b) }) catch @panic("OOM")'
+      fab:
+          - 'scriptum("Result: {}", a + b)'

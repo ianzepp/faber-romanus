@@ -40,6 +40,9 @@
       zig:
           - 'const Persona = struct'
           - 'nomen: []const u8'
+      fab:
+          - 'genus Persona'
+          - 'textus nomen'
 
 # Genus with multiple fields
 - name: genus with multiple fields
@@ -69,6 +72,10 @@
           - 'const Persona = struct'
           - 'nomen: []const u8'
           - 'aetas: i64'
+      fab:
+          - 'genus Persona'
+          - 'textus nomen'
+          - 'numerus aetas'
 
 # =============================================================================
 # Field Defaults
@@ -92,6 +99,10 @@
       zig:
           - 'nomen: []const u8 = "default"'
           - 'port: i64 = 8080'
+      fab:
+          - 'genus Config'
+          - 'textus nomen: "default"'
+          - 'numerus port: 8080'
 
 # =============================================================================
 # Field Modifiers
@@ -111,6 +122,9 @@
           - 'std::string secretum'
       zig:
           - 'secretum: []const u8'
+      fab:
+          - 'genus Persona'
+          - 'privatus textus secretum'
 
 # Static fields
 - name: genus with static field
@@ -126,6 +140,9 @@
           - 'struct Config'
       zig:
           - 'const Config = struct'
+      fab:
+          - 'genus Config'
+          - 'generis textus VERSION: "1.0"'
 
 # =============================================================================
 # Methods
@@ -158,6 +175,11 @@
       zig:
           - 'const Persona = struct'
           - 'pub fn saluta(self: *const Self)'
+      fab:
+          - 'genus Persona'
+          - 'textus nomen'
+          - 'functio saluta() -> textus'
+          - 'redde nomen'
 
 # =============================================================================
 # Constructor (creo)
@@ -195,6 +217,12 @@
           - 'const Persona = struct'
           - 'fn creo(self: *Self) void'
           - 'self.creo()'
+      fab:
+          - 'genus Persona'
+          - 'numerus aetas'
+          - 'functio creo()'
+          - 'si aetas < 0'
+          - 'aetas = 0'
 
 # =============================================================================
 # Type Parameters (Generics)
@@ -218,6 +246,9 @@
       zig:
           - 'const Box = struct'
           - 'value: T'
+      fab:
+          - 'genus Box<T>'
+          - 'T value'
 
 # =============================================================================
 # Implements (Interface Implementation)
@@ -237,6 +268,10 @@
           - 'struct Reader'
       zig:
           - 'const Reader = struct'
+      fab:
+          - 'genus Reader implet Legibilis'
+          - 'functio lege() -> textus'
+          - 'redde ""'
 
 # =============================================================================
 # Edge Cases
@@ -270,6 +305,14 @@
           - 'email: str'
           - 'createdAt: int'
           - 'status: str'
+      fab:
+          - 'genus Entity'
+          - 'textus id'
+          - 'textus nomen'
+          - 'numerus aetas'
+          - 'textus email'
+          - 'numerus createdAt'
+          - 'textus status'
 
 # Genus with multiple methods
 - name: genus with multiple methods
@@ -297,6 +340,15 @@
           - 'def add(self, n: int) -> int:'
           - 'def subtract(self, n: int) -> int:'
           - 'def reset(self):'
+      fab:
+          - 'genus Calculator'
+          - 'numerus value'
+          - 'functio add(numerus n) -> numerus'
+          - 'redde value + n'
+          - 'functio subtract(numerus n) -> numerus'
+          - 'redde value - n'
+          - 'functio reset()'
+          - 'value = 0'
 
 # Genus with static method (generis)
 # WHY: generis modifier should produce static methods, but codegen may not support it yet
@@ -307,6 +359,7 @@
       - rs
       - cpp
       - zig
+      - fab
   faber: |
       genus Factory {
         textus nomen
@@ -321,6 +374,11 @@
       py:
           - 'class Factory:'
           - '@classmethod'
+      fab:
+          - 'genus Factory'
+          - 'textus nomen'
+          - 'generis functio create() -> textus'
+          - 'redde "created"'
 
 # Genus with nested method calls on ego
 - name: genus with nested ego method calls
@@ -343,6 +401,12 @@
           - 'parent: Node | None'
           - 'def rootData(self) -> str:'
           - 'return self.parent.data'
+      fab:
+          - 'genus Node'
+          - 'textus data'
+          - 'Node? parent'
+          - 'functio rootData() -> textus'
+          - 'redde ego.parent.data'
 
 # Genus with computed method
 - name: genus with computed method
@@ -367,6 +431,12 @@
           - 'height: int'
           - 'def area(self) -> int:'
           - 'return (width * height)'
+      fab:
+          - 'genus Rectangle'
+          - 'numerus width'
+          - 'numerus height'
+          - 'functio area() -> numerus'
+          - 'redde width * height'
 
 # Genus implementing multiple interfaces
 - name: genus implementing multiple interfaces
@@ -376,6 +446,10 @@
           - 'class Service implements Readable, Writable'
       py:
           - 'class Service(Readable, Writable):'
+      fab:
+          - 'genus Service implet Readable, Writable'
+          - 'functio read() -> textus'
+          - 'functio write(textus data)'
 
 # Empty genus (no fields or methods)
 - name: empty genus
@@ -385,6 +459,8 @@
           - 'class Empty'
       py:
           - 'class Empty:'
+      fab:
+          - 'genus Empty'
 
 # Genus with generic type parameter
 - name: genus with generic type parameter
@@ -396,6 +472,9 @@
       py:
           - 'class Container[T]:'
           - 'value: T'
+      fab:
+          - 'genus Container<T>'
+          - 'T value'
 
 # =============================================================================
 # Inheritance (sub)
@@ -408,6 +487,9 @@
       ts:
           - 'class Employee extends Persona'
           - 'title: string'
+      fab:
+          - 'genus Employee sub Persona'
+          - 'textus title'
 
 # Genus with sub and implet
 - name: genus with sub and implet
@@ -416,6 +498,9 @@
       ts:
           - 'class Manager extends Employee implements Leader'
           - 'lead()'
+      fab:
+          - 'genus Manager sub Employee implet Leader'
+          - 'functio lead()'
 
 # =============================================================================
 # Abstract Classes and Methods
@@ -428,6 +513,9 @@
       ts:
           - 'abstract class Animal'
           - 'abstract speak(): string'
+      fab:
+          - 'abstractus genus Animal'
+          - 'abstractus functio speak() -> textus'
 
 # Concrete genus extending abstract
 - name: genus extending abstract class
@@ -442,6 +530,10 @@
           - 'class Dog extends Animal'
           - 'speak(): string'
           - 'return "woof"'
+      fab:
+          - 'genus Dog sub Animal'
+          - 'functio speak() -> textus'
+          - 'redde "woof"'
 
 # =============================================================================
 # Protected Fields and Methods
@@ -454,6 +546,9 @@
       ts:
           - 'class Animal'
           - 'protected species: string'
+      fab:
+          - 'genus Animal'
+          - 'protectus textus species'
 
 # Protected method
 - name: genus with protected method
@@ -462,3 +557,6 @@
       ts:
           - 'class Animal'
           - 'protected internal()'
+      fab:
+          - 'genus Animal'
+          - 'protectus functio internal()'

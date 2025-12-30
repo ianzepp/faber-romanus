@@ -31,6 +31,8 @@
           - 'std::print("{}\n", std::string("hello"));'
       zig:
           - 'std.debug.print("{s}\n", .{ "hello" });'
+      fab:
+          - 'scribe "hello"'
 
 # Print variable
 - name: scribe with variable
@@ -43,11 +45,13 @@
       rs:
           - 'println!("{}", x);'
       cpp:
-          - 'std::print("{}\'
+          - 'std::print("{}'
           - 'n", x);'
       zig:
-          - 'std.debug.print("{any}\'
+          - 'std.debug.print("{any}'
           - 'n", .{ x });'
+      fab:
+          - 'scribe x'
 
 # Print multiple arguments
 - name: scribe with multiple args
@@ -60,11 +64,13 @@
       rs:
           - 'println!("{} {}", String::from("value:"), x);'
       cpp:
-          - 'std::print("{} {}\'
+          - 'std::print("{} {}'
           - 'n", std::string("value:"), x);'
       zig:
-          - 'std.debug.print("{s} {any}\'
+          - 'std.debug.print("{s} {any}'
           - 'n", .{ "value:", x });'
+      fab:
+          - 'scribe "value:", x'
 
 # =============================================================================
 # Debug Output (vide)
@@ -81,11 +87,13 @@
       rs:
           - 'dbg!(String::from("debug info"));'
       cpp:
-          - 'std::print("[DEBUG] {}\'
+          - 'std::print("[DEBUG] {}'
           - 'n", std::string("debug info"));'
       zig:
-          - 'std.debug.print("[DEBUG] {s}\'
+          - 'std.debug.print("[DEBUG] {s}'
           - 'n", .{ "debug info" });'
+      fab:
+          - 'vide "debug info"'
 
 # =============================================================================
 # Warning Output (mone)
@@ -102,11 +110,13 @@
       rs:
           - 'println!("{}", String::from("warning message"));'
       cpp:
-          - 'std::print("[WARN] {}\'
+          - 'std::print("[WARN] {}'
           - 'n", std::string("warning message"));'
       zig:
-          - 'std.debug.print("[WARN] {s}\'
+          - 'std.debug.print("[WARN] {s}'
           - 'n", .{ "warning message" });'
+      fab:
+          - 'mone "warning message"'
 
 # =============================================================================
 # Edge Cases
@@ -120,6 +130,8 @@
           - 'console.log(a, b, c, d, e, f);'
       py:
           - 'print(a, b, c, d, e, f)'
+      fab:
+          - 'scribe a, b, c, d, e, f'
 
 # Scribe with object literal
 - name: scribe with object literal
@@ -129,6 +141,8 @@
           - 'console.log({ x: 1, y: 2 });'
       py:
           - 'print({"x": 1, "y": 2})'
+      fab:
+          - 'scribe { x: 1, y: 2 }'
 
 # Scribe with template literal
 - name: scribe with template literal
@@ -138,6 +152,8 @@
           - 'console.log(`Value: ${x}, Status: ${status}`);'
       py:
           - 'print(f"Value: {x}, Status: {status}")'
+      fab:
+          - 'scribe `Value: ${x}, Status: ${status}`'
 
 # Scribe with expression
 - name: scribe with expression
@@ -147,6 +163,8 @@
           - 'console.log(((x * 2) + y));'
       py:
           - 'print(((x * 2) + y))'
+      fab:
+          - 'scribe x * 2 + y'
 
 # Scribe with member access
 - name: scribe with member access
@@ -156,6 +174,8 @@
           - 'console.log(obj.nested.value);'
       py:
           - 'print(obj.nested.value)'
+      fab:
+          - 'scribe obj.nested.value'
 
 # Scribe with call result
 - name: scribe with call result
@@ -165,6 +185,8 @@
           - 'console.log(getData());'
       py:
           - 'print(getData())'
+      fab:
+          - 'scribe getData()'
 
 # Vide with template
 - name: vide with template literal
@@ -174,6 +196,8 @@
           - 'console.debug(`Debug: ${value}`);'
       py:
           - 'print("[DEBUG]", f"Debug: {value}")'
+      fab:
+          - 'vide `Debug: ${value}`'
 
 # Mone with expression
 - name: mone with expression
@@ -183,3 +207,5 @@
           - 'console.warn("Error:", err.message);'
       py:
           - 'print("[WARN]", "Error:", err.message)'
+      fab:
+          - 'mone "Error:", err.message'

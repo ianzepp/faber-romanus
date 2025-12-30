@@ -23,6 +23,8 @@
           - 'return 42;'
       zig:
           - 'return 42;'
+      fab:
+          - 'redde 42'
 
 # Return with string
 - name: return with string
@@ -38,6 +40,8 @@
           - 'return std::string("hello");'
       zig:
           - 'return "hello";'
+      fab:
+          - 'redde "hello"'
 
 # Return with variable
 - name: return with identifier
@@ -53,6 +57,8 @@
           - 'return result;'
       zig:
           - 'return result;'
+      fab:
+          - 'redde result'
 
 # Return with expression
 - name: return with binary expression
@@ -68,6 +74,8 @@
           - 'return (x + y);'
       zig:
           - 'return (x + y);'
+      fab:
+          - 'redde x + y'
 
 # Void return (no value)
 - name: void return
@@ -83,6 +91,8 @@
           - 'return;'
       zig:
           - 'return;'
+      fab:
+          - 'redde'
 
 # =============================================================================
 # Edge Cases
@@ -96,6 +106,8 @@
           - 'return { success: true, data: result };'
       py:
           - 'return {"success": True, "data": result}'
+      fab:
+          - 'redde { success: verum, data: result }'
 
 # Return with array literal
 - name: return with array literal
@@ -105,6 +117,8 @@
           - 'return [a, b, c];'
       py:
           - 'return [a, b, c]'
+      fab:
+          - 'redde [a, b, c]'
 
 # Return with lambda
 - name: return with lambda
@@ -114,6 +128,8 @@
           - 'return (x) => (x * 2);'
       py:
           - 'return lambda x: (x * 2)'
+      fab:
+          - 'redde pro x redde x * 2'
 
 # Return with complex expression
 - name: return with complex expression
@@ -123,6 +139,8 @@
           - 'return ((a + (b * c)) - (d / e));'
       py:
           - 'return ((a + (b * c)) - (d / e))'
+      fab:
+          - 'redde a + b * c - d / e'
 
 # Return with call chain
 - name: return with call chain
@@ -132,6 +150,8 @@
           - 'return items.filter(fn).map(fn2).first;'
       py:
           - 'return items.filter(fn).map(fn2).first'
+      fab:
+          - 'redde items.filter(fn).map(fn2).first'
 
 # Return with template literal
 - name: return with template literal
@@ -141,6 +161,8 @@
           - 'return `Hello ${name}!`;'
       py:
           - 'return f"Hello {name}!"'
+      fab:
+          - 'redde `Hello ${name}!`'
 
 # Return with member access
 - name: return with member access
@@ -150,6 +172,8 @@
           - 'return obj.nested.value;'
       py:
           - 'return obj.nested.value'
+      fab:
+          - 'redde obj.nested.value'
 
 # Return from nested block
 - name: return from nested block
@@ -165,3 +189,7 @@
       py:
           - 'if (x > 0):'
           - 'return x'
+      fab:
+          - 'si x > 0 fac'
+          - 'redde x'
+          - 'fine'

@@ -24,6 +24,10 @@
           - 'user.nomen = std::string("Marcus");'
       zig:
           - 'user.nomen = "Marcus";'
+      fab:
+          - 'in user {'
+          - 'nomen = "Marcus"'
+          - '}'
 
 # Multiple field mutations
 - name: mutate multiple fields
@@ -48,6 +52,11 @@
       zig:
           - 'user.nomen = "Marcus";'
           - 'user.aetas = 42;'
+      fab:
+          - 'in user {'
+          - 'nomen = "Marcus"'
+          - 'aetas = 42'
+          - '}'
 
 # =============================================================================
 # Compound Assignment Operators
@@ -67,6 +76,10 @@
           - 'stats.count += 1;'
       zig:
           - 'stats.count += 1;'
+      fab:
+          - 'in stats {'
+          - 'count += 1'
+          - '}'
 
 # String concatenation
 - name: append to string field
@@ -82,6 +95,10 @@
           - 'message.text += std::string(" world");'
       zig:
           - 'message.text += " world";'
+      fab:
+          - 'in message {'
+          - 'text += " world"'
+          - '}'
 
 # =============================================================================
 # Nested Objects
@@ -101,6 +118,10 @@
           - 'server.port = 8080;'
       zig:
           - 'server.port = 8080;'
+      fab:
+          - 'in config {'
+          - 'server.port = 8080'
+          - '}'
 
 # =============================================================================
 # Method Calls Inside Mutation Blocks
@@ -129,3 +150,8 @@
       zig:
           - 'user.nomen = "Marcus";'
           - 'validate();'
+      fab:
+          - 'in user {'
+          - 'nomen = "Marcus"'
+          - 'validate()'
+          - '}'

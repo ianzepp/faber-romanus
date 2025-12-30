@@ -14,6 +14,7 @@
   cpp:
       - 'std::print'
   skip: [rs]
+  fab: 'scribe x'
 
 # Multiple arguments are comma-separated
 - name: 'scribe multiple args'
@@ -26,6 +27,8 @@
       - 'std.debug.print("{s} {s} {s}\n", .{ "a", "b", "c" });'
   rs:
       - 'println!'
+  fab:
+      - 'scribe "a", "b", "c"'
 
 # Expressions are evaluated before printing
 - name: 'scribe with expression'
@@ -39,6 +42,8 @@
   cpp:
       - 'std::print("{}\n", (x + y));'
   skip: [rs]
+  fab:
+      - 'scribe x + y'
 
 # =============================================================================
 # Includes (C++)
@@ -52,6 +57,7 @@
       - '#include <string>'
   rs:
       - 'println!'
+  fab: 'scribe "hello"'
 
 # adfirma adds cassert include
 - name: 'cpp optional includes added when used'
@@ -60,6 +66,7 @@
       - '#include <cassert>'
   rs:
       - 'assert!(true);'
+  fab: 'adfirma verum'
 
 # =============================================================================
 # Main Function (C++)
@@ -73,6 +80,7 @@
       - 'return 0;'
   rs:
       - 'println!'
+  fab: 'scribe "hello"'
 
 # Declarations appear outside main, before it
 - name: 'cpp declarations outside main'
@@ -87,3 +95,7 @@
   rs:
       - 'fn greet()'
       - 'greet();'
+  fab:
+      - 'functio greet() {'
+      - 'scribe "hi"'
+      - 'greet()'

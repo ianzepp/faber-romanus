@@ -50,6 +50,11 @@
           - '// try block'
           - 'riskyOperation();'
           - '// catch handling would use: catch |err|'
+      fab:
+          - 'tempta {'
+          - 'riskyOperation()'
+          - 'cape err {'
+          - 'handleError(err)'
 
 # Multiple statements in try block
 - name: tempta with multiple statements
@@ -94,6 +99,13 @@
           - 'var x: anytype = compute();'
           - 'process(x);'
           - 'return x;'
+      fab:
+          - 'tempta {'
+          - 'varia x = compute()'
+          - 'process(x)'
+          - 'redde x'
+          - 'cape e {'
+          - 'redde nihil'
 
 # =============================================================================
 # Tempta with Demum (Try/Finally)
@@ -131,6 +143,11 @@
       zig:
           - '// try block'
           - 'openResource();'
+      fab:
+          - 'tempta {'
+          - 'openResource()'
+          - 'demum {'
+          - 'cleanup()'
 
 # =============================================================================
 # Tempta with Cape and Demum (Try/Catch/Finally)
@@ -176,6 +193,13 @@
       zig:
           - '// try block'
           - 'riskyCall();'
+      fab:
+          - 'tempta {'
+          - 'riskyCall()'
+          - 'cape err {'
+          - 'mone "Error:", err'
+          - 'demum {'
+          - 'cleanup()'
 
 # Multiple statements in all blocks
 - name: tempta with multiple statements in all blocks
@@ -226,6 +250,15 @@
           - '// try block'
           - 'var fd: anytype = open();'
           - 'write(fd, data);'
+      fab:
+          - 'tempta {'
+          - 'varia fd = open()'
+          - 'write(fd, data)'
+          - 'cape e {'
+          - 'scribe "Failed"'
+          - 'iace e'
+          - 'demum {'
+          - 'close(fd)'
 
 # =============================================================================
 # Edge Cases
@@ -255,6 +288,10 @@
           - 'handle(e);'
       zig:
           - '// try block'
+      fab:
+          - 'tempta {'
+          - 'cape e {'
+          - 'handle(e)'
 
 # Empty catch block
 - name: tempta with empty catch block
@@ -284,6 +321,10 @@
       zig:
           - '// try block'
           - 'mayFail();'
+      fab:
+          - 'tempta {'
+          - 'mayFail()'
+          - 'cape e {'
 
 # Nested try blocks
 - name: nested tempta blocks
@@ -334,6 +375,14 @@
           - '// try block'
           - '// try block'
           - 'innerRisky();'
+      fab:
+          - 'tempta {'
+          - 'tempta {'
+          - 'innerRisky()'
+          - 'cape inner {'
+          - 'handleInner(inner)'
+          - 'cape outer {'
+          - 'handleOuter(outer)'
 
 # Rethrow caught error
 - name: tempta with rethrow
@@ -371,6 +420,12 @@
       zig:
           - '// try block'
           - 'risky();'
+      fab:
+          - 'tempta {'
+          - 'risky()'
+          - 'cape err {'
+          - 'log(err)'
+          - 'iace err'
 
 # Return in finally block
 - name: tempta with return in finally
@@ -404,6 +459,11 @@
       zig:
           - '// try block'
           - 'return compute();'
+      fab:
+          - 'tempta {'
+          - 'redde compute()'
+          - 'demum {'
+          - 'cleanup()'
 
 # Tempta inside loop with break
 - name: tempta in loop with break
@@ -449,6 +509,13 @@
           - '// try block'
           - 'result = tryConnect();'
           - 'break;'
+      fab:
+          - 'dum verum {'
+          - 'tempta {'
+          - 'result = tryConnect()'
+          - 'rumpe'
+          - 'cape e {'
+          - 'scribe "Retrying..."'
 
 # Multiple statements in all three blocks
 - name: tempta with multiple statements in each block
@@ -515,6 +582,18 @@
           - 'var conn: anytype = openConnection();'
           - 'var data: anytype = fetchData(conn);'
           - 'process(data);'
+      fab:
+          - 'tempta {'
+          - 'varia conn = openConnection()'
+          - 'varia data = fetchData(conn)'
+          - 'process(data)'
+          - 'cape err {'
+          - 'logError(err)'
+          - 'notifyAdmin(err)'
+          - 'redde nihil'
+          - 'demum {'
+          - 'closeConnection(conn)'
+          - 'releaseResources()'
 
 # Deeply nested tempta blocks
 - name: deeply nested tempta blocks
@@ -574,6 +653,16 @@
           - '// try block'
           - '// try block'
           - 'dangerousOp();'
+      fab:
+          - 'tempta {'
+          - 'tempta {'
+          - 'dangerousOp()'
+          - 'cape innerErr {'
+          - 'recoverInner(innerErr)'
+          - 'cape outerErr {'
+          - 'recoverOuter(outerErr)'
+          - 'demum {'
+          - 'finalCleanup()'
 
 # Condition inside catch block
 - name: tempta with condition in catch
@@ -612,3 +701,9 @@
       zig:
           - '// try block'
           - 'riskyOperation();'
+      fab:
+          - 'tempta {'
+          - 'riskyOperation()'
+          - 'cape err {'
+          - 'si err.recoverable {'
+          - 'recover()'
