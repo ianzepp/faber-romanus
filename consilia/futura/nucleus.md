@@ -4,28 +4,29 @@ A minimal kernel layer providing unified I/O dispatch, message-passing protocol,
 
 ## Status
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Responsum protocol | Partial | TS has it; Zig/Rust/C++/Py need it |
-| Syscall dispatch (`ad`) | Design only | See `ad.md` |
-| Request correlation | Not started | IDs for concurrent ops |
-| Handle abstraction | Not started | Unified I/O interface |
-| AsyncContext | Not started | Executor for state machines |
-| Target runtimes | TS only | Zig is next priority |
+| Feature                 | Status      | Notes                              |
+| ----------------------- | ----------- | ---------------------------------- |
+| Responsum protocol      | Partial     | TS has it; Zig/Rust/C++/Py need it |
+| Syscall dispatch (`ad`) | Design only | See `ad.md`                        |
+| Request correlation     | Not started | IDs for concurrent ops             |
+| Handle abstraction      | Not started | Unified I/O interface              |
+| AsyncContext            | Not started | Executor for state machines        |
+| Target runtimes         | TS only     | Zig is next priority               |
 
 ## Motivation
 
 Faber targets multiple backends (TS, Python, Zig, Rust, C++). Each has different async primitives:
 
-| Target | Native Async | Native Generators |
-|--------|--------------|-------------------|
-| TypeScript | `async`/`await` | `function*` |
-| Python | `async`/`await` | `yield` |
-| Zig | Removed in 0.11 | None |
-| Rust | `async`/`.await` | Unstable |
-| C++ | Coroutines (C++20) | None |
+| Target     | Native Async       | Native Generators |
+| ---------- | ------------------ | ----------------- |
+| TypeScript | `async`/`await`    | `function*`       |
+| Python     | `async`/`await`    | `yield`           |
+| Zig        | Removed in 0.11    | None              |
+| Rust       | `async`/`.await`   | Unstable          |
+| C++        | Coroutines (C++20) | None              |
 
 Rather than emit target-native async everywhere (impossible for Zig), Faber provides a **unified runtime protocol** that compiles to:
+
 - Native async where available (TS, Python)
 - State machines where not (Zig, Rust, C++)
 
@@ -69,27 +70,46 @@ All syscalls return `Responsum<T>` — a tagged union describing the result:
 ```
 
 **TypeScript:**
+
 ```typescript
-type Responsum<T> =
-  | { op: 'pending' }
-  | { op: 'ok'; data: T }
-  | { op: 'item'; data: T }
-  | { op: 'done' }
-  | { op: 'err'; code: string; message: string };
+type FaberError = {
+    code: string;
+    message: string;
+    details?: unknown;
+    cause?: FaberError;
+};
+
+type Responsum<T> = { op: 'pending' } | { op: 'ok'; data: T } | { op: 'item'; data: T } | { op: 'done' } | { op: 'err'; error: FaberError };
 ```
 
 **Zig:**
+
 ```zig
+const FaberError = struct {
+    code: []const u8,
+    message: []const u8,
+    // Optional enrichment (best-effort per target/runtime)
+    details: ?[]const u8 = null,
+    cause: ?*const FaberError = null,
+};
+
 fn Responsum(comptime T: type) type {
     return union(enum) {
         pending,
         ok: T,
         item: T,
         done,
-        err: struct { code: []const u8, message: []const u8 },
+        err: FaberError,
     };
 }
 ```
+
+**Protocol contract (required invariants):**
+
+- Single-value operation: `.pending* -> (.ok | .err)`
+- Streaming operation: `.pending* -> (.item | .pending)* -> (.done | .err)`
+- `.item` MUST NOT appear after a terminal variant.
+- `.done` and `.err` are terminal variants.
 
 ### 2. Handle Abstraction
 
@@ -97,13 +117,19 @@ All I/O sources implement a common interface:
 
 ```
 Handle
-├── id: RequestId
+├── id: HandleId
 ├── type: HandleType (file, socket, channel, timer, ...)
-├── exec(msg: Message) → Stream<Responsum<T>>
+├── exec(msg: Message) → OpStream<T>
 └── close() → void
+
+OpStream<T>
+├── id: RequestId
+├── poll(ctx) → Responsum<T>
+└── cancel(ctx) → void (optional)
 ```
 
 **Message:**
+
 ```
 Message
 ├── op: string        // "read", "write", "get", "query", ...
@@ -111,16 +137,37 @@ Message
 └── id: RequestId     // For correlating responses
 ```
 
-This mirrors Monk's `Handle.exec(msg): AsyncIterable<Response>` pattern.
+**Rationale:** Native targets (TypeScript/Python) can expose `OpStream<T>` as an `AsyncIterable<Responsum<T>>`. Poll-based targets (Zig/C++ and potentially Rust) expose an explicit stream object that the executor drives via `poll()`.
+
+This keeps the _conceptual_ model identical across targets ("a stream of `Responsum`"), while allowing different execution mechanisms.
 
 **Zig:**
+
 ```zig
+const OpStream = struct {
+    id: u64,
+    vtable: *const OpStreamVTable,
+
+    pub fn poll(self: *OpStream, ctx: *ExecutorContext) Responsum(ResultType) {
+        return self.vtable.poll(self, ctx);
+    }
+
+    pub fn cancel(self: *OpStream, ctx: *ExecutorContext) void {
+        return self.vtable.cancel(self, ctx);
+    }
+};
+
+const OpStreamVTable = struct {
+    poll: *const fn (*OpStream, *ExecutorContext) Responsum(ResultType),
+    cancel: *const fn (*OpStream, *ExecutorContext) void,
+};
+
 const Handle = struct {
     id: u64,
     handle_type: HandleType,
     vtable: *const HandleVTable,
 
-    pub fn exec(self: *Handle, msg: Message) Responsum(ResultType) {
+    pub fn exec(self: *Handle, msg: Message) OpStream {
         return self.vtable.exec(self, msg);
     }
 
@@ -130,14 +177,16 @@ const Handle = struct {
 };
 
 const HandleVTable = struct {
-    exec: *const fn (*Handle, Message) Responsum(ResultType),
+    exec: *const fn (*Handle, Message) OpStream,
     close: *const fn (*Handle) void,
 };
 ```
 
 ### 3. Dispatcher (Syscall Table)
 
-Routes `ad` calls to handlers based on target pattern:
+Routes `ad` calls to handlers based on target pattern.
+
+**Streaming syscalls:** For streaming targets (e.g. `caelum:websocket`), the handler yields `.item(T)` values and terminates with `.done` or `.err`.
 
 ```
 ┌──────────────────────┬─────────────────────┬─────────────────┐
@@ -146,7 +195,7 @@ Routes `ad` calls to handlers based on target pattern:
 │ fasciculus:lege      │ FileReadHandler     │ Responsum<text> │
 │ fasciculus:scribe    │ FileWriteHandler    │ Responsum<void> │
 │ caelum:request       │ HttpHandler         │ Responsum<Resp> │
-│ caelum:websocket     │ WebSocketHandler    │ Stream<Message> │
+│ caelum:websocket     │ WebSocketHandler    │ Responsum<Message> │
 │ tempus:dormi         │ SleepHandler        │ Responsum<void> │
 │ https://*            │ → caelum:request    │ (rewrite)       │
 │ file://*             │ → fasciculus:lege   │ (rewrite)       │
@@ -154,6 +203,7 @@ Routes `ad` calls to handlers based on target pattern:
 ```
 
 **Compile-time dispatch (Zig):**
+
 ```zig
 pub fn dispatch(comptime target: []const u8, args: anytype) Responsum(ReturnType(target)) {
     if (comptime std.mem.startsWith(u8, target, "fasciculus:")) {
@@ -166,18 +216,21 @@ pub fn dispatch(comptime target: []const u8, args: anytype) Responsum(ReturnType
 }
 ```
 
+**Dynamic targets:** When the syscall target is not compile-time known (computed string, user input), Zig cannot use comptime dispatch. In that case, codegen uses a small runtime dispatch table (string comparisons) and yields `.err` for unknown syscalls.
+
 **Runtime dispatch (TypeScript):**
+
 ```typescript
 const dispatcher: Record<string, Handler> = {
-  'fasciculus:lege': fileReadHandler,
-  'fasciculus:scribe': fileWriteHandler,
-  'caelum:request': httpHandler,
-  // ...
+    'fasciculus:lege': fileReadHandler,
+    'fasciculus:scribe': fileWriteHandler,
+    'caelum:request': httpHandler,
+    // ...
 };
 
 async function* dispatch(target: string, ...args: unknown[]): AsyncIterable<Responsum<unknown>> {
-  const handler = dispatcher[target] ?? resolvePattern(target);
-  yield* handler(...args);
+    const handler = dispatcher[target] ?? resolvePattern(target);
+    yield* handler(...args);
 }
 ```
 
@@ -200,11 +253,14 @@ For concurrent operations, every request gets an ID:
 
 The executor tracks pending requests by ID. When I/O completes, the result is routed to the correct waiting state machine.
 
+**Uniqueness scope:** `RequestId` is required to be unique within a single executor instance. Native targets may use UUIDs; native-code targets may use a monotonic 64-bit counter (optionally prefixed with an executor ID if multiple executors are introduced).
+
 ### 5. Executor
 
 Drives state machines and manages I/O:
 
 **Single-threaded poll loop (Zig):**
+
 ```zig
 pub fn run(comptime T: type, future: *Future(T)) !T {
     var ctx = ExecutorContext.init();
@@ -227,15 +283,21 @@ pub fn run(comptime T: type, future: *Future(T)) !T {
 ```
 
 **Async wrapper (TypeScript):**
+
 ```typescript
 async function run<T>(gen: AsyncIterable<Responsum<T>>): Promise<T> {
     for await (const resp of gen) {
         switch (resp.op) {
-            case 'ok': return resp.data;
-            case 'err': throw new FaberError(resp.code, resp.message);
-            case 'pending': continue; // implicit in async iteration
-            case 'item': continue;    // collect or ignore
-            case 'done': throw new Error('Unexpected done in single-value context');
+            case 'ok':
+                return resp.data;
+            case 'err':
+                throw new FaberError(resp.error);
+            case 'pending':
+                continue; // implicit in async iteration
+            case 'item':
+                continue; // collect or ignore
+            case 'done':
+                throw new Error('Unexpected done in single-value context');
         }
     }
     throw new Error('Generator ended without result');
@@ -248,7 +310,12 @@ The Responsum protocol is not overhead—it's the unifying abstraction. Monk OS 
 
 ### 1. Uniform Dispatch
 
-Every syscall returns `AsyncIterable<Responsum<T>>`, regardless of semantics:
+Every syscall conceptually produces a stream of `Responsum<T>`, regardless of semantics.
+
+- TypeScript/Python expose this as `AsyncIterable<Responsum<T>>`.
+- Zig/C++ expose this as `OpStream<T>` driven by `poll()`.
+
+Example (TypeScript syntax):
 
 ```typescript
 // Single value
@@ -286,11 +353,12 @@ async function* items(): AsyncIterable<Item> {
 async function* items(): AsyncIterable<Responsum<Item>> {
     yield respond.item(item1);
     yield respond.item(item2);
-    yield respond.done();  // Explicit terminal signal
+    yield respond.done(); // Explicit terminal signal
 }
 ```
 
 This matters for:
+
 - **Backpressure** — Executor knows stream ended vs stalled
 - **Cleanup** — Terminal op triggers resource release
 - **Partial errors** — `.err` after `.item` is distinguishable from normal end
@@ -300,14 +368,14 @@ This matters for:
 ```typescript
 // Without protocol - exceptions
 async function fileRead(path: string): Promise<string> {
-    if (!exists(path)) throw new Error('ENOENT');  // Exception
+    if (!exists(path)) throw new Error('ENOENT'); // Exception
     return content;
 }
 
 // With protocol - errors are values
 async function* fileRead(path: string): AsyncIterable<Responsum<string>> {
     if (!exists(path)) {
-        yield respond.error('ENOENT', 'File not found');  // Value
+        yield respond.error('ENOENT', 'File not found'); // Value
         return;
     }
     yield respond.ok(content);
@@ -315,6 +383,7 @@ async function* fileRead(path: string): AsyncIterable<Responsum<string>> {
 ```
 
 Why errors-as-values matters:
+
 - **No exception unwinding** — Predictable control flow
 - **Streaming errors** — Error after 100 items is just another yield
 - **Cross-target consistency** — Same semantics on TS, Zig, Rust
@@ -328,7 +397,9 @@ Without protocol, targets diverge:
 // TS without protocol: exception
 try {
     const content = await fileRead('missing.txt');
-} catch (e) { /* error handling */ }
+} catch (e) {
+    /* error handling */
+}
 ```
 
 ```zig
@@ -359,15 +430,16 @@ Every response is inspectable:
 
 ```typescript
 for await (const resp of syscall('file:read', path)) {
-    logger.log(resp.op, resp.data);  // Uniform logging
-    metrics.record(resp.op);          // Uniform metrics
+    logger.log(resp.op, resp); // Uniform logging
+    metrics.record(resp.op); // Uniform metrics
 }
 ```
 
-Cancellation is explicit via protocol:
-- Consumer breaks from loop → triggers `iterator.return()`
-- Cleanup happens via terminal semantics
-- No dangling resources
+Cancellation is explicit via stream finalization + executor signals:
+
+- Consumer breaks from loop → triggers `iterator.return()` (native targets)
+- Executor sets a cancellation flag in context (poll-based targets)
+- Streams are responsible for cleanup on scope exit (no `.cancelled` Responsum variant)
 
 ---
 
@@ -382,6 +454,7 @@ ad "fasciculus:lege" ("file.txt") fiet textus pro content { ... }
 ```
 
 Becomes:
+
 ```typescript
 const content = await run(dispatch('fasciculus:lege', 'file.txt'));
 ```
@@ -392,11 +465,16 @@ The `run()` helper unwraps Responsum, throwing on `.err`:
 async function run<T>(gen: AsyncIterable<Responsum<T>>): Promise<T> {
     for await (const resp of gen) {
         switch (resp.op) {
-            case 'ok': return resp.data;
-            case 'err': throw new FaberError(resp.code, resp.message);
-            case 'item': continue;
-            case 'done': return undefined as T;
-            case 'pending': continue;
+            case 'ok':
+                return resp.data;
+            case 'err':
+                throw new FaberError(resp.error);
+            case 'item':
+                continue;
+            case 'done':
+                throw new Error('Unexpected done in single-value context');
+            case 'pending':
+                continue;
         }
     }
     throw new Error('Generator ended without result');
@@ -421,13 +499,13 @@ Most code should use verb binding (`fiet`/`fiunt`/`fient`) for consistency and d
 
 Use native `async fn` with Responsum mapped to Rust idioms:
 
-| Responsum | Rust |
-|-----------|------|
-| `.ok(T)` | `Poll::Ready(Ok(T))` |
-| `.err(E)` | `Poll::Ready(Err(FaberError))` |
-| `.pending` | `Poll::Pending` |
-| `.item(T)` | `Some(Ok(T))` via Stream |
-| `.done` | `None` via Stream |
+| Responsum  | Rust                           |
+| ---------- | ------------------------------ |
+| `.ok(T)`   | `Poll::Ready(Ok(T))`           |
+| `.err(E)`  | `Poll::Ready(Err(FaberError))` |
+| `.pending` | `Poll::Pending`                |
+| `.item(T)` | `Some(Ok(T))` via Stream       |
+| `.done`    | `None` via Stream              |
 
 ```fab
 functio fetch(textus url) fiet Response {
@@ -437,6 +515,7 @@ functio fetch(textus url) fiet Response {
 ```
 
 Becomes:
+
 ```rust
 pub async fn fetch(url: &str) -> Result<Response, FaberError> {
     let resp = caelum::request(url, "GET").await?;
@@ -447,6 +526,7 @@ pub async fn fetch(url: &str) -> Result<Response, FaberError> {
 Rust's compiler generates state machines for `async fn`. No manual state machine needed. The `?` operator maps to Responsum error propagation.
 
 For streaming (`fiunt`/`fient`):
+
 ```rust
 pub fn items() -> impl Stream<Item = Result<Item, FaberError>> {
     async_stream::stream! {
@@ -472,6 +552,7 @@ functio fetch(textus url) fiet Response {
 ```
 
 Becomes (Zig):
+
 ```zig
 const FetchState = union(enum) {
     start: struct { url: []const u8 },
@@ -507,27 +588,32 @@ pub fn fetch(url: []const u8) FetchFuture {
 
 Latin names for stdlib modules (matching `ad.md`):
 
-| Namespace | Domain | Example Syscalls |
-|-----------|--------|------------------|
-| `fasciculus` | Files | `lege`, `scribe`, `tolle`, `movere` |
-| `caelum` | Network | `request`, `websocket`, `listen` |
-| `tempus` | Time | `dormi`, `nunc`, `intervallum` |
-| `memoria` | Memory | `alloca`, `libera` (Zig/Rust/C++) |
-| `processus` | Process | `genera`, `occide`, `expecta` |
-| `canalis` | Channels | `crea`, `mitte`, `recipe` |
-| `aleator` | Random | `numerus`, `bytes`, `uuid` |
-| `crypto` | Crypto | `hash`, `signa`, `verifica` |
+| Namespace    | Domain   | Example Syscalls                    |
+| ------------ | -------- | ----------------------------------- |
+| `fasciculus` | Files    | `lege`, `scribe`, `tolle`, `movere` |
+| `caelum`     | Network  | `request`, `websocket`, `listen`    |
+| `tempus`     | Time     | `dormi`, `nunc`, `intervallum`      |
+| `memoria`    | Memory   | `alloca`, `libera` (Zig/Rust/C++)   |
+| `processus`  | Process  | `genera`, `occide`, `expecta`       |
+| `canalis`    | Channels | `crea`, `mitte`, `recipe`           |
+| `aleator`    | Random   | `numerus`, `bytes`, `uuid`          |
+| `crypto`     | Crypto   | `hash`, `signa`, `verifica`         |
 
 ## Backpressure
 
-For streaming syscalls (`fiunt`/`fient`), the executor implements flow control:
+For streaming syscalls (`fiunt`/`fient`), the executor implements flow control.
 
-| Constant | Value | Purpose |
-|----------|-------|---------|
-| `AQUA_ALTA` | 1000 | Pause producing |
-| `AQUA_BASSA` | 100 | Resume producing |
-| `PULSUS_INTERVALLUM` | 100ms | Consumer liveness check |
-| `MORA_MAXIMUM` | 5000ms | Abort if consumer dead |
+- Native async targets: backpressure is naturally enforced by consumer-driven iteration (the producer runs when polled).
+- Poll-based targets: the executor may buffer items, so explicit high/low watermarks apply.
+
+Default constants:
+
+| Constant             | Value  | Purpose                 |
+| -------------------- | ------ | ----------------------- |
+| `AQUA_ALTA`          | 1000   | Pause producing         |
+| `AQUA_BASSA`         | 100    | Resume producing        |
+| `PULSUS_INTERVALLUM` | 100ms  | Consumer liveness check |
+| `MORA_MAXIMUM`       | 5000ms | Abort if consumer dead  |
 
 (Latin: aqua alta = high water, aqua bassa = low water, pulsus = pulse/ping, mora = delay)
 
@@ -546,6 +632,7 @@ ad "fasciculus:lege" ("missing.txt") fiet textus pro content {
 The `cape` clause catches `.err` responses. Without it, errors propagate to caller.
 
 **Zig codegen:**
+
 ```zig
 switch (future.poll(&ctx)) {
     .ok => |content| { ... },
@@ -559,32 +646,36 @@ switch (future.poll(&ctx)) {
 
 ## Relationship to Existing Designs
 
-| Document | Relationship |
-|----------|--------------|
-| `ad.md` | Nucleus provides the runtime that `ad` dispatches to |
-| `zig-async.md` | State machine compilation is one strategy within Nucleus |
-| `flumina.md` | Responsum protocol originated here; Nucleus generalizes it |
-| `two-pass.md` | Liveness analysis feeds into state machine generation |
+| Document       | Relationship                                               |
+| -------------- | ---------------------------------------------------------- |
+| `ad.md`        | Nucleus provides the runtime that `ad` dispatches to       |
+| `zig-async.md` | State machine compilation is one strategy within Nucleus   |
+| `flumina.md`   | Responsum protocol originated here; Nucleus generalizes it |
+| `two-pass.md`  | Liveness analysis feeds into state machine generation      |
 
 ## Implementation Plan
 
 ### Phase 1: Protocol Unification
+
 1. Define `Responsum<T>` for all targets in preamble
 2. Standardize syscall table schema
 3. Add request ID generation
 
 ### Phase 2: TypeScript Runtime
+
 1. Implement dispatcher with pattern matching
 2. Wire `ad` codegen to dispatcher
 3. Test with file/http syscalls
 
 ### Phase 3: Zig Runtime
+
 1. Implement `Handle` vtable pattern
 2. Implement `ExecutorContext` with I/O polling
 3. State machine codegen for `fiet`/`fient`
 4. Syscall handlers for `fasciculus`, `caelum`, `tempus`
 
 ### Phase 4: Other Targets
+
 1. Python — similar to TypeScript
 2. Rust — state machines like Zig, or native async
 3. C++ — coroutines or callback-based
@@ -666,8 +757,8 @@ interface Handle {
 
 ```typescript
 // Handler yields 100 items, then crashes
-yield respond.item(item1);   // Consumer sees this
-yield respond.item(item2);   // Consumer sees this
+yield respond.item(item1); // Consumer sees this
+yield respond.item(item2); // Consumer sees this
 // ... 98 more items ...
 // CRASH
 yield respond.error('...'); // Consumer sees this AFTER 100 items
@@ -701,28 +792,28 @@ Monk aborts streams after 5s without ping. Slow networks can trigger false timeo
 
 ### Opportunities for Simplification
 
-| Monk Complexity | Faber Simplification |
-|-----------------|---------------------|
-| Message serialization across Workers | Direct function calls |
-| Per-stream ping timers | Language-native yield/suspend |
-| Virtual process validation | Trust OS process isolation |
-| UUID request IDs | 64-bit counter (native targets) |
-| Runtime syscall dispatch | Compile-time dispatch (Zig comptime) |
-| Per-syscall auth checking | Entry-point or compile-time auth |
+| Monk Complexity                      | Faber Simplification                 |
+| ------------------------------------ | ------------------------------------ |
+| Message serialization across Workers | Direct function calls                |
+| Per-stream ping timers               | Language-native yield/suspend        |
+| Virtual process validation           | Trust OS process isolation           |
+| UUID request IDs                     | 64-bit counter (native targets)      |
+| Runtime syscall dispatch             | Compile-time dispatch (Zig comptime) |
+| Per-syscall auth checking            | Entry-point or compile-time auth     |
 
 ### HAL Device Model
 
 Monk's 17-device HAL is worth adopting selectively:
 
-| Device | Faber Equivalent | Priority |
-|--------|------------------|----------|
-| `block` | `fasciculus` (files) | High |
-| `network` | `caelum` (network) | High |
-| `timer` | `tempus` | High |
-| `entropy` | `aleator` | Medium |
-| `crypto` | `crypto` | Medium |
-| `storage` | EMS-style (future) | Low |
-| `console` | `scriba` | High |
+| Device    | Faber Equivalent     | Priority |
+| --------- | -------------------- | -------- |
+| `block`   | `fasciculus` (files) | High     |
+| `network` | `caelum` (network)   | High     |
+| `timer`   | `tempus`             | High     |
+| `entropy` | `aleator`            | Medium   |
+| `crypto`  | `crypto`             | Medium   |
+| `storage` | EMS-style (future)   | Low      |
+| `console` | `scriba`             | High     |
 
 ---
 
@@ -795,6 +886,7 @@ const OuterFuture = struct {
 **Decision**: Not in v1. Compile-time syscall table only.
 
 **Rationale**: Runtime registration requires:
+
 - Type erasure (fighting Zig/Rust)
 - Dynamic dispatch overhead
 - Security concerns (arbitrary code execution)
@@ -816,6 +908,7 @@ ad "fasciculus:lege" ("file.txt") -> textus pro content
 **Rationale**: Reuses existing arrow vs verb distinction from function declarations. No new syntax needed.
 
 **Trade-offs**:
+
 - Arrow bypasses logging, metrics, mocking
 - Arrow only works on TS/Python (compile error on Zig/Rust/C++)
 - Verb binding works on all targets
@@ -842,6 +935,7 @@ const BackpressureConfig = struct {
 Monk uses Workers for isolation. Faber compiles to native code without Worker boundaries.
 
 **Options for isolation**:
+
 1. **None** — Single process, shared memory (fastest, least safe)
 2. **OS processes** — Use `processus:genera` to spawn isolated processes
 3. **WASM sandboxing** — Future consideration for untrusted code
