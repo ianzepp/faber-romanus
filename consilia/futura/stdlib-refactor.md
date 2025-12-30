@@ -434,6 +434,65 @@ This could be wired up to auto-generate arena in main().
 - [ ] Phase 3: Other targets
 - [ ] Phase 4: Cleanup old norma files
 
+### Future: Package-based Import (Phase 5)
+
+Currently, subsidia/*.zig files are injected into the preamble of every generated file. This works but bloats output. The goal is to allow importing from a package instead:
+
+```zig
+// Current (preamble injection - 300+ lines per file)
+const std = @import("std");
+pub fn Lista(comptime T: type) type { ... }  // Entire definition inline
+
+// Goal (package import - 2 lines)
+const std = @import("std");
+const faber = @import("faber");
+```
+
+**Package files already created:**
+
+```
+subsidia/zig/
+  build.zig    # Exposes "faber" module for build.zig projects
+  mod.zig      # Re-exports Lista, Tabula, Copia
+  lista.zig
+  tabula.zig
+  copia.zig
+```
+
+**Two usage modes:**
+
+1. **Single-file compilation** (test runner, quick scripts):
+   Use Zig's `-M` module flag:
+   ```bash
+   zig build-exe output.zig --mod faber::/path/to/subsidia/zig/mod.zig -femit-bin=output
+   ```
+
+2. **Build.zig projects** (real applications):
+   Add faber as a dependency in `build.zig.zon`:
+   ```zig
+   .dependencies = .{
+       .faber = .{
+           .url = "https://github.com/ianzepp/faber-romanus/archive/v1.0.0.tar.gz",
+           .hash = "...",
+       },
+   },
+   ```
+   Then in code: `const faber = @import("faber");`
+
+**Implementation steps:**
+
+- [ ] Update `scripta/exempla.ts` to use `--mod` flag instead of preamble injection:
+  ```typescript
+  const SUBSIDIA = join(ROOT, 'subsidia', 'zig', 'mod.zig');
+  await $`zig build-exe ${file} --mod faber::${SUBSIDIA} -femit-bin=${output}`.quiet();
+  ```
+- [ ] Update preamble generator to emit `@import("faber")` instead of inline definitions
+- [ ] Add CLI flag `--emit-single` to preserve current inline behavior if needed
+- [ ] Test with Zig 0.11+ (module flag syntax may vary)
+- [ ] Document package installation for end users
+
+**Note:** Zig packages are decentralized (URL-based, no registry account needed). The faber-romanus repo itself can serve as the package source.
+
 ## Related Documents
 
 - `consilia/futura/preamble-rework.md` - Related preamble restructuring
