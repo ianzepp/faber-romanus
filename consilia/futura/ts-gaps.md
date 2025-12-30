@@ -17,10 +17,10 @@ Features are classified by severity:
 
 | TS Feature | Severity | Notes |
 |------------|----------|-------|
-| `extends` (class inheritance) | Deferred | No Faber equivalent. Could add, but only TS/Python targets would support. |
-| `abstract class` | Error | No Faber equivalent. |
-| `abstract method` | Error | No Faber equivalent. |
-| `protected` modifier | Error | Faber has only `privatus` (private) and public (default). |
+| `extends` (class inheritance) | Synthesize | Use `sub` keyword. Target-gated: TS/Py/C++ only; error on Rust/Zig. |
+| `abstract class` | Synthesize | Use `abstractus genus`. Target-gated: TS/Py/C++ only. |
+| `abstract method` | Synthesize | Use `abstractus functio`. Target-gated: TS/Py/C++ only. |
+| `protected` modifier | Synthesize | Use `protectus`. Target-gated: TS/Py/C++ only. |
 | `readonly` modifier | Strip | No runtime effect; Faber uses `fixum` for immutability at binding level. |
 | Constructor parameter properties | Synthesize | `constructor(public x: number)` → explicit field + assignment in `creo`. |
 | `static` blocks | Error | No Faber equivalent. |
@@ -32,7 +32,7 @@ Features are classified by severity:
 
 | TS Feature | Severity | Notes |
 |------------|----------|-------|
-| Generic constraints (`T extends Foo`) | Error | Faber `prae typus T` has no constraint syntax. |
+| Generic constraints (`T extends Foo`) | Synthesize | Use `<T implet Pactum>` or `<T sub Genus>`. All targets supported. |
 | Conditional types (`T extends U ? A : B`) | Error | No Faber equivalent. |
 | Mapped types (`{ [K in keyof T]: ... }`) | Error | No Faber equivalent. |
 | `infer` keyword | Error | No Faber equivalent. |
@@ -59,7 +59,7 @@ Features are classified by severity:
 | `import =` (CommonJS) | Error | Faber uses ES module syntax only. |
 | Re-exports (`export { x } from 'y'`) | Synthesize | Transform to import + export. |
 | `export default` | Synthesize | Transform to named export. |
-| Dynamic `import()` | Deferred | Could map to async import. |
+| Dynamic `import()` | Synthesize | Use `ex "path" importabit modulus`. All targets supported. |
 
 ---
 
@@ -79,7 +79,7 @@ Features are classified by severity:
 | TS Feature | Severity | Notes |
 |------------|----------|-------|
 | Function overloads | Synthesize | Keep only implementation signature. |
-| `this` parameter | Error | No Faber equivalent. |
+| `this` parameter | Synthesize | Use `ego` as parameter type and/or return type. Enables fluent APIs. |
 | `asserts` return type | Strip | No runtime effect. |
 | `is` type predicates | Strip | No runtime effect (use `est` for runtime checks). |
 
@@ -100,7 +100,7 @@ Features are classified by severity:
 
 | TS Feature | Severity | Notes |
 |------------|----------|-------|
-| `delete` operator | Error | No Faber equivalent. |
+| `delete` operator | Error | Use `tabula.dele(k)` for dynamic keys. No dynamic property ops on `objectum`. |
 | `void` operator | Synthesize | Transform to expression + `nihil`. |
 | `in` operator (property check) | Synthesize | Could use object method or `habet`. |
 | `instanceof` | Synthesize | Maps to `est` type check. |
@@ -115,7 +115,7 @@ Features are classified by severity:
 
 | TS Feature | Severity | Notes |
 |------------|----------|-------|
-| RegExp literals | Deferred | Faber has `sed` planned but not implemented. |
+| RegExp literals | Synthesize | Maps to `sed` type (designed, pending implementation). |
 | Tagged template literals | Error | No Faber equivalent. |
 | BigInt literals | Synthesize | Maps to `magnus` type. |
 
@@ -135,10 +135,9 @@ Features are classified by severity:
 
 | Severity | Count | Action |
 |----------|-------|--------|
-| Error | ~25 | Reject with clear error message |
-| Deferred | ~4 | Could add to Faber (target-gated) |
-| Synthesize | ~15 | Transform to equivalent Faber |
-| Strip | ~7 | Remove (no runtime effect) |
+| Error | 24 | Reject with clear error message |
+| Synthesize | 24 | Transform to equivalent Faber |
+| Strip | 7 | Remove (no runtime effect) |
 
 ---
 
