@@ -629,7 +629,7 @@ export class ZigGenerator {
                 this.features.lista = true;
                 const elemType = params[0];
                 const innerType = elemType && 'name' in elemType ? this.genType(elemType as TypeAnnotation) : 'anytype';
-                result = `[]${innerType}`;
+                result = `Lista(${innerType})`;
                 break;
             }
             case 'tabula': {

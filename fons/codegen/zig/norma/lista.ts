@@ -7,21 +7,14 @@
  *
  * ARCHITECTURE
  * ============
- * This module defines Zig translations for lista<T> (ArrayList) methods.
- * Zig's ArrayList requires an allocator for most operations. We use a
- * module-level arena allocator initialized in the preamble.
+ * This module defines Zig translations for lista<T> methods.
+ * Methods delegate to the Lista(T) type defined in the preamble.
  *
- * ZIG SPECIFICS
- * =============
- * - lista<T> maps to std.ArrayList(T)
- * - Most mutating operations need allocator: list.append(alloc, x)
- * - Access via .items slice: list.items[0], list.items.len
- * - No functional methods (map, filter) - use ex...pro loops instead
- *
- * UNIMPLEMENTED METHODS
- * =====================
- * Functional methods (mappata, filtrata, reducta, etc.) are stubbed with
- * @compileError since Zig has no equivalent. Users should use explicit loops.
+ * WHY SIMPLE METHOD CALLS
+ * =======================
+ * The Lista(T) type in the preamble provides all these methods natively.
+ * This registry just maps Latin method names to Lista method calls.
+ * The Lista type handles allocator management internally.
  *
  * INPUT/OUTPUT CONTRACT
  * =====================
@@ -37,10 +30,10 @@
 /**
  * Generator function type for Zig collection methods.
  *
- * WHY: The curator parameter allows methods to use the correct allocator
- *      based on context (function parameter vs module-level arena).
+ * WHY: The curator parameter is kept for API compatibility but Lista
+ *      handles allocator internally, so it's typically unused.
  * WHY: The args parameter is a string[] (not a joined string) to preserve
- *      argument boundaries for multi-parameter lambdas.
+ *      argument boundaries for multi-parameter methods.
  */
 export type ZigGenerator = (obj: string, args: string[], curator: string) => string;
 
@@ -57,7 +50,7 @@ export interface ListaMethod {
     /**
      * Zig translation.
      * - string: simple property/method access
-     * - function: custom code generation with allocator context
+     * - function: custom code generation
      */
     zig: string | ZigGenerator;
 }
@@ -69,44 +62,40 @@ export interface ListaMethod {
 /**
  * Registry of Latin array methods with Zig translations.
  *
- * WHY: Zig's ArrayList has different semantics than JS arrays:
- * - Requires allocator for growth operations
- * - Uses .items slice for element access
- * - No built-in functional methods
+ * WHY: All methods delegate to Lista(T) which handles allocator internally.
+ *      This makes the generated code clean and readable.
  */
 export const LISTA_METHODS: Record<string, ListaMethod> = {
     // -------------------------------------------------------------------------
     // ADDING ELEMENTS
     // -------------------------------------------------------------------------
 
-    /** Add element to end (mutates, needs allocator) */
+    /** Add element to end (mutates) */
     adde: {
         latin: 'adde',
         mutates: true,
-        // WHY: ArrayList.append() can fail on OOM, we catch and panic
-        zig: (obj, args, curator) => `${obj}.append(${curator}, ${args[0]}) catch @panic("OOM")`,
+        zig: (obj, args) => `${obj}.adde(${args[0]})`,
     },
 
-    /** Add element to end (returns new list) - NOT IMPLEMENTED */
+    /** Add element to end (returns new lista) */
     addita: {
         latin: 'addita',
         mutates: false,
-        zig: () => `@compileError("addita (immutable append) not implemented for Zig - use adde or explicit loop")`,
+        zig: (obj, args) => `${obj}.addita(${args[0]})`,
     },
 
     /** Add element to start (mutates) */
     praepone: {
         latin: 'praepone',
         mutates: true,
-        // WHY: ArrayList.insert() at index 0 = prepend
-        zig: (obj, args, curator) => `${obj}.insert(${curator}, 0, ${args[0]}) catch @panic("OOM")`,
+        zig: (obj, args) => `${obj}.praepone(${args[0]})`,
     },
 
-    /** Add element to start (returns new list) - NOT IMPLEMENTED */
+    /** Add element to start (returns new lista) */
     praeposita: {
         latin: 'praeposita',
         mutates: false,
-        zig: () => `@compileError("praeposita (immutable prepend) not implemented for Zig - use praepone or explicit loop")`,
+        zig: (obj, args) => `${obj}.praeposita(${args[0]})`,
     },
 
     // -------------------------------------------------------------------------
@@ -117,38 +106,35 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     remove: {
         latin: 'remove',
         mutates: true,
-        // WHY: pop() returns optional, we use .? to unwrap (panics if empty)
-        zig: (obj, _args) => `${obj}.pop()`,
+        zig: obj => `${obj}.remove()`,
     },
 
-    /** Remove last element (returns new list) - NOT IMPLEMENTED */
+    /** Remove last element (returns new lista) */
     remota: {
         latin: 'remota',
         mutates: false,
-        zig: () => `@compileError("remota (immutable pop) not implemented for Zig - use remove or explicit loop")`,
+        zig: obj => `${obj}.remota()`,
     },
 
     /** Remove and return first element (mutates) */
     decapita: {
         latin: 'decapita',
         mutates: true,
-        // WHY: orderedRemove(0) removes first element, preserving order
-        zig: (obj, _args) => `${obj}.orderedRemove(0)`,
+        zig: obj => `${obj}.decapita()`,
     },
 
-    /** Remove first element (returns new list) - NOT IMPLEMENTED */
+    /** Remove first element (returns new lista) */
     decapitata: {
         latin: 'decapitata',
         mutates: false,
-        zig: () => `@compileError("decapitata (immutable shift) not implemented for Zig - use decapita or explicit loop")`,
+        zig: obj => `${obj}.decapitata()`,
     },
 
     /** Clear all elements (mutates) */
     purga: {
         latin: 'purga',
         mutates: true,
-        // WHY: clearRetainingCapacity keeps allocated memory for reuse
-        zig: (obj, _args) => `${obj}.clearRetainingCapacity()`,
+        zig: obj => `${obj}.purga()`,
     },
 
     // -------------------------------------------------------------------------
@@ -159,23 +145,28 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     primus: {
         latin: 'primus',
         mutates: false,
-        // WHY: Direct slice access, returns optional-like behavior via bounds
-        zig: (obj, _args) => `${obj}.items[0]`,
+        zig: obj => `${obj}.primus()`,
     },
 
     /** Get last element */
     ultimus: {
         latin: 'ultimus',
         mutates: false,
-        // WHY: items.len - 1 gives last index
-        zig: (obj, _args) => `${obj}.items[${obj}.items.len - 1]`,
+        zig: obj => `${obj}.ultimus()`,
     },
 
     /** Get element at index */
     accipe: {
         latin: 'accipe',
         mutates: false,
-        zig: (obj, args) => `${obj}.items[${args[0]}]`,
+        zig: (obj, args) => `${obj}.accipe(${args[0]})`,
+    },
+
+    /** Get raw slice for iteration */
+    toSlice: {
+        latin: 'toSlice',
+        mutates: false,
+        zig: obj => `${obj}.toSlice()`,
     },
 
     // -------------------------------------------------------------------------
@@ -186,33 +177,32 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     longitudo: {
         latin: 'longitudo',
         mutates: false,
-        zig: (obj, _args) => `${obj}.items.len`,
+        zig: obj => `${obj}.longitudo()`,
     },
 
     /** Check if empty */
     vacua: {
         latin: 'vacua',
         mutates: false,
-        zig: (obj, _args) => `(${obj}.items.len == 0)`,
+        zig: obj => `${obj}.vacua()`,
     },
 
     // -------------------------------------------------------------------------
     // SEARCHING
     // -------------------------------------------------------------------------
 
-    /** Check if contains element - NOT FULLY IMPLEMENTED */
+    /** Check if contains element */
     continet: {
         latin: 'continet',
         mutates: false,
-        // WHY: Zig has no built-in includes. Would need std.mem.indexOfScalar
-        zig: (obj, args) => `(std.mem.indexOfScalar(@TypeOf(${obj}.items[0]), ${obj}.items, ${args[0]}) != null)`,
+        zig: (obj, args) => `${obj}.continet(${args[0]})`,
     },
 
     /** Find index of element */
     indiceDe: {
         latin: 'indiceDe',
         mutates: false,
-        zig: (obj, args) => `std.mem.indexOfScalar(@TypeOf(${obj}.items[0]), ${obj}.items, ${args[0]})`,
+        zig: (obj, args) => `${obj}.indiceDe(${args[0]})`,
     },
 
     // -------------------------------------------------------------------------
@@ -223,103 +213,85 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     omnes: {
         latin: 'omnes',
         mutates: false,
-        // WHY: Inline loop since Zig has no .all() iterator method
-        zig: (obj, args, _curator) => {
-            return `blk: { for (${obj}.items) |v| { if (!${args[0]}(v)) break :blk false; } break :blk true; }`;
-        },
+        zig: (obj, args) => `${obj}.omnes(${args[0]})`,
     },
 
     /** Check if any element matches predicate */
     aliquis: {
         latin: 'aliquis',
         mutates: false,
-        zig: (obj, args, _curator) => {
-            return `blk: { for (${obj}.items) |v| { if (${args[0]}(v)) break :blk true; } break :blk false; }`;
-        },
+        zig: (obj, args) => `${obj}.aliquis(${args[0]})`,
     },
 
     /** Find first element matching predicate */
     inveni: {
         latin: 'inveni',
         mutates: false,
-        zig: (obj, args, _curator) => {
-            return `blk: { for (${obj}.items) |v| { if (${args[0]}(v)) break :blk v; } break :blk null; }`;
-        },
+        zig: (obj, args) => `${obj}.inveni(${args[0]})`,
     },
 
     /** Find index of first element matching predicate */
     inveniIndicem: {
         latin: 'inveniIndicem',
         mutates: false,
-        zig: (obj, args, _curator) => {
-            return `blk: { for (${obj}.items, 0..) |v, i| { if (${args[0]}(v)) break :blk i; } break :blk null; }`;
-        },
+        zig: (obj, args) => `${obj}.inveniIndicem(${args[0]})`,
     },
 
     // -------------------------------------------------------------------------
-    // FUNCTIONAL METHODS (allocating)
+    // FUNCTIONAL METHODS (allocating, return new lista)
     // -------------------------------------------------------------------------
 
-    /** Filter elements (returns new list) */
+    /** Filter elements (returns new lista) */
     filtrata: {
         latin: 'filtrata',
         mutates: false,
-        zig: (obj, args, curator) => {
-            // WHY: Create new ArrayList, iterate and append matching elements
-            return `blk: { var result = std.ArrayList(@TypeOf(${obj}.items[0])).init(${curator}); for (${obj}.items) |v| { if (${args[0]}(v)) result.append(${curator}, v) catch @panic("OOM"); } break :blk result; }`;
-        },
+        zig: (obj, args) => `${obj}.filtrata(${args[0]})`,
     },
 
-    /** Map elements (returns new list) */
+    /** Map elements (returns new lista) */
     mappata: {
         latin: 'mappata',
         mutates: false,
-        zig: (obj, args, curator) => {
-            // WHY: Create new ArrayList with transformed elements
-            return `blk: { var result = std.ArrayList(@TypeOf(${args[0]}(${obj}.items[0]))).init(${curator}); for (${obj}.items) |v| { result.append(${curator}, ${args[0]}(v)) catch @panic("OOM"); } break :blk result; }`;
-        },
+        zig: (obj, args) => `${obj}.mappata(${args[0]})`,
     },
 
     /** Reduce to single value */
     reducta: {
         latin: 'reducta',
         mutates: false,
-        zig: (obj, args, _curator) => {
-            // args[0] = reducer fn, args[1] = initial value (optional)
-            const init = args.length >= 2 ? args[1] : '0';
-            return `blk: { var acc = ${init}; for (${obj}.items) |v| { acc = ${args[0]}(acc, v); } break :blk acc; }`;
+        zig: (obj, args) => {
+            // args[0] = reducer fn, args[1] = initial value
+            if (args.length >= 2) {
+                return `${obj}.reducta(${args[0]}, ${args[1]})`;
+            }
+            return `${obj}.reducta(${args[0]}, 0)`;
         },
     },
 
-    /** Reverse (returns new list) */
+    /** Reverse (returns new lista) */
     inversa: {
         latin: 'inversa',
         mutates: false,
-        zig: (obj, _args, curator) => {
-            return `blk: { var result = std.ArrayList(@TypeOf(${obj}.items[0])).init(${curator}); var i: usize = ${obj}.items.len; while (i > 0) { i -= 1; result.append(${curator}, ${obj}.items[i]) catch @panic("OOM"); } break :blk result; }`;
-        },
+        zig: obj => `${obj}.inversa()`,
     },
 
-    /** Sort (returns new list) */
+    /** Sort (returns new lista) */
     ordinata: {
         latin: 'ordinata',
         mutates: false,
-        zig: (obj, args, curator) => {
-            // Clone the items, sort them, return as new ArrayList
-            const compareFn = args.length > 0 ? args[0] : 'std.sort.asc(@TypeOf(result.items[0]))';
-            return `blk: { var result = ${obj}.clone() catch @panic("OOM"); std.mem.sort(@TypeOf(result.items[0]), result.items, {}, ${compareFn}); break :blk result; }`;
-        },
+        zig: obj => `${obj}.ordinata()`,
     },
 
     /** Slice - take elements from start to end */
     sectio: {
         latin: 'sectio',
         mutates: false,
-        zig: (obj, args, curator) => {
+        zig: (obj, args) => {
             if (args.length >= 2) {
-                return `blk: { var result = std.ArrayList(@TypeOf(${obj}.items[0])).init(${curator}); for (${obj}.items[${args[0]}..${args[1]}]) |v| { result.append(${curator}, v) catch @panic("OOM"); } break :blk result; }`;
+                return `${obj}.sectio(${args[0]}, ${args[1]})`;
             }
-            return `blk: { var result = std.ArrayList(@TypeOf(${obj}.items[0])).init(${curator}); for (${obj}.items[${args[0]}..]) |v| { result.append(${curator}, v) catch @panic("OOM"); } break :blk result; }`;
+            // Single arg: from start to end
+            return `${obj}.sectio(${args[0]}, ${obj}.longitudo())`;
         },
     },
 
@@ -327,27 +299,21 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     prima: {
         latin: 'prima',
         mutates: false,
-        zig: (obj, args, curator) => {
-            return `blk: { const n = @min(${args[0]}, ${obj}.items.len); var result = std.ArrayList(@TypeOf(${obj}.items[0])).init(${curator}); for (${obj}.items[0..n]) |v| { result.append(${curator}, v) catch @panic("OOM"); } break :blk result; }`;
-        },
+        zig: (obj, args) => `${obj}.prima(${args[0]})`,
     },
 
     /** Take last n elements */
     ultima: {
         latin: 'ultima',
         mutates: false,
-        zig: (obj, args, curator) => {
-            return `blk: { const n = @min(${args[0]}, ${obj}.items.len); const start = ${obj}.items.len - n; var result = std.ArrayList(@TypeOf(${obj}.items[0])).init(${curator}); for (${obj}.items[start..]) |v| { result.append(${curator}, v) catch @panic("OOM"); } break :blk result; }`;
-        },
+        zig: (obj, args) => `${obj}.ultima(${args[0]})`,
     },
 
     /** Skip first n elements */
     omitte: {
         latin: 'omitte',
         mutates: false,
-        zig: (obj, args, curator) => {
-            return `blk: { const skip = @min(${args[0]}, ${obj}.items.len); var result = std.ArrayList(@TypeOf(${obj}.items[0])).init(${curator}); for (${obj}.items[skip..]) |v| { result.append(${curator}, v) catch @panic("OOM"); } break :blk result; }`;
-        },
+        zig: (obj, args) => `${obj}.omitte(${args[0]})`,
     },
 
     // -------------------------------------------------------------------------
@@ -358,17 +324,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     ordina: {
         latin: 'ordina',
         mutates: true,
-        zig: (obj, args, _curator) => {
-            const compareFn = args.length > 0 ? args[0] : `std.sort.asc(@TypeOf(${obj}.items[0]))`;
-            return `std.mem.sort(@TypeOf(${obj}.items[0]), ${obj}.items, {}, ${compareFn})`;
-        },
+        zig: obj => `${obj}.ordina()`,
     },
 
     /** Reverse in place */
     inverte: {
         latin: 'inverte',
         mutates: true,
-        zig: (obj, _args, _curator) => `std.mem.reverse(@TypeOf(${obj}.items[0]), ${obj}.items)`,
+        zig: obj => `${obj}.inverte()`,
     },
 
     // -------------------------------------------------------------------------
@@ -379,10 +342,7 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     perambula: {
         latin: 'perambula',
         mutates: false,
-        zig: (obj, args, _curator) => {
-            // WHY: Execute callback for each element using inline for loop
-            return `for (${obj}.items) |v| { ${args[0]}(v); }`;
-        },
+        zig: (obj, args) => `${obj}.perambula(${args[0]})`,
     },
 
     /** Join elements to string */
@@ -401,47 +361,40 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
     summa: {
         latin: 'summa',
         mutates: false,
-        // WHY: Use a labeled block with inline loop since Zig has no reduce()
-        zig: (obj, _args) => {
-            return `blk: { var sum: i64 = 0; for (${obj}.items) |v| { sum += v; } break :blk sum; }`;
-        },
+        zig: obj => `${obj}.summa()`,
     },
 
     /** Average of numeric elements */
     medium: {
         latin: 'medium',
         mutates: false,
-        zig: (obj, _args) => {
-            return `blk: { var sum: i64 = 0; for (${obj}.items) |v| { sum += v; } break :blk @as(f64, @floatFromInt(sum)) / @as(f64, @floatFromInt(${obj}.items.len)); }`;
-        },
+        zig: obj => `${obj}.medium()`,
     },
 
     /** Minimum value */
     minimus: {
         latin: 'minimus',
         mutates: false,
-        // WHY: std.mem.min returns ?T, we iterate to get the actual min
-        zig: (obj, _args) => `std.mem.min(@TypeOf(${obj}.items[0]), ${obj}.items)`,
+        zig: obj => `${obj}.minimus()`,
     },
 
     /** Maximum value */
     maximus: {
         latin: 'maximus',
         mutates: false,
-        zig: (obj, _args) => `std.mem.max(@TypeOf(${obj}.items[0]), ${obj}.items)`,
+        zig: obj => `${obj}.maximus()`,
     },
 
     /** Count elements (optionally matching predicate) */
     numera: {
         latin: 'numera',
         mutates: false,
-        zig: (obj, args, _curator) => {
+        zig: (obj, args) => {
             if (args.length > 0) {
-                // With predicate - count matching
-                return `blk: { var count: usize = 0; for (${obj}.items) |v| { if (${args[0]}(v)) { count += 1; } } break :blk count; }`;
+                return `${obj}.numera(${args[0]})`;
             }
-            // No predicate - just length
-            return `${obj}.items.len`;
+            // No predicate - pass null
+            return `${obj}.numera(null)`;
         },
     },
 };

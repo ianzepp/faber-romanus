@@ -46,7 +46,8 @@
 # Curator Tracking in Collection Methods
 # =============================================================================
 
-# Inside function with curator param, use that param for collection ops
+# Inside function with curator param, Lista handles allocator internally
+# WHY: Lista(T) stores its allocator at init time, so method calls don't need it
 - name: 'lista.adde uses curator param'
   input: |
       functio build(curator memoria) {
@@ -54,7 +55,7 @@
         items.adde(1)
       }
   zig:
-      - 'items.append(memoria, 1)'
+      - 'items.adde(1)'
   rs:
       - 'fn build(memoria: curator)'
       - 'let mut items = vec![]'
@@ -65,13 +66,13 @@
       - 'varia items = []'
       - 'items.adde(1)'
 
-# Default alloc used in main when no curator param
+# Default alloc used in main, but Lista handles it internally
 - name: 'lista.adde uses default alloc'
   input: |
       varia items = []
       items.adde(1)
   zig:
-      - 'items.append(alloc, 1)'
+      - 'items.adde(1)'
   rs:
       - 'let mut items = vec![]'
       - 'items.push(1)'
@@ -80,7 +81,7 @@
       - 'varia items = []'
       - 'items.adde(1)'
 
-# praepone also uses curator
+# praepone - Lista handles allocator internally
 - name: 'lista.praepone uses curator param'
   input: |
       functio build(curator mem) {
@@ -88,7 +89,7 @@
         items.praepone(1)
       }
   zig:
-      - 'items.insert(mem, 0, 1)'
+      - 'items.praepone(1)'
   rs:
       - 'fn build(mem: curator)'
       - 'let mut items = vec![]'
@@ -149,7 +150,8 @@
 # NOTE: Without type annotations, {} is inferred as generic object and falls
 # back to lista methods. These tests verify curator tracking still works.
 
-# copia.adde uses curator - falls back to lista.append due to type inference
+# copia.adde uses curator - falls back to lista.adde due to type inference
+# WHY: Lista(T) stores its allocator at init time
 - name: 'copia.adde uses curator param'
   input: |
       functio build(curator allocator) {
@@ -157,7 +159,7 @@
         s.adde("item")
       }
   zig:
-      - '.append(allocator, "item")'
+      - '.adde("item")'
   rs:
       - 'fn build(allocator: curator)'
       - 'let mut s = {}'
@@ -168,13 +170,13 @@
       - 'varia s = {}'
       - 's.adde("item")'
 
-# copia.adde uses default alloc - falls back to lista.append
+# copia.adde uses default alloc - falls back to lista.adde
 - name: 'copia.adde uses default alloc'
   input: |
       varia s = {}
       s.adde("item")
   zig:
-      - '.append(alloc, "item")'
+      - '.adde("item")'
   rs:
       - 'let mut s = {}'
       - 's.push(String::from("item"))'
@@ -187,7 +189,7 @@
 # Multiple Functions with Different Curators
 # =============================================================================
 
-# Each function uses its own curator param
+# Each function uses its own curator param - Lista handles allocator internally
 - name: 'different curator names in different functions'
   input: |
       functio first(curator a) {
@@ -199,8 +201,8 @@
         y.adde(2)
       }
   zig:
-      - 'x.append(a, 1)'
-      - 'y.append(b, 2)'
+      - 'x.adde(1)'
+      - 'y.adde(2)'
   rs:
       - 'fn first(a: curator)'
       - 'x.push(1)'
@@ -219,7 +221,7 @@
 # Nested Scopes
 # =============================================================================
 
-# Curator should be tracked correctly in nested blocks
+# Curator should be tracked correctly in nested blocks - Lista handles allocator internally
 - name: 'curator in nested if block'
   input: |
       functio process(curator mem) {
@@ -229,7 +231,7 @@
         }
       }
   zig:
-      - 'items.append(mem, 1)'
+      - 'items.adde(1)'
   rs:
       - 'fn process(mem: curator)'
       - 'let mut items = vec![]'
@@ -242,7 +244,7 @@
       - 'si verum {'
       - 'items.adde(1)'
 
-# Curator in loop body
+# Curator in loop body - Lista handles allocator internally
 - name: 'curator in loop body'
   input: |
       functio process(curator mem) {
@@ -253,7 +255,7 @@
         }
       }
   zig:
-      - 'items.append(mem, 1)'
+      - 'items.adde(1)'
   rs:
       - 'fn process(mem: curator)'
       - 'let mut items = vec![]'
@@ -272,7 +274,7 @@
 # Array Literals with Curator
 # =============================================================================
 
-# Array literal gets proper type inference, curator should be used
+# Array literal - Lista handles allocator internally
 - name: 'array literal with curator'
   input: |
       functio build(curator m) {
@@ -280,7 +282,7 @@
         nums.adde(4)
       }
   zig:
-      - 'nums.append(m, 4)'
+      - 'nums.adde(4)'
   rs:
       - 'fn build(m: curator)'
       - 'let mut nums = vec![1, 2, 3]'
@@ -291,13 +293,13 @@
       - 'varia nums = [1, 2, 3]'
       - 'nums.adde(4)'
 
-# Array literal in main uses default alloc
+# Array literal in main - Lista handles allocator internally
 - name: 'array literal uses default alloc'
   input: |
       varia nums = [1, 2, 3]
       nums.adde(4)
   zig:
-      - 'nums.append(alloc, 4)'
+      - 'nums.adde(4)'
   rs:
       - 'let mut nums = vec![1, 2, 3]'
       - 'nums.push(4)'
@@ -310,7 +312,7 @@
 # Curator Isolation Between Functions
 # =============================================================================
 
-# Function without curator should use default 'alloc'
+# Function without curator - Lista handles allocator internally
 - name: 'function without curator uses default'
   input: |
       functio noAlloc() {
@@ -318,7 +320,7 @@
         items.adde(1)
       }
   zig:
-      - 'items.append(alloc, 1)'
+      - 'items.adde(1)'
   rs:
       - 'fn noAlloc()'
       - 'let mut items = vec![]'
@@ -329,7 +331,7 @@
       - 'varia items = []'
       - 'items.adde(1)'
 
-# After function with curator, next function without curator uses default
+# After function with curator, next function without curator - Lista handles allocator internally
 - name: 'curator does not leak between functions'
   input: |
       functio withCurator(curator custom) {
@@ -341,8 +343,8 @@
         b.adde(2)
       }
   zig:
-      - 'a.append(custom, 1)'
-      - 'b.append(alloc, 2)'
+      - 'a.adde(1)'
+      - 'b.adde(2)'
   rs:
       - 'fn withCurator(custom: curator)'
       - 'a.push(1)'

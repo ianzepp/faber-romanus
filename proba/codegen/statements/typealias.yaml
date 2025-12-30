@@ -78,7 +78,7 @@
       cpp:
           - 'using Items = std::vector<std::string>;'
       zig:
-          - 'const Items = [][]const u8;'
+          - 'const Items = Lista([]const u8);'
       fab:
           - 'typus Items = lista<textus>'
 

@@ -133,7 +133,7 @@
       cpp:
           - 'void process(const std::vector<Point>& points)'
       zig:
-          - 'fn process(points: []Point)'
+          - 'fn process(points: Lista(Point))'
       fab:
           - 'functio process(Point[] points)'
           - 'scribe points'
@@ -151,7 +151,7 @@
       cpp:
           - 'void process(const std::vector<std::vector<std::string>>& matrix)'
       zig:
-          - 'fn process(matrix: [][][]const u8)'
+          - 'fn process(matrix: Lista(Lista([]const u8)))'
       fab:
           - 'functio process(textus[][] matrix)'
           - 'scribe matrix'
@@ -205,7 +205,7 @@
       cpp:
           - 'void process(const std::vector<Point>& p)'
       zig:
-          - 'fn process(p: []Point)'
+          - 'fn process(p: Lista(Point))'
       fab:
           - 'functio process(Point[] points ut p)'
           - 'scribe p'
@@ -223,7 +223,7 @@
       cpp:
           - 'void process(const std::vector<std::string>& items = {})'
       zig:
-          - 'fn process(items: [][]const u8)'
+          - 'fn process(items: Lista([]const u8))'
       fab:
           - 'functio process(textus[] items vel [])'
           - 'scribe items'
@@ -241,7 +241,7 @@
       cpp:
           - 'void process(const std::unordered_set<std::vector<std::string>>& items)'
       zig:
-          - 'fn process(items: std.AutoHashMap([][]const u8, void))'
+          - 'fn process(items: std.AutoHashMap(Lista([]const u8), void))'
       fab:
           - 'functio process(copia<textus[]> items)'
           - 'scribe items'
@@ -259,7 +259,7 @@
       cpp:
           - 'void process(const std::unordered_map<std::string, std::vector<int64_t>>& map)'
       zig:
-          - 'fn process(map: std.StringHashMap([]i64))'
+          - 'fn process(map: std.StringHashMap(Lista(i64)))'
       fab:
           - 'functio process(tabula<textus, numerus[]> map)'
           - 'scribe map'
@@ -277,7 +277,7 @@
       cpp:
           - 'void process(const std::vector<std::unordered_set<std::string>>& items)'
       zig:
-          - 'fn process(items: []std.StringHashMap(void))'
+          - 'fn process(items: Lista(std.StringHashMap(void)))'
       fab:
           - 'functio process(copia<textus>[] items)'
           - 'scribe items'
