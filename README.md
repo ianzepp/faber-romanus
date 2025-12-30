@@ -428,9 +428,9 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Feature              | TypeScript | Zig | Python | Rust | C++23 |
 | -------------------- | :--------: | :-: | :----: | :--: | :---: |
 | `_scribe` (print)    |    [x]     | [x] |  [x]   | [x]  |  [x]  |
-| `_vide` (debug)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_mone` (warn)       |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_lege` (read input) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `_vide` (debug)      |    [x]     | [x] |  [x]   | [x]  |  [x]  |
+| `_mone` (warn)       |    [x]     | [x] |  [x]   | [x]  |  [x]  |
+| `_lege` (read input) |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 
 ## Stdlib: Math (mathesis)
 

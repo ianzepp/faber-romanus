@@ -7,6 +7,10 @@
  *   fn!()        -> (*fn)()  (assert not null)
  *   lista.adde(x)      -> lista.push_back(x)
  *   lista.filtrata(fn) -> (lista | views::filter(fn) | ranges::to<vector>())
+ *   _scribe(x)         -> std::println("{}", x)
+ *   _vide(x)           -> std::cerr << "[DEBUG] " << x << std::endl
+ *   _mone(x)           -> std::cerr << "[WARN] " << x << std::endl
+ *   _lege()            -> std::getline(std::cin, ...)
  */
 
 import type { CallExpression, Expression, Identifier } from '../../../parser/ast';
@@ -15,11 +19,68 @@ import { getListaMethod, getListaHeaders } from '../norma/lista';
 import { getTabulaMethod, getTabulaHeaders } from '../norma/tabula';
 import { getCopiaMethod, getCopiaHeaders } from '../norma/copia';
 
+/**
+ * C++23 I/O intrinsic mappings.
+ *
+ * WHY: Maps Latin I/O intrinsics to C++ equivalents.
+ * - _scribe: Standard output via std::println (C++23) or std::cout
+ * - _vide: Debug output to cerr with [DEBUG] prefix
+ * - _mone: Warning output to cerr with [WARN] prefix
+ * - _lege: Read line from stdin
+ */
+function genIntrinsic(name: string, argsArray: string[], g: CppGenerator): string | null {
+    if (name === '_scribe') {
+        g.includes.add('<print>');
+        if (argsArray.length === 0) {
+            return 'std::println("")';
+        }
+        // WHY: C++23 std::println uses {} format placeholders
+        const placeholders = argsArray.map(() => '{}').join(' ');
+        return `std::println("${placeholders}", ${argsArray.join(', ')})`;
+    }
+
+    if (name === '_vide') {
+        g.includes.add('<iostream>');
+        if (argsArray.length === 0) {
+            return 'std::cerr << "[DEBUG]" << std::endl';
+        }
+        // WHY: Use stream insertion for multiple args
+        const streamArgs = argsArray.map((a, i) => (i === 0 ? a : ` << " " << ${a}`)).join('');
+        return `std::cerr << "[DEBUG] " << ${streamArgs} << std::endl`;
+    }
+
+    if (name === '_mone') {
+        g.includes.add('<iostream>');
+        if (argsArray.length === 0) {
+            return 'std::cerr << "[WARN]" << std::endl';
+        }
+        const streamArgs = argsArray.map((a, i) => (i === 0 ? a : ` << " " << ${a}`)).join('');
+        return `std::cerr << "[WARN] " << ${streamArgs} << std::endl`;
+    }
+
+    if (name === '_lege') {
+        g.includes.add('<iostream>');
+        g.includes.add('<string>');
+        // WHY: C++ needs a variable to read into. We use a lambda to create scope.
+        return '[&]{ std::string __line; std::getline(std::cin, __line); return __line; }()';
+    }
+
+    return null;
+}
+
 export function genCallExpression(node: CallExpression, g: CppGenerator): string {
     // WHY: Build both joined string (for simple cases) and array (for method handlers)
     // to preserve argument boundaries for multi-parameter lambdas containing commas.
     const argsArray = node.arguments.filter((arg): arg is Expression => arg.type !== 'SpreadElement').map(a => g.genExpression(a));
     const args = argsArray.join(', ');
+
+    // Check for intrinsics (bare function calls)
+    if (node.callee.type === 'Identifier') {
+        const intrinsicResult = genIntrinsic(node.callee.name, argsArray, g);
+        if (intrinsicResult) {
+            return intrinsicResult;
+        }
+    }
 
     // Check for collection methods (method calls on lista/tabula/copia)
     if (node.callee.type === 'MemberExpression' && !node.callee.computed) {

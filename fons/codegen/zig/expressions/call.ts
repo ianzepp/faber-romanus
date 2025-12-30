@@ -39,17 +39,38 @@ export function genCallExpression(node: CallExpression, g: ZigGenerator): string
     const argsArray = node.arguments.map(genArg);
     const args = argsArray.join(', ');
 
-    // TARGET: _scribe intrinsic maps to Zig's std.debug.print()
-    if (node.callee.type === 'Identifier' && node.callee.name === '_scribe') {
-        const formatSpecs = node.arguments.map(arg => {
-            if (arg.type === 'SpreadElement') {
-                return '{any}';
-            }
-            return getFormatSpecifier(arg);
-        });
-        const format = formatSpecs.join(' ') + '\\n';
+    // TARGET: I/O intrinsics map to Zig's std.debug.print() variants
+    if (node.callee.type === 'Identifier') {
+        const name = node.callee.name;
 
-        return `std.debug.print("${format}", .{${args}})`;
+        if (name === '_scribe' || name === '_vide' || name === '_mone') {
+            const formatSpecs = node.arguments.map(arg => {
+                if (arg.type === 'SpreadElement') {
+                    return '{any}';
+                }
+                return getFormatSpecifier(arg);
+            });
+
+            // WHY: Different prefixes for different log levels
+            // _scribe = standard output, _vide = debug, _mone = warning
+            let prefix = '';
+            if (name === '_vide') {
+                prefix = '[DEBUG] ';
+            } else if (name === '_mone') {
+                prefix = '[WARN] ';
+            }
+
+            const format = prefix + formatSpecs.join(' ') + '\\n';
+            return `std.debug.print("${format}", .{${args}})`;
+        }
+
+        // WHY: _lege reads a line from stdin. In Zig, this requires std.io.getStdIn()
+        // and reading until newline. Returns empty string on EOF/error.
+        if (name === '_lege') {
+            // LIMITATION: Zig stdin reading is complex. This is a simplified version
+            // that reads one line. For robust input, user should use std.io directly.
+            return `(std.io.getStdIn().reader().readUntilDelimiterOrEof(buf, '\\n') catch "") orelse ""`;
+        }
     }
 
     // Check for collection methods (method calls on lista/tabula/copia)

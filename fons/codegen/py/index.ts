@@ -115,6 +115,15 @@ function genPreamble(g: PyGenerator): string {
         imports.push('import secrets');
     }
 
+    // I/O intrinsics
+    if (g.features.sys) {
+        imports.push('import sys');
+    }
+
+    if (g.features.warnings) {
+        imports.push('import warnings');
+    }
+
     // WHY: praefixum blocks need a helper that executes code via exec()
     // with a restricted set of builtins (mimicking compile-time constraints)
     if (g.features.praefixum) {

@@ -92,6 +92,12 @@ export interface RequiredFeatures {
 
     // Secrets (Python) - needs import secrets (for crypto-safe random bytes)
     secrets: boolean;
+
+    // I/O (Python) - needs import sys for stderr output
+    sys: boolean;
+
+    // Warnings (Python) - needs import warnings for _mone
+    warnings: boolean;
 }
 
 /**
@@ -116,6 +122,8 @@ export function createRequiredFeatures(): RequiredFeatures {
         random: false,
         uuid: false,
         secrets: false,
+        sys: false,
+        warnings: false,
     };
 }
 

@@ -19,16 +19,35 @@ import { getMathesisFunction } from '../norma/mathesis';
 import { getAleatorFunction } from '../norma/aleator';
 
 /**
- * Python intrinsic mappings.
+ * Python I/O intrinsic handler.
  *
- * I/O intrinsics only - math and random moved to norma/mathesis and norma/aleator.
+ * WHY: I/O intrinsics need to set feature flags for imports.
+ * - _scribe: print() - no imports needed
+ * - _vide: print(file=sys.stderr) - needs sys import
+ * - _mone: warnings.warn() - needs warnings import
+ * - _lege: input() - no imports needed
  */
-export const PY_INTRINSICS: Record<string, (args: string) => string> = {
-    _scribe: args => `print(${args})`,
-    _vide: args => `print(${args}, file=sys.stderr)`,
-    _mone: args => `warnings.warn(${args})`,
-    _lege: () => `input()`,
-};
+function genIntrinsic(name: string, args: string, g: PyGenerator): string | null {
+    if (name === '_scribe') {
+        return `print(${args})`;
+    }
+
+    if (name === '_vide') {
+        g.features.sys = true;
+        return `print(${args}, file=sys.stderr)`;
+    }
+
+    if (name === '_mone') {
+        g.features.warnings = true;
+        return `warnings.warn(${args})`;
+    }
+
+    if (name === '_lege') {
+        return 'input()';
+    }
+
+    return null;
+}
 
 export function genCallExpression(node: CallExpression, g: PyGenerator): string {
     // WHY: Build args as array first, then join for regular calls.
@@ -46,10 +65,10 @@ export function genCallExpression(node: CallExpression, g: PyGenerator): string 
     if (node.callee.type === 'Identifier') {
         const name = node.callee.name;
 
-        // Check hardcoded intrinsics first
-        const intrinsic = PY_INTRINSICS[name];
-        if (intrinsic) {
-            return intrinsic(args);
+        // Check I/O intrinsics first
+        const intrinsicResult = genIntrinsic(name, args, g);
+        if (intrinsicResult) {
+            return intrinsicResult;
         }
 
         // Check mathesis functions (ex "norma/mathesis" importa pavimentum, etc.)
