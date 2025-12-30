@@ -1,7 +1,7 @@
 ---
 status: planned
 note: Design complete; tokenizer/parser/codegen not yet implemented
-updated: 2024-12
+updated: 2025-01
 ---
 
 # Regex Literals
@@ -32,18 +32,18 @@ Flags are optional, specified as a bare identifier after the pattern:
 ```faber
 sed "pattern"           // no flags
 sed "pattern" i         // case insensitive
-sed "pattern" gi        // global + case insensitive
 sed "pattern" ims       // multiple flags
 ```
 
 | Flag | Meaning                                      |
 | ---- | -------------------------------------------- |
-| `g`  | Global (match all occurrences)               |
 | `i`  | Case insensitive                             |
 | `m`  | Multiline (`^`/`$` match line boundaries)    |
 | `s`  | Dotall (`.` matches newlines)                |
 | `x`  | Extended (ignore whitespace, allow comments) |
 | `u`  | Unicode                                      |
+
+**No `g` flag:** "Global" (match all vs first) is not a pattern modifier — it's an iteration behavior. The method you call determines this: `quaere` finds first, `para` finds all.
 
 ## Examples
 
@@ -60,7 +60,7 @@ fixum lines = sed "^start" im
 // In method calls — no ambiguity (flags before comma)
 fixum found = text.quaere(sed "\d+")
 fixum result = text.muta(sed "old" i, "new")
-fixum matches = text.para(sed "\w+" g)
+fixum matches = text.para(sed "\w+")
 ```
 
 ## Design Principles
@@ -79,10 +79,10 @@ Native regex literal with suffix flags:
 
 ```typescript
 // sed "\d+"
-/\d+/ /
-    // sed "hello" gi
-    hello /
-    gi;
+/\d+/
+
+// sed "hello" i
+/hello/i
 ```
 
 ### Python
@@ -93,8 +93,8 @@ Flags injected as inline prefix:
 # sed "\d+"
 re.compile(r'\d+')
 
-# sed "hello" gi
-re.compile(r'(?gi)hello')
+# sed "hello" i
+re.compile(r'(?i)hello')
 ```
 
 ### Rust
@@ -105,8 +105,8 @@ Flags injected as inline prefix:
 // sed "\d+"
 Regex::new(r"\d+").unwrap()
 
-// sed "hello" gi
-Regex::new(r"(?gi)hello").unwrap()
+// sed "hello" i
+Regex::new(r"(?i)hello").unwrap()
 ```
 
 ### C++
@@ -131,8 +131,8 @@ No stdlib regex. Emit pattern as string for use with external library. Flags inj
 // sed "\d+"
 "\\d+"
 
-// sed "hello" gi
-"(?gi)hello"
+// sed "hello" i
+"(?i)hello"
 ```
 
 ## Parser
@@ -174,17 +174,20 @@ For now, regex literals are expressions with inferred type. Type name can be dec
 
 ## Methods
 
-Regex operations on strings. Design TBD, but likely:
+Regex operations on strings. The method determines iteration behavior (first match vs all matches), not the regex flags.
 
 ```faber
 // Search — find first match
 fixum found = text.quaere(sed "\d+")
 
-// Replace — substitute matches
+// Replace first — substitute first match
 fixum result = text.muta(sed "old", "new")
 
-// Match — return all matches
-fixum matches = text.para(sed "\w+" g)
+// Replace all — substitute all matches
+fixum result = text.mutaOmnes(sed "old", "new")
+
+// Match all — return all matches
+fixum matches = text.para(sed "\w+")
 
 // Test — boolean check
 fixum valid = text.probat(sed "^\d{4}$")
@@ -205,10 +208,12 @@ Rust codegen needs `use regex::Regex;` when regex literals are used.
 
 ## Target Limitations
 
-| Target | Flags Support                 |
-| ------ | ----------------------------- |
-| TS/JS  | Full (native suffix)          |
-| Python | Full (inline injection)       |
-| Rust   | Full (inline injection)       |
-| C++    | None (no inline flag support) |
-| Zig    | Library-dependent             |
+| Target | Flags Support                        |
+| ------ | ------------------------------------ |
+| TS/JS  | Full (native suffix)                 |
+| Python | Best-effort (inline `(?...)` prefix) |
+| Rust   | Best-effort (inline `(?...)` prefix) |
+| C++    | None (no inline flag support)        |
+| Zig    | Library-dependent                    |
+
+TypeScript is the primary target with full support. Other targets get flags injected as inline `(?imsx)` prefix where the regex engine supports it — behavior may vary. Test your patterns against your target.
