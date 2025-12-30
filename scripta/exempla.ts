@@ -18,7 +18,7 @@ import { $ } from 'bun';
 const ROOT = join(import.meta.dir, '..');
 const EXEMPLA = join(ROOT, 'exempla');
 const OUTPUT = join(ROOT, 'opus', 'exempla');
-const FABER = join(ROOT, 'opus', 'faber');
+const FABER = join(ROOT, 'fons', 'cli.ts');
 
 type Target = 'ts' | 'zig' | 'py' | 'rs';
 
@@ -50,9 +50,7 @@ async function main() {
 
     const targets: Target[] = targetArg === 'all' ? ['ts', 'zig', 'py', 'rs'] : [targetArg as Target];
 
-    // Always rebuild to avoid stale executable issues
-    console.log('Building faber executable...');
-    await $`${ROOT}/scripta/build`;
+    // WHY: Use unbundled CLI directly — bundled executable can't load preamble .txt files
 
     // Find all .fab files recursively
     const files = await findFabFiles(EXEMPLA);
@@ -75,7 +73,7 @@ async function main() {
             await mkdir(outputDir, { recursive: true });
 
             try {
-                const result = await $`${FABER} compile ${file} -t ${target}`.quiet();
+                const result = await $`bun ${FABER} compile ${file} -t ${target}`.quiet();
                 await Bun.write(output, result.stdout);
                 console.log(`  ${relativePath} -> opus/exempla/${target}/${subdir}/${name}.${ext}`);
             } catch (err: any) {
