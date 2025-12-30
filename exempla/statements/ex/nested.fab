@@ -1,6 +1,6 @@
 // Nested ex...pro loops
 
-initium {
+incipit {
     // Nested array iteration
     fixum rows = [1, 2, 3]
     fixum cols = ["A", "B", "C"]

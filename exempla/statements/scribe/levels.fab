@@ -4,7 +4,7 @@
 // vide <expr>    -> console.debug (debug output)
 // mone <expr>    -> console.warn (warning output)
 
-initium {
+incipit {
     fixum status = "running"
     fixum count = 42
 

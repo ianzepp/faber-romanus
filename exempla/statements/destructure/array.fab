@@ -5,7 +5,7 @@
 // fixum [first, ceteri rest] = arr -- with rest pattern
 // fixum [_, second, _] = arr      -- skip elements with underscore
 
-initium {
+incipit {
     // Basic array destructuring
     fixum numbers = [1, 2, 3]
     fixum [a, b, c] = numbers

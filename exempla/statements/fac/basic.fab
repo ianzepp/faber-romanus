@@ -2,7 +2,7 @@
 //
 // fac { <body> }
 
-initium {
+incipit {
     // Simple scope block
     fac {
         fixum x = 42

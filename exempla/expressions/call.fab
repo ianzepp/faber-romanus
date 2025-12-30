@@ -30,7 +30,7 @@ genus Calculator {
     }
 }
 
-initium {
+incipit {
     // Simple call (no arguments)
     greet()
 

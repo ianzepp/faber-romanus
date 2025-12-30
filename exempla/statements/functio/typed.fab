@@ -27,7 +27,7 @@ functio media(fractus a, fractus b) -> fractus {
     redde (a + b) / 2.0
 }
 
-initium {
+incipit {
     scribe quadratum(7)
 
     scribe adde(100, 200)

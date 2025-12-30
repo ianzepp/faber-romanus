@@ -42,7 +42,7 @@ functio clamp(value, min, max) -> numerus {
     redde value
 }
 
-initium {
+incipit {
     scribe divide(10, 2)
     scribe divide(10, 0)
 

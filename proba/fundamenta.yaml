@@ -69,13 +69,13 @@
   fab: 'adfirma verum'
 
 # =============================================================================
-# Entry Point (initium)
+# Entry Point (incipit)
 # =============================================================================
 
-# initium generates target-appropriate main function
-- name: 'initium generates main function'
+# incipit generates target-appropriate main function
+- name: 'incipit generates main function'
   input: |
-      initium {
+      incipit {
         scribe "hello"
       }
   ts:
@@ -94,16 +94,16 @@
       - 'pub fn main() void {'
       - 'std.debug.print'
   fab:
-      - 'initium {'
+      - 'incipit {'
       - 'scribe "hello"'
 
-# Declarations outside initium, call inside
-- name: 'declarations outside initium'
+# Declarations outside incipit, call inside
+- name: 'declarations outside incipit'
   input: |
       functio greet() {
         scribe "hi"
       }
-      initium {
+      incipit {
         greet()
       }
   ts:
@@ -130,5 +130,5 @@
   fab:
       - 'functio greet() {'
       - 'scribe "hi"'
-      - 'initium {'
+      - 'incipit {'
       - 'greet()'

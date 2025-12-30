@@ -4,7 +4,7 @@
 // cape <errorName> { <handler> }
 // iace <expression>
 
-initium {
+incipit {
     // Basic try-catch
     tempta {
         scribe "Attempting operation..."

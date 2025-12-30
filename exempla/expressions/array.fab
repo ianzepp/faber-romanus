@@ -1,6 +1,6 @@
 // Array literal expressions: empty, typed, nested, and spread
 
-initium {
+incipit {
     // Empty array
     fixum empty = []
 

@@ -2,7 +2,7 @@
 //
 // ex <collection> pro <item> { <body> }
 
-initium {
+incipit {
     // Iterate over number array
     fixum numbers = [1, 2, 3, 4, 5]
 

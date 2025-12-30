@@ -33,7 +33,7 @@ import { genIaceStatement } from './statements/iace';
 import { genScribeStatement } from './statements/scribe';
 import { genTemptaStatement } from './statements/tempta';
 import { genFacBlockStatement } from './statements/fac';
-import { genInitiumStatement } from './statements/initium';
+import { genIncipitStatement } from './statements/incipit';
 
 // Expression handlers
 import { genIdentifier } from './expressions/identifier';
@@ -171,8 +171,8 @@ export class CppGenerator {
                 return genTemptaStatement(node, this);
             case 'FacBlockStatement':
                 return genFacBlockStatement(node, this);
-            case 'InitiumStatement':
-                return genInitiumStatement(node, this);
+            case 'IncipitStatement':
+                return genIncipitStatement(node, this);
             case 'BlockStatement':
                 return this.genBlockStatementContent(node);
             case 'ExpressionStatement':

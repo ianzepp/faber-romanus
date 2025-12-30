@@ -1,7 +1,7 @@
 // Entry point with functions defined outside
 //
-// Functions declared outside initium become module-level declarations.
-// The initium block calls them as needed.
+// Functions declared outside incipit become module-level declarations.
+// The incipit block calls them as needed.
 
 functio greet(textus name) -> textus {
     redde scriptum("Salve, {}!", name)
@@ -11,7 +11,7 @@ functio add(numerus a, numerus b) -> numerus {
     redde a + b
 }
 
-initium {
+incipit {
     scribe greet("Marcus")
     scribe "Sum:", add(3, 5)
 }

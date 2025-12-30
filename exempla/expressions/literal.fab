@@ -1,6 +1,6 @@
 // Literal expressions: numbers, strings, booleans, null, templates
 
-initium {
+incipit {
     // Numbers
     fixum integer = 42
     fixum decimal = 3.14

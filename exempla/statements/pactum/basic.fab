@@ -23,7 +23,7 @@ genus Square implet Drawable {
     }
 }
 
-initium {
+incipit {
     fixum circle = novum Circle { radius: 25 }
     fixum square = novum Square { side: 15 }
 

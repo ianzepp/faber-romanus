@@ -1,6 +1,6 @@
 // Nested si conditionals
 
-initium {
+incipit {
     fixum isLoggedIn = verum
     fixum hasPermission = verum
 

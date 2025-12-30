@@ -37,7 +37,7 @@ genus Circle {
     }
 }
 
-initium {
+incipit {
     // Validation in creo
     fixum normal = novum BoundedValue {
         value: 50

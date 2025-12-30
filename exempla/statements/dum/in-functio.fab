@@ -22,7 +22,7 @@ functio nextPowerOf2(numerus n) -> numerus {
     redde power
 }
 
-initium {
+incipit {
     scribe "5! =", factorial(5)
     scribe "10! =", factorial(10)
 

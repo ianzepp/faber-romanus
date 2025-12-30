@@ -29,7 +29,7 @@ functio summatio(numerus n) -> numerus {
     redde n + summatio(n - 1)
 }
 
-initium {
+incipit {
     // Factorial examples
     scribe factorial(0)
     scribe factorial(1)

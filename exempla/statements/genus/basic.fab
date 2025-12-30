@@ -16,7 +16,7 @@ genus Persona {
     bivalens activus: verum
 }
 
-initium {
+incipit {
     // Instantiate with all required fields
     fixum p = novum Punctum {
         x: 10,

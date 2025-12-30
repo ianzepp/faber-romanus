@@ -3,7 +3,7 @@
 // dum <cond1> et <cond2> { }   -- both must be true
 // dum <cond1> aut <cond2> { }  -- either must be true
 
-initium {
+incipit {
     // Using "et" (and) - loop while running AND attempts < limit
     varia bivalens running = verum
     varia numerus attempts = 0

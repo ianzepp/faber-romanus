@@ -34,7 +34,7 @@ genus Counter {
     }
 }
 
-initium {
+incipit {
     // Methods that return values
     fixum rect = novum Rectangle {
         width: 10,

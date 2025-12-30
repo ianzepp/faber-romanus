@@ -63,7 +63,7 @@ functio withReturnInDemum() -> textus {
     }
 }
 
-initium {
+incipit {
     scribe "Safe divide 10/2:", safeDivide(10, 2)
     scribe "Safe divide 10/0:", safeDivide(10, 0)
 

@@ -4,7 +4,7 @@
 //
 // Allocator scopes can nest. Inner scopes free before outer scopes.
 
-initium {
+incipit {
     cura arena fit outer {
         varia textus[] a = ["one"]
 

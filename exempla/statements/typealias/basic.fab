@@ -15,7 +15,7 @@ typus UserCache = tabula<textus, numerus>
 // Nullable type alias
 typus OptionalName = textus?
 
-initium {
+incipit {
     // Using the type aliases
     fixum UserId id = 42
     fixum Username name = "Marcus"

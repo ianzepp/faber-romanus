@@ -1,7 +1,7 @@
 // Lambda expressions (arrow functions)
 // Pattern: pro param redde expr
 
-initium {
+incipit {
     // Simple lambda with single parameter
     fixum double = pro x redde x * 2
     scribe(double(5))

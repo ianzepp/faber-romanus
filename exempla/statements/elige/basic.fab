@@ -5,7 +5,7 @@
 //     si <value> { <body> }
 // }
 
-initium {
+incipit {
     // String matching
     fixum status = "active"
 

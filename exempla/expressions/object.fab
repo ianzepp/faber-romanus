@@ -1,6 +1,6 @@
 // Object literal expressions
 
-initium {
+incipit {
     // Empty object
     fixum empty = {}
     scribe(empty)

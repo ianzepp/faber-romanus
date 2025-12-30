@@ -27,6 +27,6 @@ ex "helpers" importa a, b, c, d, e, f
 // Multiple aliases
 ex "mod" importa foo ut f, bar ut b, baz ut z
 
-initium {
+incipit {
     scribe "Import statements are declarations at module scope"
 }

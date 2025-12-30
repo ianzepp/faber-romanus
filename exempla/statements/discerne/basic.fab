@@ -41,6 +41,6 @@ functio handle_event(Event e) -> nihil {
     }
 }
 
-initium {
+incipit {
     scribe "discerne patterns defined"
 }

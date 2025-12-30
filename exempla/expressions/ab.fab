@@ -1,7 +1,7 @@
 // Ab expression - collection filtering DSL
 // 'ab' provides declarative filtering with optional transforms
 
-initium {
+incipit {
     // Sample data - users with boolean properties
     fixum users = [
         { nomen: "Marcus", activus: verum, aetas: 25 },

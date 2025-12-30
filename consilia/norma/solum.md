@@ -213,7 +213,7 @@ quaere <fd>, <offset>, <origin>
 
 **Origins:**
 
-- `initium` - from start (SEEK_SET)
+- `incipit` - from start (SEEK_SET)
 - `hic` - from current position (SEEK_CUR)
 - `finis` - from end (SEEK_END)
 

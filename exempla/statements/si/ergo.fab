@@ -5,7 +5,7 @@
 //
 // ergo = "therefore, thus" (logical consequence)
 
-initium {
+incipit {
     fixum x = 10
 
     // Simple one-liner

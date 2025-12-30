@@ -3,7 +3,7 @@
 // adfirma <condition>
 // adfirma <condition>, "error message"
 
-initium {
+incipit {
     fixum x = 10
 
     // Simple assertion without message

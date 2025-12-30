@@ -11,7 +11,7 @@ genus Person {
     numerus age: 0
 }
 
-initium {
+incipit {
     // Instantiate with all fields
     fixum p1 = novum Point { x: 10, y: 20 }
     scribe p1.x

@@ -2,7 +2,7 @@
 //
 // rumpe exits the innermost loop immediately
 
-initium {
+incipit {
     // Break when reaching 5
     varia i = 0
 

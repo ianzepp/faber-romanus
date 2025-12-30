@@ -5,7 +5,7 @@
 // ex obj fixum field ut alias     -- extract with alias (rename)
 // ex obj fixum field, ceteri rest -- extract with rest pattern
 
-initium {
+incipit {
     // Basic field extraction
     fixum person = { name: "Marcus", age: 30, city: "Roma" }
     ex person fixum name, age

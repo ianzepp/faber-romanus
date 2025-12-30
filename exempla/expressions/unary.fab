@@ -1,6 +1,6 @@
 // Unary operators: negation, logical not, and null/sign checks
 
-initium {
+incipit {
     // Numeric negation
     fixum x = 5
     fixum neg = -x

@@ -5,7 +5,7 @@
 //     aliter { <default> }
 // }
 
-initium {
+incipit {
     // aliter handles unmatched cases
     fixum day = "wednesday"
 

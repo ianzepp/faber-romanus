@@ -12,7 +12,7 @@
  * directly to output structure.
  *
  * Key principles:
- * - No magic: if source has no initium, output has no main()
+ * - No magic: if source has no incipit, output has no main()
  * - Statements emit in source order
  * - Source is responsible for valid C++ structure
  *
@@ -22,7 +22,7 @@
  * - functio -> function definition
  * - genus -> struct (public by default, simpler than class)
  * - pactum -> concept (C++20)
- * - initium -> int main() { }
+ * - incipit -> int main() { }
  * - si/aliter -> if/else
  * - elige -> switch
  * - ex...pro -> range-based for
@@ -57,7 +57,7 @@ import { genPreamble } from './preamble';
  *   Program AST -> C++23 source code string
  *
  * WHY: Faithful translation — source structure determines output structure.
- * If source needs a main(), source must define initium { }.
+ * If source needs a main(), source must define incipit { }.
  *
  * @param program - Validated AST from parser
  * @param options - Formatting configuration

@@ -1,7 +1,7 @@
 // Range expressions
 // Demonstrates exclusive, inclusive, stepped, and descending ranges
 
-initium {
+incipit {
     // Exclusive range: 0..10 (0 to 9)
     ex 0..5 pro i {
         scribe i

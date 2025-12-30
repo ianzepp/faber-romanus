@@ -7,7 +7,7 @@ ordo Color { rubrum, viridis, caeruleum }
 
 ordo Status { pendens = 0, actum = 1, finitum = 2 }
 
-initium {
+incipit {
     // Using enum values
     fixum color = Color.rubrum
     fixum status = Status.actum

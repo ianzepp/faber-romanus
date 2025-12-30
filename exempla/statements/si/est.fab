@@ -10,7 +10,7 @@ functio checkValue(x) -> textus {
     redde "is something else"
 }
 
-initium {
+incipit {
     scribe checkValue(nihil)
     scribe checkValue(verum)
     scribe checkValue(42)

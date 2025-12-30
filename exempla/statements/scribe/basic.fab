@@ -3,7 +3,7 @@
 // scribe <expr>
 // scribe <expr>, <expr>, ...
 
-initium {
+incipit {
     // Simple string output
     scribe "Hello, world!"
 

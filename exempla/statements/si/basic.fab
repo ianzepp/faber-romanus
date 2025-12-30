@@ -2,7 +2,7 @@
 //
 // si <condition> { <body> }
 
-initium {
+incipit {
     fixum x = 10
 
     si x > 5 {

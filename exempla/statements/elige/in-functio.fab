@@ -46,7 +46,7 @@ functio getHttpMessage(numerus code) fit textus {
     redde "Unknown"
 }
 
-initium {
+incipit {
     scribe getGreeting("latin")
     scribe getGreeting("spanish")
     scribe getGreeting("unknown")

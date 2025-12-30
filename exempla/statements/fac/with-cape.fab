@@ -2,7 +2,7 @@
 //
 // fac { <body> } cape <error> { <handler> }
 
-initium {
+incipit {
     // Basic fac with cape for error handling
     fac {
         fixum x = 10

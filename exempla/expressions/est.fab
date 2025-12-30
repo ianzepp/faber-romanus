@@ -3,7 +3,7 @@
 // est = "is" (strict equality, like ===)
 // Used for null checks and boolean comparisons
 
-initium {
+incipit {
     // Null checking
     fixum numerus? maybeValue = nihil
     fixum isNull = maybeValue est nihil

@@ -1,16 +1,16 @@
 /**
- * Python Code Generator - InitiumStatement (entry point)
+ * Python Code Generator - IncipitStatement (entry point)
  *
  * TRANSFORMS:
- *   initium { body } -> if __name__ == "__main__": body
+ *   incipit { body } -> if __name__ == "__main__": body
  *
  * TARGET: Python uses the if __name__ == "__main__" idiom for entry points.
  */
 
-import type { InitiumStatement } from '../../../parser/ast';
+import type { IncipitStatement } from '../../../parser/ast';
 import type { PyGenerator } from '../generator';
 
-export function genInitiumStatement(node: InitiumStatement, g: PyGenerator): string {
+export function genIncipitStatement(node: IncipitStatement, g: PyGenerator): string {
     const lines: string[] = [];
     lines.push(`${g.ind()}if __name__ == "__main__":`);
     g.depth++;

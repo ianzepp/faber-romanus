@@ -1,6 +1,6 @@
 // Type casting with qua: converts values between types
 
-initium {
+incipit {
     // Cast to string
     fixum data = 42
     fixum asText = data qua textus

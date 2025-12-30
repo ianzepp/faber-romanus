@@ -37,7 +37,7 @@ functio countAbove(numerus[] nums, numerus threshold) -> numerus {
     redde count
 }
 
-initium {
+incipit {
     fixum numbers = [1, 2, 3, 4, 5]
 
     scribe sumArray(numbers)

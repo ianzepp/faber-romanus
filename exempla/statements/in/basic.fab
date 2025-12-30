@@ -2,7 +2,7 @@
 //
 // in <object> { <assignments> }
 
-initium {
+incipit {
     // Create an object with initial values
     varia user = { nomen: "", aetas: 0, active: falsum }
 

@@ -150,7 +150,7 @@ export type Statement =
     | CuraBlock
     | CuraStatement
     | AdStatement
-    | InitiumStatement;
+    | IncipitStatement;
 
 // ---------------------------------------------------------------------------
 // Import/Export Declarations
@@ -1088,11 +1088,11 @@ export interface BlockStatement extends BaseNode {
  * Entry point statement.
  *
  * GRAMMAR (in EBNF):
- *   initiumStmt := 'initium' blockStmt
+ *   incipitStmt := 'incipit' blockStmt
  *
  * INVARIANT: body is always a BlockStatement.
  *
- * WHY: Latin 'initium' (beginning) marks the program entry point.
+ * WHY: Latin 'incipit' (beginning) marks the program entry point.
  *      This is a pure structural marker — it does not inject magic.
  *      Source is responsible for setup (allocators via cura, etc.).
  *
@@ -1104,18 +1104,18 @@ export interface BlockStatement extends BaseNode {
  *   C++:        int main() { ... }
  *
  * Examples:
- *   initium {
+ *   incipit {
  *       scribe "Hello"
  *   }
  *
- *   initium {
+ *   incipit {
  *       cura arena fit alloc {
  *           // allocator-scoped work
  *       }
  *   }
  */
-export interface InitiumStatement extends BaseNode {
-    type: 'InitiumStatement';
+export interface IncipitStatement extends BaseNode {
+    type: 'IncipitStatement';
     body: BlockStatement;
 }
 

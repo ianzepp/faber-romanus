@@ -1,6 +1,6 @@
 // Member access expressions: dot, bracket, chained, optional
 
-initium {
+incipit {
     // Object with dot access
     fixum point = { x: 10, y: 20 }
     scribe point.x

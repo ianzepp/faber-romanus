@@ -3,7 +3,7 @@
 // si <condition> { <body> } aliter { <body> }
 // si <cond1> { } aliter si <cond2> { } aliter { }
 
-initium {
+incipit {
     // Simple if-else
     fixum score = 85
 

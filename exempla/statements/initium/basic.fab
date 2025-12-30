@@ -1,7 +1,7 @@
-// Basic initium (entry point)
+// Basic incipit (entry point)
 //
-// initium { <body> }
+// incipit { <body> }
 
-initium {
+incipit {
     scribe "Salve, Munde!"
 }

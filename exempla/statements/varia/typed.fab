@@ -3,7 +3,7 @@
 // varia <type> <name> = <expr>   -- typed mutable
 // fixum <type> <name> = <expr>   -- typed immutable
 
-initium {
+incipit {
     // Typed immutable declarations
     fixum numerus age = 30
     fixum textus name = "Marcus"

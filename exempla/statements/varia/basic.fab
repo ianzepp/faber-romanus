@@ -3,7 +3,7 @@
 // varia <name> = <expr>   -- mutable binding
 // fixum <name> = <expr>   -- immutable binding
 
-initium {
+incipit {
     // Mutable variable with varia
     varia counter = 0
     scribe counter

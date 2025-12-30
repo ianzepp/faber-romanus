@@ -2,7 +2,7 @@
 //
 // iace <expression>
 
-initium {
+incipit {
     // Throw with string literal
     tempta {
         iace "Something went wrong"

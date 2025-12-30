@@ -26,7 +26,7 @@ functio earlyExit(numerus x) fit numerus {
     redde x * 2
 }
 
-initium {
+incipit {
     scribe add(10, 20)
     scribe greet("World")
     scribe getFortyTwo()

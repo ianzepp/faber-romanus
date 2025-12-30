@@ -23,7 +23,7 @@ functio duplica(n) -> numerus {
     redde n * 2
 }
 
-initium {
+incipit {
     saluta()
 
     dic("Bonum diem!")

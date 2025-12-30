@@ -51,7 +51,7 @@ functio sqrt(n) -> numerus {
     redde n
 }
 
-initium {
+incipit {
     scribe processAge(-5)
     scribe processAge(200)
     scribe processAge(25)

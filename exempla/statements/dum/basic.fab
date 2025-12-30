@@ -2,7 +2,7 @@
 //
 // dum <condition> { <body> }
 
-initium {
+incipit {
     varia numerus counter = 0
 
     dum counter < 5 {

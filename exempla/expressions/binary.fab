@@ -1,6 +1,6 @@
 // Binary expressions: arithmetic, comparison, logical, nullish
 
-initium {
+incipit {
     // Arithmetic operators
     fixum sum = 10 + 5
     scribe sum

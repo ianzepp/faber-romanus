@@ -96,7 +96,7 @@ export enum ParserErrorCode {
     ExpectedKeywordCura = 'P046',
     ExpectedKeywordAnteOrPost = 'P047',
     ExpectedKeywordAd = 'P052',
-    ExpectedKeywordInitium = 'P054',
+    ExpectedKeywordIncipit = 'P054',
 
     // Module/source errors (P050-P059)
     ExpectedModuleName = 'P050',
@@ -320,9 +320,9 @@ export const PARSER_ERRORS = {
         text: "Expected dispatch keyword 'ad' (to/toward)",
         help: 'Dispatch statements use \'ad\': ad "target" (args) fit Type pro name { ... }',
     },
-    [ParserErrorCode.ExpectedKeywordInitium]: {
-        text: "Expected entry point keyword 'initium' (beginning)",
-        help: 'Entry point blocks use \'initium\': initium { scribe "Hello" }',
+    [ParserErrorCode.ExpectedKeywordIncipit]: {
+        text: "Expected entry point keyword 'incipit' (beginning)",
+        help: 'Entry point blocks use \'incipit\': incipit { scribe "Hello" }',
     },
 
     // Module/source errors

@@ -26,6 +26,6 @@ discretio Shape {
     Point { numerus x, numerus y }
 }
 
-initium {
+incipit {
     scribe "Discretio types defined"
 }

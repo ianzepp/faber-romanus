@@ -5,7 +5,7 @@
 //   sin  = else if ("but if")
 //   secus = else ("otherwise")
 
-initium {
+incipit {
     fixum hour = 14
 
     si hour < 6 {

@@ -12,7 +12,7 @@
  * directly to output structure.
  *
  * Key principles:
- * - No magic: if source has no initium, output has no main()
+ * - No magic: if source has no incipit, output has no main()
  * - Statements emit in source order
  * - Source is responsible for valid Rust structure
  *
@@ -22,7 +22,7 @@
  * - functio -> fn
  * - genus -> struct + impl
  * - pactum -> trait
- * - initium -> fn main()
+ * - incipit -> fn main()
  * - si/aliter -> if/else if/else
  * - elige -> match
  * - ex...pro -> for...in
@@ -68,7 +68,7 @@ import { genPreamble } from './preamble';
  *   Program AST -> Rust source code string
  *
  * WHY: Faithful translation — source structure determines output structure.
- * If source needs a main(), source must define initium { }.
+ * If source needs a main(), source must define incipit { }.
  *
  * @param program - Validated AST from parser
  * @param options - Formatting configuration

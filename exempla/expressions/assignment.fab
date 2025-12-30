@@ -1,7 +1,7 @@
 // Assignment expressions
 // Simple and compound assignment operators
 
-initium {
+incipit {
     varia numerus x = 10
 
     // Simple assignment

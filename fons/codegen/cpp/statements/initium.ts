@@ -1,16 +1,16 @@
 /**
- * C++ Code Generator - InitiumStatement (entry point)
+ * C++ Code Generator - IncipitStatement (entry point)
  *
  * TRANSFORMS:
- *   initium { body } -> int main() { body; return 0; }
+ *   incipit { body } -> int main() { body; return 0; }
  *
  * TARGET: C++ uses int main() as the program entry point.
  */
 
-import type { InitiumStatement } from '../../../parser/ast';
+import type { IncipitStatement } from '../../../parser/ast';
 import type { CppGenerator } from '../generator';
 
-export function genInitiumStatement(node: InitiumStatement, g: CppGenerator): string {
+export function genIncipitStatement(node: IncipitStatement, g: CppGenerator): string {
     const lines: string[] = [];
     lines.push(`${g.ind()}int main() {`);
     g.depth++;

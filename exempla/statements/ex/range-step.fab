@@ -3,7 +3,7 @@
 // ex <start>..<end> per <step> pro <item> { }
 // ex <start> usque <end> per <step> pro <item> { }
 
-initium {
+incipit {
     // Step by 2 (exclusive: 0, 2, 4, 6, 8)
     ex 0..10 per 2 pro i {
         scribe i
