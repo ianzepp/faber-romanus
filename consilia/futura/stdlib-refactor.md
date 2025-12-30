@@ -417,11 +417,20 @@ This could be wired up to auto-generate arena in main().
 - [x] Add Zig expectations to `proba/norma/tabula.yaml`
 - [x] Run tests (479 Zig tests pass, 3557 total)
 
+### Phase 2b: Zig Copia (completed 2025-12-30)
+
+- [x] Create `subsidia/zig/copia.zig` (HashSet via HashMap(T, void) wrapper)
+- [x] Create unified `fons/codegen/copia.ts` (Zig entries only)
+- [x] Update `fons/codegen/zig/preamble/index.ts` to include copia
+- [x] Update `fons/codegen/zig/expressions/call.ts` to use unified registry
+- [x] Delete `fons/codegen/zig/norma/copia.ts`
+- [x] Add Zig expectations to `proba/norma/copia.yaml`
+- [x] Run tests (3563 total pass)
+
 ### Deferred
 
 - [ ] Fix default allocator bug (auto-generate arena in main)
 - [ ] Update README.md status table
-- [ ] Phase 2b: Zig Copia
 - [ ] Phase 3: Other targets
 - [ ] Phase 4: Cleanup old norma files
 

@@ -20,9 +20,9 @@ import type { ZigGenerator } from '../generator';
 // WHY: Unified registries for collection methods (stdlib refactor)
 import { getListaMethod } from '../../lista';
 import { getTabulaMethod } from '../../tabula';
+import { getCopiaMethod } from '../../copia';
 
 // Collection method registries (will be unified in future phases)
-import { getCopiaMethod } from '../norma/copia';
 import { getMathesisFunction } from '../norma/mathesis';
 import { getTempusFunction } from '../norma/tempus';
 import { getAleatorFunction } from '../norma/aleator';

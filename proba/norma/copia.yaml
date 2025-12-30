@@ -18,6 +18,8 @@
       - '.insert(5)'
   ts:
       - '.add('
+  zig:
+      - '.adde(alloc, 5)'
   fab:
       - 'varia copia<numerus> set = {}'
       - 'set.adde(5)'
@@ -34,6 +36,8 @@
       - '.contains(&5)'
   ts:
       - '.has('
+  zig:
+      - '.habet(5)'
   fab:
       - 'fixum copia<numerus> set = {}'
       - 'set.habet(5)'
@@ -50,6 +54,8 @@
       - '.remove(&5)'
   ts:
       - '.delete('
+  zig:
+      - '.dele(5)'
   fab:
       - 'varia copia<numerus> set = {}'
       - 'set.dele(5)'
@@ -66,6 +72,8 @@
       - '.len()'
   ts:
       - '.size'
+  zig:
+      - '.longitudo()'
   fab:
       - 'fixum copia<numerus> set = {}'
       - 'set.longitudo()'
@@ -82,6 +90,8 @@
       - '.is_empty()'
   ts:
       - '.size === 0'
+  zig:
+      - '.vacua()'
   fab:
       - 'fixum copia<numerus> set = {}'
       - 'set.vacua()'
@@ -98,6 +108,8 @@
       - '.clear()'
   ts:
       - '.clear('
+  zig:
+      - '.purga()'
   fab:
       - 'varia copia<numerus> set = {}'
       - 'set.purga()'
