@@ -130,25 +130,9 @@ fons/codegen/
 
 ### Test Layout
 
-```
-proba/codegen/
-├── expressions/          # Expression tests (binary.yaml, call.yaml, etc.)
-├── statements/           # Statement tests (si.yaml, functio.yaml, etc.)
-└── runner.test.ts        # Test runner: loads YAML, runs against all targets
-```
+See `proba/README.md` for test framework details. Structure mirrors codegen:
 
-**Mapping:** `fons/codegen/<target>/statements/si.ts` → `proba/codegen/statements/si.yaml`
-
-Each YAML file tests all targets (ts, py, rs, cpp, zig, fab) with per-target expectations.
-
-### Test File Structure
-
-See any file in `proba/codegen/` for format. Expectation formats:
-
-- `string` — exact match (after trimming)
-- `string[]` — all fragments must be present (contains)
-- `{ exact: string }` — exact match
-- `{ contains: string[], not_contains: string[] }` — inclusion/exclusion checks
+- `fons/codegen/<target>/statements/si.ts` → `proba/codegen/statements/si.yaml`
 
 ## Syntax Reminder
 
