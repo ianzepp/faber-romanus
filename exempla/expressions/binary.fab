@@ -1,0 +1,50 @@
+// Binary expressions: arithmetic, comparison, logical, nullish
+
+initium {
+    // Arithmetic operators
+    fixum sum = 10 + 5
+    scribe sum
+
+    fixum diff = 10 - 5
+    scribe diff
+
+    fixum prod = 10 * 5
+    scribe prod
+
+    fixum quot = 10 / 5
+    scribe quot
+
+    fixum rem = 10 % 3
+    scribe rem
+
+    // Comparison operators
+    fixum isEqual = 10 == 10
+    scribe isEqual
+
+    fixum isNotEqual = 10 != 5
+    scribe isNotEqual
+
+    fixum isLess = 5 < 10
+    scribe isLess
+
+    fixum isGreater = 10 > 5
+    scribe isGreater
+
+    fixum isLessOrEqual = 5 <= 5
+    scribe isLessOrEqual
+
+    fixum isGreaterOrEqual = 10 >= 10
+    scribe isGreaterOrEqual
+
+    // Logical operators
+    fixum both = verum et verum
+    scribe both
+
+    fixum either = falsum aut verum
+    scribe either
+
+    // Nullish coalescing
+    fixum textus? maybeName = nihil
+    fixum name = maybeName vel "default"
+    scribe name
+}

@@ -1,0 +1,31 @@
+// Object literal expressions
+
+initium {
+    // Empty object
+    fixum empty = {}
+    scribe(empty)
+
+    // Simple object with numeric values
+    fixum point = { x: 10, y: 20 }
+    scribe(point)
+
+    // String keys
+    fixum value = 42
+    fixum withStringKey = { "key": value }
+    scribe(withStringKey)
+
+    // Properties from variables
+    fixum name = "Marcus"
+    fixum age = 30
+    fixum person = { name: name, age: age }
+    scribe(person)
+
+    // Nested objects
+    fixum nested = { outer: { inner: 1 } }
+    scribe(nested)
+
+    // Spread operator
+    fixum base = { a: 1, b: 2 }
+    fixum extended = { sparge base, c: 3 }
+    scribe(extended)
+}

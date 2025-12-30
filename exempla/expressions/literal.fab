@@ -1,0 +1,23 @@
+// Literal expressions: numbers, strings, booleans, null, templates
+
+initium {
+    // Numbers
+    fixum integer = 42
+    fixum decimal = 3.14
+    fixum negative = -100
+
+    // Strings
+    fixum greeting = "hello"
+    fixum single = 'single quotes'
+
+    // Booleans
+    fixum yes = verum
+    fixum no = falsum
+
+    // Null
+    fixum nothing = nihil
+
+    // Template literals
+    fixum name = "Mundus"
+    fixum message = `Hello ${name}`
+}

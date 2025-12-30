@@ -1,0 +1,24 @@
+// Novum (instantiation) expressions
+// Creates new instances of genus types
+
+genus Point {
+    numerus x
+    numerus y
+}
+
+genus Person {
+    textus name
+    numerus age: 0
+}
+
+initium {
+    // Instantiate with all fields
+    fixum p1 = novum Point { x: 10, y: 20 }
+    scribe p1.x
+    scribe p1.y
+
+    // With default value
+    fixum person = novum Person { name: "Marcus" }
+    scribe person.name
+    scribe person.age
+}
