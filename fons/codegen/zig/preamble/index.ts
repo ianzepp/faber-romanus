@@ -1,31 +1,22 @@
 /**
  * Zig Preamble Generator
  *
- * Generates preamble based on features used, including arena allocator setup
- * and collection type definitions.
+ * Generates import statements for Zig output. The actual stdlib implementations
+ * live in subsidia/zig/ and must be available as a module named "faber".
+ *
+ * WHY: Zig expects proper module imports, not inlined code. This approach:
+ * - Keeps generated files small and readable
+ * - Allows the stdlib to be compiled once and reused
+ * - Follows Zig's module system conventions
  */
 
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
 import type { RequiredFeatures } from '../../types';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// WHY: subsidia/ contains actual Zig library files, not codegen logic.
-// Path from fons/codegen/zig/preamble/ to subsidia/zig/
-const SUBSIDIA_PATH = join(__dirname, '../../../../subsidia/zig');
-
-// Read preamble files once at module load
-const LISTA = readFileSync(join(SUBSIDIA_PATH, 'lista.zig'), 'utf-8');
-const TABULA = readFileSync(join(SUBSIDIA_PATH, 'tabula.zig'), 'utf-8');
-const COPIA = readFileSync(join(SUBSIDIA_PATH, 'copia.zig'), 'utf-8');
 
 /**
  * Generate preamble based on features used.
  *
  * @param features - Feature flags set during codegen traversal
- * @returns Preamble string
+ * @returns Preamble string with import statements
  */
 export function genPreamble(features: RequiredFeatures): string {
     const lines: string[] = [];
@@ -33,22 +24,20 @@ export function genPreamble(features: RequiredFeatures): string {
     // Always import std
     lines.push('const std = @import("std");');
 
-    // Add Lista type when lista collections are used
-    if (features.lista) {
-        lines.push('');
-        lines.push(LISTA);
-    }
+    // Import faber stdlib if any collections are used
+    if (features.lista || features.tabula || features.copia) {
+        lines.push('const faber = @import("faber");');
 
-    // Add Tabula type when tabula collections are used
-    if (features.tabula) {
-        lines.push('');
-        lines.push(TABULA);
-    }
-
-    // Add Copia type when copia collections are used
-    if (features.copia) {
-        lines.push('');
-        lines.push(COPIA);
+        // Re-export specific types for convenience
+        if (features.lista) {
+            lines.push('const Lista = faber.Lista;');
+        }
+        if (features.tabula) {
+            lines.push('const Tabula = faber.Tabula;');
+        }
+        if (features.copia) {
+            lines.push('const Copia = faber.Copia;');
+        }
     }
 
     return lines.join('\n') + '\n';
