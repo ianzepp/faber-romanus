@@ -65,7 +65,7 @@ const DEFAULT_TARGET: CodegenTarget = 'ts';
  * Valid compilation targets.
  * WHY: Defined as array for validation and help text generation.
  */
-const VALID_TARGETS = ['ts', 'zig', 'py', 'rs', 'cpp'] as const;
+const VALID_TARGETS = ['ts', 'zig', 'py', 'rs', 'cpp', 'fab'] as const;
 
 // =============================================================================
 // ARGUMENT PARSING
@@ -390,6 +390,7 @@ async function verifyWithTarget(code: string, target: CodegenTarget, displayName
         cpp: '.cpp',
         py: '.py',
         ts: '.ts',
+        fab: '.fab',
     };
 
     const tempFile = `/tmp/faber-${Date.now()}${EXT[target]}`;
@@ -398,12 +399,14 @@ async function verifyWithTarget(code: string, target: CodegenTarget, displayName
         await Bun.write(tempFile, code);
 
         // Target-specific validation commands
+        // WHY: fab uses faber check to validate round-trip through parser
         const checkCmd: Record<CodegenTarget, string[]> = {
             zig: ['zig', 'ast-check', tempFile],
             rs: ['rustc', '--emit=metadata', '--out-dir=/tmp', tempFile],
             cpp: ['g++', '-fsyntax-only', '-std=c++20', tempFile],
             py: ['python3', '-m', 'py_compile', tempFile],
             ts: ['bun', 'build', '--no-bundle', tempFile],
+            fab: ['bun', 'run', 'faber', 'check', tempFile],
         };
 
         const proc = Bun.spawn(checkCmd[target], {

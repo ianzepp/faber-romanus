@@ -13,6 +13,7 @@ A Latin programming language compiler. "The Roman Craftsman."
 | `bun run faber compile <file.fab> -t zig` | Compile to Zig                     |
 | `bun run faber compile <file.fab> -t rs`  | Compile to Rust                    |
 | `bun run faber compile <file.fab> -t cpp` | Compile to C++                     |
+| `bun run faber compile <file.fab> -t fab` | Emit canonical Faber source        |
 | `bun run faber run <file.fab>`            | Compile and execute (TS only)      |
 | `bun run faber check <file.fab>`          | Check for errors without compiling |
 | `bun run faber format <file.fab>`         | Format source file                 |
@@ -119,7 +120,7 @@ Format strings pass through verbatim — use target-appropriate placeholders.
 fons/codegen/
 ├── index.ts              # Router: dispatches to target generators
 ├── types.ts              # Shared types (CodegenTarget, RequiredFeatures)
-└── <target>/             # ts, py, rs, cpp, zig
+└── <target>/             # ts, py, rs, cpp, zig, fab
     ├── index.ts          # Public API for target
     ├── generator.ts      # Main generator class
     ├── expressions/      # Expression handlers (binary.ts, call.ts, etc.)
@@ -138,7 +139,7 @@ proba/codegen/
 
 **Mapping:** `fons/codegen/<target>/statements/si.ts` → `proba/codegen/statements/si.yaml`
 
-Each YAML file tests all targets (ts, py, rs, cpp, zig) with per-target expectations.
+Each YAML file tests all targets (ts, py, rs, cpp, zig, fab) with per-target expectations.
 
 ### Test File Structure
 

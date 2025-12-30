@@ -40,6 +40,7 @@ import { generateZig } from './zig/index';
 import { generatePy } from './py/index';
 import { generateRs } from './rs/index';
 import { generateCpp } from './cpp/index';
+import { generateFab } from './fab/index';
 
 // =============================================================================
 // PUBLIC API
@@ -51,6 +52,7 @@ export { generateZig } from './zig/index';
 export { generatePy } from './py/index';
 export { generateRs } from './rs/index';
 export { generateCpp } from './cpp/index';
+export { generateFab } from './fab/index';
 
 // =============================================================================
 // TARGET DISPATCHER
@@ -89,6 +91,8 @@ export function generate(program: Program, options: CodegenOptions = {}): string
             return generateRs(program, options);
         case 'cpp':
             return generateCpp(program, options);
+        case 'fab':
+            return generateFab(program, options);
         default:
             // EDGE: TypeScript types prevent this, but defensive check for runtime
             throw new Error(`Unknown codegen target: ${target}`);

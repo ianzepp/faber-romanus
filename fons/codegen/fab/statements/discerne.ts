@@ -1,0 +1,26 @@
+/**
+ * Faber Code Generator - DiscerneStatement (pattern matching)
+ */
+
+import type { DiscerneStatement } from '../../../parser/ast';
+import type { FabGenerator } from '../generator';
+import { genBlockStatement } from './functio';
+
+export function genDiscerneStatement(node: DiscerneStatement, g: FabGenerator): string {
+    const lines: string[] = [];
+    lines.push(`${g.ind()}discerne ${g.genExpression(node.discriminant)} {`);
+
+    g.depth++;
+    for (const c of node.cases) {
+        if (c.bindings.length > 0) {
+            const bindings = c.bindings.map(b => b.name).join(', ');
+            lines.push(`${g.ind()}si ${c.variant.name} pro ${bindings} ${genBlockStatement(c.consequent, g)}`);
+        } else {
+            lines.push(`${g.ind()}si ${c.variant.name} ${genBlockStatement(c.consequent, g)}`);
+        }
+    }
+    g.depth--;
+
+    lines.push(`${g.ind()}}`);
+    return lines.join('\n');
+}

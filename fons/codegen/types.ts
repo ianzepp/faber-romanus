@@ -35,7 +35,7 @@
  *      - rs: Rust - memory safety without garbage collection
  *      - cpp: C++ - systems programming alternative
  */
-export type CodegenTarget = 'ts' | 'zig' | 'py' | 'rs' | 'cpp';
+export type CodegenTarget = 'ts' | 'zig' | 'py' | 'rs' | 'cpp' | 'fab';
 
 /**
  * Features used in the source code that require preamble setup.
@@ -156,6 +156,7 @@ export const COMMENT_SYNTAX: Record<CodegenTarget, CommentSyntax> = {
     rs: { line: '//', blockStart: '/*', blockEnd: '*/' },
     cpp: { line: '//', blockStart: '/*', blockEnd: '*/' },
     zig: { line: '//', blockStart: null, blockEnd: null }, // Zig has no block comments
+    fab: { line: '//', blockStart: '/*', blockEnd: '*/' },
 };
 
 /**
