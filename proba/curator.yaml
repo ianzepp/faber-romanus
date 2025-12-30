@@ -46,8 +46,8 @@
 # Curator Tracking in Collection Methods
 # =============================================================================
 
-# Inside function with curator param, Lista handles allocator internally
-# WHY: Lista(T) stores its allocator at init time, so method calls don't need it
+# Inside function with curator param, Lista methods receive allocator explicitly
+# WHY: Methods that grow/allocate need current allocator from curatorStack
 - name: 'lista.adde uses curator param'
   input: |
       functio build(curator memoria) {
@@ -55,7 +55,7 @@
         items.adde(1)
       }
   zig:
-      - 'items.adde(1)'
+      - 'items.adde(memoria, 1)'
   rs:
       - 'fn build(memoria: curator)'
       - 'let mut items = vec![]'
@@ -66,13 +66,13 @@
       - 'varia items = []'
       - 'items.adde(1)'
 
-# Default alloc used in main, but Lista handles it internally
+# Default alloc used in main - Lista methods receive 'alloc' (default curator)
 - name: 'lista.adde uses default alloc'
   input: |
       varia items = []
       items.adde(1)
   zig:
-      - 'items.adde(1)'
+      - 'items.adde(alloc, 1)'
   rs:
       - 'let mut items = vec![]'
       - 'items.push(1)'
@@ -81,7 +81,7 @@
       - 'varia items = []'
       - 'items.adde(1)'
 
-# praepone - Lista handles allocator internally
+# praepone - Lista methods receive allocator explicitly
 - name: 'lista.praepone uses curator param'
   input: |
       functio build(curator mem) {
@@ -89,7 +89,7 @@
         items.praepone(1)
       }
   zig:
-      - 'items.praepone(1)'
+      - 'items.praepone(mem, 1)'
   rs:
       - 'fn build(mem: curator)'
       - 'let mut items = vec![]'
@@ -151,7 +151,7 @@
 # back to lista methods. These tests verify curator tracking still works.
 
 # copia.adde uses curator - falls back to lista.adde due to type inference
-# WHY: Lista(T) stores its allocator at init time
+# WHY: Lista methods receive allocator explicitly
 - name: 'copia.adde uses curator param'
   input: |
       functio build(curator allocator) {
@@ -159,7 +159,7 @@
         s.adde("item")
       }
   zig:
-      - '.adde("item")'
+      - '.adde(allocator, "item")'
   rs:
       - 'fn build(allocator: curator)'
       - 'let mut s = {}'
@@ -176,7 +176,7 @@
       varia s = {}
       s.adde("item")
   zig:
-      - '.adde("item")'
+      - '.adde(alloc, "item")'
   rs:
       - 'let mut s = {}'
       - 's.push(String::from("item"))'
@@ -189,7 +189,7 @@
 # Multiple Functions with Different Curators
 # =============================================================================
 
-# Each function uses its own curator param - Lista handles allocator internally
+# Each function uses its own curator param - methods receive that curator
 - name: 'different curator names in different functions'
   input: |
       functio first(curator a) {
@@ -201,8 +201,8 @@
         y.adde(2)
       }
   zig:
-      - 'x.adde(1)'
-      - 'y.adde(2)'
+      - 'x.adde(a, 1)'
+      - 'y.adde(b, 2)'
   rs:
       - 'fn first(a: curator)'
       - 'x.push(1)'
@@ -221,7 +221,7 @@
 # Nested Scopes
 # =============================================================================
 
-# Curator should be tracked correctly in nested blocks - Lista handles allocator internally
+# Curator should be tracked correctly in nested blocks - methods receive curator
 - name: 'curator in nested if block'
   input: |
       functio process(curator mem) {
@@ -231,7 +231,7 @@
         }
       }
   zig:
-      - 'items.adde(1)'
+      - 'items.adde(mem, 1)'
   rs:
       - 'fn process(mem: curator)'
       - 'let mut items = vec![]'
@@ -244,7 +244,7 @@
       - 'si verum {'
       - 'items.adde(1)'
 
-# Curator in loop body - Lista handles allocator internally
+# Curator in loop body - methods receive curator
 - name: 'curator in loop body'
   input: |
       functio process(curator mem) {
@@ -255,7 +255,7 @@
         }
       }
   zig:
-      - 'items.adde(1)'
+      - 'items.adde(mem, 1)'
   rs:
       - 'fn process(mem: curator)'
       - 'let mut items = vec![]'
@@ -274,7 +274,7 @@
 # Array Literals with Curator
 # =============================================================================
 
-# Array literal - Lista handles allocator internally
+# Array literal - methods receive curator
 - name: 'array literal with curator'
   input: |
       functio build(curator m) {
@@ -282,7 +282,7 @@
         nums.adde(4)
       }
   zig:
-      - 'nums.adde(4)'
+      - 'nums.adde(m, 4)'
   rs:
       - 'fn build(m: curator)'
       - 'let mut nums = vec![1, 2, 3]'
@@ -293,13 +293,13 @@
       - 'varia nums = [1, 2, 3]'
       - 'nums.adde(4)'
 
-# Array literal in main - Lista handles allocator internally
+# Array literal in main - methods receive default 'alloc'
 - name: 'array literal uses default alloc'
   input: |
       varia nums = [1, 2, 3]
       nums.adde(4)
   zig:
-      - 'nums.adde(4)'
+      - 'nums.adde(alloc, 4)'
   rs:
       - 'let mut nums = vec![1, 2, 3]'
       - 'nums.push(4)'
@@ -312,7 +312,7 @@
 # Curator Isolation Between Functions
 # =============================================================================
 
-# Function without curator - Lista handles allocator internally
+# Function without curator - methods receive default 'alloc'
 - name: 'function without curator uses default'
   input: |
       functio noAlloc() {
@@ -320,7 +320,7 @@
         items.adde(1)
       }
   zig:
-      - 'items.adde(1)'
+      - 'items.adde(alloc, 1)'
   rs:
       - 'fn noAlloc()'
       - 'let mut items = vec![]'
@@ -331,7 +331,7 @@
       - 'varia items = []'
       - 'items.adde(1)'
 
-# After function with curator, next function without curator - Lista handles allocator internally
+# After function with curator, next function without curator - curator resets
 - name: 'curator does not leak between functions'
   input: |
       functio withCurator(curator custom) {
@@ -343,8 +343,8 @@
         b.adde(2)
       }
   zig:
-      - 'a.adde(1)'
-      - 'b.adde(2)'
+      - 'a.adde(custom, 1)'
+      - 'b.adde(alloc, 2)'
   rs:
       - 'fn withCurator(custom: curator)'
       - 'a.push(1)'

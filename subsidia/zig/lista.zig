@@ -1,12 +1,16 @@
 // Lista - Dynamic array wrapper for Faber
 // Wraps std.ArrayList with Latin method names
+//
+// WHY: No stored allocator. Methods that need allocation accept it as parameter.
+// This ensures cura...fit blocks properly thread the current allocator.
+
+const std = @import("std");
 
 /// Lista(T) is a dynamic array with Latin-named methods.
-/// Wraps std.ArrayList(T) and stores its allocator for convenience.
+/// Wraps std.ArrayList(T). Allocator passed per-method, not stored.
 pub fn Lista(comptime T: type) type {
     return struct {
-        items: std.ArrayList(T) = .{},
-        alloc: std.mem.Allocator,
+        items: std.ArrayList(T),
 
         const Self = @This();
 
@@ -16,25 +20,25 @@ pub fn Lista(comptime T: type) type {
 
         /// Create an empty lista.
         pub fn init(alloc: std.mem.Allocator) Self {
-            return .{ .alloc = alloc };
+            return .{ .items = std.ArrayList(T).init(alloc) };
         }
 
         /// Create a lista from a slice.
         pub fn fromItems(alloc: std.mem.Allocator, data: []const T) Self {
             var self = init(alloc);
-            self.items.appendSlice(alloc, data) catch @panic("OOM");
+            self.items.appendSlice(data) catch @panic("OOM");
             return self;
         }
 
         /// Free the lista's memory.
         pub fn deinit(self: *Self) void {
-            self.items.deinit(self.alloc);
+            self.items.deinit();
         }
 
         /// Clone the lista (deep copy).
-        pub fn clone(self: Self) Self {
-            var result = init(self.alloc);
-            result.items.appendSlice(self.alloc, self.items.items) catch @panic("OOM");
+        pub fn clone(self: Self, alloc: std.mem.Allocator) Self {
+            var result = init(alloc);
+            result.items.appendSlice(self.items.items) catch @panic("OOM");
             return result;
         }
 
@@ -43,26 +47,28 @@ pub fn Lista(comptime T: type) type {
         // =====================================================================
 
         /// Add element to end (mutates).
-        pub fn adde(self: *Self, value: T) void {
-            self.items.append(self.alloc, value) catch @panic("OOM");
+        pub fn adde(self: *Self, alloc: std.mem.Allocator, value: T) void {
+            _ = alloc; // ArrayList tracks its allocator internally
+            self.items.append(value) catch @panic("OOM");
         }
 
         /// Add element to end, returns new lista (immutable).
-        pub fn addita(self: Self, value: T) Self {
-            var result = self.clone();
-            result.adde(value);
+        pub fn addita(self: Self, alloc: std.mem.Allocator, value: T) Self {
+            var result = self.clone(alloc);
+            result.items.append(value) catch @panic("OOM");
             return result;
         }
 
         /// Add element to start (mutates).
-        pub fn praepone(self: *Self, value: T) void {
-            self.items.insert(self.alloc, 0, value) catch @panic("OOM");
+        pub fn praepone(self: *Self, alloc: std.mem.Allocator, value: T) void {
+            _ = alloc;
+            self.items.insert(0, value) catch @panic("OOM");
         }
 
         /// Add element to start, returns new lista (immutable).
-        pub fn praeposita(self: Self, value: T) Self {
-            var result = self.clone();
-            result.praepone(value);
+        pub fn praeposita(self: Self, alloc: std.mem.Allocator, value: T) Self {
+            var result = self.clone(alloc);
+            result.items.insert(0, value) catch @panic("OOM");
             return result;
         }
 
@@ -76,10 +82,10 @@ pub fn Lista(comptime T: type) type {
         }
 
         /// Remove last element, returns new lista (immutable).
-        pub fn remota(self: Self) Self {
-            if (self.items.items.len == 0) return self.clone();
-            var result = init(self.alloc);
-            result.items.appendSlice(self.alloc, self.items.items[0 .. self.items.items.len - 1]) catch @panic("OOM");
+        pub fn remota(self: Self, alloc: std.mem.Allocator) Self {
+            if (self.items.items.len == 0) return self.clone(alloc);
+            var result = init(alloc);
+            result.items.appendSlice(self.items.items[0 .. self.items.items.len - 1]) catch @panic("OOM");
             return result;
         }
 
@@ -90,10 +96,10 @@ pub fn Lista(comptime T: type) type {
         }
 
         /// Remove first element, returns new lista (immutable).
-        pub fn decapitata(self: Self) Self {
-            if (self.items.items.len == 0) return self.clone();
-            var result = init(self.alloc);
-            result.items.appendSlice(self.alloc, self.items.items[1..]) catch @panic("OOM");
+        pub fn decapitata(self: Self, alloc: std.mem.Allocator) Self {
+            if (self.items.items.len == 0) return self.clone(alloc);
+            var result = init(alloc);
+            result.items.appendSlice(self.items.items[1..]) catch @panic("OOM");
             return result;
         }
 
@@ -198,20 +204,20 @@ pub fn Lista(comptime T: type) type {
         // =====================================================================
 
         /// Filter elements matching predicate.
-        pub fn filtrata(self: Self, predicate: *const fn (T) bool) Self {
-            var result = init(self.alloc);
+        pub fn filtrata(self: Self, alloc: std.mem.Allocator, predicate: *const fn (T) bool) Self {
+            var result = init(alloc);
             for (self.items.items) |v| {
-                if (predicate(v)) result.adde(v);
+                if (predicate(v)) result.items.append(v) catch @panic("OOM");
             }
             return result;
         }
 
         /// Map elements through transform function.
         /// Returns Lista of same type (T -> T transform).
-        pub fn mappata(self: Self, transform: *const fn (T) T) Self {
-            var result = init(self.alloc);
+        pub fn mappata(self: Self, alloc: std.mem.Allocator, transform: *const fn (T) T) Self {
+            var result = init(alloc);
             for (self.items.items) |v| {
-                result.adde(transform(v));
+                result.items.append(transform(v)) catch @panic("OOM");
             }
             return result;
         }
@@ -226,63 +232,63 @@ pub fn Lista(comptime T: type) type {
         }
 
         /// Reverse (returns new lista).
-        pub fn inversa(self: Self) Self {
-            var result = init(self.alloc);
+        pub fn inversa(self: Self, alloc: std.mem.Allocator) Self {
+            var result = init(alloc);
             var i: usize = self.items.items.len;
             while (i > 0) {
                 i -= 1;
-                result.adde(self.items.items[i]);
+                result.items.append(self.items.items[i]) catch @panic("OOM");
             }
             return result;
         }
 
         /// Sort (returns new lista).
-        pub fn ordinata(self: Self) Self {
-            const result = self.clone();
+        pub fn ordinata(self: Self, alloc: std.mem.Allocator) Self {
+            const result = self.clone(alloc);
             std.mem.sort(T, result.items.items, {}, std.sort.asc(T));
             return result;
         }
 
         /// Sort with custom comparator (returns new lista).
-        pub fn ordinataCum(self: Self, comptime lessThan: fn (void, T, T) bool) Self {
-            const result = self.clone();
+        pub fn ordinataCum(self: Self, alloc: std.mem.Allocator, comptime lessThan: fn (void, T, T) bool) Self {
+            const result = self.clone(alloc);
             std.mem.sort(T, result.items.items, {}, lessThan);
             return result;
         }
 
         /// Slice - take elements from start to end.
-        pub fn sectio(self: Self, start: usize, end: usize) Self {
-            var result = init(self.alloc);
+        pub fn sectio(self: Self, alloc: std.mem.Allocator, start: usize, end: usize) Self {
+            var result = init(alloc);
             const s = @min(start, self.items.items.len);
             const e = @min(end, self.items.items.len);
             if (s < e) {
-                result.items.appendSlice(self.alloc, self.items.items[s..e]) catch @panic("OOM");
+                result.items.appendSlice(self.items.items[s..e]) catch @panic("OOM");
             }
             return result;
         }
 
         /// Take first n elements.
-        pub fn prima(self: Self, n: usize) Self {
+        pub fn prima(self: Self, alloc: std.mem.Allocator, n: usize) Self {
             const count = @min(n, self.items.items.len);
-            var result = init(self.alloc);
-            result.items.appendSlice(self.alloc, self.items.items[0..count]) catch @panic("OOM");
+            var result = init(alloc);
+            result.items.appendSlice(self.items.items[0..count]) catch @panic("OOM");
             return result;
         }
 
         /// Take last n elements.
-        pub fn ultima(self: Self, n: usize) Self {
+        pub fn ultima(self: Self, alloc: std.mem.Allocator, n: usize) Self {
             const count = @min(n, self.items.items.len);
             const start = self.items.items.len - count;
-            var result = init(self.alloc);
-            result.items.appendSlice(self.alloc, self.items.items[start..]) catch @panic("OOM");
+            var result = init(alloc);
+            result.items.appendSlice(self.items.items[start..]) catch @panic("OOM");
             return result;
         }
 
         /// Skip first n elements.
-        pub fn omitte(self: Self, n: usize) Self {
+        pub fn omitte(self: Self, alloc: std.mem.Allocator, n: usize) Self {
             const skip = @min(n, self.items.items.len);
-            var result = init(self.alloc);
-            result.items.appendSlice(self.alloc, self.items.items[skip..]) catch @panic("OOM");
+            var result = init(alloc);
+            result.items.appendSlice(self.items.items[skip..]) catch @panic("OOM");
             return result;
         }
 

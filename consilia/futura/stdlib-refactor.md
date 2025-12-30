@@ -7,7 +7,7 @@ Restructure standard library code generation to use external runtime libraries a
 Current stdlib implementation has several issues:
 
 1. **Zig allocator threading**: Lista(T) stores allocator at construction, but `cura...fit` pushes new allocators onto curatorStack that Lista doesn't see
-2. **Scattered registries**: Each target has separate norma/*.ts files (N methods x M targets = many files)
+2. **Scattered registries**: Each target has separate norma/\*.ts files (N methods x M targets = many files)
 3. **Inconsistent complexity**: Some targets inline complex multi-statement transforms, others delegate to preamble
 4. **Location confusion**: Runtime library code lives in `fons/codegen/*/preamble/` but isn't codegen logic
 
@@ -31,6 +31,7 @@ pub fn Lista(comptime T: type) type {
 ```
 
 When Faber code does:
+
 ```fab
 cura arena fit outer {
     fixum lista<numerus> items = [1, 2, 3]
@@ -134,150 +135,151 @@ Codegen passes `_alloc` (from curatorStack) to methods that need it.
 
 ### 4. Registry Schema
 
+Phase 1 includes only Zig entries. Other targets will be added in Phase 3.
+
 ```typescript
 interface MethodDef {
     mutates: boolean;
-    needsAlloc: boolean;  // Determines if codegen passes curator
+    needsAlloc: boolean; // Determines if codegen passes curator
 
     // Per-target: string (delegate to stdlib) | function (inline) | null (unsupported)
-    ts?: string | ((obj: string, args: string[]) => string);
-    py?: string | ((obj: string, args: string[]) => string);
+    // Other targets added in Phase 3
     zig?: string | ((obj: string, args: string[], alloc: string) => string);
-    rs?: string | ((obj: string, args: string[]) => string);
-    cpp?: string | ((obj: string, args: string[]) => string);
 }
 
 export const LISTA: Record<string, MethodDef> = {
     adde: {
         mutates: true,
-        needsAlloc: true,  // Growing operation
-        ts: 'push',
-        py: 'append',
-        zig: 'adde',  // String = delegate to stdlib
-        rs: 'push',
-        cpp: 'push_back',
+        needsAlloc: true, // Growing operation
+        zig: 'adde', // String = delegate to stdlib
     },
     addita: {
         mutates: false,
-        needsAlloc: true,  // Returns new Lista
-        ts: (obj, args) => `[...${obj}, ${args.join(', ')}]`,
-        py: (obj, args) => `[*${obj}, ${args.join(', ')}]`,
-        zig: 'addita',  // Delegate to stdlib
-        rs: (obj, args) => `{ let mut v = ${obj}.clone(); v.push(${args[0]}); v }`,
-        cpp: null,  // Use stdlib when ready
+        needsAlloc: true, // Returns new Lista
+        zig: 'addita', // Delegate to stdlib
     },
     primus: {
         mutates: false,
-        needsAlloc: false,  // Read-only
-        ts: (obj) => `${obj}[0]`,
-        py: (obj) => `${obj}[0]`,
+        needsAlloc: false, // Read-only
         zig: 'primus',
-        rs: (obj) => `${obj}.first().cloned()`,
-        cpp: (obj) => `${obj}.front()`,
     },
     // ...
 };
 ```
 
 When `zig` is a string and `needsAlloc` is true, codegen generates:
+
 ```zig
 obj.methodName(_alloc, args...)
 ```
 
 When `zig` is a string and `needsAlloc` is false:
+
 ```zig
 obj.methodName(args...)
 ```
 
 ## Allocator Categories
 
-| Category | Needs Alloc | Examples |
-|----------|-------------|----------|
-| Construction | Yes | `init`, `fromItems`, `clone` |
-| Destruction | Yes | `deinit` |
-| Growing | Yes | `adde`, `praepone` |
-| Shrinking | No | `remove`, `decapita`, `purga` |
-| Reading | No | `primus`, `longitudo`, `continet` |
-| Returns new collection | Yes | `addita`, `filtrata`, `mappata`, `inversa` |
-| In-place (no resize) | No | `ordina`, `inverte` |
-| Aggregation | No | `summa`, `reducta`, `minimus` |
+| Category               | Needs Alloc | Examples                                   |
+| ---------------------- | ----------- | ------------------------------------------ |
+| Construction           | Yes         | `init`, `fromItems`, `clone`               |
+| Destruction            | Yes         | `deinit`                                   |
+| Growing                | Yes         | `adde`, `praepone`                         |
+| Shrinking              | No          | `remove`, `decapita`, `purga`              |
+| Reading                | No          | `primus`, `longitudo`, `continet`          |
+| Returns new collection | Yes         | `addita`, `filtrata`, `mappata`, `inversa` |
+| In-place (no resize)   | No          | `ordina`, `inverte`                        |
+| Aggregation            | No          | `summa`, `reducta`, `minimus`              |
 
 ## Philosophy
 
 **Prefer stdlib when inline code is moderately complex.**
 
-| Target | Approach | Rationale |
-|--------|----------|-----------|
-| TypeScript | Mostly inline | Native features are clean |
-| Python | Mostly inline | Native features are clean |
-| Zig | Mostly stdlib | Allocators, error handling make inline messy |
-| Rust | Mixed | Ownership makes some transforms verbose |
-| C++ | Mixed | Lambdas/RAII patterns get verbose |
+| Target     | Approach      | Rationale                                    |
+| ---------- | ------------- | -------------------------------------------- |
+| TypeScript | Mostly inline | Native features are clean                    |
+| Python     | Mostly inline | Native features are clean                    |
+| Zig        | Mostly stdlib | Allocators, error handling make inline messy |
+| Rust       | Mixed         | Ownership makes some transforms verbose      |
+| C++        | Mixed         | Lambdas/RAII patterns get verbose            |
 
 ## Implementation Plan
 
 ### Phase 1: Zig Lista Refactor
 
 1. Create `subsidia/zig/lista.zig` with explicit allocator API
-2. Create unified `fons/codegen/lista.ts` registry
-3. Update Zig codegen to:
-   - Include subsidia files in output
-   - Pass `_alloc` based on `needsAlloc` flag
-4. Update README.md to flip `[-]` to `[x]` for working methods
+2. Create unified `fons/codegen/lista.ts` registry (Zig only initially)
+3. Update `fons/codegen/zig/preamble/index.ts` to read from `subsidia/zig/lista.zig`
+4. Update `fons/codegen/zig/expressions/call.ts` to use unified registry, pass curator when `needsAlloc: true`
+5. Delete old `fons/codegen/zig/norma/lista.ts` and update imports
+6. Fix failing tests in `proba/norma/lista.yaml`
+
+**Deferred from Phase 1:**
+
+- Default allocator auto-generation in main() — until core refactor works
+- README.md status updates — after tests pass
 
 ### Phase 2: Zig Tabula/Copia
 
 1. Create `subsidia/zig/tabula.zig`
 2. Create `subsidia/zig/copia.zig`
-3. Create unified `fons/codegen/tabula.ts` and `copia.ts`
+3. Add Zig entries to unified `fons/codegen/tabula.ts` and `copia.ts`
 
-### Phase 3: Other Targets
+### Phase 3: Other Targets (per-language)
 
-Apply same pattern to Rust and C++ where beneficial.
+Wire up each language one at a time to unified registries:
 
-### Phase 4: Migrate Existing Registries
+1. Add target entries to unified registry files
+2. Update target's `expressions/call.ts` to use unified registry
+3. Delete target's `norma/*.ts` files
 
-1. Migrate `fons/codegen/*/norma/*.ts` content into unified registries
-2. Remove old per-target registry files
-3. Update imports throughout codegen
+### Phase 4: Cleanup
+
+1. Remove any remaining per-target `norma/*.ts` files
+2. Final validation across all targets
 
 ## File Changes Summary
 
-### New Files
+### Phase 1 File Changes
+
+**New Files:**
 
 ```
-subsidia/
-  zig/
-    lista.zig
-    tabula.zig
-    copia.zig
-
-fons/codegen/
-  lista.ts       # Unified registry (replaces */norma/lista.ts)
-  tabula.ts
-  copia.ts
-  mathesis.ts
-  aleator.ts
+subsidia/zig/lista.zig              # Lista(T) with explicit allocator API
+fons/codegen/lista.ts               # Unified registry (Zig only initially)
 ```
 
-### Deleted Files (after migration)
+**Modified Files:**
 
 ```
-fons/codegen/ts/norma/lista.ts
-fons/codegen/py/norma/lista.ts
-fons/codegen/zig/norma/lista.ts
-fons/codegen/rs/norma/lista.ts
-fons/codegen/cpp/norma/lista.ts
-(and corresponding tabula.ts, copia.ts, etc.)
+fons/codegen/zig/preamble/index.ts  # Read from subsidia/zig/lista.zig
+fons/codegen/zig/expressions/call.ts # Use unified registry
+proba/norma/lista.yaml              # Update Zig expectations
 ```
 
-### Modified Files
+**Deleted Files:**
 
 ```
-fons/codegen/zig/preamble/index.ts  # Include subsidia files
-fons/codegen/*/expressions/call.ts  # Use unified registry
-README.md                            # Update implementation status
+fons/codegen/zig/norma/lista.ts     # Replaced by unified registry
+fons/codegen/zig/preamble/lista.txt # Replaced by subsidia/zig/lista.zig
 ```
+
+### Future Phase File Changes
+
+**Phase 2 (Zig Tabula/Copia):**
+
+```
+subsidia/zig/tabula.zig
+subsidia/zig/copia.zig
+fons/codegen/tabula.ts
+fons/codegen/copia.ts
+```
+
+**Phase 3 (Other Targets):**
+
+- Add entries to unified registries per target
+- Delete `fons/codegen/*/norma/lista.ts` as each target migrates
 
 ## Validation Findings
 
@@ -288,6 +290,7 @@ Design validated against codebase on 2025-12-30. Key findings:
 The curatorStack and method dispatch plumbing is complete. Only the final step (using the curator in method handlers) is missing.
 
 **`fons/codegen/zig/generator.ts`** (lines 88-120):
+
 ```typescript
 curatorStack: string[] = ['alloc'];  // Default allocator name
 
@@ -307,15 +310,18 @@ popCurator(): void {
 ```
 
 **`fons/codegen/zig/statements/cura.ts`**:
+
 - `cura arena fit name` correctly pushes/pops curator stack
 - Generates proper ArenaAllocator setup with defer
 
 **`fons/codegen/zig/expressions/call.ts`** (lines 119-157):
+
 - Already calls `g.getCurator()` before method dispatch
 - Already passes curator to method handlers: `method.zig(obj, argsArray, curator)`
 - Handlers receive curator but ignore it
 
 **`fons/codegen/zig/norma/lista.ts`**:
+
 - Handlers have signature `(obj, args, curator)` but don't use curator
 - Example: `adde: { zig: (obj, args) => \`${obj}.adde(${args[0]})\` }` — curator unused
 
@@ -336,10 +342,12 @@ And update `subsidia/zig/lista.zig` to accept allocator per-method instead of st
 ### Test Files to Update
 
 **`proba/norma/lista.yaml`**:
+
 - Current Zig expectations: `.adde(1)`, `.addita(1)`, etc.
 - After refactor: `.adde(alloc, 1)`, `.addita(alloc, 1)`, etc.
 
 **`proba/codegen/statements/cura.yaml`**:
+
 - Has good coverage of `cura arena fit name` blocks
 - Tests nested arena blocks (outer/inner)
 - No tests yet for lista methods inside cura blocks
@@ -351,10 +359,12 @@ And update `subsidia/zig/lista.zig` to accept allocator per-method instead of st
 The curatorStack defaults to `['alloc']`, meaning codegen emits code like `items.adde(alloc, 1)`. But there's no guarantee `alloc` exists in scope.
 
 **Current behavior**: Code compiles only if:
+
 - Inside a `cura arena fit alloc { }` block, OR
 - User manually defines `alloc` variable
 
 **Problem**: Raw code without cura block generates invalid Zig:
+
 ```zig
 pub fn main() void {
     var items = Lista(i64).init(alloc);  // Error: alloc undefined
@@ -363,11 +373,13 @@ pub fn main() void {
 ```
 
 **Possible fixes**:
+
 1. **Require cura blocks** — Enforce that collection-using code is inside `cura arena fit`
 2. **Auto-generate arena in main()** — When `features.lista` is true, emit arena setup
 3. **Use page_allocator fallback** — Default to `std.heap.page_allocator` (leaks memory)
 
 **Note**: `fons/codegen/zig/preamble/index.ts` has `usesCollections()` helper but doesn't use it to emit arena setup. The function exists at line 42-44:
+
 ```typescript
 export function usesCollections(features: RequiredFeatures): boolean {
     return features.lista || features.tabula || features.copia;
@@ -384,15 +396,24 @@ This could be wired up to auto-generate arena in main().
 
 ## Implementation Checklist
 
-- [ ] Create `subsidia/` directory structure
-- [ ] Write `subsidia/zig/lista.zig` (no stored allocator)
-- [ ] Update `fons/codegen/zig/norma/lista.ts` to pass curator
-- [ ] Update `fons/codegen/zig/preamble/index.ts` to read from subsidia/
-- [ ] Fix default allocator bug (auto-generate arena or require cura blocks)
-- [ ] Update `proba/norma/lista.yaml` Zig expectations
-- [ ] Add tests for lista methods inside cura blocks
-- [ ] Run `bun test -t "@zig"` to verify
-- [ ] Update README.md status table (flip `[-]` to `[x]`)
+### Phase 1 (completed 2025-12-30)
+
+- [x] Create `subsidia/zig/` directory
+- [x] Write `subsidia/zig/lista.zig` (no stored allocator, methods accept allocator)
+- [x] Create unified `fons/codegen/lista.ts` (Zig entries only)
+- [x] Update `fons/codegen/zig/preamble/index.ts` to read from `subsidia/zig/lista.zig`
+- [x] Update `fons/codegen/zig/expressions/call.ts` to use unified registry
+- [x] Delete `fons/codegen/zig/norma/lista.ts` and update imports
+- [x] Fix failing tests in `proba/norma/lista.yaml` and `proba/curator.yaml`
+- [x] Run `bun test -t "@zig"` to verify (469 tests pass)
+
+### Deferred
+
+- [ ] Fix default allocator bug (auto-generate arena in main)
+- [ ] Update README.md status table
+- [ ] Phase 2: Zig Tabula/Copia
+- [ ] Phase 3: Other targets
+- [ ] Phase 4: Cleanup old norma files
 
 ## Related Documents
 

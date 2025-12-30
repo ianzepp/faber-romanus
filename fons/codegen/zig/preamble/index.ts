@@ -12,8 +12,12 @@ import type { RequiredFeatures } from '../../types';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// WHY: subsidia/ contains actual Zig library files, not codegen logic.
+// Path from fons/codegen/zig/preamble/ to subsidia/zig/
+const SUBSIDIA_PATH = join(__dirname, '../../../../subsidia/zig');
+
 // Read preamble files once at module load
-const LISTA = readFileSync(join(__dirname, 'lista.txt'), 'utf-8');
+const LISTA = readFileSync(join(SUBSIDIA_PATH, 'lista.zig'), 'utf-8');
 
 /**
  * Generate preamble based on features used.

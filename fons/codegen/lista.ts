@@ -1,26 +1,20 @@
 /**
- * Lista Method Registry - Zig translations for Latin array methods
+ * Lista Method Registry - Unified translations for Latin array methods
  *
  * COMPILER PHASE
  * ==============
- * codegen (Zig target)
+ * codegen (all targets)
  *
  * ARCHITECTURE
  * ============
- * This module defines Zig translations for lista<T> methods.
- * Methods delegate to the Lista(T) type defined in the preamble.
+ * This module defines translations for lista<T> methods across all targets.
+ * Phase 1: Zig only. Other targets added in Phase 3.
  *
- * WHY SIMPLE METHOD CALLS
- * =======================
- * The Lista(T) type in the preamble provides all these methods natively.
- * This registry just maps Latin method names to Lista method calls.
- * The Lista type handles allocator management internally.
- *
- * INPUT/OUTPUT CONTRACT
- * =====================
- * INPUT:  Latin method name from CallExpression
- * OUTPUT: Zig code string
- * ERRORS: Returns undefined if method name not recognized
+ * WHY UNIFIED REGISTRY
+ * ====================
+ * - Single source of truth for method behavior across targets
+ * - needsAlloc flag determines if codegen passes curator (allocator)
+ * - Reduces N methods x M targets file sprawl
  */
 
 // =============================================================================
@@ -29,30 +23,28 @@
 
 /**
  * Generator function type for Zig collection methods.
- *
- * WHY: The curator parameter is kept for API compatibility but Lista
- *      handles allocator internally, so it's typically unused.
- * WHY: The args parameter is a string[] (not a joined string) to preserve
- *      argument boundaries for multi-parameter methods.
+ * WHY: curator parameter is the current allocator from curatorStack.
  */
 export type ZigGenerator = (obj: string, args: string[], curator: string) => string;
 
 /**
- * Describes how to translate a Latin method to Zig.
+ * Describes how to translate a Latin method.
  */
 export interface ListaMethod {
-    /** The Latin method name */
-    latin: string;
-
-    /** True if method mutates the array in place */
+    /** True if method mutates the collection in place */
     mutates: boolean;
+
+    /** True if method needs allocator (growing, returning new collection) */
+    needsAlloc: boolean;
 
     /**
      * Zig translation.
-     * - string: simple property/method access
+     * - string: method name to delegate to stdlib
      * - function: custom code generation
      */
-    zig: string | ZigGenerator;
+    zig?: string | ZigGenerator;
+
+    // Future phases will add: ts, py, rs, cpp
 }
 
 // =============================================================================
@@ -60,10 +52,17 @@ export interface ListaMethod {
 // =============================================================================
 
 /**
- * Registry of Latin array methods with Zig translations.
+ * Registry of Latin array methods with translations.
  *
- * WHY: All methods delegate to Lista(T) which handles allocator internally.
- *      This makes the generated code clean and readable.
+ * Allocator categories from design doc:
+ * - Construction: Yes (init, fromItems, clone)
+ * - Destruction: Yes (deinit)
+ * - Growing: Yes (adde, praepone)
+ * - Shrinking: No (remove, decapita, purga)
+ * - Reading: No (primus, longitudo, continet)
+ * - Returns new collection: Yes (addita, filtrata, mappata, inversa)
+ * - In-place (no resize): No (ordina, inverte)
+ * - Aggregation: No (summa, reducta, minimus)
  */
 export const LISTA_METHODS: Record<string, ListaMethod> = {
     // -------------------------------------------------------------------------
@@ -72,30 +71,30 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Add element to end (mutates) */
     adde: {
-        latin: 'adde',
         mutates: true,
-        zig: (obj, args) => `${obj}.adde(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.adde(${curator}, ${args[0]})`,
     },
 
     /** Add element to end (returns new lista) */
     addita: {
-        latin: 'addita',
         mutates: false,
-        zig: (obj, args) => `${obj}.addita(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.addita(${curator}, ${args[0]})`,
     },
 
     /** Add element to start (mutates) */
     praepone: {
-        latin: 'praepone',
         mutates: true,
-        zig: (obj, args) => `${obj}.praepone(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.praepone(${curator}, ${args[0]})`,
     },
 
     /** Add element to start (returns new lista) */
     praeposita: {
-        latin: 'praeposita',
         mutates: false,
-        zig: (obj, args) => `${obj}.praeposita(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.praeposita(${curator}, ${args[0]})`,
     },
 
     // -------------------------------------------------------------------------
@@ -104,36 +103,36 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Remove and return last element (mutates) */
     remove: {
-        latin: 'remove',
         mutates: true,
+        needsAlloc: false,
         zig: obj => `${obj}.remove()`,
     },
 
     /** Remove last element (returns new lista) */
     remota: {
-        latin: 'remota',
         mutates: false,
-        zig: obj => `${obj}.remota()`,
+        needsAlloc: true,
+        zig: (obj, _args, curator) => `${obj}.remota(${curator})`,
     },
 
     /** Remove and return first element (mutates) */
     decapita: {
-        latin: 'decapita',
         mutates: true,
+        needsAlloc: false,
         zig: obj => `${obj}.decapita()`,
     },
 
     /** Remove first element (returns new lista) */
     decapitata: {
-        latin: 'decapitata',
         mutates: false,
-        zig: obj => `${obj}.decapitata()`,
+        needsAlloc: true,
+        zig: (obj, _args, curator) => `${obj}.decapitata(${curator})`,
     },
 
     /** Clear all elements (mutates) */
     purga: {
-        latin: 'purga',
         mutates: true,
+        needsAlloc: false,
         zig: obj => `${obj}.purga()`,
     },
 
@@ -143,29 +142,29 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Get first element */
     primus: {
-        latin: 'primus',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.primus()`,
     },
 
     /** Get last element */
     ultimus: {
-        latin: 'ultimus',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.ultimus()`,
     },
 
     /** Get element at index */
     accipe: {
-        latin: 'accipe',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.accipe(${args[0]})`,
     },
 
     /** Get raw slice for iteration */
     toSlice: {
-        latin: 'toSlice',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.toSlice()`,
     },
 
@@ -175,15 +174,15 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Get length */
     longitudo: {
-        latin: 'longitudo',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.longitudo()`,
     },
 
     /** Check if empty */
     vacua: {
-        latin: 'vacua',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.vacua()`,
     },
 
@@ -193,15 +192,15 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Check if contains element */
     continet: {
-        latin: 'continet',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.continet(${args[0]})`,
     },
 
     /** Find index of element */
     indiceDe: {
-        latin: 'indiceDe',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.indiceDe(${args[0]})`,
     },
 
@@ -211,29 +210,29 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Check if all elements match predicate */
     omnes: {
-        latin: 'omnes',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.omnes(${args[0]})`,
     },
 
     /** Check if any element matches predicate */
     aliquis: {
-        latin: 'aliquis',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.aliquis(${args[0]})`,
     },
 
     /** Find first element matching predicate */
     inveni: {
-        latin: 'inveni',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.inveni(${args[0]})`,
     },
 
     /** Find index of first element matching predicate */
     inveniIndicem: {
-        latin: 'inveniIndicem',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.inveniIndicem(${args[0]})`,
     },
 
@@ -243,24 +242,23 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Filter elements (returns new lista) */
     filtrata: {
-        latin: 'filtrata',
         mutates: false,
-        zig: (obj, args) => `${obj}.filtrata(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.filtrata(${curator}, ${args[0]})`,
     },
 
     /** Map elements (returns new lista) */
     mappata: {
-        latin: 'mappata',
         mutates: false,
-        zig: (obj, args) => `${obj}.mappata(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.mappata(${curator}, ${args[0]})`,
     },
 
     /** Reduce to single value */
     reducta: {
-        latin: 'reducta',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => {
-            // args[0] = reducer fn, args[1] = initial value
             if (args.length >= 2) {
                 return `${obj}.reducta(${args[0]}, ${args[1]})`;
             }
@@ -270,50 +268,49 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Reverse (returns new lista) */
     inversa: {
-        latin: 'inversa',
         mutates: false,
-        zig: obj => `${obj}.inversa()`,
+        needsAlloc: true,
+        zig: (obj, _args, curator) => `${obj}.inversa(${curator})`,
     },
 
     /** Sort (returns new lista) */
     ordinata: {
-        latin: 'ordinata',
         mutates: false,
-        zig: obj => `${obj}.ordinata()`,
+        needsAlloc: true,
+        zig: (obj, _args, curator) => `${obj}.ordinata(${curator})`,
     },
 
     /** Slice - take elements from start to end */
     sectio: {
-        latin: 'sectio',
         mutates: false,
-        zig: (obj, args) => {
+        needsAlloc: true,
+        zig: (obj, args, curator) => {
             if (args.length >= 2) {
-                return `${obj}.sectio(${args[0]}, ${args[1]})`;
+                return `${obj}.sectio(${curator}, ${args[0]}, ${args[1]})`;
             }
-            // Single arg: from start to end
-            return `${obj}.sectio(${args[0]}, ${obj}.longitudo())`;
+            return `${obj}.sectio(${curator}, ${args[0]}, ${obj}.longitudo())`;
         },
     },
 
     /** Take first n elements */
     prima: {
-        latin: 'prima',
         mutates: false,
-        zig: (obj, args) => `${obj}.prima(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.prima(${curator}, ${args[0]})`,
     },
 
     /** Take last n elements */
     ultima: {
-        latin: 'ultima',
         mutates: false,
-        zig: (obj, args) => `${obj}.ultima(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.ultima(${curator}, ${args[0]})`,
     },
 
     /** Skip first n elements */
     omitte: {
-        latin: 'omitte',
         mutates: false,
-        zig: (obj, args) => `${obj}.omitte(${args[0]})`,
+        needsAlloc: true,
+        zig: (obj, args, curator) => `${obj}.omitte(${curator}, ${args[0]})`,
     },
 
     // -------------------------------------------------------------------------
@@ -322,15 +319,15 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Sort in place */
     ordina: {
-        latin: 'ordina',
         mutates: true,
+        needsAlloc: false,
         zig: obj => `${obj}.ordina()`,
     },
 
     /** Reverse in place */
     inverte: {
-        latin: 'inverte',
         mutates: true,
+        needsAlloc: false,
         zig: obj => `${obj}.inverte()`,
     },
 
@@ -340,16 +337,15 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Iterate with callback */
     perambula: {
-        latin: 'perambula',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => `${obj}.perambula(${args[0]})`,
     },
 
     /** Join elements to string */
     coniunge: {
-        latin: 'coniunge',
         mutates: false,
-        // WHY: Zig doesn't have a built-in join, this is complex - stub for now
+        needsAlloc: true,
         zig: () => `@compileError("coniunge not implemented for Zig - string joining requires allocator and format")`,
     },
 
@@ -359,41 +355,40 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
 
     /** Sum of numeric elements */
     summa: {
-        latin: 'summa',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.summa()`,
     },
 
     /** Average of numeric elements */
     medium: {
-        latin: 'medium',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.medium()`,
     },
 
     /** Minimum value */
     minimus: {
-        latin: 'minimus',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.minimus()`,
     },
 
     /** Maximum value */
     maximus: {
-        latin: 'maximus',
         mutates: false,
+        needsAlloc: false,
         zig: obj => `${obj}.maximus()`,
     },
 
     /** Count elements (optionally matching predicate) */
     numera: {
-        latin: 'numera',
         mutates: false,
+        needsAlloc: false,
         zig: (obj, args) => {
             if (args.length > 0) {
                 return `${obj}.numera(${args[0]})`;
             }
-            // No predicate - pass null
             return `${obj}.numera(null)`;
         },
     },

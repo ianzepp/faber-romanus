@@ -18,7 +18,7 @@
   rs:
       - '.push(1)'
   zig:
-      - '.adde(1)'
+      - '.adde(alloc, 1)'
   fab:
       - 'items.adde(1)'
 
@@ -35,7 +35,7 @@
       - 'let mut v = items.clone()'
       - 'v.push(1)'
   zig:
-      - '.addita(1)'
+      - '.addita(alloc, 1)'
   fab:
       - 'items.addita(1)'
 
@@ -50,7 +50,7 @@
   rs:
       - '.insert(0, 1)'
   zig:
-      - '.praepone(1)'
+      - '.praepone(alloc, 1)'
   fab:
       - 'items.praepone(1)'
 
@@ -226,7 +226,7 @@
       - '.iter().filter('
       - '.cloned().collect'
   zig:
-      - '.filtrata('
+      - '.filtrata(alloc,'
   fab:
       - 'items.filtrata(pro x: x > 0)'
 
@@ -242,7 +242,7 @@
       - '.iter().map('
       - '.collect'
   zig:
-      - '.mappata('
+      - '.mappata(alloc,'
   fab:
       - 'items.mappata(pro x: x * 2)'
 
@@ -258,7 +258,7 @@
       - '.iter().rev()'
       - '.cloned().collect'
   zig:
-      - '.inversa()'
+      - '.inversa(alloc)'
   fab:
       - 'items.inversa()'
 
@@ -274,7 +274,7 @@
       - '.iter().take(5)'
       - '.cloned().collect'
   zig:
-      - '.prima(5)'
+      - '.prima(alloc, 5)'
   fab:
       - 'items.prima(5)'
 
@@ -290,7 +290,7 @@
       - '.iter().skip(2)'
       - '.cloned().collect'
   zig:
-      - '.omitte(2)'
+      - '.omitte(alloc, 2)'
   fab:
       - 'items.omitte(2)'
 
