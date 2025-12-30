@@ -55,6 +55,7 @@
 import type { Program, Statement, Expression } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import { RsGenerator } from './generator';
+import { genPreamble } from './preamble';
 
 /**
  * Generate Rust source code from a Latin AST.
@@ -102,7 +103,7 @@ export function generateRs(program: Program, options: CodegenOptions = {}): stri
 
     // Generate preamble AFTER traversal so features are populated
     const lines: string[] = [];
-    const preamble = genPreamble(g);
+    const preamble = genPreamble(g.features);
     if (preamble) {
         lines.push(preamble);
         lines.push('');
@@ -183,20 +184,4 @@ function isConstValue(node: Expression): boolean {
     }
 
     return false;
-}
-
-/**
- * Generate Rust preamble (use statements) based on features used.
- *
- * WHY: Rust requires explicit use statements for external crates.
- *      Only emit use statements for features actually used.
- */
-function genPreamble(g: RsGenerator): string {
-    const uses: string[] = [];
-
-    if (g.features.usesRegex) {
-        uses.push('use regex::Regex;');
-    }
-
-    return uses.join('\n');
 }

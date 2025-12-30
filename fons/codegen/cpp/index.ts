@@ -44,6 +44,7 @@
 import type { Program, Statement } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import { CppGenerator } from './generator';
+import { genPreamble } from './preamble';
 
 /**
  * Generate C++23 source code from a Latin AST.
@@ -96,7 +97,7 @@ export function generateCpp(program: Program, options: CodegenOptions = {}): str
     }
 
     // Build preamble (includes + helpers)
-    const preamble = genPreamble(g);
+    const preamble = genPreamble(g.includes, g.needsScopeGuard);
 
     return preamble + lines.join('\n');
 }
@@ -117,58 +118,4 @@ function isDeclaration(node: Statement): boolean {
         default:
             return false;
     }
-}
-
-/**
- * Generate preamble based on features used.
- *
- * WHY: C++ requires #include directives at the top of the file.
- *      Only emit includes for features actually used in the program.
- */
-function genPreamble(g: CppGenerator): string {
-    const parts: string[] = [];
-
-    // Generate includes
-    const includeLines = genIncludes(g);
-    if (includeLines) {
-        parts.push(includeLines);
-    }
-
-    // Add scope guard helper if demum was used
-    if (g.needsScopeGuard) {
-        parts.push('');
-        parts.push(genScopeGuardHelper());
-    }
-
-    return parts.length > 0 ? parts.join('\n') + '\n' : '';
-}
-
-/**
- * Generate #include directives based on features used.
- */
-function genIncludes(g: CppGenerator): string {
-    // Always include these for basic functionality
-    g.includes.add('<print>');
-    g.includes.add('<string>');
-    g.includes.add('<cstdint>');
-
-    const sorted = Array.from(g.includes).sort();
-
-    return sorted.map(h => `#include ${h}`).join('\n');
-}
-
-/**
- * Generate scope guard helper for demum (finally) blocks.
- *
- * WHY: C++ lacks finally. This RAII helper runs cleanup on scope exit.
- * The lambda captures by reference, so it can access local variables.
- */
-function genScopeGuardHelper(): string {
-    return `
-template<typename F>
-struct _ScopeGuard {
-    F fn;
-    ~_ScopeGuard() { fn(); }
-};
-`.trim();
 }

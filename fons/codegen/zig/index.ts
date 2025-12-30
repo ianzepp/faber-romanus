@@ -46,6 +46,7 @@
 import type { Program, Statement, Expression } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import { ZigGenerator } from './generator';
+import { genPreamble, usesCollections } from './preamble';
 
 /**
  * Generate Zig source code from a Latin AST.
@@ -60,9 +61,6 @@ import { ZigGenerator } from './generator';
 export function generateZig(program: Program, options: CodegenOptions = {}): string {
     const g = new ZigGenerator(options.indent ?? '    ');
 
-    // WHY: Check if collections are used to emit arena allocator preamble
-    const usesCollections = programUsesCollections(program);
-
     // WHY: Zig distinguishes compile-time (const, fn) from runtime (var, statements)
     const topLevel: Statement[] = [];
     const runtime: Statement[] = [];
@@ -75,25 +73,25 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
         }
     }
 
+    // First pass: generate top-level code (populates g.features for those statements)
+    const topLevelCode = topLevel.map(stmt => g.genStatement(stmt));
+
+    // Build output
     const lines: string[] = [];
-
-    // WHY: Many features need std (print, assert, string comparison)
-    lines.push('const std = @import("std");');
-    lines.push('');
-
-    lines.push(...topLevel.map(stmt => g.genStatement(stmt)));
 
     // WHY: Only emit main() if there's runtime code to execute
     if (runtime.length > 0) {
-        if (topLevel.length > 0) {
-            lines.push('');
-        }
-
+        // Second pass: generate runtime code inside main() context
+        // Must happen AFTER depth is incremented for proper indentation
         lines.push('pub fn main() void {');
         g.depth++;
 
         // WHY: Emit arena allocator preamble when collections are used
-        if (usesCollections) {
+        // We need to generate runtime code first to detect collection usage,
+        // but we need depth set first for indentation. Generate to temp array.
+        const runtimeCode = runtime.map(stmt => g.genStatement(stmt));
+
+        if (usesCollections(g.features)) {
             lines.push(`${g.ind()}var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);`);
             lines.push(`${g.ind()}defer arena.deinit();`);
             lines.push(`${g.ind()}const alloc = arena.allocator();`);
@@ -101,25 +99,22 @@ export function generateZig(program: Program, options: CodegenOptions = {}): str
             lines.push('');
         }
 
-        lines.push(...runtime.map(stmt => g.genStatement(stmt)));
+        lines.push(...runtimeCode);
         g.depth--;
         lines.push('}');
     }
 
-    return lines.join('\n');
-}
+    // Prepend preamble and top-level code
+    const preamble = genPreamble(g.features);
+    const result = [preamble, ...topLevelCode];
 
-/**
- * Check if program uses collection types that need arena allocator.
- *
- * WHY: lista, tabula, copia operations in Zig require an allocator.
- *      We detect their use and emit arena preamble in main().
- */
-function programUsesCollections(node: Program): boolean {
-    // WHY: Use replacer to handle BigInt values in AST
-    const json = JSON.stringify(node, (_key, value) => (typeof value === 'bigint' ? value.toString() : value));
-    // Check for collection type annotations or generic names
-    return json.includes('"lista"') || json.includes('"tabula"') || json.includes('"copia"');
+    if (topLevelCode.length > 0 && lines.length > 0) {
+        result.push('');
+    }
+
+    result.push(...lines);
+
+    return result.join('\n');
 }
 
 /**

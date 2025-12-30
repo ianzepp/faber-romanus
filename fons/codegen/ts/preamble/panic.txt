@@ -1,0 +1,3 @@
+class Panic extends Error {
+  name = "Panic";
+}

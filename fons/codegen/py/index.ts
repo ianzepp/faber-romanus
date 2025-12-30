@@ -52,6 +52,7 @@
 import type { Program } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import { PyGenerator } from './generator';
+import { genPreamble } from './preamble';
 
 /**
  * Generate Python source code from a Latin AST.
@@ -70,82 +71,7 @@ export function generatePy(program: Program, options: CodegenOptions = {}): stri
     const body = program.body.map(stmt => g.genStatement(stmt)).join('\n');
 
     // Second: prepend preamble based on detected features
-    const preamble = genPreamble(g);
+    const preamble = genPreamble(g.features);
 
     return preamble + body;
-}
-
-/**
- * Generate preamble based on features used.
- *
- * WHY: Python requires explicit imports for standard library features.
- *      Only emit imports for features actually used in the program.
- */
-function genPreamble(g: PyGenerator): string {
-    const imports: string[] = [];
-    const helpers: string[] = [];
-
-    if (g.features.enum) {
-        imports.push('from enum import Enum, auto');
-    }
-
-    if (g.features.decimal) {
-        imports.push('from decimal import Decimal');
-    }
-
-    if (g.features.usesRegex) {
-        imports.push('import re');
-    }
-
-    // Mathesis (math) module
-    if (g.features.math) {
-        imports.push('import math');
-    }
-
-    // Aleator (random) module
-    if (g.features.random) {
-        imports.push('import random');
-    }
-
-    if (g.features.uuid) {
-        imports.push('import uuid');
-    }
-
-    if (g.features.secrets) {
-        imports.push('import secrets');
-    }
-
-    // I/O intrinsics
-    if (g.features.sys) {
-        imports.push('import sys');
-    }
-
-    if (g.features.warnings) {
-        imports.push('import warnings');
-    }
-
-    // Tempus (time) module
-    if (g.features.time) {
-        imports.push('import time');
-    }
-
-    // WHY: praefixum blocks need a helper that executes code via exec()
-    // with a restricted set of builtins (mimicking compile-time constraints)
-    if (g.features.praefixum) {
-        helpers.push(`def __praefixum__(code):
-    __globals__ = {"range": range, "len": len, "list": list, "dict": dict, "int": int, "float": float, "str": str, "bool": bool, "abs": abs, "min": min, "max": max, "sum": sum}
-    __locals__ = {}
-    exec(code, __globals__, __locals__)
-    return __locals__.get('__result__')`);
-    }
-
-    const parts: string[] = [];
-    if (imports.length > 0) {
-        parts.push(imports.join('\n'));
-    }
-    if (helpers.length > 0) {
-        parts.push(helpers.join('\n\n'));
-    }
-
-    return parts.length > 0 ? parts.join('\n\n') + '\n\n' : '';
 }

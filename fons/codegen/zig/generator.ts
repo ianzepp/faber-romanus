@@ -7,7 +7,7 @@
 
 import type { Statement, Expression, BlockStatement, Parameter, TypeAnnotation, TypeParameter, BaseNode } from '../../parser/ast';
 import type { SemanticType } from '../../semantic/types';
-import { COMMENT_SYNTAX, formatLeadingComments, formatTrailingComments } from '../types';
+import { COMMENT_SYNTAX, formatLeadingComments, formatTrailingComments, createRequiredFeatures, type RequiredFeatures } from '../types';
 
 // Statement handlers
 import { genImportaDeclaration } from './statements/importa';
@@ -86,6 +86,9 @@ export class ZigGenerator {
 
     // Track active allocator name for collection operations
     curatorStack: string[] = ['alloc'];
+
+    // Track features used for preamble generation
+    features: RequiredFeatures = createRequiredFeatures();
 
     constructor(public indent: string = '    ') {}
 
@@ -623,12 +626,14 @@ export class ZigGenerator {
 
         switch (name) {
             case 'lista': {
+                this.features.lista = true;
                 const elemType = params[0];
                 const innerType = elemType && 'name' in elemType ? this.genType(elemType as TypeAnnotation) : 'anytype';
                 result = `[]${innerType}`;
                 break;
             }
             case 'tabula': {
+                this.features.tabula = true;
                 const keyType = params[0];
                 const valType = params[1];
                 const keyZig = keyType && 'name' in keyType ? this.genType(keyType as TypeAnnotation) : 'anytype';
@@ -642,6 +647,7 @@ export class ZigGenerator {
                 break;
             }
             case 'copia': {
+                this.features.copia = true;
                 const elemType = params[0];
                 const innerType = elemType && 'name' in elemType ? this.genType(elemType as TypeAnnotation) : 'anytype';
 
@@ -653,6 +659,7 @@ export class ZigGenerator {
                 break;
             }
             case 'promissum': {
+                this.features.async = true;
                 const innerType = params[0];
                 const zigType = innerType && 'name' in innerType ? this.genType(innerType as TypeAnnotation) : 'anytype';
                 result = `!${zigType}`;

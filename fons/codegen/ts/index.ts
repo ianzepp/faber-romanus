@@ -44,6 +44,7 @@
 import type { Program } from '../../parser/ast';
 import type { CodegenOptions } from '../types';
 import { TsGenerator } from './generator';
+import { genPreamble } from './preamble';
 
 /**
  * Generate TypeScript source code from a Latin AST.
@@ -67,79 +68,7 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     const body = program.body.map(stmt => g.genStatement(stmt)).join('\n');
 
     // Second: prepend preamble based on detected features
-    const preamble = genPreamble(g);
+    const preamble = genPreamble(g.features);
 
     return preamble + body;
-}
-
-/**
- * Generate preamble based on features used.
- *
- * WHY: Only emit setup code for features actually used in the program.
- */
-function genPreamble(g: TsGenerator): string {
-    const imports: string[] = [];
-    const definitions: string[] = [];
-
-    if (g.features.decimal) {
-        imports.push("import type Decimal from 'decimal.js';");
-    }
-
-    if (g.features.panic) {
-        definitions.push('class Panic extends Error { name = "Panic"; }');
-    }
-
-    // WHY: Flumina (streams-first) requires Responsum type, respond helpers, and ut* boundary helpers
-    // Helper naming: as + verb (asFit, asFiunt, asFiet, asFient) = "as [verb]"
-    if (g.features.flumina) {
-        definitions.push(`type Responsum<T = unknown> =
-  | { op: 'bene'; data: T }
-  | { op: 'error'; code: string; message: string }
-  | { op: 'factum' }
-  | { op: 'res'; data: T };
-
-const respond = {
-  ok: <T>(data: T): Responsum<T> => ({ op: 'bene', data }),
-  error: (code: string, message: string): Responsum<never> => ({ op: 'error', code, message }),
-  done: (): Responsum<never> => ({ op: 'factum' }),
-  item: <T>(data: T): Responsum<T> => ({ op: 'res', data }),
-};
-
-function asFit<T>(gen: () => Generator<Responsum<T>>): T {
-  for (const resp of gen()) {
-    if (resp.op === 'bene') return resp.data;
-    if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
-  }
-  throw new Error('EPROTO: No terminal response');
-}
-
-function* asFiunt<T>(gen: Generator<Responsum<T>>): Generator<T> {
-  for (const resp of gen) {
-    if (resp.op === 'res') yield resp.data;
-    else if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
-    else if (resp.op === 'factum') return;
-    else if (resp.op === 'bene') { yield resp.data; return; }
-  }
-}
-
-async function asFiet<T>(gen: () => AsyncGenerator<Responsum<T>>): Promise<T> {
-  for await (const resp of gen()) {
-    if (resp.op === 'bene') return resp.data;
-    if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
-  }
-  throw new Error('EPROTO: No terminal response');
-}
-
-async function* asFient<T>(gen: AsyncGenerator<Responsum<T>>): AsyncGenerator<T> {
-  for await (const resp of gen) {
-    if (resp.op === 'res') yield resp.data;
-    else if (resp.op === 'error') throw new Error(\`\${resp.code}: \${resp.message}\`);
-    else if (resp.op === 'factum') return;
-    else if (resp.op === 'bene') { yield resp.data; return; }
-  }
-}`);
-    }
-
-    const lines = [...imports, ...definitions];
-    return lines.length > 0 ? lines.join('\n') + '\n\n' : '';
 }
