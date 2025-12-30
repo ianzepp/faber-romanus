@@ -15,7 +15,7 @@
       - '.insert(5)'
   rs:
       - 'HashSet<i64>'
-      - '.adde(5)'
+      - '.insert(5)'
   ts:
       - '.add('
   fab:
@@ -31,7 +31,7 @@
       - '.contains(5)'
   rs:
       - 'HashSet<i64>'
-      - '.habet(5)'
+      - '.contains(&5)'
   ts:
       - '.has('
   fab:
@@ -47,7 +47,7 @@
       - '.erase(5)'
   rs:
       - 'HashSet<i64>'
-      - '.dele(5)'
+      - '.remove(&5)'
   ts:
       - '.delete('
   fab:
@@ -63,7 +63,7 @@
       - '.size()'
   rs:
       - 'HashSet<i64>'
-      - '.longitudo()'
+      - '.len()'
   ts:
       - '.size'
   fab:
@@ -79,7 +79,7 @@
       - '.empty()'
   rs:
       - 'HashSet<i64>'
-      - '.vacua()'
+      - '.is_empty()'
   ts:
       - '.size === 0'
   fab:
@@ -95,7 +95,7 @@
       - '.clear()'
   rs:
       - 'HashSet<i64>'
-      - '.purga()'
+      - '.clear()'
   ts:
       - '.clear('
   fab:
@@ -117,7 +117,7 @@
       - '.insert('
   rs:
       - 'HashSet<i64>'
-      - '.unio(setB)'
+      - '.union(&setB).cloned().collect'
   ts:
       - '[...'
   fab:
@@ -136,7 +136,7 @@
       - '.insert('
   rs:
       - 'HashSet<i64>'
-      - '.intersectio(setB)'
+      - '.intersection(&setB).cloned().collect'
   ts:
       - '.filter('
   fab:
@@ -155,7 +155,7 @@
       - '.contains('
   rs:
       - 'HashSet<i64>'
-      - '.differentia(setB)'
+      - '.difference(&setB).cloned().collect'
   ts:
       - '.filter('
   fab:
@@ -174,7 +174,7 @@
       - '.contains('
   rs:
       - 'HashSet<i64>'
-      - '.symmetrica(setB)'
+      - '.symmetric_difference(&setB).cloned().collect'
   ts:
       - '.filter('
   fab:
@@ -197,7 +197,7 @@
       - '.contains('
   rs:
       - 'HashSet<i64>'
-      - '.subcopia(setB)'
+      - '.is_subset(&setB)'
   ts:
       - '.every('
   fab:
@@ -215,7 +215,7 @@
       - 'std::ranges::all_of'
   rs:
       - 'HashSet<i64>'
-      - '.supercopia(setB)'
+      - '.is_superset(&setB)'
   ts:
       - '.every('
   fab:
@@ -236,7 +236,7 @@
       - 'std::vector('
   rs:
       - 'HashSet<i64>'
-      - '.inLista()'
+      - '.iter().cloned().collect::<Vec<_>>()'
   ts:
       - '[...'
   fab:
@@ -256,7 +256,7 @@
       - 'std::ranges::for_each('
   rs:
       - 'HashSet<i64>'
-      - '.perambula(|x|'
+      - '.iter().for_each(|x|'
   ts:
       - '.forEach('
   fab:

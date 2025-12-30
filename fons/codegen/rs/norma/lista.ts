@@ -74,6 +74,14 @@ export const LISTA_METHODS: Record<string, ListaMethod> = {
         rs: (obj, args) => `{ let mut v = ${obj}.clone(); v.push(${args[0]}); v }`,
     },
 
+    /** Add element to start (mutates) */
+    praepone: {
+        latin: 'praepone',
+        mutates: true,
+        async: false,
+        rs: (obj, args) => `${obj}.insert(0, ${args[0]})`,
+    },
+
     // TODO: Implement remaining methods
     // See checklist.md for full list
 };

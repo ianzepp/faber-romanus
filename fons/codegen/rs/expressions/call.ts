@@ -13,8 +13,9 @@
 import type { CallExpression, Identifier } from '../../../parser/ast';
 import type { RsGenerator } from '../generator';
 
-// Collection method registry
+// Collection method registries
 import { getListaMethod } from '../norma/lista';
+import { getCopiaMethod } from '../norma/copia';
 
 /**
  * Rust I/O intrinsic mappings.
@@ -74,16 +75,40 @@ export function genCallExpression(node: CallExpression, g: RsGenerator): string 
         }
     }
 
-    // Check for collection methods (method calls on lista)
-    // WHY: Only lista is implemented for Rust currently
+    // Check for collection methods (method calls on lista/copia)
+    // WHY: Use semantic type info to dispatch to correct collection registry
     if (node.callee.type === 'MemberExpression' && !node.callee.computed) {
         const methodName = (node.callee.property as Identifier).name;
         const obj = g.genExpression(node.callee.object);
 
+        // Use semantic type info to dispatch to correct collection
+        const objType = node.callee.object.resolvedType;
+        const collectionName = objType?.kind === 'generic' ? objType.name : null;
+
+        // Dispatch based on resolved type
+        if (collectionName === 'copia') {
+            const method = getCopiaMethod(methodName);
+            if (method) {
+                if (typeof method.rs === 'function') {
+                    return method.rs(obj, argsArray);
+                }
+                return `${obj}.${method.rs}(${args})`;
+            }
+        } else if (collectionName === 'lista') {
+            const method = getListaMethod(methodName);
+            if (method) {
+                if (typeof method.rs === 'function') {
+                    return method.rs(obj, argsArray);
+                }
+                return `${obj}.${method.rs}(${args})`;
+            }
+        }
+
+        // Fallback: no type info or unknown type - try lista (most common)
         const listaMethod = getListaMethod(methodName);
         if (listaMethod) {
             if (typeof listaMethod.rs === 'function') {
-                return listaMethod.rs(obj, args);
+                return listaMethod.rs(obj, argsArray);
             }
             return `${obj}.${listaMethod.rs}(${args})`;
         }
