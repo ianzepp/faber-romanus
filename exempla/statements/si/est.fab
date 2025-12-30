@@ -1,0 +1,17 @@
+// Strict equality with est
+//
+// est = "is" (strict equality, like ===)
+// Useful for null checks and type-safe comparisons
+
+functio checkValue(x) -> textus {
+    si x est nihil { redde "is null" }
+    si x est verum { redde "is true" }
+    si x est falsum { redde "is false" }
+    redde "is something else"
+}
+
+initium {
+    scribe checkValue(nihil)
+    scribe checkValue(verum)
+    scribe checkValue(42)
+}

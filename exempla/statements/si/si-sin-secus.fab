@@ -1,0 +1,26 @@
+// si-sin-secus (poetic if-else-if chain)
+//
+// Poetic alternative to si/aliter si/aliter:
+//   si   = if
+//   sin  = else if ("but if")
+//   secus = else ("otherwise")
+
+initium {
+    fixum hour = 14
+
+    si hour < 6 {
+        scribe "Late night"
+    }
+    sin hour < 12 {
+        scribe "Morning"
+    }
+    sin hour < 18 {
+        scribe "Afternoon"
+    }
+    sin hour < 22 {
+        scribe "Evening"
+    }
+    secus {
+        scribe "Night"
+    }
+}

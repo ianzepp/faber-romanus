@@ -1,0 +1,18 @@
+// Nested si conditionals
+
+initium {
+    fixum isLoggedIn = verum
+    fixum hasPermission = verum
+
+    si isLoggedIn {
+        si hasPermission {
+            scribe "Access granted"
+        }
+        aliter {
+            scribe "Permission denied"
+        }
+    }
+    aliter {
+        scribe "Please log in"
+    }
+}
