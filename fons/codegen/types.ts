@@ -80,6 +80,18 @@ export interface RequiredFeatures {
 
     // Regex
     usesRegex: boolean; // sed literals - needs re import (Python) or regex crate (Rust)
+
+    // Math (Python) - needs import math
+    math: boolean;
+
+    // Random (Python) - needs import random
+    random: boolean;
+
+    // UUID (Python) - needs import uuid
+    uuid: boolean;
+
+    // Secrets (Python) - needs import secrets (for crypto-safe random bytes)
+    secrets: boolean;
 }
 
 /**
@@ -100,6 +112,10 @@ export function createRequiredFeatures(): RequiredFeatures {
         dataclass: false,
         flumina: false,
         usesRegex: false,
+        math: false,
+        random: false,
+        uuid: false,
+        secrets: false,
     };
 }
 

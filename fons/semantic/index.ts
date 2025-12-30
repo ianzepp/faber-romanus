@@ -230,10 +230,73 @@ const NORMA_TEMPUS_EXPORTS: Record<string, { type: SemanticType; kind: 'function
 };
 
 /**
+ * Norma/mathesis module exports.
+ *
+ * Math operations: floor, ceil, sqrt, pow, trig, etc.
+ * When `ex "norma/mathesis" importa X` is encountered, these symbols are added to scope.
+ */
+const NORMA_MATHESIS_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'variable' }> = {
+    // Rounding
+    pavimentum: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    tectum: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    rotundum: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    truncatum: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+
+    // Powers and roots
+    radix: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    potentia: { type: functionType([FRACTUS, FRACTUS], FRACTUS), kind: 'function' },
+    logarithmus: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    logarithmus10: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    exponens: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+
+    // Trigonometry
+    sinus: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    cosinus: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    tangens: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+
+    // Absolute and sign
+    absolutum: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+    signum: { type: functionType([FRACTUS], FRACTUS), kind: 'function' },
+
+    // Min/max/clamp
+    minimus: { type: functionType([FRACTUS, FRACTUS], FRACTUS), kind: 'function' },
+    maximus: { type: functionType([FRACTUS, FRACTUS], FRACTUS), kind: 'function' },
+    constringens: { type: functionType([FRACTUS, FRACTUS, FRACTUS], FRACTUS), kind: 'function' },
+
+    // Constants
+    PI: { type: FRACTUS, kind: 'variable' },
+    E: { type: FRACTUS, kind: 'variable' },
+    TAU: { type: FRACTUS, kind: 'variable' },
+};
+
+/**
+ * Norma/aleator module exports.
+ *
+ * Random number generation: floats, integers, bytes, UUIDs, collection operations.
+ * When `ex "norma/aleator" importa X` is encountered, these symbols are added to scope.
+ */
+const NORMA_ALEATOR_EXPORTS: Record<string, { type: SemanticType; kind: 'function' | 'variable' }> = {
+    // Basic generation
+    fractus: { type: functionType([], FRACTUS), kind: 'function' },
+    inter: { type: functionType([NUMERUS, NUMERUS], NUMERUS), kind: 'function' },
+    octeti: { type: functionType([NUMERUS], OCTETI), kind: 'function' },
+    uuid: { type: functionType([], TEXTUS), kind: 'function' },
+
+    // Collection operations (generic - takes lista<T>, returns T or lista<T>)
+    selige: { type: functionType([UNKNOWN], UNKNOWN), kind: 'function' },
+    misce: { type: functionType([UNKNOWN], UNKNOWN), kind: 'function' },
+
+    // Seeding
+    semen: { type: functionType([NUMERUS], VACUUM), kind: 'function' },
+};
+
+/**
  * Map of all norma submodule exports.
  */
 const NORMA_SUBMODULES: Record<string, Record<string, { type: SemanticType; kind: 'function' | 'variable' }>> = {
     'norma/tempus': NORMA_TEMPUS_EXPORTS,
+    'norma/mathesis': NORMA_MATHESIS_EXPORTS,
+    'norma/aleator': NORMA_ALEATOR_EXPORTS,
 };
 
 // =============================================================================
@@ -275,18 +338,14 @@ export function analyze(program: Program): SemanticResult {
             });
         }
 
-        // I/O Intrinsics (prefixed with _ for internal use by norma.fab)
+        // I/O Intrinsics (always available - prefixed with _ for internal use)
         defFn('_scribe', [], VACUUM);
         defFn('_vide', [], VACUUM);
         defFn('_mone', [], VACUUM);
         defFn('_lege', [], TEXTUS);
 
-        // Math Intrinsics (prefixed with _ for internal use by norma.fab)
-        defFn('_fortuitus', [], NUMERUS);
-        defFn('_pavimentum', [NUMERUS], NUMERUS);
-        defFn('_tectum', [NUMERUS], NUMERUS);
-        defFn('_radix', [NUMERUS], NUMERUS);
-        defFn('_potentia', [NUMERUS, NUMERUS], NUMERUS);
+        // NOTE: Math intrinsics removed - use norma/mathesis module instead
+        // NOTE: Random intrinsics removed - use norma/aleator module instead
     }
 
     // ---------------------------------------------------------------------------

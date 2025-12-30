@@ -18,6 +18,8 @@ import type { TsGenerator } from '../generator';
 import { getListaMethod } from '../norma/lista';
 import { getTabulaMethod } from '../norma/tabula';
 import { getCopiaMethod } from '../norma/copia';
+import { getMathesisFunction } from '../norma/mathesis';
+import { getAleatorFunction } from '../norma/aleator';
 
 /**
  * TypeScript intrinsic mappings.
@@ -29,18 +31,11 @@ import { getCopiaMethod } from '../norma/copia';
  * - unprefixed: Direct stdlib functions (norma/tempus, etc.)
  */
 const TS_INTRINSICS: Record<string, (args: string) => string> = {
-    // I/O (internal intrinsics used by arca/norma/index.fab)
+    // I/O intrinsics (always available)
     _scribe: args => `console.log(${args})`,
     _vide: args => `console.debug(${args})`,
     _mone: args => `console.warn(${args})`,
     _lege: () => `prompt() ?? ""`,
-
-    // Math (internal intrinsics used by arca/norma/index.fab)
-    _fortuitus: () => `Math.random()`,
-    _pavimentum: args => `Math.floor(${args})`,
-    _tectum: args => `Math.ceil(${args})`,
-    _radix: args => `Math.sqrt(${args})`,
-    _potentia: args => `Math.pow(${args})`,
 
     // norma/tempus - Time functions
     nunc: () => `Date.now()`,
@@ -61,13 +56,32 @@ export function genCallExpression(node: CallExpression, g: TsGenerator): string 
     });
     const args = argsArray.join(', ');
 
-    // Check for intrinsics (bare function calls)
+    // Check for intrinsics and stdlib functions (bare function calls)
     if (node.callee.type === 'Identifier') {
         const name = node.callee.name;
-        const intrinsic = TS_INTRINSICS[name];
 
+        // Check hardcoded intrinsics first
+        const intrinsic = TS_INTRINSICS[name];
         if (intrinsic) {
             return intrinsic(args);
+        }
+
+        // Check mathesis functions (ex "norma/mathesis" importa pavimentum, etc.)
+        const mathesisFunc = getMathesisFunction(name);
+        if (mathesisFunc) {
+            if (typeof mathesisFunc.ts === 'function') {
+                return mathesisFunc.ts(argsArray);
+            }
+            return mathesisFunc.ts;
+        }
+
+        // Check aleator functions (ex "norma/aleator" importa fractus, etc.)
+        const aleatorFunc = getAleatorFunction(name);
+        if (aleatorFunc) {
+            if (typeof aleatorFunc.ts === 'function') {
+                return aleatorFunc.ts(argsArray);
+            }
+            return aleatorFunc.ts;
         }
     }
 

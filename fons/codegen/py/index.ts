@@ -97,6 +97,24 @@ function genPreamble(g: PyGenerator): string {
         imports.push('import re');
     }
 
+    // Mathesis (math) module
+    if (g.features.math) {
+        imports.push('import math');
+    }
+
+    // Aleator (random) module
+    if (g.features.random) {
+        imports.push('import random');
+    }
+
+    if (g.features.uuid) {
+        imports.push('import uuid');
+    }
+
+    if (g.features.secrets) {
+        imports.push('import secrets');
+    }
+
     // WHY: praefixum blocks need a helper that executes code via exec()
     // with a restricted set of builtins (mimicking compile-time constraints)
     if (g.features.praefixum) {

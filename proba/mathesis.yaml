@@ -1,0 +1,228 @@
+# Mathesis - Math stdlib functions
+# Tests for norma/mathesis module functions and constants
+
+# =============================================================================
+# Rounding Functions
+# =============================================================================
+
+- name: pavimentum (floor)
+  faber: |
+      fixum x = pavimentum(3.7)
+  expect:
+      ts: 'const x = Math.floor(3.7);'
+      py:
+          - 'import math'
+          - 'x = math.floor(3.7)'
+
+- name: tectum (ceiling)
+  faber: |
+      fixum x = tectum(3.2)
+  expect:
+      ts: 'const x = Math.ceil(3.2);'
+      py:
+          - 'import math'
+          - 'x = math.ceil(3.2)'
+
+- name: rotundum (round)
+  faber: |
+      fixum x = rotundum(3.5)
+  expect:
+      ts: 'const x = Math.round(3.5);'
+      py: 'x = round(3.5)'
+
+- name: truncatum (truncate)
+  faber: |
+      fixum x = truncatum(3.9)
+  expect:
+      ts: 'const x = Math.trunc(3.9);'
+      py:
+          - 'import math'
+          - 'x = math.trunc(3.9)'
+
+# =============================================================================
+# Powers and Roots
+# =============================================================================
+
+- name: radix (sqrt)
+  faber: |
+      fixum x = radix(16)
+  expect:
+      ts: 'const x = Math.sqrt(16);'
+      py:
+          - 'import math'
+          - 'x = math.sqrt(16)'
+
+- name: potentia (pow)
+  faber: |
+      fixum x = potentia(2, 8)
+  expect:
+      ts: 'const x = Math.pow(2, 8);'
+      py:
+          - 'import math'
+          - 'x = math.pow(2, 8)'
+
+- name: logarithmus (natural log)
+  faber: |
+      fixum x = logarithmus(10)
+  expect:
+      ts: 'const x = Math.log(10);'
+      py:
+          - 'import math'
+          - 'x = math.log(10)'
+
+- name: logarithmus10 (log base 10)
+  faber: |
+      fixum x = logarithmus10(100)
+  expect:
+      ts: 'const x = Math.log10(100);'
+      py:
+          - 'import math'
+          - 'x = math.log10(100)'
+
+- name: exponens (e^x)
+  faber: |
+      fixum x = exponens(1)
+  expect:
+      ts: 'const x = Math.exp(1);'
+      py:
+          - 'import math'
+          - 'x = math.exp(1)'
+
+# =============================================================================
+# Trigonometry
+# =============================================================================
+
+- name: sinus (sin)
+  faber: |
+      fixum x = sinus(0)
+  expect:
+      ts: 'const x = Math.sin(0);'
+      py:
+          - 'import math'
+          - 'x = math.sin(0)'
+
+- name: cosinus (cos)
+  faber: |
+      fixum x = cosinus(0)
+  expect:
+      ts: 'const x = Math.cos(0);'
+      py:
+          - 'import math'
+          - 'x = math.cos(0)'
+
+- name: tangens (tan)
+  faber: |
+      fixum x = tangens(0)
+  expect:
+      ts: 'const x = Math.tan(0);'
+      py:
+          - 'import math'
+          - 'x = math.tan(0)'
+
+# =============================================================================
+# Absolute and Sign
+# =============================================================================
+
+- name: absolutum (abs)
+  faber: |
+      fixum x = absolutum(-5)
+  expect:
+      ts: 'const x = Math.abs(-5);'
+      py: 'x = abs(-5)'
+
+- name: signum (sign)
+  faber: |
+      fixum x = signum(-5)
+  expect:
+      ts: 'const x = Math.sign(-5);'
+      py:
+          - 'x = (1 if -5 > 0 else (-1 if -5 < 0 else 0))'
+
+# =============================================================================
+# Min/Max/Clamp
+# =============================================================================
+
+- name: minimus (min)
+  faber: |
+      fixum x = minimus(3, 7)
+  expect:
+      ts: 'const x = Math.min(3, 7);'
+      py: 'x = min(3, 7)'
+
+- name: maximus (max)
+  faber: |
+      fixum x = maximus(3, 7)
+  expect:
+      ts: 'const x = Math.max(3, 7);'
+      py: 'x = max(3, 7)'
+
+- name: constringens (clamp)
+  faber: |
+      fixum x = constringens(5, 0, 10)
+  expect:
+      ts: 'const x = Math.min(Math.max(5, 0), 10);'
+      py: 'x = max(0, min(10, 5))'
+
+# =============================================================================
+# Constants
+# =============================================================================
+
+- name: PI constant
+  faber: |
+      fixum x = PI
+  expect:
+      ts: 'const x = Math.PI;'
+      py:
+          - 'import math'
+          - 'x = math.pi'
+
+- name: E constant
+  faber: |
+      fixum x = E
+  expect:
+      ts: 'const x = Math.E;'
+      py:
+          - 'import math'
+          - 'x = math.e'
+
+- name: TAU constant
+  faber: |
+      fixum x = TAU
+  expect:
+      ts: 'const x = (Math.PI * 2);'
+      py:
+          - 'import math'
+          - 'x = math.tau'
+
+# =============================================================================
+# Combined Usage
+# =============================================================================
+
+- name: area of circle with PI
+  faber: |
+      fixum r = 5
+      fixum area = PI * r * r
+  expect:
+      ts:
+          - 'const r = 5;'
+          - 'const area = ((Math.PI * r) * r);'
+      py:
+          - 'import math'
+          - 'r = 5'
+          - 'area = ((math.pi * r) * r)'
+
+- name: pythagorean theorem with radix
+  faber: |
+      fixum a = 3
+      fixum b = 4
+      fixum c = radix(a * a + b * b)
+  expect:
+      ts:
+          - 'const a = 3;'
+          - 'const b = 4;'
+          - 'const c = Math.sqrt(((a * a) + (b * b)));'
+      py:
+          - 'import math'
+          - 'a = 3'
+          - 'b = 4'
+          - 'c = math.sqrt(((a * a) + (b * b)))'

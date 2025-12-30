@@ -15,20 +15,19 @@ import type { PyGenerator } from '../generator';
 import { getListaMethod } from '../norma/lista';
 import { getTabulaMethod } from '../norma/tabula';
 import { getCopiaMethod } from '../norma/copia';
+import { getMathesisFunction } from '../norma/mathesis';
+import { getAleatorFunction } from '../norma/aleator';
 
 /**
  * Python intrinsic mappings.
+ *
+ * I/O intrinsics only - math and random moved to norma/mathesis and norma/aleator.
  */
 export const PY_INTRINSICS: Record<string, (args: string) => string> = {
     _scribe: args => `print(${args})`,
     _vide: args => `print(${args}, file=sys.stderr)`,
     _mone: args => `warnings.warn(${args})`,
     _lege: () => `input()`,
-    _fortuitus: () => `random.random()`,
-    _pavimentum: args => `math.floor(${args})`,
-    _tectum: args => `math.ceil(${args})`,
-    _radix: args => `math.sqrt(${args})`,
-    _potentia: args => `math.pow(${args})`,
 };
 
 export function genCallExpression(node: CallExpression, g: PyGenerator): string {
@@ -43,12 +42,44 @@ export function genCallExpression(node: CallExpression, g: PyGenerator): string 
     });
     const args = argsArray.join(', ');
 
-    // Check for intrinsics
+    // Check for intrinsics and stdlib functions (bare function calls)
     if (node.callee.type === 'Identifier') {
         const name = node.callee.name;
+
+        // Check hardcoded intrinsics first
         const intrinsic = PY_INTRINSICS[name];
         if (intrinsic) {
             return intrinsic(args);
+        }
+
+        // Check mathesis functions (ex "norma/mathesis" importa pavimentum, etc.)
+        const mathesisFunc = getMathesisFunction(name);
+        if (mathesisFunc) {
+            if (mathesisFunc.requiresMath) {
+                g.features.math = true;
+            }
+            if (typeof mathesisFunc.py === 'function') {
+                return mathesisFunc.py(argsArray);
+            }
+            return mathesisFunc.py;
+        }
+
+        // Check aleator functions (ex "norma/aleator" importa fractus, etc.)
+        const aleatorFunc = getAleatorFunction(name);
+        if (aleatorFunc) {
+            if (aleatorFunc.requiresRandom) {
+                g.features.random = true;
+            }
+            if (aleatorFunc.requiresUuid) {
+                g.features.uuid = true;
+            }
+            if (aleatorFunc.requiresSecrets) {
+                g.features.secrets = true;
+            }
+            if (typeof aleatorFunc.py === 'function') {
+                return aleatorFunc.py(argsArray);
+            }
+            return aleatorFunc.py;
         }
     }
 

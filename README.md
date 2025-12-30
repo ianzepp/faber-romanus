@@ -423,19 +423,51 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Curator tracking        |    [-]     | [x] |  [-]   | [ ]  |  [-]  |
 | Flumina/Responsum       |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
 
-## Standard Library Intrinsics
+## I/O Intrinsics
 
-| Feature               | TypeScript | Zig | Python | Rust | C++23 |
-| --------------------- | :--------: | :-: | :----: | :--: | :---: |
-| `_scribe` (print)     |    [x]     | [x] |  [x]   | [x]  |  [x]  |
-| `_vide` (debug)       |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_mone` (warn)        |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_lege` (read input)  |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_fortuitus` (random) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_pavimentum` (floor) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_tectum` (ceiling)   |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_radix` (sqrt)       |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `_potentia` (pow)     |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| Feature              | TypeScript | Zig | Python | Rust | C++23 |
+| -------------------- | :--------: | :-: | :----: | :--: | :---: |
+| `_scribe` (print)    |    [x]     | [x] |  [x]   | [x]  |  [x]  |
+| `_vide` (debug)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `_mone` (warn)       |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `_lege` (read input) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+
+## Stdlib: Math (mathesis)
+
+| Feature                    | TypeScript | Zig | Python | Rust | C++23 |
+| -------------------------- | :--------: | :-: | :----: | :--: | :---: |
+| `pavimentum(x)` (floor)    |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `tectum(x)` (ceiling)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `radix(x)` (sqrt)          |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `potentia(x, n)` (pow)     |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `absolutum(x)` (abs)       |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `signum(x)` (sign)         |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `rotundum(x)` (round)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `truncatum(x)` (trunc)     |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `logarithmus(x)` (log)     |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `logarithmus10(x)` (log10) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `exponens(x)` (exp)        |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `sinus(x)` (sin)           |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `cosinus(x)` (cos)         |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `tangens(x)` (tan)         |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `minimus(a, b)` (min)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `maximus(a, b)` (max)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `constringens(x, lo, hi)`  |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `PI` (constant)            |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `E` (constant)             |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `TAU` (constant)           |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+
+## Stdlib: Random (aleator)
+
+| Feature                       | TypeScript | Zig | Python | Rust | C++23 |
+| ----------------------------- | :--------: | :-: | :----: | :--: | :---: |
+| `fractus()` (random 0-1)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `inter(min, max)` (int)       |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `octeti(n)` (random bytes)    |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `uuid()` (UUID v4)            |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `selige(lista)` (random pick) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `misce(lista)` (shuffle copy) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `semen(n)` (seed)             |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
 
 ## Lista (Array) Methods
 

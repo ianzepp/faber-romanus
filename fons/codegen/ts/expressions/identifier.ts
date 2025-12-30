@@ -11,6 +11,7 @@
 
 import type { Identifier } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
+import { getMathesisConstant } from '../norma/mathesis';
 
 /**
  * TypeScript constant intrinsics.
@@ -33,5 +34,12 @@ export function genIdentifier(node: Identifier, _g: TsGenerator): string {
     if (constant) {
         return constant;
     }
+
+    // Check for mathesis constants (PI, E, TAU)
+    const mathesisConst = getMathesisConstant(node.name);
+    if (mathesisConst) {
+        return mathesisConst;
+    }
+
     return node.name;
 }

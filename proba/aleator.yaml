@@ -1,0 +1,104 @@
+# Aleator - Random stdlib functions
+# Tests for norma/aleator module functions
+
+# =============================================================================
+# Basic Generation
+# =============================================================================
+
+- name: fractus (random float 0-1)
+  faber: |
+      fixum x = fractus()
+  expect:
+      ts: 'const x = Math.random();'
+      py:
+          - 'import random'
+          - 'x = random.random()'
+
+- name: inter (random integer in range)
+  faber: |
+      fixum x = inter(1, 100)
+  expect:
+      ts:
+          - 'const x = Math.floor(Math.random() * (100 - 1 + 1)) + 1;'
+      py:
+          - 'import random'
+          - 'x = random.randint(1, 100)'
+
+- name: octeti (random bytes)
+  faber: |
+      fixum bytes = octeti(16)
+  expect:
+      ts: 'const bytes = crypto.getRandomValues(new Uint8Array(16));'
+      py:
+          - 'import secrets'
+          - 'bytes = secrets.token_bytes(16)'
+
+- name: uuid (UUID v4)
+  faber: |
+      fixum id = uuid()
+  expect:
+      ts: 'const id = crypto.randomUUID();'
+      py:
+          - 'import uuid'
+          - 'id = str(uuid.uuid4())'
+
+# =============================================================================
+# Collection Operations
+# =============================================================================
+
+- name: selige (random pick from list)
+  faber: |
+      fixum item = selige(items)
+  expect:
+      ts: 'const item = items[Math.floor(Math.random() * items.length)];'
+      py:
+          - 'import random'
+          - 'item = random.choice(items)'
+
+- name: misce (shuffle list)
+  faber: |
+      fixum shuffled = misce(items)
+  expect:
+      ts:
+          contains:
+              - 'const shuffled'
+              - 'const a = [...items]'
+              - 'Math.random()'
+              - 'return a'
+      py:
+          - 'import random'
+          - 'shuffled = random.sample(items, len(items))'
+
+# =============================================================================
+# Seeding
+# =============================================================================
+
+- name: semen (seed RNG)
+  faber: |
+      semen(42)
+  expect:
+      ts:
+          - 'undefined /* JS Math.random is not seedable */'
+      py:
+          - 'import random'
+          - 'random.seed(42)'
+
+# =============================================================================
+# Combined Usage
+# =============================================================================
+
+- name: random dice roll
+  faber: |
+      fixum die1 = inter(1, 6)
+      fixum die2 = inter(1, 6)
+      fixum total = die1 + die2
+  expect:
+      ts:
+          - 'const die1 = Math.floor(Math.random() * (6 - 1 + 1)) + 1;'
+          - 'const die2 = Math.floor(Math.random() * (6 - 1 + 1)) + 1;'
+          - 'const total = (die1 + die2);'
+      py:
+          - 'import random'
+          - 'die1 = random.randint(1, 6)'
+          - 'die2 = random.randint(1, 6)'
+          - 'total = (die1 + die2)'
