@@ -4,6 +4,7 @@
 //      Comments attach to nodes for formatting preservation.
 
 ex "./positio" importa Locus
+ex "./sententia" importa Sententia
 
 /// Comment type enumeration
 ordo NotaGenus {
@@ -34,10 +35,4 @@ genus Programma {
     lista<Nota>? notaePrae
     lista<Nota>? notaePost
     lista<Sententia> corpus     // body of statements
-}
-
-// Forward declaration - Sententia will be defined in sententia/index.fab
-// For now, use a placeholder to allow compilation
-discretio Sententia {
-    Locus { }
 }

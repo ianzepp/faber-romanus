@@ -20,47 +20,12 @@
 /// - vide = see/debug
 /// - mone = warn
 
-ex "../resolvitor" importa Resolvitor, Expressia
+ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
+ex "../../ast/expressia" importa Expressia
+ex "../../ast/sententia" importa Sententia, ScribeGradus
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
-
-/// ReddeSententia - return statement AST node
-genus ReddeSententia {
-    Locus locus
-    Expressia? argumentum
-}
-
-/// RumpeSententia - break statement AST node
-genus RumpeSententia {
-    Locus locus
-}
-
-/// PergeSententia - continue statement AST node
-genus PergeSententia {
-    Locus locus
-}
-
-/// IaceSententia - throw/panic statement AST node
-genus IaceSententia {
-    Locus locus
-    bivalens fatalis
-    Expressia argumentum
-}
-
-/// ScribeGradus - output level enum
-ordo ScribeGradus {
-    Scribe,
-    Vide,
-    Mone
-}
-
-/// ScribeSententia - output statement AST node
-genus ScribeSententia {
-    Locus locus
-    ScribeGradus gradus
-    lista<Expressia> argumenta
-}
 
 /// Parse return statement
 ///
@@ -68,7 +33,7 @@ genus ScribeSententia {
 ///
 /// Return value is optional - bare 'redde' returns void.
 /// Doesn't consume expression if next token is closing brace.
-functio parseReddeSententia(Resolvitor r) -> ReddeSententia {
+functio parseReddeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
@@ -77,16 +42,16 @@ functio parseReddeSententia(Resolvitor r) -> ReddeSententia {
 
     // Check if there's a return value
     // Don't parse expression if we hit closing brace or end
-    varia argumentum = nihil qua Expressia?
+    varia valor = nihil qua Expressia?
 
     si non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
-        argumentum = r.expressia()
+        valor = r.expressia()
     }
 
-    redde {
+    redde finge ReddeSententia {
         locus: locus,
-        argumentum: argumentum
-    } qua ReddeSententia
+        valor: valor
+    } qua Sententia
 }
 
 /// Parse break statement
@@ -94,16 +59,16 @@ functio parseReddeSententia(Resolvitor r) -> ReddeSententia {
 /// GRAMMAR: breakStmt := 'rumpe'
 ///
 /// Exits the innermost loop.
-functio parseRumpeSententia(Resolvitor r) -> RumpeSententia {
+functio parseRumpeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Consume 'rumpe' keyword (already validated by caller)
     p.procede()
 
-    redde {
+    redde finge RumpeSententia {
         locus: locus
-    } qua RumpeSententia
+    } qua Sententia
 }
 
 /// Parse continue statement
@@ -111,16 +76,16 @@ functio parseRumpeSententia(Resolvitor r) -> RumpeSententia {
 /// GRAMMAR: continueStmt := 'perge'
 ///
 /// Skips to next loop iteration.
-functio parsePergeSententia(Resolvitor r) -> PergeSententia {
+functio parsePergeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Consume 'perge' keyword (already validated by caller)
     p.procede()
 
-    redde {
+    redde finge PergeSententia {
         locus: locus
-    } qua PergeSententia
+    } qua Sententia
 }
 
 /// Parse throw/panic statement
@@ -130,7 +95,7 @@ functio parsePergeSententia(Resolvitor r) -> PergeSententia {
 /// Two severity levels:
 /// - iace (throw): recoverable, can be caught
 /// - mori (die): fatal/panic, unrecoverable
-functio parseIaceSententia(Resolvitor r, bivalens fatalis) -> IaceSententia {
+functio parseIaceSententia(Resolvitor r, bivalens fatale) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
@@ -140,11 +105,11 @@ functio parseIaceSententia(Resolvitor r, bivalens fatalis) -> IaceSententia {
     // Parse the error expression
     fixum argumentum = r.expressia()
 
-    redde {
+    redde finge IaceSententia {
         locus: locus,
-        fatalis: fatalis,
+        fatale: fatale,
         argumentum: argumentum
-    } qua IaceSententia
+    } qua Sententia
 }
 
 /// Parse output statement (scribe/vide/mone)
@@ -155,7 +120,7 @@ functio parseIaceSententia(Resolvitor r, bivalens fatalis) -> IaceSententia {
 /// - scribe → console.log
 /// - vide → console.debug
 /// - mone → console.warn
-functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> ScribeSententia {
+functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
@@ -171,9 +136,9 @@ functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> ScribeSentent
         argumenta.adde(r.expressia())
     }
 
-    redde {
+    redde finge ScribeSententia {
         locus: locus,
         gradus: gradus,
         argumenta: argumenta
-    } qua ScribeSententia
+    } qua Sententia
 }

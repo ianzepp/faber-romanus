@@ -3,9 +3,6 @@
 /// Terminals and grouping: literals, identifiers, parenthesized expressions,
 /// arrays, objects, lambdas.
 ///
-/// STATUS: Resolvitor conversion in progress
-/// BLOCKED: Same type system issue as binaria.fab
-///
 /// GRAMMAR:
 ///   primary := IDENTIFIER | NUMBER | STRING | TEMPLATE_STRING
 ///            | 'ego' | 'verum' | 'falsum' | 'nihil'
@@ -21,77 +18,194 @@
 /// - falsum = false
 /// - nihil = null
 
-ex "../resolvitor" importa Resolvitor, Expressia, TypusAnnotatio, MassaSententia
+ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
+ex "../../ast/expressia" importa Expressia, LitteraGenus
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
-/// LitteraGenus - literal type enum
-ordo LitteraGenus {
-    Numerus,
-    Textus,
-    Verum,
-    Falsum,
-    Nihil
-}
-
-/// Littera - literal expression AST node
-genus Littera {
-    Locus locus
-    LitteraGenus species
-    textus crudus
-}
-
-/// Nomen - identifier AST node
-genus Nomen {
-    Locus locus
-    textus valor
-}
-
-/// EgoExpressia - self reference AST node
-genus EgoExpressia {
-    Locus locus
-}
-
-/// SeriesExpressia - array literal AST node
-genus SeriesExpressia {
-    Locus locus
-    lista<Expressia> elementa
-}
-
-/// ObiectumProprietas - object property AST node
-genus ObiectumProprietas {
-    Locus locus
-    Expressia clavis
-    Expressia valor
-    bivalens computatum
-    bivalens compendium
-}
-
-/// ObiectumExpressia - object literal AST node
-genus ObiectumExpressia {
-    Locus locus
-    lista<ObiectumProprietas> proprietates
-}
-
-/// LambdaParametrum - lambda parameter AST node
-genus LambdaParametrum {
-    Locus locus
-    Nomen nomen
-}
-
-/// LambdaExpressia - lambda expression AST node
-genus LambdaExpressia {
-    Locus locus
-    lista<LambdaParametrum> parametra
-    TypusAnnotatio? typusReditus
-    Expressia corpus
-    bivalens asynca
-}
-
-// TODO: Implement once type system issue is resolved
-
-/// Parse primary expression (stub)
+/// Parse primary expression
+///
+/// Handles terminals: literals, identifiers, ego, grouped expressions.
+/// Currently a partial implementation - covers the most common cases.
 functio parsePrimaria(Resolvitor r) -> Expressia {
-    redde r.expressia()
+    fixum p = r.parser()
+    fixum sym = p.specta(0)
+    fixum locus = sym.locus
+
+    // Numeric literal
+    si sym.species == SymbolumGenus.Numerus {
+        p.procede()
+        redde finge Littera {
+            locus: locus,
+            species: LitteraGenus.Numerus,
+            crudus: sym.valor
+        } qua Expressia
+    }
+
+    // Float literal
+    si sym.species == SymbolumGenus.Fractus {
+        p.procede()
+        redde finge Littera {
+            locus: locus,
+            species: LitteraGenus.Fractus,
+            crudus: sym.valor
+        } qua Expressia
+    }
+
+    // String literal
+    si sym.species == SymbolumGenus.Textus {
+        p.procede()
+        redde finge Littera {
+            locus: locus,
+            species: LitteraGenus.Textus,
+            crudus: sym.valor
+        } qua Expressia
+    }
+
+    // Boolean: verum
+    si sym.species == SymbolumGenus.Verum {
+        p.procede()
+        redde finge Littera {
+            locus: locus,
+            species: LitteraGenus.Verum,
+            crudus: "verum"
+        } qua Expressia
+    }
+
+    // Boolean: falsum
+    si sym.species == SymbolumGenus.Falsum {
+        p.procede()
+        redde finge Littera {
+            locus: locus,
+            species: LitteraGenus.Falsum,
+            crudus: "falsum"
+        } qua Expressia
+    }
+
+    // Null: nihil
+    si sym.species == SymbolumGenus.Nihil {
+        p.procede()
+        redde finge Littera {
+            locus: locus,
+            species: LitteraGenus.Nihil,
+            crudus: "nihil"
+        } qua Expressia
+    }
+
+    // Identifier
+    si sym.species == SymbolumGenus.Nomen {
+        p.procede()
+        redde finge Nomen {
+            locus: locus,
+            valor: sym.valor
+        } qua Expressia
+    }
+
+    // Self reference: ego
+    si p.probaVerbum("ego") {
+        p.procede()
+        redde finge EgoExpressia {
+            locus: locus
+        } qua Expressia
+    }
+
+    // Grouped expression: ( expr )
+    si sym.species == SymbolumGenus.ParensSin {
+        p.procede()
+        fixum expr = r.expressia()
+        p.expecta(SymbolumGenus.ParensDex, ParserErrorCodice.ExpectaturParensDex)
+        redde expr
+    }
+
+    // Array literal: [ ... ]
+    si sym.species == SymbolumGenus.AngulusSin {
+        redde parseSeriesExpressia(r)
+    }
+
+    // Object literal: { ... }
+    si sym.species == SymbolumGenus.UncusSin {
+        redde parseObiectumExpressia(r)
+    }
+
+    // Lambda: pro x: expr
+    si p.probaVerbum("pro") {
+        redde parseLambdaExpressia(r)
+    }
+
+    // Fallback: report error and return placeholder
+    p.renuncia(ParserErrorCodice.ExpectaturExpressia, locus)
+    redde finge Nomen {
+        locus: locus,
+        valor: ""
+    } qua Expressia
+}
+
+/// Parse array literal
+///
+/// GRAMMAR: arrayLiteral := '[' (expression (',' expression)*)? ']'
+functio parseSeriesExpressia(Resolvitor r) -> Expressia {
+    fixum p = r.parser()
+    fixum locus = p.specta(0).locus
+
+    p.expecta(SymbolumGenus.AngulusSin, ParserErrorCodice.ExpectaturAngulusSin)
+
+    varia elementa = [] qua lista<Expressia>
+
+    si non p.proba(SymbolumGenus.AngulusDex) {
+        elementa.adde(r.expressia())
+
+        dum p.congruet(SymbolumGenus.Virgula) {
+            // Allow trailing comma
+            si p.proba(SymbolumGenus.AngulusDex) {
+                rumpe
+            }
+            elementa.adde(r.expressia())
+        }
+    }
+
+    p.expecta(SymbolumGenus.AngulusDex, ParserErrorCodice.ExpectaturAngulusDex)
+
+    redde finge SeriesExpressia {
+        locus: locus,
+        elementa: elementa
+    } qua Expressia
+}
+
+/// Parse object literal
+///
+/// GRAMMAR: objectLiteral := '{' (property (',' property)*)? '}'
+///          property := (IDENTIFIER | STRING | '[' expr ']') ':' expression
+///                    | IDENTIFIER  // shorthand
+functio parseObiectumExpressia(Resolvitor r) -> Expressia {
+    fixum p = r.parser()
+    fixum locus = p.specta(0).locus
+
+    // TODO: Full object literal parsing
+    // For now, just consume braces and return empty object
+    p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
+    p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
+
+    redde finge ObiectumExpressia {
+        locus: locus,
+        proprietates: [] qua lista<ObiectumProprietas>
+    } qua Expressia
+}
+
+/// Parse lambda expression
+///
+/// GRAMMAR: lambdaExpr := 'pro' params? (':' expression | blockStmt)
+///          params := IDENTIFIER (',' IDENTIFIER)*
+functio parseLambdaExpressia(Resolvitor r) -> Expressia {
+    fixum p = r.parser()
+    fixum locus = p.specta(0).locus
+
+    // TODO: Full lambda parsing
+    // For now, just consume 'pro' and return placeholder
+    p.expectaVerbum("pro", ParserErrorCodice.ExpectaturPro)
+
+    redde finge Nomen {
+        locus: locus,
+        valor: "lambda_placeholder"
+    } qua Expressia
 }

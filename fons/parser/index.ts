@@ -1674,7 +1674,7 @@ export function parse(tokens: Token[]): ParserResult {
             while (!check('RBRACE') && !isAtEnd()) {
                 const fieldPosition = peek().position;
                 const fieldType = parseTypeAnnotation();
-                const fieldName = parseIdentifier();
+                const fieldName = parseIdentifierOrKeyword();
 
                 fields.push({
                     type: 'VariantField',
