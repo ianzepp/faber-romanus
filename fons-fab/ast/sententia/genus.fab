@@ -1,0 +1,99 @@
+// Genus (struct/class) declarations
+//
+// WHY: Genus defines data structures with fields and methods.
+//      Supports inheritance, interfaces, abstract classes.
+
+genus Locus {
+    numerus linea
+    numerus columna
+    numerus index
+}
+
+// Forward declarations
+discretio Expressia {
+    Locus { }
+}
+
+genus Nomen {
+    Locus locus
+    textus valor
+}
+
+genus TypusAdnotatio {
+    Locus locus
+    textus nomen
+    bivalens nullabile
+}
+
+genus FunctioDeclaratio {
+    Locus locus
+    Nomen nomen
+    bivalens asynca
+}
+
+/// Visibility level for members
+ordo Visibilitas {
+    Publica       // public (default)
+    Protecta      // protected
+    Privata       // private
+}
+
+/// Field declaration within genus
+/// Example: textus nomen, privatus numerus aetas: 0
+genus CampusDeclaratio {
+    Locus locus
+    Nomen nomen
+    TypusAdnotatio typusAdnotatio
+    Expressia? valor         // default value
+    Visibilitas visibilitas
+    bivalens staticum        // generis (static)
+    bivalens reactivum       // nexum (reactive)
+}
+
+/// Genus (struct/class) declaration
+/// Example: genus Persona { textus nomen }
+genus GenusDeclaratio {
+    Locus locus
+    Nomen nomen
+    lista<Nomen>? generaParametra
+    Nomen? extendit          // sub Parent
+    lista<Nomen>? impletLista    // implet Interface
+    bivalens abstractum
+    lista<CampusDeclaratio> campi
+    FunctioDeclaratio? constructor
+    lista<FunctioDeclaratio> methodi
+}
+
+/// Pactum method signature (interface method)
+genus PactumMethodus {
+    Locus locus
+    Nomen nomen
+    lista<Parametrum> parametra
+    TypusAdnotatio? typusReditus
+    bivalens asynca
+    bivalens generator
+}
+
+/// Pactum (interface) declaration
+/// Example: pactum Iterabilis { functio sequens() fit T? }
+genus PactumDeclaratio {
+    Locus locus
+    Nomen nomen
+    lista<Nomen>? generaParametra
+    lista<PactumMethodus> methodi
+}
+
+/// Type alias declaration
+/// Example: typus ID = textus
+genus TypusAliasDeclaratio {
+    Locus locus
+    Nomen nomen
+    TypusAdnotatio typusAdnotatio
+    Nomen? scopusNomen       // for typeof: typus X = typus y
+}
+
+// Forward declare Parametrum from functio.fab
+genus Parametrum {
+    Locus locus
+    Nomen nomen
+}

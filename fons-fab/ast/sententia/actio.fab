@@ -1,0 +1,159 @@
+// Action statements (output, return, control)
+//
+// WHY: Actions perform side effects or control flow jumps.
+//      Includes print, return, break, continue.
+
+genus Locus {
+    numerus linea
+    numerus columna
+    numerus index
+}
+
+// Forward declarations
+discretio Expressia {
+    Locus { }
+}
+
+discretio Sententia {
+    Locus { }
+}
+
+genus Nomen {
+    Locus locus
+    textus valor
+}
+
+genus MassaSententia {
+    Locus locus
+    lista<Sententia> corpus
+}
+
+genus TypusAdnotatio {
+    Locus locus
+    textus nomen
+    bivalens nullabile
+}
+
+genus CapeClausula {
+    Locus locus
+    Nomen param
+    MassaSententia corpus
+}
+
+/// Output level
+ordo ScribeGradus {
+    Scribe     // console.log
+    Vide       // console.debug
+    Mone       // console.warn
+}
+
+/// Print statement
+/// Example: scribe "hello", vide value, mone "warning"
+genus ScribeSententia {
+    Locus locus
+    ScribeGradus gradus
+    lista<Expressia> argumenta
+}
+
+/// Return statement
+/// Example: redde 42, redde
+genus ReddeSententia {
+    Locus locus
+    Expressia? valor
+}
+
+/// Break statement
+/// Example: rumpe
+genus RumpeSententia {
+    Locus locus
+}
+
+/// Continue statement
+/// Example: perge
+genus PergeSententia {
+    Locus locus
+}
+
+/// Expression statement (expression as statement)
+genus ExpressiaSententia {
+    Locus locus
+    Expressia expressia
+}
+
+/// Entry point (sync)
+/// Example: incipit { scribe "Hello" }
+genus IncipitSententia {
+    Locus locus
+    MassaSententia? corpus
+    Sententia? ergoSententia // incipit ergo ...
+}
+
+/// Entry point (async)
+/// Example: incipiet { cede fetch() }
+genus IncipietSententia {
+    Locus locus
+    MassaSententia? corpus
+    Sententia? ergoSententia
+}
+
+/// Curator kind
+ordo CuratorGenus {
+    Arena      // arena allocator
+    Pagina     // page allocator
+}
+
+/// Cura timing (test context)
+ordo CuraTempus {
+    Ante       // before
+    Post       // after
+}
+
+/// Resource management block (test context)
+/// Example: cura ante { setup() }
+genus CuraMassa {
+    Locus locus
+    CuraTempus tempus
+    bivalens proOmnibus      // ante omnia / post omnia
+    MassaSententia corpus
+}
+
+/// Resource management statement
+/// Example: cura arena fit mem { ... }
+genus CuraSententia {
+    Locus locus
+    CuratorGenus? curatorSpecies
+    Expressia? res           // resource expression
+    Nomen vinculum           // binding name
+    TypusAdnotatio? typusAdnotatio
+    bivalens asynca
+    MassaSententia corpus
+    CapeClausula? capeClausula
+}
+
+/// Ad binding verb
+ordo AdVerbumVinculandi {
+    Fit        // sync single
+    Fiet       // async single
+    Fiunt      // sync plural
+    Fient      // async plural
+}
+
+/// Ad binding clause
+genus AdVinculum {
+    Locus locus
+    AdVerbumVinculandi verbum
+    TypusAdnotatio? typusAdnotatio
+    Nomen nomen
+    Nomen? aliasNomen
+}
+
+/// Ad (dispatch) statement
+/// Example: ad "fasciculus:lege" ("file.txt") fit textus pro content { ... }
+genus AdSententia {
+    Locus locus
+    textus scopus            // target string
+    lista<Expressia> argumenta
+    AdVinculum? vinculum
+    MassaSententia? corpus
+    CapeClausula? capeClausula
+}

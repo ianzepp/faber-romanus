@@ -1,0 +1,88 @@
+// Variable and destructuring declarations
+//
+// WHY: Variable declarations bind values to names.
+//      Supports const (fixum), let (varia), and async variants.
+
+genus Locus {
+    numerus linea
+    numerus columna
+    numerus index
+}
+
+// Forward declarations
+discretio Expressia {
+    Locus { }
+}
+
+genus Nomen {
+    Locus locus
+    textus valor
+}
+
+genus TypusAdnotatio {
+    Locus locus
+    textus nomen
+    bivalens nullabile
+}
+
+/// Variable declaration kind
+ordo VariaGenus {
+    Varia       // mutable: let
+    Fixum       // immutable: const
+    Figendum    // immutable async: const x = await ...
+    Variandum   // mutable async: let x = await ...
+}
+
+/// Array pattern element for destructuring
+/// Example: [a, _, ceteri rest]
+genus SeriesFormaElementum {
+    Locus locus
+    Nomen nomen
+    bivalens residuum        // true for ceteri (rest) pattern
+    bivalens omissum         // true for _ (skip)
+}
+
+/// Array destructuring pattern
+/// Example: [a, b, c], [first, ceteri rest]
+genus SeriesForma {
+    Locus locus
+    lista<SeriesFormaElementum> elementa
+}
+
+/// Variable declaration statement
+/// Examples: varia x = 5, fixum nomen = "Marcus"
+genus VariaSententia {
+    Locus locus
+    VariaGenus species
+    Nomen nomen              // simple name or pattern
+    TypusAdnotatio? typusAdnotatio
+    Expressia? valor         // initializer
+}
+
+/// Import specifier with optional alias
+/// Example: scribe, scribe ut s
+genus ImportaSpecificator {
+    Locus locus
+    Nomen importatum         // imported name
+    Nomen locale             // local binding name
+    bivalens residuum        // true for ceteri (rest)
+}
+
+/// Import declaration
+/// Example: ex norma importa scribe, lege
+genus ImportaSententia {
+    Locus locus
+    textus fons              // source path/module
+    lista<ImportaSpecificator> specificatores
+    bivalens totum           // true for wildcard *
+    Nomen? totumAlias        // alias for * ut name
+}
+
+/// Destructure declaration
+/// Example: ex persona fixum nomen, aetas
+genus DestructuraSententia {
+    Locus locus
+    Expressia fons           // source expression
+    VariaGenus species       // fixum/varia/figendum/variandum
+    lista<ImportaSpecificator> specificatores
+}

@@ -1,0 +1,36 @@
+// Ordo (enum) declarations
+//
+// WHY: Enums define a fixed set of named constants.
+//      Supports numeric and string values.
+
+genus Locus {
+    numerus linea
+    numerus columna
+    numerus index
+}
+
+genus Nomen {
+    Locus locus
+    textus valor
+}
+
+genus Littera {
+    Locus locus
+    textus crudus
+}
+
+/// Enum member
+/// Example: Rubrum, Actum = 1, Septentrio = "north"
+genus OrdoMembrum {
+    Locus locus
+    Nomen nomen
+    Littera? valor           // optional explicit value
+}
+
+/// Enum declaration
+/// Example: ordo Color { Rubrum, Viridis, Caeruleum }
+genus OrdoDeclaratio {
+    Locus locus
+    Nomen nomen
+    lista<OrdoMembrum> membra
+}

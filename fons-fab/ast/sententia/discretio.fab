@@ -1,0 +1,46 @@
+// Discretio (tagged union) declarations
+//
+// WHY: Tagged unions enable type-safe variants with payloads.
+//      Each variant has a compiler-managed tag for pattern matching.
+
+genus Locus {
+    numerus linea
+    numerus columna
+    numerus index
+}
+
+genus Nomen {
+    Locus locus
+    textus valor
+}
+
+genus TypusAdnotatio {
+    Locus locus
+    textus nomen
+    bivalens nullabile
+}
+
+/// Variant field
+/// Example: numerus x, textus clavis
+genus VariansCampus {
+    Locus locus
+    Nomen nomen
+    TypusAdnotatio typusAdnotatio
+}
+
+/// Variant declaration within discretio
+/// Example: Click { numerus x, numerus y }, Quit
+genus VariansDeclaratio {
+    Locus locus
+    Nomen nomen
+    lista<VariansCampus> campi   // empty for unit variants
+}
+
+/// Discretio (tagged union) declaration
+/// Example: discretio Event { Click { numerus x }, Quit }
+genus DiscretioDeclaratio {
+    Locus locus
+    Nomen nomen
+    lista<Nomen>? generaParametra
+    lista<VariansDeclaratio> variantes
+}
