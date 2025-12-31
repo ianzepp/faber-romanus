@@ -200,8 +200,8 @@
 # confla merges another map into this one
 - name: 'confla -> merge maps'
   input: |
-      fixum tabula<textus, numerus> map = {}
-      fixum tabula<textus, numerus> other = {}
+      varia tabula<textus, numerus> map = {}
+      varia tabula<textus, numerus> other = {}
       map.confla(other)
   cpp:
       - 'for (auto& [k, v]'
@@ -210,16 +210,19 @@
   rs:
       - 'HashMap<String, i64>'
       - '.extend(other.iter()'
+  zig:
+      - '.confla(&other)'
   fab:
-      - 'fixum tabula<textus, numerus> map = {}'
-      - 'fixum tabula<textus, numerus> other = {}'
+      - 'varia tabula<textus, numerus> map = {}'
+      - 'varia tabula<textus, numerus> other = {}'
       - 'map.confla(other)'
 
 # inLista converts map entries to a vector
 - name: 'inLista -> vector from map'
   input: |
-      fixum tabula<textus, numerus> map = {}
+      varia tabula<textus, numerus> map = {}
       map.inLista()
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::vector('
   ts:
@@ -227,6 +230,8 @@
   rs:
       - 'HashMap<String, i64>'
       - '.iter().map(|(k, v)| (k.clone(), v.clone())).collect::<Vec<_>>()'
+  zig:
+      - '.inLista(alloc)'
   fab:
-      - 'fixum tabula<textus, numerus> map = {}'
+      - 'varia tabula<textus, numerus> map = {}'
       - 'map.inLista()'

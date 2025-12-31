@@ -104,6 +104,29 @@ pub fn TabulaTextus(comptime V: type) type {
         pub fn paria(self: *Self) std.StringHashMap(V).Iterator {
             return self.map.iterator();
         }
+
+        // =====================================================================
+        // TRANSFORMATION
+        // =====================================================================
+
+        /// Merge another tabula into this one (mutates).
+        pub fn confla(self: *Self, other: *Self) void {
+            var iter = other.map.iterator();
+            while (iter.next()) |entry| {
+                self.map.put(entry.key_ptr.*, entry.value_ptr.*) catch @panic("OOM");
+            }
+        }
+
+        /// Convert to list of key-value tuples.
+        pub fn inLista(self: *Self, alloc: std.mem.Allocator) []struct { []const u8, V } {
+            const Pair = struct { []const u8, V };
+            var result = std.ArrayList(Pair).init(alloc);
+            var iter = self.map.iterator();
+            while (iter.next()) |entry| {
+                result.append(.{ entry.key_ptr.*, entry.value_ptr.* }) catch @panic("OOM");
+            }
+            return result.toOwnedSlice() catch @panic("OOM");
+        }
     };
 }
 
@@ -190,6 +213,29 @@ pub fn TabulaAuto(comptime K: type, comptime V: type) type {
         /// Get entries iterator.
         pub fn paria(self: *Self) std.AutoHashMap(K, V).Iterator {
             return self.map.iterator();
+        }
+
+        // =====================================================================
+        // TRANSFORMATION
+        // =====================================================================
+
+        /// Merge another tabula into this one (mutates).
+        pub fn confla(self: *Self, other: *Self) void {
+            var iter = other.map.iterator();
+            while (iter.next()) |entry| {
+                self.map.put(entry.key_ptr.*, entry.value_ptr.*) catch @panic("OOM");
+            }
+        }
+
+        /// Convert to list of key-value tuples.
+        pub fn inLista(self: *Self, alloc: std.mem.Allocator) []struct { K, V } {
+            const Pair = struct { K, V };
+            var result = std.ArrayList(Pair).init(alloc);
+            var iter = self.map.iterator();
+            while (iter.next()) |entry| {
+                result.append(.{ entry.key_ptr.*, entry.value_ptr.* }) catch @panic("OOM");
+            }
+            return result.toOwnedSlice() catch @panic("OOM");
         }
     };
 }

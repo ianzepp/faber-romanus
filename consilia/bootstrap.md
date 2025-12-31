@@ -6,7 +6,7 @@ This document defines the minimum Zig codegen requirements to compile a Faber-re
 
 1. **No ownership inference required** - Faber has no borrow checker semantics. Emitting valid Rust requires either conservative cloning (slow) or complex ownership inference (hard). Zig's manual memory model maps directly.
 
-2. **Existing infrastructure** - `subsidia/zig/` contains working Zig stdlib bindings. The Zig codegen is already 62% passing.
+2. **Existing infrastructure** - `subsidia/zig/` contains working Zig stdlib bindings. The Zig codegen has 61% test coverage (385 Zig vs 632 TS expectations).
 
 3. **Faster compile times** - Self-hosted compiler edit-compile-test cycles benefit from Zig's speed.
 
@@ -50,8 +50,8 @@ These features are non-negotiable for a working compiler.
 | `discerne` (match)         |        [x]         | Pattern matching on tagged unions     |
 | `redde` (return)           |        [x]         | Function returns                      |
 | `rumpe`/`perge`            |        [x]         | Loop control                          |
-| `lista<T>` (arrays)        |        [~]         | Token arrays, AST child lists         |
-| `tabula<K,V>` (maps)       |        [~]         | Symbol tables, keyword lookups        |
+| `lista<T>` (arrays)        |        [x]         | Token arrays, AST child lists         |
+| `tabula<K,V>` (maps)       |        [x]         | Symbol tables, keyword lookups        |
 | String concatenation       |        [~]         | Output building (needs allocator)     |
 | `scriptum()` formatting    |        [x]         | Error messages, code output           |
 | File I/O                   |        [ ]         | Read source, write output             |
@@ -78,15 +78,15 @@ Would make the bootstrap significantly cleaner.
 
 Can be worked around but would improve code quality.
 
-| Feature                 | Current Zig Status | Notes                           |
-| ----------------------- | :----------------: | ------------------------------- |
-| Lambdas / closures      |        [~]         | Callbacks - use named functions |
-| `sub` (inheritance)     |        [ ]         | Not needed - use composition    |
-| `implet` (implements)   |        [x]         | Interface contracts             |
-| Regex (`sed`)           |        [ ]         | Tokenizer - use manual parsing  |
-| `nexum` (reactive)      |        [ ]         | Not needed for compiler         |
-| Async (`futura`/`fiet`) |        [ ]         | Compiler is synchronous         |
-| Generators (`fiunt`)    |        [-]         | Zig has no generators           |
+| Feature                 | Current Zig Status | Notes                          |
+| ----------------------- | :----------------: | ------------------------------ |
+| Lambdas / closures      |        [x]         | Works with type inference      |
+| `sub` (inheritance)     |        [ ]         | Not needed - use composition   |
+| `implet` (implements)   |        [x]         | Interface contracts            |
+| Regex (`sed`)           |        [ ]         | Tokenizer - use manual parsing |
+| `nexum` (reactive)      |        [ ]         | Not needed for compiler        |
+| Async (`futura`/`fiet`) |        [ ]         | Compiler is synchronous        |
+| Generators (`fiunt`)    |        [-]         | Zig has no generators          |
 
 ### Not Required
 
@@ -122,22 +122,22 @@ fixum msg = scriptum("Error at {}:{}", line, col)
 
 The bootstrap compiler must be written using `scriptum()` for all string construction. This is the Zig-idiomatic approach and already enforced by codegen.
 
-### 2. Collection Methods (MOSTLY SOLVED)
+### 2. Collection Methods (SOLVED)
 
 **Problem:** Functional methods exist but had integration issues.
 
-**Current state:**
+**Current state:** All major blockers resolved.
 
 - `subsidia/zig/lista.zig` runtime **exists** with `filtrata`, `mappata`, `reducta`, etc.
 - Codegen emits calls like `nums.filtrata(alloc, predicate)`
-- **FIXED:** Array literals with `lista<T>` type now emit `Lista(T).fromItems(alloc, &.{...})`
-- **Remaining:** Lambda arguments need explicit return type annotations (`-> T`)
+- **FIXED:** Array literals with `lista<T>` type emit `Lista(T).fromItems(alloc, &.{...})`
+- **FIXED:** Lambda return types inferred from semantic analysis when not annotated
 
 **Example of current output:**
 
 ```faber
 varia lista<numerus> nums = [1, 2, 3, 4, 5]
-fixum filtered = nums.filtrata(pro x -> bivalens: x > 2)
+fixum filtered = nums.filtrata(pro x: x > 2)
 ```
 
 ```zig
@@ -145,54 +145,34 @@ var nums = Lista(i64).fromItems(alloc, &.{ 1, 2, 3, 4, 5 });
 const filtered = nums.filtrata(alloc, struct { fn call(x: anytype) bool { return (x > 2); } }.call);
 ```
 
-**Remaining blocker:**
+Lambda syntax uses colon (`pro x: expr`), not arrow. Return type is inferred from the expression via semantic analysis.
 
-- Lambda return type annotation required — `pro x -> bivalens: x > 2` works, `pro x: x > 2` doesn't
-
-**Workaround for bootstrap:** Either add return type annotations to lambdas, or write imperatively with `ex...pro` loops:
+**Imperative alternative** (also works, sometimes clearer):
 
 ```faber
-// With annotation (works):
-fixum filtered = items.filtrata(pro x -> bivalens: x > 0)
-
-// Or imperatively (also works):
 varia numerus[] filtered = [] qua numerus[]
 ex items pro x {
     si x > 0 { filtered.adde(x) }
 }
 ```
 
-**Note:** Empty array literals still require `qua` cast to bypass semantic analyzer: `[] qua numerus[]`
+**Note:** Empty array literals still require `qua` cast: `[] qua numerus[]`
 
-**Required for:** AST traversal, token filtering, code generation.
+````
 
-**Actual blockers:**
-
-1. Lambda return type inference — Faber lambdas need `-> T` annotation for Zig
-2. Array literal → Lista conversion — Need `Lista(i64).fromItems(alloc, &.{1, 2, 3})`
-
-**Workaround for bootstrap:** Write imperatively with `ex...pro` loops. This avoids both lambda and Lista construction issues:
-
-```faber
-// Instead of: fixum filtered = items.filtrata(pro x redde x > 0)
-varia numerus[] filtered = []
-ex items pro x {
-    si x > 0 { filtered.adde(x) }
-}
-```
-
-### 3. Hash Maps (MEDIUM)
+### 3. Hash Maps (SOLVED)
 
 **Problem:** `tabula<textus, T>` works but complex operations don't.
 
-**Current state:** `pone`, `accipe`, `habet`, `dele` work. No `claves()`, `valores()`, iteration.
+**Current state:** All methods implemented:
 
-**Required for:** Symbol tables, keyword lookups, scope management.
+- `pone`, `accipe`, `accipeAut`, `habet`, `dele` — core ops
+- `longitudo`, `vacua`, `purga` — size/state
+- `claves()`, `valores()`, `paria()` — iteration
+- `confla()` — merge another map
+- `inLista()` — convert to array of tuples
 
-**Solution:**
-
-- Use `de tabula pro key { }` iteration (already works in Zig)
-- Implement `claves()` / `valores()` returning slices
+**Required for:** Symbol tables, keyword lookups, scope management. All needs covered.
 
 ### 4. File I/O (HIGH)
 
@@ -208,7 +188,7 @@ ex items pro x {
 // Required operations
 fixum source = solum.lege("input.fab")      // -> []const u8
 solum.scribe("output.zig", code)            // -> void
-```
+````
 
 Maps to:
 
@@ -258,11 +238,12 @@ Types:       textus, numerus, bivalens, nihil, T?, vacuum
 
 Statements:  varia, fixum
              functio (sync only, no async/generators)
+             incipit (entry point, required for Zig)
              si/aliter, dum, ex...pro, de...pro
              elige, discerne
              redde, rumpe, perge
              iace, mori, adfirma
-             cura...fit (allocator scoping)
+             cura...fit (allocator scoping, REQUIRED for Zig allocations)
              scribe
 
 Expressions: Literals, identifiers, ego
@@ -274,7 +255,14 @@ Expressions: Literals, identifiers, ego
              novum...de construction
              qua (type cast)
              Ternary (sic/secus)
+             Lambdas (pro x: expr)
 ```
+
+**Zig-specific requirements:**
+
+- Use `incipit ergo cura arena { ... }` as entry point (provides allocator context)
+- All allocating operations (`lista`, `tabula`, `scriptum`) must be inside a `cura` block
+- Lambda syntax is `pro x: expr` (colon, not arrow)
 
 Explicitly excluded from bootstrap:
 
@@ -295,10 +283,11 @@ Explicitly excluded from bootstrap:
 - [x] `elige`/`discerne` pattern matching
 - [x] Allocator management (`cura`, `curator`)
 
-### Phase 2: Collections (Next)
+### Phase 2: Collections (Complete)
 
-- [ ] Reliable `lista<T>` with imperative methods
-- [ ] `tabula<textus, T>` with iteration
+- [x] Reliable `lista<T>` with imperative methods
+- [x] Lambda type inference for functional methods
+- [x] `tabula<textus, T>` with iteration (`claves()`, `valores()`, `paria()` work)
 - [ ] Fix unused parameter warnings
 
 ### Phase 3: I/O
@@ -321,7 +310,7 @@ Explicitly excluded from bootstrap:
 
 ## Metrics for Readiness
 
-**Current state:** 485 Zig tests pass (0 failures). The 62% figure represents test coverage (396 Zig expectations vs 644 TypeScript expectations), not pass rate. Tests without Zig expectations are skipped, not failed.
+**Current state:** 474 Zig tests pass (0 failures). Test coverage is 61% (385 Zig expectations vs 632 TypeScript expectations). Tests without Zig expectations are skipped, not failed.
 
 Bootstrap is ready when:
 
@@ -347,9 +336,13 @@ This moves complexity from inline codegen to a testable Zig library. See `consil
 
 ## Decision Log
 
-| Date    | Decision                     | Rationale                     |
-| ------- | ---------------------------- | ----------------------------- |
-| 2025-12 | Target Zig over Rust         | No ownership inference needed |
-| 2025-12 | Use `scriptum()` for strings | Avoids runtime concat issues  |
-| 2025-12 | Imperative-first bootstrap   | Functional methods are sugar  |
-| 2025-12 | Error lists over exceptions  | Matches Zig idiom             |
+| Date       | Decision                         | Rationale                              |
+| ---------- | -------------------------------- | -------------------------------------- |
+| 2025-12    | Target Zig over Rust             | No ownership inference needed          |
+| 2025-12    | Use `scriptum()` for strings     | Avoids runtime concat issues           |
+| 2025-12    | Imperative-first bootstrap       | Functional methods are sugar           |
+| 2025-12    | Error lists over exceptions      | Matches Zig idiom                      |
+| 2025-12-28 | Add `incipit` entry point        | Required for Zig allocator context     |
+| 2025-12-28 | Require explicit `cura` blocks   | Zig needs allocator for all heap ops   |
+| 2025-12-30 | Remove arrow syntax from lambdas | Simplify to `pro x: expr` only         |
+| 2025-12-30 | Lambda type inference            | Semantic analysis provides return type |

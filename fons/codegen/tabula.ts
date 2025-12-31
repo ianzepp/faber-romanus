@@ -226,15 +226,15 @@ export const TABULA_METHODS: Record<string, TabulaMethod> = {
         zig: () => `@compileError("omitte not implemented for Zig - use explicit loop")`,
     },
 
-    /** Merge maps (returns new map) */
+    /** Merge maps (mutates self) */
     confla: {
-        mutates: false,
-        needsAlloc: true,
+        mutates: true,
+        needsAlloc: false,
         ts: (obj, args) => `new Map([...${obj}, ...${args[0]}])`,
         py: (obj, args) => `{**${obj}, **${args[0]}}`,
         rs: (obj, args) => `{ let mut m = ${obj}.clone(); m.extend(${args[0]}.iter().map(|(k, v)| (k.clone(), v.clone()))); m }`,
         cpp: (obj, args) => `[&]{ auto r = ${obj}; for (auto& [k, v] : ${args[0]}) r[k] = v; return r; }()`,
-        zig: () => `@compileError("confla not implemented for Zig - use explicit loop")`,
+        zig: (obj, args) => `${obj}.confla(&${args[0]})`,
     },
 
     /** Swap keys and values (returns new map) */
@@ -276,7 +276,7 @@ export const TABULA_METHODS: Record<string, TabulaMethod> = {
         py: obj => `list(${obj}.items())`,
         rs: obj => `${obj}.iter().map(|(k, v)| (k.clone(), v.clone())).collect::<Vec<_>>()`,
         cpp: obj => `std::vector(${obj}.begin(), ${obj}.end())`,
-        zig: () => `@compileError("inLista not implemented for Zig - iterate with ex...pro")`,
+        zig: (obj, _args, curator) => `${obj}.inLista(${curator})`,
     },
 
     /** Convert to object */
