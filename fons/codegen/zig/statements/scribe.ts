@@ -2,23 +2,20 @@
  * Zig Code Generator - ScribeStatement (print/debug/warn)
  *
  * TRANSFORMS:
- *   scribe "hello" -> std.debug.print("hello\n", .{});
+ *   scribe "hello" -> stdout.print("{s}\n", .{"hello"});
  *   vide x         -> std.debug.print("[DEBUG] {any}\n", .{x});
- *   mone "oops"    -> std.debug.print("[WARN] oops\n", .{});
+ *   mone "oops"    -> stderr.print("[WARN] {s}\n", .{"oops"});
  *
- * TARGET: Zig's std.debug.print with level prefixes for debug/warn.
+ * TARGET:
+ *   scribe -> stdout (normal output)
+ *   mone   -> stderr (warnings/errors)
+ *   vide   -> std.debug.print (debug, stripped in release)
  */
 
 import type { ScribeStatement, Expression } from '../../../parser/ast';
 import type { ZigGenerator } from '../generator';
 
 export function genScribeStatement(node: ScribeStatement, g: ZigGenerator): string {
-    const prefix = node.level === 'debug' ? '[DEBUG] ' : node.level === 'warn' ? '[WARN] ' : '';
-
-    if (node.arguments.length === 0) {
-        return `${g.ind()}std.debug.print("${prefix}\\n", .{});`;
-    }
-
     // Build format string and args list
     const formatParts: string[] = [];
     const args: string[] = [];
@@ -28,9 +25,25 @@ export function genScribeStatement(node: ScribeStatement, g: ZigGenerator): stri
         args.push(g.genExpression(arg));
     }
 
-    const format = prefix + formatParts.join(' ') + '\\n';
+    const argsStr = args.length > 0 ? ` ${args.join(', ')} ` : '';
 
-    return `${g.ind()}std.debug.print("${format}", .{ ${args.join(', ')} });`;
+    // vide -> std.debug.print (debug output, stripped in release builds)
+    if (node.level === 'debug') {
+        const format = '[DEBUG] ' + (formatParts.length > 0 ? formatParts.join(' ') : '') + '\\n';
+        return `${g.ind()}std.debug.print("${format}", .{${argsStr}});`;
+    }
+
+    // mone -> stderr (warnings/errors)
+    if (node.level === 'warn') {
+        g.features.stderr = true;
+        const format = '[WARN] ' + (formatParts.length > 0 ? formatParts.join(' ') : '') + '\\n';
+        return `${g.ind()}stderr.print("${format}", .{${argsStr}}) catch {};`;
+    }
+
+    // scribe -> stdout (normal output)
+    g.features.stdout = true;
+    const format = (formatParts.length > 0 ? formatParts.join(' ') : '') + '\\n';
+    return `${g.ind()}stdout.print("${format}", .{${argsStr}}) catch {};`;
 }
 
 /**

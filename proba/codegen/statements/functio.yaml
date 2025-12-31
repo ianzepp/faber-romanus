@@ -712,7 +712,7 @@
           - 'std::print("{}'
       zig:
           - 'fn log(prefix: []const u8, args: anytype)'
-          - 'std.debug.print("{s}'
+          - 'stdout.print("{s}'
       fab:
           - 'functio log(textus prefix, ceteri args)'
           - 'scribe prefix'
@@ -742,7 +742,7 @@
           - 'std::print("{}'
       zig:
           - 'fn greet(loc: []const u8)'
-          - 'std.debug.print("{s}'
+          - 'stdout.print("{s}'
       fab:
           - 'functio greet(textus location ut loc)'
           - 'scribe loc'

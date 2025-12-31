@@ -40,6 +40,14 @@ export function genPreamble(features: RequiredFeatures): string {
         }
     }
 
+    // Set up I/O streams if used
+    if (features.stdout) {
+        lines.push('const stdout = std.io.getStdOut().writer();');
+    }
+    if (features.stderr) {
+        lines.push('const stderr = std.io.getStdErr().writer();');
+    }
+
     return lines.join('\n') + '\n';
 }
 

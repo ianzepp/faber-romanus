@@ -24,7 +24,7 @@
   cpp:
       - 'std::print("{} {} {}\n"'
   zig:
-      - 'std.debug.print("{s} {s} {s}\n", .{ "a", "b", "c" });'
+      - 'stdout.print("{s} {s} {s}\n", .{ "a", "b", "c" }) catch {};'
   rs:
       - 'println!'
   fab:
@@ -92,7 +92,7 @@
       - 'println!'
   zig:
       - 'pub fn main() void {'
-      - 'std.debug.print'
+      - 'stdout.print'
   fab:
       - 'incipit {'
       - 'scribe "hello"'

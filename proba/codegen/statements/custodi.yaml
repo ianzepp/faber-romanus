@@ -249,7 +249,7 @@
           - 'return nullptr;'
       zig:
           - 'if (error)'
-          - 'std.debug.print("[WARN] {s}\n", .{ "Error occurred" });'
+          - 'stderr.print("[WARN] {s}\n", .{ "Error occurred" }) catch {};'
           - 'cleanup();'
           - 'return null;'
       fab:

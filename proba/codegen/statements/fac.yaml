@@ -64,8 +64,8 @@
           - 'n", std::string("test"));'
           - '}'
       zig:
-          - 'std.debug.print("{s}\'
-          - 'n", .{ "test" });'
+          - 'stdout.print("{s}\'
+          - 'n", .{ "test" }) catch {};'
       fab:
           - 'fac {'
           - 'scribe "test"'

@@ -23,7 +23,7 @@
           - 'return 0;'
       zig:
           - 'pub fn main() void {'
-          - 'std.debug.print'
+          - 'stdout.print'
       fab:
           - 'incipit {'
           - 'scribe "Hello"'
