@@ -11,36 +11,37 @@ Rewrite the Faber compiler in Faber, targeting TypeScript/Bun.
 
 ## Current State
 
-### Completed
+### Compiles Successfully
 
-| Module | Location | Lines | Status |
-|--------|----------|-------|--------|
-| AST types | `fons-fab/ast/` | ~700 | Complete (21 files) |
-| Lexer | `fons-fab/lexor/` | ~760 | Complete |
-| Keywords | `fons-fab/lexicon/` | ~135 | Complete |
-| Parser (skeleton) | `fons-fab/parser/` | ~1,470 | In progress |
+| Module        | Location             | Lines | Status                 |
+| ------------- | -------------------- | ----- | ---------------------- |
+| AST types     | `fons-fab/ast/`      | ~700  | 21 files, uses imports |
+| Lexer         | `fons-fab/lexor/`    | ~760  | Uses imports           |
+| Keywords      | `fons-fab/lexicon/`  | ~135  | Complete               |
+| Parser errors | `parser/errores.fab` | ~340  | Complete               |
+| Parser core   | `parser/nucleus.fab` | ~440  | Complete               |
 
-### Parser Progress
+### Parser Progress (BLOCKED)
 
-| Component | File(s) | Lines | Status |
-|-----------|---------|-------|--------|
-| Core state | `parser/nucleus.fab` | ~340 | Complete |
-| Error catalog | `parser/errores.fab` | ~280 | Complete |
-| Type parser | `parser/typus.fab` | ~165 | Complete |
-| Public API | `parser/index.fab` | ~90 | Complete |
-| Statement dispatch | `sententia/index.fab` | ~340 | Partial (stubs) |
-| Action statements | `sententia/actio.fab` | ~115 | Complete |
-| Error statements | `sententia/error.fab` | ~130 | Complete |
-| Block/program | `sententia/massa.fab` | ~110 | Complete |
-| Variable decls | `sententia/varia.fab` | ~220 | Complete |
-| Expression entry | `expressia/index.fab` | ~70 | Complete |
-| Binary operators | `expressia/binaria.fab` | ~360 | Complete |
-| Unary/postfix | `expressia/unaria.fab` | ~340 | Complete |
-| Primary | `expressia/primaria.fab` | ~340 | Complete |
+| Component          | File(s)                  | Lines | Status                   |
+| ------------------ | ------------------------ | ----- | ------------------------ |
+| Resolvitor         | `parser/resolvitor.fab`  | ~65   | **Blocked** (func types) |
+| Type parser        | `parser/typus.fab`       | ~165  | Needs Resolvitor         |
+| Public API         | `parser/index.fab`       | ~90   | Needs Resolvitor         |
+| Statement dispatch | `sententia/index.fab`    | ~340  | Needs Resolvitor         |
+| Action statements  | `sententia/actio.fab`    | ~115  | Needs Resolvitor         |
+| Error statements   | `sententia/error.fab`    | ~195  | Needs Resolvitor         |
+| Block/program      | `sententia/massa.fab`    | ~110  | Needs Resolvitor         |
+| Variable decls     | `sententia/varia.fab`    | ~220  | Needs Resolvitor         |
+| Expression entry   | `expressia/index.fab`    | ~70   | Needs Resolvitor         |
+| Binary operators   | `expressia/binaria.fab`  | ~360  | Needs Resolvitor         |
+| Unary/postfix      | `expressia/unaria.fab`   | ~340  | Needs Resolvitor         |
+| Primary            | `expressia/primaria.fab` | ~340  | Needs Resolvitor         |
 
 ### Remaining Parser Work
 
 Statement parsers with TODO stubs:
+
 - Import declarations (`ex ... importa`)
 - Function declarations (`functio`)
 - Type declarations (`typus`, `ordo`, `genus`, `pactum`, `discretio`)
@@ -51,12 +52,12 @@ Statement parsers with TODO stubs:
 
 ### Remaining Modules
 
-| Module | Source | Est. Lines | Notes |
-|--------|--------|------------|-------|
-| Parser (complete) | `fons/parser/index.ts` | ~3,500 more | Remaining statements |
-| Semantic | `fons/semantic/` | ~2,600 | Type checking, scopes |
-| Codegen (TS) | `fons/codegen/ts/` | ~2,000 | TS target only |
-| CLI | `fons/cli.ts` | ~600 | Entry point |
+| Module            | Source                 | Est. Lines  | Notes                 |
+| ----------------- | ---------------------- | ----------- | --------------------- |
+| Parser (complete) | `fons/parser/index.ts` | ~3,500 more | Remaining statements  |
+| Semantic          | `fons/semantic/`       | ~2,600      | Type checking, scopes |
+| Codegen (TS)      | `fons/codegen/ts/`     | ~2,000      | TS target only        |
+| CLI               | `fons/cli.ts`          | ~600        | Entry point           |
 
 ## Bootstrap Strategy
 
@@ -70,6 +71,7 @@ Port `fons/parser/index.ts` to Faber:
 4. ⏳ Complete remaining statement parsers
 
 The parser is organized into subdirectories:
+
 - `parser/` — core infrastructure
 - `parser/sententia/` — statement parsers
 - `parser/expressia/` — expression parsers
@@ -122,7 +124,9 @@ TypeScript closures become `genus` with methods:
 // TypeScript
 function parse(tokens: Token[]) {
     let current = 0;
-    function advance() { return tokens[current++]; }
+    function advance() {
+        return tokens[current++];
+    }
     // ...
 }
 ```
@@ -132,7 +136,7 @@ function parse(tokens: Token[]) {
 genus Parser {
     lista<Symbolum> symbola
     numerus index
-    
+
     functio procede() -> Symbolum {
         fixum s = ego.symbola[ego.index]
         ego.index = ego.index + 1
@@ -145,25 +149,25 @@ genus Parser {
 
 All bootstrap code uses Latin identifiers:
 
-| English | Latin | Usage |
-|---------|-------|-------|
-| `parse` | `resolvere` | Parse/resolve |
-| `current` | `index` | Current position |
-| `tokens` | `symbola` | Token list |
-| `error` | `error` | Error (Latin origin) |
-| `peek` | `specta` | Look without consuming |
-| `advance` | `procede` | Move forward |
-| `check` | `proba` | Check/test |
-| `match` | `congruet` | Match and consume |
-| `expect` | `expecta` | Require or error |
-| `report` | `renuncia` | Report error |
-| `synchronize` | `synchrona` | Error recovery |
-| `left` | `sinister` | Left operand |
-| `right` | `dexter` | Right operand |
-| `operator` | `signum` | Operator sign |
-| `body` | `corpus` | Block body |
-| `expression` | `expressia` | Expression |
-| `statement` | `sententia` | Statement |
+| English       | Latin       | Usage                  |
+| ------------- | ----------- | ---------------------- |
+| `parse`       | `resolvere` | Parse/resolve          |
+| `current`     | `index`     | Current position       |
+| `tokens`      | `symbola`   | Token list             |
+| `error`       | `error`     | Error (Latin origin)   |
+| `peek`        | `specta`    | Look without consuming |
+| `advance`     | `procede`   | Move forward           |
+| `check`       | `proba`     | Check/test             |
+| `match`       | `congruet`  | Match and consume      |
+| `expect`      | `expecta`   | Require or error       |
+| `report`      | `renuncia`  | Report error           |
+| `synchronize` | `synchrona` | Error recovery         |
+| `left`        | `sinister`  | Left operand           |
+| `right`       | `dexter`    | Right operand          |
+| `operator`    | `signum`    | Operator sign          |
+| `body`        | `corpus`    | Block body             |
+| `expression`  | `expressia` | Expression             |
+| `statement`   | `sententia` | Statement              |
 
 ### Result Types
 
@@ -209,19 +213,62 @@ parser/
 
 1. **Use generous comments** — English comments inside functions explain control flow since all identifiers are Latin. This makes the code accessible to humans while maintaining Latin naming.
 
-2. **Forward declarations** — Faber doesn't have module imports yet, so forward-declare functions that will be defined in other files. This establishes the contract.
+2. **Subdirectories help** — Breaking the parser into `sententia/` and `expressia/` subdirectories makes files easier to find than one giant file.
 
-3. **Subdirectories help** — Breaking the parser into `sententia/` and `expressia/` subdirectories makes files easier to find than one giant file.
+3. **Error catalog is essential** — Porting the error codes early (`errores.fab`) provides consistent error handling infrastructure.
 
-4. **Error catalog is essential** — Porting the error codes early (`errores.fab`) provides consistent error handling infrastructure.
+4. **Start with expression parsers** — Expressions are more self-contained than statements. Getting precedence climbing working first provides a solid foundation.
 
-5. **Start with expression parsers** — Expressions are more self-contained than statements. Getting precedence climbing working first provides a solid foundation.
+5. **TODO stubs are fine** — The statement dispatcher can return placeholder `parseExpressiaSententia(p)` for unimplemented statements. This allows incremental progress.
 
-6. **TODO stubs are fine** — The statement dispatcher can return placeholder `parseExpressiaSententia(p)` for unimplemented statements. This allows incremental progress.
+6. **Section comments in long functions** — Use `// =========` dividers to organize long functions into logical sections.
 
-7. **Section comments in long functions** — Use `// =========` dividers to organize long functions into logical sections.
+7. **Type annotation parser is foundational** — Many parsers need type annotations, so port this early.
 
-8. **Type annotation parser is foundational** — Many parsers need type annotations, so port this early.
+### Session 2: Module Imports
+
+1. **Local imports now work** — `ex "./path" importa Type, func` resolves relative `.fab` files. Converted all AST and lexor forward declarations to proper imports.
+
+2. **Remove Zig-specific patterns** — Stripped `curata alloc` from lexor; allocator injection is Zig-specific and not needed for TS target.
+
+## Current Blockers
+
+### Function Type Syntax Not Supported
+
+The parser files have **mutual recursion**: expression parsers need to parse blocks (for lambdas), and statement parsers need to parse expressions. This creates circular import dependencies.
+
+**Proposed solution**: A `Resolvitor` context object with function pointer fields:
+
+```faber
+genus Resolvitor {
+    Parser p
+    functio(Resolvitor) -> Expressia expressia
+    functio(Resolvitor) -> Sententia sententia
+    functio(Resolvitor) -> MassaSententia massa
+    functio(Resolvitor) -> TypusAnnotatio typus
+}
+```
+
+Each parsing module receives `Resolvitor r` and calls `r.expressia(r)` when needed. The wiring happens in `index.fab`.
+
+**Blocker**: Faber doesn't support function types as values/fields yet. The syntax `functio(T) -> U` is not in the grammar.
+
+**Required compiler work**:
+
+1. Add function type syntax to grammar: `typus F = functio(A, B) -> C`
+2. Parse function types in type annotations
+3. Emit correct code for each target (TS: `(a: A, b: B) => C`, Zig: `*const fn(A, B) C`)
+
+**Zig compatibility**: This pattern compiles cleanly to Zig's function pointer + context idiom, which is how interfaces/vtables are done.
+
+### Parser Files Don't Compile
+
+The `fons-fab/parser/` files (except `errores.fab`, `nucleus.fab`) contain:
+
+- Forward function declarations without bodies (`functio foo(P p) -> T` with no `{ }`)
+- Forward type declarations (minimal `discretio`/`genus` stubs)
+
+These were written assuming features that don't exist. Once function types are added, the files need restructuring to use `Resolvitor` pattern.
 
 ## Build Commands
 
@@ -246,16 +293,17 @@ diff -r opus/ opus2/  # Should be identical
 
 ## Timeline
 
-| Phase | Scope | Est. Days | Status |
-|-------|-------|-----------|--------|
-| Parser | ~5,000 lines | 5-7 | ~30% complete |
-| Semantic | ~2,600 lines | 3-4 | Not started |
-| Codegen | ~2,000 lines | 3-4 | Not started |
-| CLI | ~600 lines | 1 | Not started |
-| Integration | Debug, iterate | 2-3 | Not started |
-| **Total** | | **14-19 days** | |
+| Phase       | Scope          | Est. Days      | Status        |
+| ----------- | -------------- | -------------- | ------------- |
+| Parser      | ~5,000 lines   | 5-7            | ~30% complete |
+| Semantic    | ~2,600 lines   | 3-4            | Not started   |
+| Codegen     | ~2,000 lines   | 3-4            | Not started   |
+| CLI         | ~600 lines     | 1              | Not started   |
+| Integration | Debug, iterate | 2-3            | Not started   |
+| **Total**   |                | **14-19 days** |               |
 
 Significantly faster than Zig bootstrap (~20-28 days) due to:
+
 - No allocator threading
 - Mature TS codegen
 - Simpler error handling (exceptions work)
