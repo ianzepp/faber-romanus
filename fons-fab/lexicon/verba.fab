@@ -1,0 +1,133 @@
+/// Verba - Latin reserved words
+///
+/// Keyword recognition for the lexer.
+/// Uses switch-based lookup (no heap allocation).
+
+/// Check if a word is a reserved keyword
+/// 
+/// NOTE: This list must stay synchronized with fons/lexicon/keywords.ts
+functio estVerbum(textus v) -> bivalens {
+    elige v {
+        // Imperium - control flow
+        si "si" { redde verum }
+        si "aliter" { redde verum }
+        si "sin" { redde verum }
+        si "secus" { redde verum }
+        si "dum" { redde verum }
+        si "fac" { redde verum }
+        si "pro" { redde verum }
+        si "elige" { redde verum }
+        si "ergo" { redde verum }
+        si "rumpe" { redde verum }
+        si "perge" { redde verum }
+        si "redde" { redde verum }
+        si "custodi" { redde verum }
+        si "adfirma" { redde verum }
+        si "discerne" { redde verum }
+        si "incipit" { redde verum }
+        si "incipiet" { redde verum }
+        
+        // Imperium - testing
+        si "probandum" { redde verum }
+        si "proba" { redde verum }
+        si "praepara" { redde verum }
+        si "praeparabit" { redde verum }
+        si "postpara" { redde verum }
+        si "postparabit" { redde verum }
+        si "cura" { redde verum }
+        si "arena" { redde verum }
+        si "page" { redde verum }
+        si "tempta" { redde verum }
+        si "cape" { redde verum }
+        si "demum" { redde verum }
+        si "iace" { redde verum }
+        si "mori" { redde verum }
+        si "scribe" { redde verum }
+        si "vide" { redde verum }
+        si "mone" { redde verum }
+        si "lege" { redde verum }
+        si "scriptum" { redde verum }
+        si "cede" { redde verum }
+        
+        // Declaratio - declarations
+        si "varia" { redde verum }
+        si "fixum" { redde verum }
+        si "figendum" { redde verum }
+        si "variandum" { redde verum }
+        si "functio" { redde verum }
+        si "novum" { redde verum }
+        si "importa" { redde verum }
+        si "exporta" { redde verum }
+        si "typus" { redde verum }
+        si "genus" { redde verum }
+        si "pactum" { redde verum }
+        si "ordo" { redde verum }
+        si "discretio" { redde verum }
+        
+        // Modificator - modifiers
+        si "futura" { redde verum }
+        si "prae" { redde verum }
+        si "praefixum" { redde verum }
+        si "cursor" { redde verum }
+        si "publicus" { redde verum }
+        si "privatus" { redde verum }
+        si "generis" { redde verum }
+        si "implet" { redde verum }
+        si "sub" { redde verum }
+        si "abstractus" { redde verum }
+        si "protectus" { redde verum }
+        si "nexum" { redde verum }
+        si "omitte" { redde verum }
+        si "futurum" { redde verum }
+        si "omnia" { redde verum }
+        
+        // Operator - operators
+        si "et" { redde verum }
+        si "aut" { redde verum }
+        si "non" { redde verum }
+        si "est" { redde verum }
+        si "sic" { redde verum }
+        si "fit" { redde verum }
+        si "fiet" { redde verum }
+        si "fiunt" { redde verum }
+        si "fient" { redde verum }
+        si "vel" { redde verum }
+        si "ante" { redde verum }
+        si "usque" { redde verum }
+        si "sparge" { redde verum }
+        si "ceteri" { redde verum }
+        si "nulla" { redde verum }
+        si "nonnulla" { redde verum }
+        si "nihil" { redde verum }
+        si "nonnihil" { redde verum }
+        si "negativum" { redde verum }
+        si "positivum" { redde verum }
+        
+        // Valor - literal values
+        si "verum" { redde verum }
+        si "falsum" { redde verum }
+        si "ego" { redde verum }
+        
+        // Praepositio - prepositions
+        si "de" { redde verum }
+        si "in" { redde verum }
+        si "ex" { redde verum }
+        si "ad" { redde verum }
+        si "per" { redde verum }
+        si "qua" { redde verum }
+        si "ut" { redde verum }
+        
+        // Dsl - domain specific
+        si "ab" { redde verum }
+        si "ubi" { redde verum }
+        si "prima" { redde verum }
+        si "ultima" { redde verum }
+        si "summa" { redde verum }
+        si "ordina" { redde verum }
+        si "collige" { redde verum }
+        si "grupa" { redde verum }
+        si "sed" { redde verum }
+        
+        aliter { redde falsum }
+    }
+}

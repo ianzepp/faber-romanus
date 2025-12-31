@@ -1,0 +1,88 @@
+/// Lexor Error Codes and Messages
+///
+/// Centralized error definitions for lexical analysis.
+/// Each error has a code (L-prefix), text, and help message.
+
+/// Error codes for lexical failures
+/// L-prefix distinguishes from parser (P) and semantic (S) errors
+ordo LexorErrorCodice {
+    TextusNonClausa           // L001: Unterminated string
+    ExemplarNonClausum        // L002: Unterminated template string
+    SignumInopinatum          // L003: Unexpected character
+    NumerusHexMalus           // L004: Invalid hex literal
+    NumerusBinariusMalus      // L005: Invalid binary literal
+    NumerusOctalisMalus       // L006: Invalid octal literal
+}
+
+/// Structured error message
+genus LexorErrorNuntius {
+    textus textus             // Brief error message
+    textus auxilium           // Detailed help text
+}
+
+/// Get error message for a code
+functio nuntiumErroris(LexorErrorCodice codice) -> LexorErrorNuntius {
+    elige codice {
+        si LexorErrorCodice.TextusNonClausa {
+            redde {
+                textus: "Textus non clausa",
+                auxilium: "String literals must be closed on the same line. Use backticks for multi-line."
+            } qua LexorErrorNuntius
+        }
+        si LexorErrorCodice.ExemplarNonClausum {
+            redde {
+                textus: "Exemplar non clausum",
+                auxilium: "Template strings must end with a closing backtick."
+            } qua LexorErrorNuntius
+        }
+        si LexorErrorCodice.SignumInopinatum {
+            redde {
+                textus: "Signum inopinatum",
+                auxilium: "This character is not valid in Latin syntax."
+            } qua LexorErrorNuntius
+        }
+        si LexorErrorCodice.NumerusHexMalus {
+            redde {
+                textus: "Numerus hex malus",
+                auxilium: "Hex literals must have at least one digit after 0x prefix."
+            } qua LexorErrorNuntius
+        }
+        si LexorErrorCodice.NumerusBinariusMalus {
+            redde {
+                textus: "Numerus binarius malus",
+                auxilium: "Binary literals must have at least one digit after 0b prefix."
+            } qua LexorErrorNuntius
+        }
+        si LexorErrorCodice.NumerusOctalisMalus {
+            redde {
+                textus: "Numerus octalis malus",
+                auxilium: "Octal literals must have at least one digit after 0o prefix."
+            } qua LexorErrorNuntius
+        }
+    }
+    
+    // Fallback (should never reach)
+    redde {
+        textus: "Error ignotus",
+        auxilium: "Unknown error occurred."
+    } qua LexorErrorNuntius
+}
+
+/// A lexical error with position
+genus LexorError {
+    LexorErrorCodice codice
+    textus textus
+    textus auxilium
+    Locus locus
+}
+
+/// Create an error at a position
+functio error(LexorErrorCodice codice, Locus locus) -> LexorError {
+    fixum nuntius = nuntiumErroris(codice)
+    redde {
+        codice: codice,
+        textus: nuntius.textus,
+        auxilium: nuntius.auxilium,
+        locus: locus
+    } qua LexorError
+}

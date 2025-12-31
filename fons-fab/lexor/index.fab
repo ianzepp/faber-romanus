@@ -1,0 +1,637 @@
+/// Lexor - Lexical Analyzer
+///
+/// Transforms raw Latin source text into a stream of typed tokens.
+/// Single-pass scanner operating as a finite state machine.
+///
+/// INVARIANTS:
+/// - Token stream always ends with exactly one Finis token
+/// - Position tracking never goes backwards
+/// - Never throws - all errors collected in resultatum.errores
+
+/// Result of lexical analysis
+genus LexorResultatum {
+    lista<Symbolum> symbola       // Token stream (ends with Finis)
+    lista<LexorError> errores     // Errors encountered
+}
+
+/// Lexical scanner state
+genus Lexor {
+    textus fons                   // Source code
+    numerus index                 // Current position in source
+    numerus linea                 // Current line (1-based)
+    numerus columnaInitium        // Offset where current line starts
+    lista<Symbolum> symbola       // Accumulated tokens
+    lista<LexorError> errores     // Accumulated errors
+    
+    // =========================================================================
+    // Position Tracking
+    // =========================================================================
+    
+    /// Capture current source position
+    functio locus() -> Locus {
+        redde {
+            linea: ego.linea,
+            columna: ego.index - ego.columnaInitium + 1,
+            index: ego.index
+        } qua Locus
+    }
+    
+    // =========================================================================
+    // Character Navigation
+    // =========================================================================
+    
+    /// Look ahead at upcoming character without advancing
+    functio specta(numerus distantia) -> textus {
+        fixum pos = ego.index + distantia
+        si pos >= ego.fons.longitudo {
+            redde ""
+        }
+        redde ego.fons[pos]
+    }
+    
+    /// Consume current character and advance position
+    functio procede() -> textus {
+        fixum c = ego.fons[ego.index]
+        ego.index = ego.index + 1
+        redde c
+    }
+    
+    /// Check if we've consumed all input
+    functio estFinis() -> bivalens {
+        redde ego.index >= ego.fons.longitudo
+    }
+    
+    // =========================================================================
+    // Character Predicates
+    // =========================================================================
+    
+    /// Check if character is a decimal digit (0-9)
+    functio estDigitus(textus c) -> bivalens {
+        redde c >= "0" et c <= "9"
+    }
+    
+    /// Check if character is a hex digit (0-9, a-f, A-F)
+    functio estDigitusHex(textus c) -> bivalens {
+        redde ego.estDigitus(c) aut (c >= "a" et c <= "f") aut (c >= "A" et c <= "F")
+    }
+    
+    /// Check if character is a binary digit (0-1)
+    functio estDigitusBinarius(textus c) -> bivalens {
+        redde c == "0" aut c == "1"
+    }
+    
+    /// Check if character is an octal digit (0-7)
+    functio estDigitusOctalis(textus c) -> bivalens {
+        redde c >= "0" et c <= "7"
+    }
+    
+    /// Check if character can start an identifier (a-z, A-Z, _)
+    functio estLittera(textus c) -> bivalens {
+        redde (c >= "a" et c <= "z") aut (c >= "A" et c <= "Z") aut c == "_"
+    }
+    
+    /// Check if character can continue an identifier
+    functio estLitteraVelDigitus(textus c) -> bivalens {
+        redde ego.estLittera(c) aut ego.estDigitus(c)
+    }
+    
+    // =========================================================================
+    // Token and Error Collection
+    // =========================================================================
+    
+    /// Add a token to the output stream
+    functio addeSymbolum(SymbolumGenus species, textus valor, Locus locus) -> vacuum {
+        ego.symbola.adde({
+            species: species,
+            valor: valor,
+            locus: locus,
+            verbum: nihil
+        } qua Symbolum)
+    }
+    
+    /// Add a keyword token
+    functio addeVerbum(textus verbum, Locus locus) -> vacuum {
+        ego.symbola.adde({
+            species: SymbolumGenus.Verbum,
+            valor: verbum,
+            locus: locus,
+            verbum: verbum
+        } qua Symbolum)
+    }
+    
+    /// Record a lexical error
+    functio addeErrorem(LexorErrorCodice codice, Locus locus) -> vacuum {
+        ego.errores.adde(error(codice, locus))
+    }
+    
+    // =========================================================================
+    // Whitespace and Comment Handling
+    // =========================================================================
+    
+    /// Skip whitespace and comments
+    functio omitteSpatium() -> vacuum {
+        dum non ego.estFinis() {
+            fixum c = ego.specta(0)
+            
+            si c == " " aut c == "\t" aut c == "\r" {
+                ego.procede()
+            } aliter si c == "\n" {
+                ego.procede()
+                ego.linea = ego.linea + 1
+                ego.columnaInitium = ego.index
+            } aliter si c == "/" et ego.specta(1) == "/" {
+                // Single-line comment
+                fixum loc = ego.locus()
+                varia textus nota = ""
+                
+                ego.procede()  // /
+                ego.procede()  // /
+                
+                dum non ego.estFinis() et ego.specta(0) != "\n" {
+                    nota = nota + ego.procede()
+                }
+                
+                ego.addeSymbolum(SymbolumGenus.NotaLinea, nota, loc)
+            } aliter si c == "/" et ego.specta(1) == "*" {
+                // Multi-line comment
+                fixum loc = ego.locus()
+                varia textus nota = ""
+                
+                ego.procede()  // /
+                ego.procede()  // *
+                
+                // Check for doc comment: /** ... */
+                fixum estDocens = ego.specta(0) == "*" et ego.specta(1) != "/"
+                
+                dum non ego.estFinis() et non (ego.specta(0) == "*" et ego.specta(1) == "/") {
+                    si ego.specta(0) == "\n" {
+                        ego.linea = ego.linea + 1
+                        ego.columnaInitium = ego.index + 1
+                    }
+                    nota = nota + ego.procede()
+                }
+                
+                si non ego.estFinis() {
+                    ego.procede()  // *
+                    ego.procede()  // /
+                }
+                
+                fixum species = estDocens sic SymbolumGenus.NotaDocens secus SymbolumGenus.NotaMassa
+                ego.addeSymbolum(species, nota, loc)
+            } aliter {
+                rumpe
+            }
+        }
+    }
+    
+    // =========================================================================
+    // Literal Scanning
+    // =========================================================================
+    
+    /// Scan a number literal
+    functio legeNumerum() -> vacuum {
+        fixum loc = ego.locus()
+        varia textus valor = ""
+        
+        // Check for hex: 0x or 0X
+        si ego.specta(0) == "0" et (ego.specta(1) == "x" aut ego.specta(1) == "X") {
+            valor = valor + ego.procede()  // 0
+            valor = valor + ego.procede()  // x
+            
+            si non ego.estDigitusHex(ego.specta(0)) {
+                ego.addeErrorem(LexorErrorCodice.NumerusHexMalus, loc)
+                redde
+            }
+            
+            dum ego.estDigitusHex(ego.specta(0)) {
+                valor = valor + ego.procede()
+            }
+            
+            // Check for bigint suffix 'n'
+            si ego.specta(0) == "n" {
+                ego.procede()
+                ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+                redde
+            }
+            
+            ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+            redde
+        }
+        
+        // Check for binary: 0b or 0B
+        si ego.specta(0) == "0" et (ego.specta(1) == "b" aut ego.specta(1) == "B") {
+            valor = valor + ego.procede()  // 0
+            valor = valor + ego.procede()  // b
+            
+            si non ego.estDigitusBinarius(ego.specta(0)) {
+                ego.addeErrorem(LexorErrorCodice.NumerusBinariusMalus, loc)
+                redde
+            }
+            
+            dum ego.estDigitusBinarius(ego.specta(0)) {
+                valor = valor + ego.procede()
+            }
+            
+            si ego.specta(0) == "n" {
+                ego.procede()
+                ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+                redde
+            }
+            
+            ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+            redde
+        }
+        
+        // Check for octal: 0o or 0O
+        si ego.specta(0) == "0" et (ego.specta(1) == "o" aut ego.specta(1) == "O") {
+            valor = valor + ego.procede()  // 0
+            valor = valor + ego.procede()  // o
+            
+            si non ego.estDigitusOctalis(ego.specta(0)) {
+                ego.addeErrorem(LexorErrorCodice.NumerusOctalisMalus, loc)
+                redde
+            }
+            
+            dum ego.estDigitusOctalis(ego.specta(0)) {
+                valor = valor + ego.procede()
+            }
+            
+            si ego.specta(0) == "n" {
+                ego.procede()
+                ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+                redde
+            }
+            
+            ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+            redde
+        }
+        
+        // Decimal integer part
+        dum ego.estDigitus(ego.specta(0)) {
+            valor = valor + ego.procede()
+        }
+        
+        // Decimal fractional part (only if followed by digit)
+        si ego.specta(0) == "." et ego.estDigitus(ego.specta(1)) {
+            valor = valor + ego.procede()  // .
+            
+            dum ego.estDigitus(ego.specta(0)) {
+                valor = valor + ego.procede()
+            }
+            
+            ego.addeSymbolum(SymbolumGenus.Fractus, valor, loc)
+            redde
+        }
+        
+        // Scientific notation: e or E
+        si ego.specta(0) == "e" aut ego.specta(0) == "E" {
+            fixum next = ego.specta(1)
+            si ego.estDigitus(next) aut ((next == "+" aut next == "-") et ego.estDigitus(ego.specta(2))) {
+                valor = valor + ego.procede()  // e
+                
+                si ego.specta(0) == "+" aut ego.specta(0) == "-" {
+                    valor = valor + ego.procede()
+                }
+                
+                dum ego.estDigitus(ego.specta(0)) {
+                    valor = valor + ego.procede()
+                }
+                
+                ego.addeSymbolum(SymbolumGenus.Fractus, valor, loc)
+                redde
+            }
+        }
+        
+        // Bigint suffix
+        si ego.specta(0) == "n" {
+            ego.procede()
+            ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+            redde
+        }
+        
+        ego.addeSymbolum(SymbolumGenus.Numerus, valor, loc)
+    }
+    
+    /// Scan a string literal (single or double quoted)
+    functio legeTextum(textus clausa) -> vacuum {
+        fixum loc = ego.locus()
+        varia textus valor = ""
+        
+        ego.procede()  // opening quote
+        
+        dum non ego.estFinis() et ego.specta(0) != clausa {
+            si ego.specta(0) == "\n" {
+                ego.addeErrorem(LexorErrorCodice.TextusNonClausa, loc)
+                redde
+            }
+            
+            si ego.specta(0) == "\\" {
+                // Preserve escape sequences
+                valor = valor + ego.procede()  // backslash
+                
+                si non ego.estFinis() et ego.specta(0) != "\n" {
+                    fixum escaped = ego.specta(0)
+                    
+                    // For \uXXXX, consume all 5 chars
+                    si escaped == "u" {
+                        valor = valor + ego.procede()  // u
+                        
+                        varia numerus i = 0
+                        dum i < 4 et ego.estDigitusHex(ego.specta(0)) {
+                            valor = valor + ego.procede()
+                            i = i + 1
+                        }
+                    } aliter {
+                        valor = valor + ego.procede()
+                    }
+                }
+            } aliter {
+                valor = valor + ego.procede()
+            }
+        }
+        
+        si ego.estFinis() {
+            ego.addeErrorem(LexorErrorCodice.TextusNonClausa, loc)
+            redde
+        }
+        
+        ego.procede()  // closing quote
+        
+        ego.addeSymbolum(SymbolumGenus.Textus, valor, loc)
+    }
+    
+    /// Scan a template string (backtick)
+    functio legeExemplar() -> vacuum {
+        fixum loc = ego.locus()
+        varia textus valor = ""
+        
+        ego.procede()  // opening backtick
+        
+        dum non ego.estFinis() et ego.specta(0) != "`" {
+            si ego.specta(0) == "\n" {
+                // Template strings can span lines
+                ego.linea = ego.linea + 1
+                ego.columnaInitium = ego.index + 1
+                valor = valor + ego.procede()
+            } aliter si ego.specta(0) == "\\" {
+                ego.procede()
+                valor = valor + ego.procede()
+            } aliter si ego.specta(0) == "$" et ego.specta(1) == "{" {
+                // Capture interpolation including nested braces
+                valor = valor + ego.procede()  // $
+                valor = valor + ego.procede()  // {
+                
+                varia numerus depth = 1
+                
+                dum non ego.estFinis() et depth > 0 {
+                    si ego.specta(0) == "{" {
+                        depth = depth + 1
+                    }
+                    si ego.specta(0) == "}" {
+                        depth = depth - 1
+                    }
+                    valor = valor + ego.procede()
+                }
+            } aliter {
+                valor = valor + ego.procede()
+            }
+        }
+        
+        si ego.estFinis() {
+            ego.addeErrorem(LexorErrorCodice.ExemplarNonClausum, loc)
+            redde
+        }
+        
+        ego.procede()  // closing backtick
+        
+        ego.addeSymbolum(SymbolumGenus.Textus, valor, loc)
+    }
+    
+    /// Scan an identifier or keyword
+    functio legeNomen() -> vacuum {
+        fixum loc = ego.locus()
+        varia textus valor = ""
+        
+        dum ego.estLitteraVelDigitus(ego.specta(0)) {
+            valor = valor + ego.procede()
+        }
+        
+        // Check if it's a keyword
+        si estVerbum(valor) {
+            ego.addeVerbum(valor, loc)
+        } aliter {
+            ego.addeSymbolum(SymbolumGenus.Nomen, valor, loc)
+        }
+    }
+    
+    // =========================================================================
+    // Main Scanner Dispatch
+    // =========================================================================
+    
+    /// Scan a single token from current position
+    functio legeSymbolum() -> vacuum {
+        ego.omitteSpatium()
+        
+        si ego.estFinis() {
+            redde
+        }
+        
+        fixum loc = ego.locus()
+        fixum c = ego.specta(0)
+        
+        // Numbers
+        si ego.estDigitus(c) {
+            ego.legeNumerum()
+            redde
+        }
+        
+        // Identifiers and keywords
+        si ego.estLittera(c) {
+            ego.legeNomen()
+            redde
+        }
+        
+        // String literals
+        si c == "\"" aut c == "'" {
+            ego.legeTextum(c)
+            redde
+        }
+        
+        // Template strings
+        si c == "`" {
+            ego.legeExemplar()
+            redde
+        }
+        
+        // Operators and delimiters
+        ego.procede()
+        
+        elige c {
+            // Grouping
+            si "(" { ego.addeSymbolum(SymbolumGenus.ParensSin, c, loc) }
+            si ")" { ego.addeSymbolum(SymbolumGenus.ParensDex, c, loc) }
+            si "{" { ego.addeSymbolum(SymbolumGenus.UncusSin, c, loc) }
+            si "}" { ego.addeSymbolum(SymbolumGenus.UncusDex, c, loc) }
+            si "[" { ego.addeSymbolum(SymbolumGenus.AngulusSin, c, loc) }
+            si "]" { ego.addeSymbolum(SymbolumGenus.AngulusDex, c, loc) }
+            
+            // Punctuation
+            si "," { ego.addeSymbolum(SymbolumGenus.Coma, c, loc) }
+            si ";" { ego.addeSymbolum(SymbolumGenus.PunctumColon, c, loc) }
+            si ":" { ego.addeSymbolum(SymbolumGenus.Colon, c, loc) }
+            si "?" { ego.addeSymbolum(SymbolumGenus.Rogatio, c, loc) }
+            
+            // Dot: . or ..
+            si "." {
+                si ego.specta(0) == "." {
+                    ego.procede()
+                    si ego.specta(0) == "." {
+                        ego.procede()
+                        ego.addeSymbolum(SymbolumGenus.PunctumTer, "...", loc)
+                    } aliter {
+                        ego.addeSymbolum(SymbolumGenus.PunctumBis, "..", loc)
+                    }
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Punctum, c, loc)
+                }
+            }
+            
+            // Arithmetic
+            si "+" { ego.addeSymbolum(SymbolumGenus.Plus, c, loc) }
+            si "*" { ego.addeSymbolum(SymbolumGenus.Stella, c, loc) }
+            si "/" { ego.addeSymbolum(SymbolumGenus.Virgula, c, loc) }
+            si "%" { ego.addeSymbolum(SymbolumGenus.Centum, c, loc) }
+            
+            // Minus: - or ->
+            si "-" {
+                si ego.specta(0) == ">" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.Sagitta, "->", loc)
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Minus, c, loc)
+                }
+            }
+            
+            // Equal: = or == or === or =>
+            si "=" {
+                si ego.specta(0) == "=" et ego.specta(1) == "=" {
+                    ego.procede()
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.AequumTer, "===", loc)
+                } aliter si ego.specta(0) == "=" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.AequumBis, "==", loc)
+                } aliter si ego.specta(0) == ">" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.SagittaCrassa, "=>", loc)
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Aequum, c, loc)
+                }
+            }
+            
+            // Bang: ! or != or !== or !.
+            si "!" {
+                si ego.specta(0) == "=" et ego.specta(1) == "=" {
+                    ego.procede()
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.NonAequumBis, "!==", loc)
+                } aliter si ego.specta(0) == "=" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.NonAequum, "!=", loc)
+                } aliter si ego.specta(0) == "." {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.NonPunctum, "!.", loc)
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Non, c, loc)
+                }
+            }
+            
+            // Less: < or << or <=
+            si "<" {
+                si ego.specta(0) == "<" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.MinorBis, "<<", loc)
+                } aliter si ego.specta(0) == "=" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.MinorAequum, "<=", loc)
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Minor, c, loc)
+                }
+            }
+            
+            // Greater: > or >> or >>> or >=
+            si ">" {
+                si ego.specta(0) == ">" et ego.specta(1) == ">" {
+                    ego.procede()
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.MaiorTer, ">>>", loc)
+                } aliter si ego.specta(0) == ">" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.MaiorBis, ">>", loc)
+                } aliter si ego.specta(0) == "=" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.MaiorAequum, ">=", loc)
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Maior, c, loc)
+                }
+            }
+            
+            // Logical: & or && and | or ||
+            si "&" {
+                si ego.specta(0) == "&" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.EtEt, "&&", loc)
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Et, c, loc)
+                }
+            }
+            si "|" {
+                si ego.specta(0) == "|" {
+                    ego.procede()
+                    ego.addeSymbolum(SymbolumGenus.VelVel, "||", loc)
+                } aliter {
+                    ego.addeSymbolum(SymbolumGenus.Vel, c, loc)
+                }
+            }
+            
+            // Bitwise
+            si "^" { ego.addeSymbolum(SymbolumGenus.Apex, c, loc) }
+            si "~" { ego.addeSymbolum(SymbolumGenus.Unda, c, loc) }
+            
+            // Unknown character
+            aliter {
+                ego.addeErrorem(LexorErrorCodice.SignumInopinatum, loc)
+            }
+        }
+    }
+    
+    /// Main entry: scan all tokens and return result
+    functio scanOmnia() -> LexorResultatum {
+        dum non ego.estFinis() {
+            ego.legeSymbolum()
+        }
+        
+        // Add EOF sentinel
+        ego.addeSymbolum(SymbolumGenus.Finis, "", ego.locus())
+        
+        redde {
+            symbola: ego.symbola,
+            errores: ego.errores
+        } qua LexorResultatum
+    }
+}
+
+/// Main entry point: tokenize source code
+/// NOTE: curator alloc is auto-injected at call sites from cura block
+functio lexare(curator alloc, textus fons) -> LexorResultatum {
+    varia lexor = {
+        fons: fons,
+        index: 0,
+        linea: 1,
+        columnaInitium: 0,
+        symbola: [] qua lista<Symbolum>,
+        errores: [] qua lista<LexorError>
+    } qua Lexor
+    
+    redde lexor.scanOmnia()
+}

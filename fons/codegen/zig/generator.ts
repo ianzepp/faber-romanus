@@ -98,17 +98,13 @@ export class ZigGenerator {
 
     /**
      * Get the current active allocator name.
-     * WHY: Throws if no cura block is active — allocating operations
-     *      require an explicit allocator in Zig.
+     * WHY: Returns 'alloc' as default — method bodies are generated at module level
+     *      before any cura block, but will be called from within one at runtime.
+     *      The Zig compiler will error if 'alloc' is not in scope at the call site.
      */
     getCurator(): string {
         const curator = this.curatorStack[this.curatorStack.length - 1];
-        if (!curator) {
-            throw new Error(
-                `Allocator required but no cura block is active. ` + `Wrap allocating operations in: cura <allocator> fit <name> { ... }`,
-            );
-        }
-        return curator;
+        return curator ?? 'alloc';
     }
 
     /**
