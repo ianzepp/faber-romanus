@@ -1,0 +1,26 @@
+# Lege expression - read stdin
+# Maps Faber lege() to target-language stdin reading
+
+- name: lege basic
+  faber: 'lege()'
+  wrap: 'cura arena fit alloc { $ }'
+  expect:
+      ts:
+          - 'await Bun.stdin.text()'
+      zig:
+          - 'stdin.readAllAlloc(alloc, 10 * 1024 * 1024) catch ""'
+      fab:
+          - 'lege()'
+  skip: [py, rs, cpp]
+
+- name: lege assigned to variable
+  faber: 'fixum source = lege()'
+  wrap: 'cura arena fit alloc { $ }'
+  expect:
+      ts:
+          - 'const source = await Bun.stdin.text()'
+      zig:
+          - 'const source = stdin.readAllAlloc(alloc, 10 * 1024 * 1024) catch ""'
+      fab:
+          - 'fixum source = lege()'
+  skip: [py, rs, cpp]

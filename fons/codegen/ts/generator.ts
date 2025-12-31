@@ -69,6 +69,7 @@ import { genScriptumExpression } from './expressions/scriptum';
 import { genCollectionDSLExpression } from './expressions/collection-dsl';
 import { genAbExpression } from './expressions/ab';
 import { genRegexLiteral } from './expressions/regex';
+import { genLegeExpression } from './expressions/lege';
 
 /**
  * Map Latin type names to TypeScript types.
@@ -307,6 +308,8 @@ export class TsGenerator {
                 return genAbExpression(node, this);
             case 'RegexLiteral':
                 return genRegexLiteral(node, this);
+            case 'LegeExpression':
+                return genLegeExpression(node, this);
             default:
                 throw new Error(`Unknown expression type: ${(node as any).type}`);
         }
