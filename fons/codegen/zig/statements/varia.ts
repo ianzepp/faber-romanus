@@ -64,15 +64,22 @@ export function genVariaDeclaration(node: VariaDeclaration, g: ZigGenerator): st
         typeAnno = `: ${g.inferZigType(node.init)}`;
     }
 
-    // EDGE: Array literal with type annotation needs [_]T{} syntax
-    // WHY: Zig's .{} creates a tuple, not an iterable array. With explicit
-    //      element type from annotation, we can emit proper array syntax.
-    const isArrayType = node.typeAnnotation && (node.typeAnnotation.arrayShorthand || node.typeAnnotation.name === 'lista');
+    // EDGE: Array literal with lista<T> type needs Lista(T) construction
+    // WHY: Faber's lista<T> maps to the stdlib Lista wrapper, not raw Zig arrays.
+    //      Lista provides Latin-named methods and automatic allocator threading.
+    const isListaType = node.typeAnnotation && (node.typeAnnotation.arrayShorthand || node.typeAnnotation.name === 'lista');
 
-    if (node.init?.type === 'ArrayExpression' && isArrayType) {
+    if (node.init?.type === 'ArrayExpression' && isListaType) {
+        g.features.lista = true;
+        const curator = g.getCurator();
         const elementTypeNode = node.typeAnnotation!.typeParameters?.[0];
-        if (elementTypeNode && elementTypeNode.type === 'TypeAnnotation') {
-            const elementType = g.genType(elementTypeNode);
+        const elementType = elementTypeNode && elementTypeNode.type === 'TypeAnnotation' ? g.genType(elementTypeNode) : 'anytype';
+
+        if (node.init.elements.length === 0) {
+            // Empty array: Lista(T).init(alloc)
+            return `${g.ind()}${kind} ${name} = Lista(${elementType}).init(${curator});`;
+        } else {
+            // Non-empty array: Lista(T).fromItems(alloc, &.{...})
             const elements = node.init.elements
                 .map(el => {
                     if (el.type === 'SpreadElement') {
@@ -81,8 +88,7 @@ export function genVariaDeclaration(node: VariaDeclaration, g: ZigGenerator): st
                     return g.genExpression(el);
                 })
                 .join(', ');
-            // No type annotation needed when using [_]T{} syntax
-            return `${g.ind()}${kind} ${name} = [_]${elementType}{ ${elements} };`;
+            return `${g.ind()}${kind} ${name} = Lista(${elementType}).fromItems(${curator}, &.{ ${elements} });`;
         }
     }
 

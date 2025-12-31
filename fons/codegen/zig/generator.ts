@@ -439,22 +439,27 @@ export class ZigGenerator {
      * TRANSFORMS:
      *   x qua numerus -> @as(i64, x)
      *   data qua textus -> @as([]const u8, data)
-     *   [1, 2, 3] qua numerus[] -> [_]i64{ 1, 2, 3 }
+     *   [1, 2, 3] qua numerus[] -> Lista(i64).fromItems(alloc, &.{1, 2, 3})
+     *   [] qua numerus[] -> Lista(i64).init(alloc)
      *
      * TARGET: Zig uses @as(T, x) builtin for type coercion.
      *
-     * EDGE: Array literals need special handling - Zig can't @as to a slice,
-     *       must use [_]T{} syntax for proper array type.
+     * EDGE: Array literals cast to lista<T> become Lista construction calls.
      */
     genQuaExpression(node: import('../../parser/ast').QuaExpression): string {
-        // EDGE: Array literal with type cast needs [_]T{} syntax, not @as
-        // WHY: arrayShorthand means it was parsed as T[] syntax, name will be 'lista'
-        const isArrayType = node.targetType.arrayShorthand || node.targetType.name === 'lista';
+        // EDGE: Array literal cast to lista<T> needs Lista construction
+        // WHY: Faber's lista<T> maps to stdlib Lista wrapper, not raw Zig arrays
+        const isListaType = node.targetType.arrayShorthand || node.targetType.name === 'lista';
 
-        if (node.expression.type === 'ArrayExpression' && isArrayType) {
+        if (node.expression.type === 'ArrayExpression' && isListaType) {
+            this.features.lista = true;
+            const curator = this.getCurator();
             const elementTypeNode = node.targetType.typeParameters?.[0];
-            if (elementTypeNode && elementTypeNode.type === 'TypeAnnotation') {
-                const elementType = this.genType(elementTypeNode);
+            const elementType = elementTypeNode && elementTypeNode.type === 'TypeAnnotation' ? this.genType(elementTypeNode) : 'anytype';
+
+            if (node.expression.elements.length === 0) {
+                return `Lista(${elementType}).init(${curator})`;
+            } else {
                 const elements = node.expression.elements
                     .map(el => {
                         if (el.type === 'SpreadElement') {
@@ -463,7 +468,7 @@ export class ZigGenerator {
                         return this.genExpression(el);
                     })
                     .join(', ');
-                return `[_]${elementType}{ ${elements} }`;
+                return `Lista(${elementType}).fromItems(${curator}, &.{ ${elements} })`;
             }
         }
 
