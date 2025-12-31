@@ -13,9 +13,22 @@
 /// - sententia = statement
 /// - expressia = expression
 
-// Forward declarations
-functio parseSententia(Parser p) -> Sententia
-functio parseExpressia(Parser p) -> Expressia
+ex "../resolvitor" importa Resolvitor, Expressia, Sententia, MassaSententia
+ex "../../ast/positio" importa Locus
+ex "../../ast/lexema" importa SymbolumGenus
+ex "../errores" importa ParserErrorCodice
+
+/// Programma - top-level program AST node
+genus Programma {
+    Locus locus
+    lista<Sententia> corpus
+}
+
+/// ExpressiaSententia - expression statement AST node
+genus ExpressiaSententia {
+    Locus locus
+    Expressia expressia
+}
 
 /// Parse a block statement
 ///
@@ -23,7 +36,8 @@ functio parseExpressia(Parser p) -> Expressia
 ///
 /// Consumes opening brace, parses statements until closing brace.
 /// Handles optional semicolons between statements.
-functio parseMassaSententia(Parser p) -> MassaSententia {
+functio parseMassaSententia(Resolvitor r) -> MassaSententia {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Expect opening brace
@@ -44,7 +58,7 @@ functio parseMassaSententia(Parser p) -> MassaSententia {
         }
 
         // Parse the next statement
-        corpus.adde(parseSententia(p))
+        corpus.adde(r.sententia())
     }
 
     // Expect closing brace
@@ -61,9 +75,10 @@ functio parseMassaSententia(Parser p) -> MassaSententia {
 /// GRAMMAR: exprStmt := expression
 ///
 /// Wraps a standalone expression as a statement.
-functio parseExpressiaSententia(Parser p) -> ExpressiaSententia {
+functio parseExpressiaSententia(Resolvitor r) -> ExpressiaSententia {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
-    fixum expressia = parseExpressia(p)
+    fixum expressia = r.expressia()
 
     redde {
         locus: locus,
@@ -77,7 +92,8 @@ functio parseExpressiaSententia(Parser p) -> ExpressiaSententia {
 ///
 /// Parses statements until end of input.
 /// Uses error recovery to handle malformed statements.
-functio parseProgramma(Parser p) -> Programma {
+functio parseProgramma(Resolvitor r) -> Programma {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
     varia corpus = [] qua lista<Sententia>
 
@@ -95,7 +111,7 @@ functio parseProgramma(Parser p) -> Programma {
 
         // Try to parse statement with error recovery
         tempta {
-            corpus.adde(parseSententia(p))
+            corpus.adde(r.sententia())
         } cape e {
             // Error recovery: skip to next statement boundary
             p.synchrona()

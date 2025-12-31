@@ -23,9 +23,15 @@
 /// - parametra = parameters
 /// - nullabilis = nullable
 
+ex "./resolvitor" importa Resolvitor, TypusAnnotatio
+ex "../ast/positio" importa Locus
+ex "../ast/lexema" importa SymbolumGenus
+ex "./errores" importa ParserErrorCodice
+
 /// Parse a type annotation
 /// Handles generics, nullable, array shorthand, and union types
-functio parseTypusAnnotatio(Parser p) -> TypusAnnotatio {
+functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // -------------------------------------------------------------------------
@@ -58,34 +64,31 @@ functio parseTypusAnnotatio(Parser p) -> TypusAnnotatio {
     // -------------------------------------------------------------------------
     // Parse optional type parameters: <T, U, ...>
     // -------------------------------------------------------------------------
-    varia typusParametra = nihil qua lista<TypusParametrum>?
+    varia typusParametra = nihil qua lista<TypusAnnotatio>?
 
     si p.congruet(SymbolumGenus.Minor) {
-        typusParametra = []
+        typusParametra = [] qua lista<TypusAnnotatio>
 
-        // Parse comma-separated type parameters
-        fac {
+        // Parse first type parameter
+        si p.proba(SymbolumGenus.Numerus) {
+            // Numeric literal parameter (e.g., numerus<32>)
+            // TODO: Handle numeric type params properly
+            p.procede()
+        } secus {
+            // Recursive type annotation parameter - use Resolvitor
+            fixum param = r.adnotatio()
+            typusParametra!.adde(param)
+        }
+
+        // Parse remaining comma-separated type parameters
+        dum p.congruet(SymbolumGenus.Virgula) {
             si p.proba(SymbolumGenus.Numerus) {
-                // Numeric literal parameter (e.g., numerus<32>)
-                fixum numSymbolum = p.procede()
-
-                // Create literal for numeric type parameter
-                fixum littera = {
-                    locus: numSymbolum.locus,
-                    species: LitteraGenus.Numerus,
-                    crudus: numSymbolum.valor
-                } qua Littera
-
-                // Wrap in TypusParametrum.Littera variant
-                typusParametra!.adde(TypusParametrum.Littera { littera: littera })
+                p.procede()
             } secus {
-                // Recursive type annotation parameter
-                fixum param = parseTypusAnnotatio(p)
-
-                // Wrap in TypusParametrum.Typus variant
-                typusParametra!.adde(TypusParametrum.Typus { typus: param })
+                fixum param = r.adnotatio()
+                typusParametra!.adde(param)
             }
-        } dum p.congruet(SymbolumGenus.Virgula)
+        }
 
         // Expect closing angle bracket
         p.expecta(SymbolumGenus.Maior, ParserErrorCodice.ExpectaturAngulusDex)
@@ -105,27 +108,12 @@ functio parseTypusAnnotatio(Parser p) -> TypusAnnotatio {
     // Union types use type parameters as union members
     // -------------------------------------------------------------------------
     si nomen === "unio" et nonnihil typusParametra et typusParametra!.longitudo > 0 {
-        // Extract TypeAnnotation members from union (skip literals)
-        varia membra = [] qua lista<TypusAnnotatio>
-
-        ex typusParametra! pro param {
-            // Pattern match on TypusParametrum variant
-            discerne param {
-                si Typus pro typus {
-                    membra.adde(typus)
-                }
-                si Littera {
-                    // Skip literal parameters in unions
-                }
-            }
-        }
-
         redde {
             locus: locus,
             nomen: "union",
             typusParametra: nihil,
             nullabilis: nullabilis,
-            unio: membra,
+            unio: typusParametra,
             compendiumSeries: falsum,
             praepositio: praepositio
         } qua TypusAnnotatio
@@ -162,7 +150,7 @@ functio parseTypusAnnotatio(Parser p) -> TypusAnnotatio {
         resultatum = {
             locus: locus,
             nomen: "lista",
-            typusParametra: [TypusParametrum.Typus { typus: resultatum }],
+            typusParametra: [resultatum],
             nullabilis: arrayNullabilis,
             unio: nihil,
             compendiumSeries: verum,

@@ -30,38 +30,18 @@
 /// - unaria = unary
 /// - primaria = primary
 
-// =============================================================================
-// Forward declarations for sub-parsers
-// (Each defined in its own file)
-// =============================================================================
-
-// Binary operators (binaria.fab)
-functio parseAssignatio(Parser p) -> Expressia
-functio parseCondicio(Parser p) -> Expressia
-functio parseAut(Parser p) -> Expressia
-functio parseEt(Parser p) -> Expressia
-functio parseAequitas(Parser p) -> Expressia
-functio parseComparatio(Parser p) -> Expressia
-functio parseBitVel(Parser p) -> Expressia
-functio parseBitXor(Parser p) -> Expressia
-functio parseBitEt(Parser p) -> Expressia
-functio parseMutatio(Parser p) -> Expressia
-functio parseAmbitus(Parser p) -> Expressia
-functio parseAdditiva(Parser p) -> Expressia
-functio parseMultiplicativa(Parser p) -> Expressia
-
-// Unary and postfix (unaria.fab)
-functio parseUnaria(Parser p) -> Expressia
-functio parseQua(Parser p) -> Expressia
-functio parseVocatio(Parser p) -> Expressia
-
-// Primary (primaria.fab)
-functio parsePrimaria(Parser p) -> Expressia
+ex "../resolvitor" importa Resolvitor, Expressia
 
 /// Parse an expression (entry point)
 ///
 /// Top-level expression delegates to assignment (lowest precedence).
 /// All expression parsing flows through this function.
-functio parseExpressia(Parser p) -> Expressia {
-    redde parseAssignatio(p)
+///
+/// NOTE: This calls r.expressia() which will eventually route through
+/// the ResolvitorImpl to parseAssignatio in binaria.fab.
+/// For now, this file just provides the entry point signature.
+functio parseExpressia(Resolvitor r) -> Expressia {
+    // Delegate to the expression pipeline via Resolvitor
+    // The actual chain is: expressia -> assignatio -> condicio -> ... -> primaria
+    redde r.expressia()
 }

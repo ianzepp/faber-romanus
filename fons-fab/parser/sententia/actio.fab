@@ -20,9 +20,47 @@
 /// - vide = see/debug
 /// - mone = warn
 
-// Forward declaration for expression parsing
-// (will be provided by expression parser module)
-functio parseExpressia(Parser p) -> Expressia
+ex "../resolvitor" importa Resolvitor, Expressia
+ex "../../ast/positio" importa Locus
+ex "../../ast/lexema" importa SymbolumGenus
+ex "../errores" importa ParserErrorCodice
+
+/// ReddeSententia - return statement AST node
+genus ReddeSententia {
+    Locus locus
+    Expressia? argumentum
+}
+
+/// RumpeSententia - break statement AST node
+genus RumpeSententia {
+    Locus locus
+}
+
+/// PergeSententia - continue statement AST node
+genus PergeSententia {
+    Locus locus
+}
+
+/// IaceSententia - throw/panic statement AST node
+genus IaceSententia {
+    Locus locus
+    bivalens fatalis
+    Expressia argumentum
+}
+
+/// ScribeGradus - output level enum
+ordo ScribeGradus {
+    Scribe,
+    Vide,
+    Mone
+}
+
+/// ScribeSententia - output statement AST node
+genus ScribeSententia {
+    Locus locus
+    ScribeGradus gradus
+    lista<Expressia> argumenta
+}
 
 /// Parse return statement
 ///
@@ -30,7 +68,8 @@ functio parseExpressia(Parser p) -> Expressia
 ///
 /// Return value is optional - bare 'redde' returns void.
 /// Doesn't consume expression if next token is closing brace.
-functio parseReddeSententia(Parser p) -> ReddeSententia {
+functio parseReddeSententia(Resolvitor r) -> ReddeSententia {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Consume 'redde' keyword
@@ -41,7 +80,7 @@ functio parseReddeSententia(Parser p) -> ReddeSententia {
     varia argumentum = nihil qua Expressia?
 
     si non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
-        argumentum = parseExpressia(p)
+        argumentum = r.expressia()
     }
 
     redde {
@@ -55,7 +94,8 @@ functio parseReddeSententia(Parser p) -> ReddeSententia {
 /// GRAMMAR: breakStmt := 'rumpe'
 ///
 /// Exits the innermost loop.
-functio parseRumpeSententia(Parser p) -> RumpeSententia {
+functio parseRumpeSententia(Resolvitor r) -> RumpeSententia {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Consume 'rumpe' keyword (already validated by caller)
@@ -71,7 +111,8 @@ functio parseRumpeSententia(Parser p) -> RumpeSententia {
 /// GRAMMAR: continueStmt := 'perge'
 ///
 /// Skips to next loop iteration.
-functio parsePergeSententia(Parser p) -> PergeSententia {
+functio parsePergeSententia(Resolvitor r) -> PergeSententia {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Consume 'perge' keyword (already validated by caller)
@@ -89,14 +130,15 @@ functio parsePergeSententia(Parser p) -> PergeSententia {
 /// Two severity levels:
 /// - iace (throw): recoverable, can be caught
 /// - mori (die): fatal/panic, unrecoverable
-functio parseIaceSententia(Parser p, bivalens fatalis) -> IaceSententia {
+functio parseIaceSententia(Resolvitor r, bivalens fatalis) -> IaceSententia {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Consume keyword (iace or mori, already validated by caller)
     p.procede()
 
     // Parse the error expression
-    fixum argumentum = parseExpressia(p)
+    fixum argumentum = r.expressia()
 
     redde {
         locus: locus,
@@ -113,7 +155,8 @@ functio parseIaceSententia(Parser p, bivalens fatalis) -> IaceSententia {
 /// - scribe → console.log
 /// - vide → console.debug
 /// - mone → console.warn
-functio parseScribeSententia(Parser p, ScribeGradus gradus) -> ScribeSententia {
+functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> ScribeSententia {
+    fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
     // Consume keyword (already validated by caller)
@@ -121,11 +164,11 @@ functio parseScribeSententia(Parser p, ScribeGradus gradus) -> ScribeSententia {
 
     // Parse first argument (required)
     varia argumenta = [] qua lista<Expressia>
-    argumenta.adde(parseExpressia(p))
+    argumenta.adde(r.expressia())
 
     // Parse additional comma-separated arguments
     dum p.congruet(SymbolumGenus.Virgula) {
-        argumenta.adde(parseExpressia(p))
+        argumenta.adde(r.expressia())
     }
 
     redde {
