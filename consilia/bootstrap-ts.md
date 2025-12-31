@@ -17,30 +17,31 @@ Rewrite the Faber compiler in Faber, targeting TypeScript/Bun.
 - ✅ Discretio instantiation → solved with `finge` keyword
 - ✅ Function hoisting → solved with two-pass semantic analysis
 - ✅ Do-while loops → implemented as `fac { } dum condition`
+- ✅ AST as discretio → unified `Expressia` (24 variants) and `Sententia` (31 variants)
 
 ### Compiles Successfully
 
-| Module               | Location                 | Files | Status                      |
-| -------------------- | ------------------------ | ----- | --------------------------- |
-| AST types            | `fons-fab/ast/`          | 21    | Complete, uses imports      |
-| Lexer                | `fons-fab/lexor/`        | 2     | Complete, uses imports      |
-| Keywords             | `fons-fab/lexicon/`      | 1     | Complete                    |
-| Parser errors        | `parser/errores.fab`     | 1     | Complete                    |
-| Parser core          | `parser/nucleus.fab`     | 1     | Complete                    |
-| Resolvitor interface | `parser/resolvitor.fab`  | 1     | Complete (pactum defined)   |
-| Type parser          | `parser/typus.fab`       | 1     | **Converted to Resolvitor** |
-| Parser entry         | `parser/index.fab`       | 1     | Stubbed, needs impl         |
-| Statement dispatch   | `sententia/index.fab`    | 1     | Stubbed, needs impl         |
-| Action statements    | `sententia/actio.fab`    | 1     | **Converted to Resolvitor** |
-| Error statements     | `sententia/error.fab`    | 1     | **Converted to Resolvitor** |
-| Block/program        | `sententia/massa.fab`    | 1     | **Converted to Resolvitor** |
-| Variable decls       | `sententia/varia.fab`    | 1     | **Converted to Resolvitor** |
-| Expression entry     | `expressia/index.fab`    | 1     | **Converted to Resolvitor** |
-| Binary operators     | `expressia/binaria.fab`  | 1     | Stubbed, needs impl         |
-| Unary/postfix        | `expressia/unaria.fab`   | 1     | Stubbed, needs impl         |
-| Primary              | `expressia/primaria.fab` | 1     | Stubbed, needs impl         |
+| Module               | Location                 | Files | Status                        |
+| -------------------- | ------------------------ | ----- | ----------------------------- |
+| AST types            | `fons-fab/ast/`          | 6     | **Restructured as discretio** |
+| Lexer                | `fons-fab/lexor/`        | 2     | Complete                      |
+| Keywords             | `fons-fab/lexicon/`      | 1     | Complete                      |
+| Parser errors        | `parser/errores.fab`     | 1     | Complete                      |
+| Parser core          | `parser/nucleus.fab`     | 1     | Complete                      |
+| Resolvitor interface | `parser/resolvitor.fab`  | 1     | Complete                      |
+| Type parser          | `parser/typus.fab`       | 1     | Complete                      |
+| Parser entry         | `parser/index.fab`       | 1     | Stubbed, needs impl           |
+| Statement dispatch   | `sententia/index.fab`    | 1     | Stubbed, needs impl           |
+| Action statements    | `sententia/actio.fab`    | 1     | **Uses finge + discretio**    |
+| Error statements     | `sententia/error.fab`    | 1     | Complete                      |
+| Block/program        | `sententia/massa.fab`    | 1     | Complete                      |
+| Variable decls       | `sententia/varia.fab`    | 1     | Complete                      |
+| Expression entry     | `expressia/index.fab`    | 1     | Complete                      |
+| Binary operators     | `expressia/binaria.fab`  | 1     | Stubbed, needs impl           |
+| Unary/postfix        | `expressia/unaria.fab`   | 1     | Stubbed, needs impl           |
+| Primary expressions  | `expressia/primaria.fab` | 1     | **Partial impl with finge**   |
 
-**All 12 parser files compile successfully.**
+**All 23 fons-fab files compile successfully.**
 
 ### Resolvitor Pattern
 
@@ -112,12 +113,12 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 
 ## Bootstrap Strategy
 
-### Phase 1: Parser (`fons-fab/parser/`) — 60% COMPLETE
+### Phase 1: Parser (`fons-fab/parser/`) — 70% COMPLETE
 
 1. ✅ Create `genus Parser` with token stream state
 2. ✅ Create `pactum Resolvitor` for mutual recursion
 3. ✅ Port parsing functions to use Resolvitor
-4. ⏳ Restructure AST as `discretio` variants with `finge`
+4. ✅ Restructure AST as `discretio` variants with `finge`
 5. ⏳ Implement `ResolvitorImpl`
 6. ⏳ Complete remaining statement parsers
 
@@ -271,6 +272,13 @@ parser/
 4. **`fac...dum` for do-while** — Use `fac { body } dum condition` for loops that execute at least once.
 5. **Keywords as identifiers** — Keywords like `typus`, `genus` can be used as variable/field names.
 
+### Session 4: AST Restructure
+
+1. **Single-file discretio** — Consolidated AST into `expressia.fab` (24 variants) and `sententia.fab` (31 variants).
+2. **Supporting types stay as genus** — `CapeClausula`, `Parametrum`, `ObiectumProprietas` etc. are reusable building blocks.
+3. **Parser integration verified** — Updated `actio.fab` and `primaria.fab` to use `finge`, generates correct tagged unions.
+4. **Generated code** — `finge Littera { ... } qua Expressia` produces `{ tag: 'Littera', ... }` in TypeScript.
+
 ## Build Commands
 
 ```bash
@@ -308,7 +316,7 @@ diff -r opus/ opus2/  # Should be identical
 
 ## Next Steps
 
-1. **Restructure AST as discretio** — Use `finge` to construct variants in expression/statement parsers
-2. **Implement ResolvitorImpl** — Wire up parsing functions in `parser/index.fab`
-3. **Implement expression parsers** — Complete `binaria.fab`, `unaria.fab`, `primaria.fab`
-4. **Complete statement dispatcher** — Full implementation in `sententia/index.fab`
+1. **Implement ResolvitorImpl** — Wire up parsing functions in `parser/index.fab`
+2. **Complete expression parsers** — Finish `binaria.fab`, `unaria.fab`, expand `primaria.fab`
+3. **Complete statement dispatcher** — Full implementation in `sententia/index.fab`
+4. **Remaining statement parsers** — Control flow, type declarations, imports
