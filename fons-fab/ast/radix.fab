@@ -1,0 +1,48 @@
+// Base AST node types shared by all nodes
+//
+// WHY: Every AST node needs position info for error messages.
+//      Comments attach to nodes for formatting preservation.
+
+// NOTE: Position duplicated until module imports work.
+genus Position {
+    numerus line
+    numerus column
+    numerus offset
+}
+
+/// Comment type enumeration
+ordo CommentType {
+    Line      // // comment
+    Block     // /* comment */
+    Doc       // /// comment
+}
+
+/// A source code comment
+genus Comment {
+    CommentType kind
+    textus value
+    Position position
+}
+
+/// Base fields present on all AST nodes
+/// WHY: Every node tracks position for error messages,
+///      and may have leading/trailing comments for formatting.
+genus BaseNode {
+    Position position
+    lista<Comment>? leadingComments
+    lista<Comment>? trailingComments
+}
+
+/// Root node of the AST - represents an entire source file
+genus Program {
+    Position position
+    lista<Comment>? leadingComments
+    lista<Comment>? trailingComments
+    lista<Statement> body
+}
+
+// Forward declaration - Statement will be defined in sententia/index.fab
+// For now, use a placeholder to allow compilation
+discretio Statement {
+    Placeholder { }
+}
