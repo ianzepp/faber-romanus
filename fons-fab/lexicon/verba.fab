@@ -69,6 +69,7 @@ functio estVerbum(textus v) -> bivalens {
         si "prae" { redde verum }
         si "praefixum" { redde verum }
         si "cursor" { redde verum }
+        si "curata" { redde verum }
         si "publicus" { redde verum }
         si "privatus" { redde verum }
         si "generis" { redde verum }
