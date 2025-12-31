@@ -134,11 +134,11 @@ console.log(salve(nomen));
 
 | Target     | Tests | Status |
 | ---------- | ----: | :----: |
-| TypeScript |   751 |  100%  |
-| Python     |   604 |  80%   |
-| Rust       |   573 |  76%   |
-| C++23      |   468 |  62%   |
-| Zig        |   468 |  62%   |
+| TypeScript |   760 |  100%  |
+| Python     |   613 |  81%   |
+| Rust       |   580 |  76%   |
+| C++23      |   475 |  63%   |
+| Zig        |   470 |  62%   |
 
 > Status % = passing tests / TypeScript baseline. Run `bun test proba/runner.test.ts -t "@<target>"` to verify (e.g., `-t "@zig"`).
 
