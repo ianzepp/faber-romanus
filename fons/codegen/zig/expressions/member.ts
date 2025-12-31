@@ -6,12 +6,20 @@
  *   obj[key]  -> obj[key]
  *   obj?.prop -> if (obj) |o| o.prop else null (simplified)
  *   obj!.prop -> obj.?.prop (unwrap optional)
+ *   Enum.Member -> .member (lowercase, dot-prefixed)
  */
 
 import type { MemberExpression, RangeExpression, UnaryExpression, Literal, Identifier, Expression } from '../../../parser/ast';
 import type { ZigGenerator } from '../generator';
 
 export function genMemberExpression(node: MemberExpression, g: ZigGenerator): string {
+    // GUARD: Enum member access - emit as .lowercase
+    // WHY: Zig enums use .member syntax with lowercase convention
+    if (!node.computed && node.object.type === 'Identifier' && node.object.resolvedType?.kind === 'enum') {
+        const propName = (node.property as Identifier).name.toLowerCase();
+        return `.${propName}`;
+    }
+
     const obj = g.genExpression(node.object);
 
     // GUARD: Computed access with slice syntax

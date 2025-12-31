@@ -1,0 +1,32 @@
+// Position and Span types for source location tracking
+//
+// WHY: Every AST node and token needs location info for error messages.
+//      Position is a single point; Span is a range.
+
+/// A single point in source code
+genus Position {
+    numerus line      // 1-based line number
+    numerus column    // 1-based column number
+    numerus offset    // 0-based byte offset from start
+}
+
+/// A range in source code (start inclusive, end exclusive)
+genus Span {
+    Position start
+    Position end
+}
+
+/// Create a position from components
+functio position(numerus line, numerus column, numerus offset) fit Position {
+    redde { line: line, column: column, offset: offset } qua Position
+}
+
+/// Create a span from two positions
+functio span(Position start, Position end) fit Span {
+    redde { start: start, end: end } qua Span
+}
+
+/// Create a zero-length span at a position
+functio spanAt(Position pos) fit Span {
+    redde { start: pos, end: pos } qua Span
+}

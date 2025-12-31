@@ -1,0 +1,127 @@
+// Token types and Token structure for lexical analysis
+//
+// WHY: The tokenizer produces a stream of tokens that the parser consumes.
+//      Each token has a type, value, and position.
+//
+// NOTE: Position is duplicated here until module imports work in bootstrap.
+//       See position.fab for the canonical definition.
+
+/// A single point in source code (duplicated from position.fab)
+genus Position {
+    numerus line      // 1-based line number
+    numerus column    // 1-based column number  
+    numerus offset    // 0-based byte offset from start
+}
+
+/// Token type enumeration
+ordo TokenType {
+    // Literals
+    Numerus       // integer literal: 42
+    Fractus       // float literal: 3.14
+    Textus        // string literal: "hello"
+    
+    // Boolean/null literals (as tokens, not keywords)
+    Verum         // true
+    Falsum        // false
+    Nihil         // null
+    
+    // Identifiers and keywords
+    Identifier    // user-defined name
+    Keyword       // reserved word (value contains which)
+    
+    // Grouping
+    ParenLeft     // (
+    ParenRight    // )
+    BraceLeft     // {
+    BraceRight    // }
+    BracketLeft   // [
+    BracketRight  // ]
+    
+    // Operators - arithmetic
+    Plus          // +
+    Minus         // -
+    Star          // *
+    Slash         // /
+    Percent       // %
+    
+    // Operators - comparison
+    Equal         // =
+    EqualEqual    // ==
+    EqualEqualEqual // ===
+    BangEqual     // !=
+    BangEqualEqual  // !==
+    Less          // <
+    LessEqual     // <=
+    Greater       // >
+    GreaterEqual  // >=
+    
+    // Operators - logical
+    Bang          // !
+    AmpAmp        // &&
+    PipePipe      // ||
+    Question      // ?
+    QuestionQuestion // ??
+    QuestionDot   // ?.
+    BangDot       // !.
+    
+    // Operators - bitwise
+    Amp           // &
+    Pipe          // |
+    Caret         // ^
+    Tilde         // ~
+    LessLess      // <<
+    GreaterGreater // >>
+    GreaterGreaterGreater // >>>
+    
+    // Punctuation
+    Comma         // ,
+    Dot           // .
+    Colon         // :
+    Semicolon     // ;
+    Arrow         // ->
+    FatArrow      // =>
+    DotDot        // ..
+    DotDotDot     // ...
+    
+    // Comments (preserved for formatting)
+    LineComment   // // comment
+    BlockComment  // /* comment */
+    DocComment    // /// comment
+    
+    // Special
+    EOF           // end of file
+    Invalid       // lexer error token
+}
+
+/// A single token from the source
+genus Token {
+    TokenType type
+    textus value       // raw text of the token
+    Position position
+    textus? keyword    // if type == Keyword, which keyword
+}
+
+/// Create a token
+functio token(TokenType kind, textus value, Position position) fit Token {
+    redde { type: kind, value: value, position: position, keyword: nihil } qua Token
+}
+
+/// Create a keyword token
+functio keywordToken(textus keyword, Position position) fit Token {
+    redde { 
+        type: TokenType.Keyword, 
+        value: keyword, 
+        position: position, 
+        keyword: keyword 
+    } qua Token
+}
+
+/// Check if token is a specific keyword
+functio isKeyword(Token tok, textus kw) fit bivalens {
+    redde tok.type == TokenType.Keyword && tok.keyword == kw
+}
+
+/// Check if token is EOF
+functio isEOF(Token tok) fit bivalens {
+    redde tok.type == TokenType.EOF
+}
