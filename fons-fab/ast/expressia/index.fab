@@ -30,6 +30,8 @@ ordo ExpressiaGenus {
     AmbitusExpressia
     QuaExpressia
     EstExpressia
+    CatenaExpressia
+    PraefixumExpressia
     
     // vocatio.fab - calls
     VocatioExpressia

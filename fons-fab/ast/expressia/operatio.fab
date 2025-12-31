@@ -82,3 +82,26 @@ genus TypusAdnotatio {
     textus nomen
     bivalens nullabile
 }
+
+/// Chain step (DSL transform)
+/// Examples: prima 5, ultima 3, summa, ordina per nomen
+genus CatenaGradus {
+    Locus locus
+    textus verbum            // prima, ultima, summa, ordina, collige, grupa, etc.
+    Expressia? argumentum    // optional argument (5 in "prima 5")
+}
+
+/// Chain expression (collection DSL pipeline)
+/// Example: ex items prima 5, ex prices summa
+genus CatenaExpressia {
+    Locus locus
+    Expressia fons           // source collection
+    lista<CatenaGradus> gradus
+}
+
+/// Prefix block expression
+/// Example: praefixum { ... }
+genus PraefixumExpressia {
+    Locus locus
+    Expressia corpus
+}

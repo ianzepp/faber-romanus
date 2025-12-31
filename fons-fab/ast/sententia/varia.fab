@@ -49,6 +49,22 @@ genus SeriesForma {
     lista<SeriesFormaElementum> elementa
 }
 
+/// Object pattern property for destructuring
+/// Example: { nomen }, { nomen: n }, { ceteri rest }
+genus ObiectumFormaProprietas {
+    Locus locus
+    Nomen clavis             // property name to extract
+    Nomen valor              // variable name to bind
+    bivalens residuum        // true for ceteri (rest) pattern
+}
+
+/// Object destructuring pattern
+/// Example: { nomen, aetas }, { nomen: n, ceteri rest }
+genus ObiectumForma {
+    Locus locus
+    lista<ObiectumFormaProprietas> proprietates
+}
+
 /// Variable declaration statement
 /// Examples: varia x = 5, fixum nomen = "Marcus"
 genus VariaSententia {
