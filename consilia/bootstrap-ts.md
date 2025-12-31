@@ -11,29 +11,36 @@ Rewrite the Faber compiler in Faber, targeting TypeScript/Bun.
 
 ## Current State
 
+**No blocking issues remain.** All previously identified blockers have been resolved:
+
+- ✅ Mutual recursion → solved with `pactum Resolvitor`
+- ✅ Discretio instantiation → solved with `finge` keyword
+- ✅ Function hoisting → solved with two-pass semantic analysis
+- ✅ Do-while loops → implemented as `fac { } dum condition`
+
 ### Compiles Successfully
 
-| Module               | Location                 | Files | Status                        |
-| -------------------- | ------------------------ | ----- | ----------------------------- |
-| AST types            | `fons-fab/ast/`          | 21    | Complete, uses imports        |
-| Lexer                | `fons-fab/lexor/`        | 2     | Complete, uses imports        |
-| Keywords             | `fons-fab/lexicon/`      | 1     | Complete                      |
-| Parser errors        | `parser/errores.fab`     | 1     | Complete                      |
-| Parser core          | `parser/nucleus.fab`     | 1     | Complete                      |
-| Resolvitor interface | `parser/resolvitor.fab`  | 1     | Complete (pactum defined)     |
-| Type parser          | `parser/typus.fab`       | 1     | **Converted to Resolvitor**   |
-| Parser entry         | `parser/index.fab`       | 1     | Stubbed, needs ResolvitorImpl |
-| Statement dispatch   | `sententia/index.fab`    | 1     | Stubbed, needs full impl      |
-| Action statements    | `sententia/actio.fab`    | 1     | **Converted to Resolvitor**   |
-| Error statements     | `sententia/error.fab`    | 1     | **Converted to Resolvitor**   |
-| Block/program        | `sententia/massa.fab`    | 1     | **Converted to Resolvitor**   |
-| Variable decls       | `sententia/varia.fab`    | 1     | **Converted to Resolvitor**   |
-| Expression entry     | `expressia/index.fab`    | 1     | **Converted to Resolvitor**   |
-| Binary operators     | `expressia/binaria.fab`  | 1     | Stubbed (type issue)          |
-| Unary/postfix        | `expressia/unaria.fab`   | 1     | Stubbed (type issue)          |
-| Primary              | `expressia/primaria.fab` | 1     | Stubbed (type issue)          |
+| Module               | Location                 | Files | Status                      |
+| -------------------- | ------------------------ | ----- | --------------------------- |
+| AST types            | `fons-fab/ast/`          | 21    | Complete, uses imports      |
+| Lexer                | `fons-fab/lexor/`        | 2     | Complete, uses imports      |
+| Keywords             | `fons-fab/lexicon/`      | 1     | Complete                    |
+| Parser errors        | `parser/errores.fab`     | 1     | Complete                    |
+| Parser core          | `parser/nucleus.fab`     | 1     | Complete                    |
+| Resolvitor interface | `parser/resolvitor.fab`  | 1     | Complete (pactum defined)   |
+| Type parser          | `parser/typus.fab`       | 1     | **Converted to Resolvitor** |
+| Parser entry         | `parser/index.fab`       | 1     | Stubbed, needs impl         |
+| Statement dispatch   | `sententia/index.fab`    | 1     | Stubbed, needs impl         |
+| Action statements    | `sententia/actio.fab`    | 1     | **Converted to Resolvitor** |
+| Error statements     | `sententia/error.fab`    | 1     | **Converted to Resolvitor** |
+| Block/program        | `sententia/massa.fab`    | 1     | **Converted to Resolvitor** |
+| Variable decls       | `sententia/varia.fab`    | 1     | **Converted to Resolvitor** |
+| Expression entry     | `expressia/index.fab`    | 1     | **Converted to Resolvitor** |
+| Binary operators     | `expressia/binaria.fab`  | 1     | Stubbed, needs impl         |
+| Unary/postfix        | `expressia/unaria.fab`   | 1     | Stubbed, needs impl         |
+| Primary              | `expressia/primaria.fab` | 1     | Stubbed, needs impl         |
 
-**All 12 parser files now compile successfully.**
+**All 12 parser files compile successfully.**
 
 ### Resolvitor Pattern
 
@@ -51,6 +58,23 @@ pactum Resolvitor {
 
 Parsing functions receive `Resolvitor r` and call `r.expressia()`, `r.sententia()` etc. for cross-module parsing. The concrete `ResolvitorImpl` (not yet implemented) will wire up the actual functions.
 
+### Discretio Variant Construction
+
+Use `finge` to construct discretio variants:
+
+```faber
+discretio Expressia {
+    Binaria { Locus locus, textus signum, Expressia sinister, Expressia dexter }
+    Littera { Locus locus, LitteraGenus species, textus crudus }
+    // ...
+}
+
+functio parseBinaria(Resolvitor r) -> Expressia {
+    // ...
+    redde finge Binaria { locus: l, signum: s, sinister: a, dexter: b } qua Expressia
+}
+```
+
 ### Remaining Parser Work
 
 **Fully implemented with Resolvitor:**
@@ -63,15 +87,16 @@ Parsing functions receive `Resolvitor r` and call `r.expressia()`, `r.sententia(
 
 **Stubbed (compile but need implementation):**
 
-- Expression parsers (blocked by type system issue)
-- Statement dispatcher (blocked by type system issue)
+- Expression parsers (`binaria.fab`, `unaria.fab`, `primaria.fab`)
+- Statement dispatcher (`sententia/index.fab`)
+- Parser entry with ResolvitorImpl (`parser/index.fab`)
 
 **Statement parsers with TODO stubs:**
 
 - Import declarations (`ex ... importa`)
 - Function declarations (`functio`)
 - Type declarations (`typus`, `ordo`, `genus`, `pactum`, `discretio`)
-- Control flow (`si`, `dum`, `ex...pro`, `de...pro`, `in`)
+- Control flow (`si`, `dum`, `ex...pro`, `de...pro`, `in`, `fac...dum`)
 - Pattern matching (`elige`, `discerne`, `custodi`)
 - Tests (`probandum`, `proba`, `praepara`)
 - Entry points (`incipit`, `incipiet`, `cura`, `ad`)
@@ -85,61 +110,9 @@ Parsing functions receive `Resolvitor r` and call `r.expressia()`, `r.sententia(
 | Codegen (TS)      | `fons/codegen/ts/`     | ~2,000      | TS target only        |
 | CLI               | `fons/cli.ts`          | ~600        | Entry point           |
 
-## Current Blockers
+## Gotchas
 
-### 1. AST Types Are Not Discretio Variants (HIGH PRIORITY)
-
-Expression and statement parsers want to return `Expressia` / `Sententia` sum types, but many AST nodes are currently modeled as separate `genus` types.
-
-**Problem:** Faber's type system does not allow assigning a genus instance to a discretio type:
-
-```faber
-// This fails:
-functio parseAssignatio(Resolvitor r) -> Expressia {
-    // ...
-    redde { locus: l, signum: s, sinister: a, dexter: b } qua AssignatioExpressia
-    // Error: AssignatioExpressia is not assignable to Expressia
-}
-```
-
-**Update:** This was originally blocked because there was no way to instantiate a discretio variant. The TS compiler now has `finge`, which can construct discriminated-union objects for the TS target. With explicit `qua Expressia` / `qua Sententia`, this unblocks a discretio-based AST without needing subtyping.
-
-**Solutions:**
-
-1. **Define AST types as discretio variants** (preferred):
-
-    ```faber
-    discretio Expressia {
-        Binaria { Locus locus, textus signum, Expressia sinister, Expressia dexter }
-        Unaria { Locus locus, textus signum, Expressia argumentum }
-        Littera { Locus locus, LitteraGenus species, textus crudus }
-        // ... all expression types
-    }
-    ```
-
-    Then construct nodes via:
-
-    ```faber
-    redde finge Binaria { locus: l, signum: s, sinister: a, dexter: b } qua Expressia
-    ```
-
-2. **Use objectum return type** (loses type safety)
-
-3. **Add subtyping/implements** for genus types (higher semantic complexity)
-
-### 2. No Function Hoisting
-
-Faber’s semantic analyzer currently requires functions to be defined before use within a file. The expression parser chain (`parseAssignatio → parseCondicio → ... → parsePrimaria`) tends to want natural top-down ordering, so this forces precedence chains into bottom-up file ordering.
-
-**Current workaround:** Functions are ordered from highest precedence (bottom) to lowest (top) in `binaria.fab`.
-
-**Minimal fix (recommended):** Implement a small two-pass semantic phase that predeclares all top-level function signatures before analyzing bodies. This removes the ordering constraint without needing full two-pass type linking.
-
-### 3. No Do-While Loop
-
-The `fac { } dum condition` syntax doesn't exist. Must use regular `dum` loops.
-
-### 4. Keyword Conflicts
+### Keyword Conflicts
 
 `typus` and `genus` are keywords and cannot be used as variable/field names. Use alternatives like `adnotatio` (for type annotation) and `modus` (for declaration kind).
 
@@ -150,7 +123,7 @@ The `fac { } dum condition` syntax doesn't exist. Must use regular `dum` loops.
 1. ✅ Create `genus Parser` with token stream state
 2. ✅ Create `pactum Resolvitor` for mutual recursion
 3. ✅ Port parsing functions to use Resolvitor
-4. ⏳ Resolve AST type system issue (use `discretio` + `finge`)
+4. ⏳ Restructure AST as `discretio` variants with `finge`
 5. ⏳ Implement `ResolvitorImpl`
 6. ⏳ Complete remaining statement parsers
 
@@ -194,7 +167,7 @@ functio main(lista<textus> args) -> numerus {
 
 ## Key Patterns
 
-### Resolvitor Pattern (NEW)
+### Resolvitor Pattern
 
 Mutual recursion solved via interface:
 
@@ -299,10 +272,10 @@ parser/
 ### Session 3: Resolvitor Pattern
 
 1. **Pactum solves circular deps** — The `pactum Resolvitor` pattern cleanly separates interface from implementation.
-2. **Function ordering matters** — No hoisting means bottom-up function order in precedence chains (until two-pass predeclaration exists).
-3. **Keyword conflicts** — Avoid `typus`, `genus` as identifiers; use `adnotatio`, `modus`.
-4. **Type system is strict** — Genus types are not assignable to discretio types.
-5. **`finge` enables discretio AST** — With `finge ... qua Expressia|Sententia`, the bootstrap can return real discretio variants instead of genus nodes.
+2. **Keyword conflicts** — Avoid `typus`, `genus` as identifiers; use `adnotatio`, `modus`.
+3. **`finge` enables discretio AST** — With `finge ... qua Expressia|Sententia`, the bootstrap can return real discretio variants.
+4. **Two-pass semantic analysis** — Functions can now be called before definition (forward references work).
+5. **`fac...dum` for do-while** — Use `fac { body } dum condition` for loops that execute at least once.
 
 ## Build Commands
 
@@ -341,7 +314,7 @@ diff -r opus/ opus2/  # Should be identical
 
 ## Next Steps
 
-1. **Resolve AST type architecture** — Decide whether to restructure AST as discretio variants
+1. **Restructure AST as discretio** — Use `finge` to construct variants in expression/statement parsers
 2. **Implement ResolvitorImpl** — Wire up parsing functions in `parser/index.fab`
 3. **Implement expression parsers** — Complete `binaria.fab`, `unaria.fab`, `primaria.fab`
 4. **Complete statement dispatcher** — Full implementation in `sententia/index.fab`
