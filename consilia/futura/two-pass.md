@@ -1,12 +1,58 @@
 ---
 status: planned
 note: Architectural design for forward references and throwability propagation; not yet implemented
-updated: 2024-12
+updated: 2025-01
 ---
 
 # Two-Pass Semantic Analysis
 
 The current semantic analyzer uses a single pass over the AST. This works for simple cases but fails when analysis of one construct depends on information from another construct that hasn't been visited yet.
+
+## Current State
+
+### What's Already Working
+
+Cross-file imports are handled by `fons/semantic/modules.ts`:
+
+- **Import resolution:** `ex "./module" importa X` parses and extracts exports
+- **Cycle detection:** Circular imports between files are detected and reported
+- **Caching:** Diamond dependencies handled efficiently
+- **Export extraction:** Functions, genus, pactum, ordo, discretio, typus all extractable
+
+### What Two-Pass Is Still Needed For
+
+Two-pass is specifically needed for **within-file** forward references:
+
+- **Within-file function calls:** `functio b() { a() }; functio a() { ... }` — fails because `a` not yet in scope when `b` is analyzed
+- **Within-file circular types:** `genus A { B campo }; genus B { A campo }` — fails in same file (works across files)
+- **Within-file mutual recursion:** `functio ping() { pong() }; functio pong() { ping() }` — neither defined when other analyzed
+
+### Current Workaround
+
+Faber currently requires functions to be defined before use (bottom-up ordering). This affects the self-hosted compiler (`fons-fab/`):
+
+- **Expression parser chain:** `parseAssignatio → parseCondicio → ... → parsePrimaria` requires bottom-up ordering in source files
+- **Workaround:** Functions in `binaria.fab` are ordered from highest precedence (bottom) to lowest (top)
+- **Impact:** Unnatural code organization; mutual recursion impossible without restructuring
+
+## Alternative Approaches
+
+| Approach | Complexity | User Experience | Compile Speed |
+|----------|------------|-----------------|---------------|
+| Forward declarations (C-style) | Low | Verbose | Fast |
+| Two-pass analysis (Go/Rust) | Medium | Clean | Slight overhead |
+| Lazy resolution (JS hoisting) | Higher | Clean | Deferred errors |
+
+**Forward declarations** would add syntax like:
+```fab
+functio process() -> numerus  // declaration only
+functio main() { process() }  // now valid
+functio process() -> numerus { redde 42 }  // definition
+```
+
+**Two-pass analysis** (this document) is the recommended approach for Faber's style—no extra syntax burden, natural ordering.
+
+**Lazy resolution** defers all symbol resolution until codegen, which complicates error reporting.
 
 ## Problems Requiring Two-Pass
 
@@ -328,6 +374,69 @@ This design focuses on top-level functions. Nested functions (lambdas, closures)
 
 For now, treat lambdas conservatively (assume they can throw if parent can).
 
+## Open Questions
+
+### Genus Methods
+
+Class methods need the same forward-reference treatment as top-level functions. If method `a()` calls method `b()` defined later in the same genus, Pass 1 must collect all method signatures first.
+
+```fab
+genus Service {
+    functio init() { ego.connect() }  // connect not yet defined
+    functio connect() { ... }
+}
+```
+
+**Decision needed:** Collect genus method signatures in Pass 1 alongside top-level functions.
+
+### tempta/cape Effect on Throwability
+
+A function that catches errors doesn't propagate throwability:
+
+```fab
+functio safe() {
+    tempta { mayThrow() } cape e { log(e) }
+}
+// safe() does NOT throw - it catches
+```
+
+Current propagation logic marks `safe` as throwing because it calls `mayThrow`. Need to detect when errors are caught vs propagated.
+
+**Decision needed:** Track "catches all" vs "catches some" in tempta blocks.
+
+### Pactum Conformance
+
+When is `genus X implet Y` validated? Both declarations must be collected in Pass 1, then conformance checked in Pass 2.
+
+```fab
+pactum Readable { functio read() -> textus }
+genus File implet Readable { functio read() -> textus { ... } }
+```
+
+**Decision needed:** Add conformance checking as Pass 2 sub-phase after body analysis.
+
+### Top-Level Variable Ordering
+
+Does Faber allow forward references in variable initializers?
+
+```fab
+fixum a = b + 1  // b not yet defined?
+fixum b = 2
+```
+
+**Decision needed:** Either disallow (simpler) or add variable ordering analysis.
+
+### Generics (`prae typus T`)
+
+Type parameter inference across generic instantiations may require additional passes or constraint solving.
+
+```fab
+functio max(prae typus T, T a, T b) -> T { ... }
+fixum x = max(1, 2)  // infer T = numerus
+```
+
+**Decision needed:** Defer to later; current explicit types work.
+
 ## Testing
 
 Add tests for:
@@ -338,6 +447,9 @@ Add tests for:
 4. Multi-level propagation (a calls b calls c, c throws)
 5. Mutual recursion (a calls b, b calls a, one throws)
 6. Diamond patterns (a calls b and c, both call d, d throws)
+7. Genus method forward references
+8. tempta/cape throwability masking
+9. Pactum conformance across declaration order
 
 ## Migration
 
