@@ -358,11 +358,17 @@ export class ZigGenerator {
 
             // Handle operator mapping for Zig
             let op = node.operator;
-            if (op === '&&') op = 'and';
-            else if (op === '||') op = 'or';
-            else if (op === '??') op = 'orelse';
-            else if (op === '===') op = '==';
-            else if (op === '!==') op = '!=';
+            if (op === '&&') {
+                op = 'and';
+            } else if (op === '||') {
+                op = 'or';
+            } else if (op === '??') {
+                op = 'orelse';
+            } else if (op === '===') {
+                op = '==';
+            } else if (op === '!==') {
+                op = '!=';
+            }
 
             return `${left} ${op} ${right}`;
         }

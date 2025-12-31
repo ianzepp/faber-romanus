@@ -79,7 +79,9 @@ function collectChain(node: MemberExpression, g: PyGenerator): { base: Expressio
 function hasOptionalInChain(node: MemberExpression): boolean {
     let current: Expression = node;
     while (current.type === 'MemberExpression') {
-        if ((current as MemberExpression).optional) return true;
+        if ((current as MemberExpression).optional) {
+            return true;
+        }
         current = (current as MemberExpression).object;
     }
     return false;

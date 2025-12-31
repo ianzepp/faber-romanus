@@ -16,8 +16,12 @@ import type { CppGenerator } from '../generator';
 // We need to recursively check all nested arrays for spread elements.
 function containsSpread(node: ArrayExpression): boolean {
     for (const el of node.elements) {
-        if (el.type === 'SpreadElement') return true;
-        if (el.type === 'ArrayExpression' && containsSpread(el)) return true;
+        if (el.type === 'SpreadElement') {
+            return true;
+        }
+        if (el.type === 'ArrayExpression' && containsSpread(el)) {
+            return true;
+        }
     }
     return false;
 }

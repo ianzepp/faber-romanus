@@ -207,8 +207,12 @@ export function isMathesisConstant(name: string): boolean {
 
 export function getMathesisHeaders(name: string): string[] {
     const func = MATHESIS_FUNCTIONS[name];
-    if (func) return func.headers;
+    if (func) {
+        return func.headers;
+    }
     const constant = MATHESIS_CONSTANTS[name];
-    if (constant) return constant.headers;
+    if (constant) {
+        return constant.headers;
+    }
     return [];
 }

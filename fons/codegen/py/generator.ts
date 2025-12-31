@@ -211,10 +211,15 @@ export class PyGenerator {
 
             // Handle operator mapping for Python
             let op = node.operator;
-            if (op === '&&') op = 'and';
-            else if (op === '||') op = 'or';
-            else if (op === '===') op = '==';
-            else if (op === '!==') op = '!=';
+            if (op === '&&') {
+                op = 'and';
+            } else if (op === '||') {
+                op = 'or';
+            } else if (op === '===') {
+                op = '==';
+            } else if (op === '!==') {
+                op = '!=';
+            }
 
             // WHY: Python has no ?? operator; use conditional expression
             if (node.operator === '??') {

@@ -209,8 +209,11 @@ export class CppGenerator {
 
             // Handle operator mapping for C++
             let op = node.operator;
-            if (op === '===') op = '==';
-            else if (op === '!==') op = '!=';
+            if (op === '===') {
+                op = '==';
+            } else if (op === '!==') {
+                op = '!=';
+            }
 
             // WHY: C++ has no ?? operator; use ternary with nullptr check
             if (node.operator === '??') {
@@ -418,12 +421,24 @@ export class CppGenerator {
         }
 
         // STL containers and string should be passed by const ref
-        if (type === 'std::string') return true;
-        if (type.startsWith('std::vector')) return true;
-        if (type.startsWith('std::unordered_set')) return true;
-        if (type.startsWith('std::unordered_map')) return true;
-        if (type.startsWith('std::optional')) return true;
-        if (type.startsWith('std::array')) return true;
+        if (type === 'std::string') {
+            return true;
+        }
+        if (type.startsWith('std::vector')) {
+            return true;
+        }
+        if (type.startsWith('std::unordered_set')) {
+            return true;
+        }
+        if (type.startsWith('std::unordered_map')) {
+            return true;
+        }
+        if (type.startsWith('std::optional')) {
+            return true;
+        }
+        if (type.startsWith('std::array')) {
+            return true;
+        }
 
         // User-defined types (anything not in valueTypes) - pass by const ref
         // WHY: Unknown types are likely structs/classes that benefit from ref passing

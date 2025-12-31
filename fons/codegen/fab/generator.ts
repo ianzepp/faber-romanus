@@ -308,7 +308,9 @@ export class FabGenerator {
      * Returns: "prae typus T, prae typus U, " (with trailing comma if non-empty)
      */
     genInlineTypeParams(params: TypeParameterDeclaration[]): string {
-        if (!params || params.length === 0) return '';
+        if (!params || params.length === 0) {
+            return '';
+        }
         return params.map(p => `prae typus ${p.name.name}`).join(', ') + ', ';
     }
 

@@ -23,8 +23,12 @@ export function genPactumDeclaration(node: PactumDeclaration, g: FabGenerator): 
     for (const method of node.methods) {
         const mParts: string[] = [];
 
-        if (method.async) mParts.push('futura');
-        if (method.generator) mParts.push('cursor');
+        if (method.async) {
+            mParts.push('futura');
+        }
+        if (method.generator) {
+            mParts.push('cursor');
+        }
 
         mParts.push('functio');
         mParts.push(method.name.name);

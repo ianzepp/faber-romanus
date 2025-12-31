@@ -13,8 +13,12 @@ export function genVariaDeclaration(node: VariaDeclaration, g: FabGenerator): st
 
     if (node.name.type === 'ArrayPattern') {
         const elems = node.name.elements.map(elem => {
-            if (elem.skip) return '_';
-            if (elem.rest) return `ceteri ${elem.name.name}`;
+            if (elem.skip) {
+                return '_';
+            }
+            if (elem.rest) {
+                return `ceteri ${elem.name.name}`;
+            }
             return elem.name.name;
         });
         name = `[${elems.join(', ')}]`;

@@ -41,18 +41,15 @@ export interface TempusEntry {
 export const TEMPUS_FUNCTIONS: Record<string, TempusEntry> = {
     nunc: {
         latin: 'nunc',
-        rs: () =>
-            `std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as i64`,
+        rs: () => `std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as i64`,
     },
     nunc_nano: {
         latin: 'nunc_nano',
-        rs: () =>
-            `std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos() as i64`,
+        rs: () => `std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos() as i64`,
     },
     nunc_secunda: {
         latin: 'nunc_secunda',
-        rs: () =>
-            `std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64`,
+        rs: () => `std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64`,
     },
     dormi: {
         latin: 'dormi',
