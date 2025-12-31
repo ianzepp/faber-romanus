@@ -142,8 +142,8 @@ import type {
     ProbandumStatement,
     ProbaStatement,
     ProbaModifier,
-    CuraBlock,
-    CuraTiming,
+    PraeparaBlock,
+    PraeparaTiming,
     CuratorKind,
     CuraStatement,
     AdStatement,
@@ -830,12 +830,17 @@ export function parse(tokens: Token[]): ParserResult {
             return parseAdStatement();
         }
 
-        // Resource management / test setup-teardown
-        // Two forms:
-        //   cura ante/post [omnia]? { } - test setup/teardown (CuraBlock)
-        //   cura [cede]? <expr> fit <id> { } [cape]? - resource management (CuraStatement)
+        // Test setup/teardown blocks
+        // praepara/praeparabit [omnia]? { } - beforeEach/beforeAll
+        // postpara/postparabit [omnia]? { } - afterEach/afterAll
+        if (checkKeyword('praepara') || checkKeyword('praeparabit') || checkKeyword('postpara') || checkKeyword('postparabit')) {
+            return parsePraeparaBlock();
+        }
+
+        // Resource management
+        // cura [cede]? <expr> fit <id> { } [cape]? - scoped resources (CuraStatement)
         if (checkKeyword('cura')) {
-            return parseCura();
+            return parseCuraStatement();
         }
 
         // Entry point statements: incipit { } (sync) or incipiet { } (async)
@@ -3048,7 +3053,7 @@ export function parse(tokens: Token[]): ParserResult {
      *
      * Example:
      *   probandum "Tokenizer" {
-     *       cura ante { lexer = init() }
+     *       praepara { lexer = init() }
      *       proba "parses numbers" { ... }
      *   }
      */
@@ -3063,7 +3068,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
-        const body: (CuraBlock | ProbandumStatement | ProbaStatement)[] = [];
+        const body: (PraeparaBlock | ProbandumStatement | ProbaStatement)[] = [];
 
         // True while there are unparsed members (not at '}' or EOF)
         const hasMoreMembers = () => !check('RBRACE') && !isAtEnd();
@@ -3073,8 +3078,8 @@ export function parse(tokens: Token[]): ParserResult {
                 body.push(parseProbandumStatement());
             } else if (checkKeyword('proba')) {
                 body.push(parseProbaStatement());
-            } else if (checkKeyword('cura')) {
-                body.push(parseCuraBlock());
+            } else if (checkKeyword('praepara') || checkKeyword('praeparabit') || checkKeyword('postpara') || checkKeyword('postparabit')) {
+                body.push(parsePraeparaBlock());
             } else {
                 // Unknown token in probandum body
                 reportError(ParserErrorCode.UnexpectedToken, `got '${peek().value}'`);
@@ -3238,68 +3243,43 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
-     * Parse cura - dispatches to block (test) or statement (resource) form.
-     *
-     * Two forms:
-     *   cura ante/post [omnia]? { } - test setup/teardown (CuraBlock)
-     *   cura [cede]? <expr> fit <id> { } [cape]? - resource management (CuraStatement)
-     *
-     * WHY: 'cura' is unified keyword for resource management.
-     *      Test form uses ante/post timing modifiers.
-     *      Resource form uses 'fit' binding syntax.
-     */
-    function parseCura(): CuraBlock | CuraStatement {
-        // Lookahead to determine which form
-        // cura ante ... or cura post ... -> CuraBlock (test)
-        // cura <anything else> -> CuraStatement (resource)
-        if (checkKeyword('cura')) {
-            const next = peek(1);
-            if (next.keyword === 'ante' || (next.type === 'IDENTIFIER' && next.value === 'post')) {
-                return parseCuraBlock();
-            }
-            return parseCuraStatement();
-        }
-
-        // Should not reach here, but handle gracefully
-        return parseCuraStatement();
-    }
-
-    /**
-     * Parse cura block (test setup-teardown).
+     * Parse praepara/postpara block (test setup-teardown).
      *
      * GRAMMAR:
-     *   curaBlock := 'cura' ('ante' | 'post') 'omnia'? blockStmt
+     *   praeparaBlock := ('praepara' | 'praeparabit' | 'postpara' | 'postparabit') 'omnia'? blockStmt
      *
-     * WHY: Latin "cura" (care, concern) for test resource management.
-     *      In test context:
-     *        cura ante { } = beforeEach (care before each test)
-     *        cura ante omnia { } = beforeAll (care before all tests)
-     *        cura post { } = afterEach (care after each test)
-     *        cura post omnia { } = afterAll (care after all tests)
+     * WHY: Latin "praepara" (prepare!) for test setup, "postpara" (cleanup!) for teardown.
+     *      Uses -bit suffix for async (future tense), matching fit/fiet pattern.
      *
      * Examples:
-     *   cura ante { lexer = init() }
-     *   cura ante omnia { db = connect() }
-     *   cura post { cleanup() }
-     *   cura post omnia { db.close() }
+     *   praepara { lexer = init() }
+     *   praepara omnia { db = connect() }
+     *   praeparabit omnia { db = cede connect() }
+     *   postpara { cleanup() }
+     *   postpara omnia { db.close() }
+     *   postparabit omnia { cede db.close() }
      */
-    function parseCuraBlock(): CuraBlock {
+    function parsePraeparaBlock(): PraeparaBlock {
         const position = peek().position;
 
-        expectKeyword('cura', ParserErrorCode.ExpectedKeywordCura);
+        // Determine timing and async from keyword
+        let timing: PraeparaTiming;
+        let async = false;
 
-        // Parse timing: ante or post
-        // WHY: 'ante' is a keyword (also used for ranges), but 'post' is an identifier
-        //      to avoid conflicts with method names like HTTP post()
-        let timing: CuraTiming;
-        if (matchKeyword('ante')) {
-            timing = 'ante';
-        } else if (check('IDENTIFIER') && peek().value === 'post') {
-            advance();
-            timing = 'post';
+        if (matchKeyword('praepara')) {
+            timing = 'praepara';
+        } else if (matchKeyword('praeparabit')) {
+            timing = 'praepara';
+            async = true;
+        } else if (matchKeyword('postpara')) {
+            timing = 'postpara';
+        } else if (matchKeyword('postparabit')) {
+            timing = 'postpara';
+            async = true;
         } else {
-            reportError(ParserErrorCode.ExpectedKeywordAnteOrPost, `got '${peek().value}'`);
-            timing = 'ante'; // Default to ante for error recovery
+            // Should not reach here due to caller checks
+            reportError(ParserErrorCode.UnexpectedToken, `expected praepara/postpara, got '${peek().value}'`);
+            timing = 'praepara';
         }
 
         // Check for 'omnia' modifier
@@ -3307,7 +3287,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         const body = parseBlockStatement();
 
-        return { type: 'CuraBlock', timing, omnia, body, position };
+        return { type: 'PraeparaBlock', timing, async, omnia, body, position };
     }
 
     /**

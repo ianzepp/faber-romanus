@@ -14,7 +14,7 @@
 import type { ProbandumStatement } from '../../../parser/ast';
 import type { RsGenerator } from '../generator';
 import { genProbaStatement } from './proba';
-import { genCuraBlock } from './cura';
+import { genPraeparaBlock } from './cura';
 
 export function genProbandumStatement(node: ProbandumStatement, g: RsGenerator): string {
     const lines: string[] = [];
@@ -31,8 +31,8 @@ export function genProbandumStatement(node: ProbandumStatement, g: RsGenerator):
             case 'ProbaStatement':
                 lines.push(genProbaStatement(member, g));
                 break;
-            case 'CuraBlock':
-                lines.push(genCuraBlock(member, g));
+            case 'PraeparaBlock':
+                lines.push(genPraeparaBlock(member, g));
                 break;
         }
     }

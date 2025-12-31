@@ -45,7 +45,7 @@ import { genTemptaStatement } from './statements/tempta';
 import { genFacBlockStatement } from './statements/fac';
 import { genProbandumStatement } from './statements/probandum';
 import { genProbaStatement } from './statements/proba';
-import { genCuraBlock, genCuraStatement } from './statements/cura';
+import { genPraeparaBlock, genCuraStatement } from './statements/cura';
 import { genIncipitStatement } from './statements/incipit';
 import { genIncipietStatement } from './statements/incipiet';
 
@@ -213,8 +213,8 @@ export class TsGenerator {
                 return genProbandumStatement(node, this, this.semi);
             case 'ProbaStatement':
                 return genProbaStatement(node, this, this.semi);
-            case 'CuraBlock':
-                return genCuraBlock(node, this, this.semi);
+            case 'PraeparaBlock':
+                return genPraeparaBlock(node, this, this.semi);
             case 'CuraStatement':
                 return genCuraStatement(node, this, this.semi);
             case 'IncipitStatement':

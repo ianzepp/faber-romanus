@@ -3,7 +3,7 @@
  *
  * TRANSFORMS:
  *   probandum "Tokenizer" {
- *       ante { lexer = init() }
+ *       praepara { lexer = init() }
  *       proba "parses numbers" { ... }
  *   }
  *   ->
@@ -19,7 +19,7 @@
 import type { ProbandumStatement } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
 import { genProbaStatement } from './proba';
-import { genCuraBlock } from './cura';
+import { genPraeparaBlock } from './cura';
 import { genBlockStatement } from './functio';
 
 export function genProbandumStatement(node: ProbandumStatement, g: TsGenerator, semi: boolean): string {
@@ -36,8 +36,8 @@ export function genProbandumStatement(node: ProbandumStatement, g: TsGenerator, 
             case 'ProbaStatement':
                 lines.push(genProbaStatement(member, g, semi));
                 break;
-            case 'CuraBlock':
-                lines.push(genCuraBlock(member, g, semi));
+            case 'PraeparaBlock':
+                lines.push(genPraeparaBlock(member, g, semi));
                 break;
         }
     }

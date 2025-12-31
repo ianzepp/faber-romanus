@@ -1,5 +1,11 @@
 /**
- * Python Code Generator - CuraBlock and CuraStatement
+ * Python Code Generator - PraeparaBlock and CuraStatement
+ *
+ * PraeparaBlock (test hooks):
+ *   praepara { ... } -> # before_each
+ *   postpara { ... } -> # after_each
+ *   praepara omnia { ... } -> # before_all
+ *   postpara omnia { ... } -> # after_all
  *
  * CuraStatement (resource management):
  *   cura arena { body } -> body (allocators are no-op for GC languages)
@@ -13,15 +19,16 @@
  *      Allocator curator kinds (arena/page) are no-ops since Python has GC.
  */
 
-import type { CuraBlock, CuraStatement } from '../../../parser/ast';
+import type { PraeparaBlock, CuraStatement } from '../../../parser/ast';
 import type { PyGenerator } from '../generator';
 
-export function genCuraBlock(node: CuraBlock, g: PyGenerator): string {
+export function genPraeparaBlock(node: PraeparaBlock, g: PyGenerator): string {
     // Test hooks - Python doesn't have built-in test hooks, emit as comments
-    const timing = node.timing === 'ante' ? 'before' : 'after';
+    const timing = node.timing === 'praepara' ? 'before' : 'after';
     const scope = node.omnia ? 'all' : 'each';
+    const asyncPrefix = node.async ? 'async_' : '';
     const lines: string[] = [];
-    lines.push(`${g.ind()}# ${timing}_${scope}`);
+    lines.push(`${g.ind()}# ${asyncPrefix}${timing}_${scope}`);
     lines.push(g.genBlockStatementContent(node.body));
     return lines.join('\n');
 }

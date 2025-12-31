@@ -3,8 +3,8 @@
 #
 # Syntax:
 #   probandum "suite name" {
-#     cura ante { setup }
-#     cura post { teardown }
+#     praepara { setup }
+#     postpara { teardown }
 #     proba "test" { assertions }
 #     probandum "nested suite" { ... }
 #   }
@@ -65,14 +65,14 @@
           - 'adfirma verum'
 
 # =============================================================================
-# Setup/Teardown (cura blocks)
+# Setup/Teardown (praepara/postpara blocks)
 # =============================================================================
 
 # Suite with beforeEach setup
-- name: probandum with cura ante
+- name: probandum with praepara
   faber: |
       probandum "Lexer" {
-        cura ante { lexer = init() }
+        praepara { lexer = init() }
         proba "parses" { adfirma verum }
       }
   expect:
@@ -87,16 +87,16 @@
           - 'mod tests {'
       fab:
           - 'probandum "Lexer"'
-          - 'cura ante'
+          - 'praepara'
           - 'lexer = init()'
           - 'proba "parses"'
   skip: [py, cpp, zig]
 
 # Suite with afterEach teardown
-- name: probandum with cura post
+- name: probandum with postpara
   faber: |
       probandum "Database" {
-        cura post { cleanup() }
+        postpara { cleanup() }
         proba "inserts" { adfirma verum }
       }
   expect:
@@ -109,17 +109,17 @@
           - '#[cfg(test)]'
       fab:
           - 'probandum "Database"'
-          - 'cura post'
+          - 'postpara'
           - 'cleanup()'
           - 'proba "inserts"'
   skip: [py, cpp, zig]
 
 # Suite with beforeAll and afterAll
-- name: probandum with cura ante omnia and post omnia
+- name: probandum with praepara omnia and postpara omnia
   faber: |
       probandum "Server" {
-        cura ante omnia { server = start() }
-        cura post omnia { server.stop() }
+        praepara omnia { server = start() }
+        postpara omnia { server.stop() }
         proba "responds" { adfirma verum }
       }
   expect:
@@ -134,11 +134,55 @@
           - '#[cfg(test)]'
       fab:
           - 'probandum "Server"'
-          - 'cura ante omnia'
+          - 'praepara omnia'
           - 'server = start()'
-          - 'cura post omnia'
+          - 'postpara omnia'
           - 'server.stop()'
           - 'proba "responds"'
+  skip: [py, cpp, zig]
+
+# Async setup with praeparabit
+- name: probandum with praeparabit omnia
+  faber: |
+      probandum "AsyncServer" {
+        praeparabit omnia { db = cede connect() }
+        proba "responds" { adfirma verum }
+      }
+  expect:
+      ts:
+          - 'describe("AsyncServer", () => {'
+          - 'beforeAll(async () => {'
+          - 'db = await connect()'
+      rs:
+          - '// Test suite: AsyncServer'
+          - '#[cfg(test)]'
+      fab:
+          - 'probandum "AsyncServer"'
+          - 'praeparabit omnia'
+          - 'db = cede connect()'
+          - 'proba "responds"'
+  skip: [py, cpp, zig]
+
+# Async teardown with postparabit
+- name: probandum with postparabit omnia
+  faber: |
+      probandum "AsyncCleanup" {
+        proba "runs" { adfirma verum }
+        postparabit omnia { cede db.close() }
+      }
+  expect:
+      ts:
+          - 'describe("AsyncCleanup", () => {'
+          - 'afterAll(async () => {'
+          - 'await db.close()'
+      rs:
+          - '// Test suite: AsyncCleanup'
+          - '#[cfg(test)]'
+      fab:
+          - 'probandum "AsyncCleanup"'
+          - 'proba "runs"'
+          - 'postparabit omnia'
+          - 'cede db.close()'
   skip: [py, cpp, zig]
 
 # =============================================================================
@@ -179,10 +223,10 @@
 - name: probandum with mixed content
   faber: |
       probandum "Complete" {
-        cura ante { setup() }
+        praepara { setup() }
         proba "first" { adfirma verum }
         proba "second" { adfirma verum }
-        cura post { teardown() }
+        postpara { teardown() }
       }
   expect:
       ts:
@@ -199,11 +243,11 @@
           - 'mod tests {'
       fab:
           - 'probandum "Complete"'
-          - 'cura ante'
+          - 'praepara'
           - 'setup()'
           - 'proba "first"'
           - 'proba "second"'
-          - 'cura post'
+          - 'postpara'
           - 'teardown()'
 
 # =============================================================================
@@ -275,7 +319,7 @@
 - name: probandum with setup initializing state
   faber: |
       probandum "SharedState" {
-        cura ante { counter = 0 }
+        praepara { counter = 0 }
         proba "increments" { counter = counter + 1 }
         proba "checks value" { adfirma counter == 0 }
       }
@@ -292,7 +336,7 @@
           - 'mod tests {'
       fab:
           - 'probandum "SharedState"'
-          - 'cura ante'
+          - 'praepara'
           - 'counter = 0'
           - 'proba "increments"'
           - 'counter = counter + 1'
@@ -303,11 +347,11 @@
 - name: probandum with all hook types
   faber: |
       probandum "AllHooks" {
-        cura ante omnia { globalSetup() }
-        cura ante { eachSetup() }
+        praepara omnia { globalSetup() }
+        praepara { eachSetup() }
         proba "runs" { adfirma verum }
-        cura post { eachTeardown() }
-        cura post omnia { globalTeardown() }
+        postpara { eachTeardown() }
+        postpara omnia { globalTeardown() }
       }
   expect:
       ts:
@@ -327,14 +371,14 @@
           - 'mod tests {'
       fab:
           - 'probandum "AllHooks"'
-          - 'cura ante omnia'
+          - 'praepara omnia'
           - 'globalSetup()'
-          - 'cura ante'
+          - 'praepara'
           - 'eachSetup()'
           - 'proba "runs"'
-          - 'cura post'
+          - 'postpara'
           - 'eachTeardown()'
-          - 'cura post omnia'
+          - 'postpara omnia'
           - 'globalTeardown()'
 
 # Empty suite

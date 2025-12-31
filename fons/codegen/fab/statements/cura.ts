@@ -1,14 +1,21 @@
 /**
- * Faber Code Generator - CuraBlock and CuraStatement
+ * Faber Code Generator - PraeparaBlock and CuraStatement
  */
 
-import type { CuraBlock, CuraStatement } from '../../../parser/ast';
+import type { PraeparaBlock, CuraStatement } from '../../../parser/ast';
 import type { FabGenerator } from '../generator';
 import { genBlockStatement } from './functio';
 
-export function genCuraBlock(node: CuraBlock, g: FabGenerator): string {
+export function genPraeparaBlock(node: PraeparaBlock, g: FabGenerator): string {
+    // Determine keyword based on timing and async
+    let keyword: string;
+    if (node.timing === 'praepara') {
+        keyword = node.async ? 'praeparabit' : 'praepara';
+    } else {
+        keyword = node.async ? 'postparabit' : 'postpara';
+    }
     const omnia = node.omnia ? ' omnia' : '';
-    return `${g.ind()}cura ${node.timing}${omnia} ${genBlockStatement(node.body, g)}`;
+    return `${g.ind()}${keyword}${omnia} ${genBlockStatement(node.body, g)}`;
 }
 
 export function genCuraStatement(node: CuraStatement, g: FabGenerator): string {

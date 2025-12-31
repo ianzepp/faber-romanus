@@ -1,8 +1,8 @@
 /**
- * Rust Code Generator - CuraBlock and CuraStatement
+ * Rust Code Generator - PraeparaBlock and CuraStatement
  *
- * CuraBlock TRANSFORMS:
- *   cura ante omnia { ... }
+ * PraeparaBlock TRANSFORMS:
+ *   praepara omnia { ... }
  *   -> // setup_all: { ... }
  *
  * CuraStatement TRANSFORMS:
@@ -15,15 +15,16 @@
  * WHY: Rust uses RAII for resource management, so we emit a scoped block.
  */
 
-import type { CuraBlock, CuraStatement } from '../../../parser/ast';
+import type { PraeparaBlock, CuraStatement } from '../../../parser/ast';
 import type { RsGenerator } from '../generator';
 import { genBlockStatement } from './functio';
 
-export function genCuraBlock(node: CuraBlock, g: RsGenerator): string {
-    const timing = node.timing === 'ante' ? 'setup' : 'teardown';
+export function genPraeparaBlock(node: PraeparaBlock, g: RsGenerator): string {
+    const timing = node.timing === 'praepara' ? 'setup' : 'teardown';
     const scope = node.omnia ? 'all' : 'each';
+    const asyncPrefix = node.async ? 'async_' : '';
 
-    return `${g.ind()}// ${timing}_${scope}: ${genBlockStatement(node.body, g)}`;
+    return `${g.ind()}// ${asyncPrefix}${timing}_${scope}: ${genBlockStatement(node.body, g)}`;
 }
 
 export function genCuraStatement(node: CuraStatement, g: RsGenerator): string {

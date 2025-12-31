@@ -3406,70 +3406,104 @@ describe('parser', () => {
             });
         });
 
-        describe('cura (setup/teardown)', () => {
-            test('cura ante (beforeEach)', () => {
+        describe('praepara/postpara (setup/teardown)', () => {
+            test('praepara (beforeEach)', () => {
                 const { program } = parseCode(`
                     probandum "Suite" {
-                        cura ante { x = 0 }
+                        praepara { x = 0 }
                         proba "test" { }
                     }
                 `);
                 const suite = program!.body[0] as any;
-                const cura = suite.body[0];
+                const block = suite.body[0];
 
-                expect(cura.type).toBe('CuraBlock');
-                expect(cura.timing).toBe('ante');
-                expect(cura.omnia).toBe(false);
+                expect(block.type).toBe('PraeparaBlock');
+                expect(block.timing).toBe('praepara');
+                expect(block.async).toBe(false);
+                expect(block.omnia).toBe(false);
             });
 
-            test('cura ante omnia (beforeAll)', () => {
+            test('praepara omnia (beforeAll)', () => {
                 const { program } = parseCode(`
                     probandum "Suite" {
-                        cura ante omnia { db = connect() }
+                        praepara omnia { db = connect() }
                     }
                 `);
                 const suite = program!.body[0] as any;
-                const cura = suite.body[0];
+                const block = suite.body[0];
 
-                expect(cura.type).toBe('CuraBlock');
-                expect(cura.timing).toBe('ante');
-                expect(cura.omnia).toBe(true);
+                expect(block.type).toBe('PraeparaBlock');
+                expect(block.timing).toBe('praepara');
+                expect(block.async).toBe(false);
+                expect(block.omnia).toBe(true);
             });
 
-            test('cura post (afterEach)', () => {
+            test('praeparabit omnia (async beforeAll)', () => {
                 const { program } = parseCode(`
                     probandum "Suite" {
-                        cura post { cleanup() }
+                        praeparabit omnia { db = cede connect() }
                     }
                 `);
                 const suite = program!.body[0] as any;
-                const cura = suite.body[0];
+                const block = suite.body[0];
 
-                expect(cura.type).toBe('CuraBlock');
-                expect(cura.timing).toBe('post');
-                expect(cura.omnia).toBe(false);
+                expect(block.type).toBe('PraeparaBlock');
+                expect(block.timing).toBe('praepara');
+                expect(block.async).toBe(true);
+                expect(block.omnia).toBe(true);
             });
 
-            test('cura post omnia (afterAll)', () => {
+            test('postpara (afterEach)', () => {
                 const { program } = parseCode(`
                     probandum "Suite" {
-                        cura post omnia { db.close() }
+                        postpara { cleanup() }
                     }
                 `);
                 const suite = program!.body[0] as any;
-                const cura = suite.body[0];
+                const block = suite.body[0];
 
-                expect(cura.type).toBe('CuraBlock');
-                expect(cura.timing).toBe('post');
-                expect(cura.omnia).toBe(true);
+                expect(block.type).toBe('PraeparaBlock');
+                expect(block.timing).toBe('postpara');
+                expect(block.async).toBe(false);
+                expect(block.omnia).toBe(false);
             });
 
-            test('cura at top level', () => {
-                const { program } = parseCode('cura ante { setup() }');
+            test('postpara omnia (afterAll)', () => {
+                const { program } = parseCode(`
+                    probandum "Suite" {
+                        postpara omnia { db.close() }
+                    }
+                `);
+                const suite = program!.body[0] as any;
+                const block = suite.body[0];
+
+                expect(block.type).toBe('PraeparaBlock');
+                expect(block.timing).toBe('postpara');
+                expect(block.async).toBe(false);
+                expect(block.omnia).toBe(true);
+            });
+
+            test('postparabit omnia (async afterAll)', () => {
+                const { program } = parseCode(`
+                    probandum "Suite" {
+                        postparabit omnia { cede db.close() }
+                    }
+                `);
+                const suite = program!.body[0] as any;
+                const block = suite.body[0];
+
+                expect(block.type).toBe('PraeparaBlock');
+                expect(block.timing).toBe('postpara');
+                expect(block.async).toBe(true);
+                expect(block.omnia).toBe(true);
+            });
+
+            test('praepara at top level', () => {
+                const { program } = parseCode('praepara { setup() }');
                 const stmt = program!.body[0] as any;
 
-                expect(stmt.type).toBe('CuraBlock');
-                expect(stmt.timing).toBe('ante');
+                expect(stmt.type).toBe('PraeparaBlock');
+                expect(stmt.timing).toBe('praepara');
             });
         });
 
@@ -3477,15 +3511,15 @@ describe('parser', () => {
             test('complete probandum with all features', () => {
                 const { program } = parseCode(`
                     probandum "Database" {
-                        cura ante omnia { db = connect() }
-                        cura ante { db.reset() }
+                        praepara omnia { db = connect() }
+                        praepara { db.reset() }
 
                         proba "inserts" { adfirma db.count() est 0 }
                         proba omitte "broken" "updates" { }
                         proba futurum "later" "deletes" { }
 
-                        cura post { db.rollback() }
-                        cura post omnia { db.close() }
+                        postpara { db.rollback() }
+                        postpara omnia { db.close() }
                     }
                 `);
                 const suite = program!.body[0] as any;
@@ -3494,12 +3528,12 @@ describe('parser', () => {
                 expect(suite.body).toHaveLength(7);
 
                 // Check order and types
-                expect(suite.body[0]!.type).toBe('CuraBlock');
-                expect(suite.body[0].timing).toBe('ante');
+                expect(suite.body[0]!.type).toBe('PraeparaBlock');
+                expect(suite.body[0].timing).toBe('praepara');
                 expect(suite.body[0].omnia).toBe(true);
 
-                expect(suite.body[1]!.type).toBe('CuraBlock');
-                expect(suite.body[1].timing).toBe('ante');
+                expect(suite.body[1]!.type).toBe('PraeparaBlock');
+                expect(suite.body[1].timing).toBe('praepara');
                 expect(suite.body[1].omnia).toBe(false);
 
                 expect(suite.body[2].type).toBe('ProbaStatement');
@@ -3511,11 +3545,11 @@ describe('parser', () => {
                 expect(suite.body[4].type).toBe('ProbaStatement');
                 expect(suite.body[4].modifier).toBe('futurum');
 
-                expect(suite.body[5].type).toBe('CuraBlock');
-                expect(suite.body[5].timing).toBe('post');
+                expect(suite.body[5].type).toBe('PraeparaBlock');
+                expect(suite.body[5].timing).toBe('postpara');
 
-                expect(suite.body[6].type).toBe('CuraBlock');
-                expect(suite.body[6].timing).toBe('post');
+                expect(suite.body[6].type).toBe('PraeparaBlock');
+                expect(suite.body[6].timing).toBe('postpara');
                 expect(suite.body[6].omnia).toBe(true);
             });
         });
@@ -3594,13 +3628,13 @@ describe('parser', () => {
             // WHY: conexio curator kind is planned but not yet implemented
             test.todo('cura conexio with async and cape', () => {});
 
-            test('distinguishes cura ante (test) from cura fit (resource)', () => {
+            test('distinguishes praepara (test) from cura (resource)', () => {
                 const { program } = parseCode(`
-                    cura ante { setup() }
+                    praepara { setup() }
                     cura arena fit mem { use(mem) }
                 `);
 
-                expect(program!.body[0]!.type).toBe('CuraBlock');
+                expect(program!.body[0]!.type).toBe('PraeparaBlock');
                 expect(program!.body[1]!.type).toBe('CuraStatement');
             });
 

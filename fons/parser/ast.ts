@@ -147,7 +147,7 @@ export type Statement =
     | FacBlockStatement
     | ProbandumStatement
     | ProbaStatement
-    | CuraBlock
+    | PraeparaBlock
     | CuraStatement
     | AdStatement
     | IncipitStatement
@@ -1365,14 +1365,14 @@ export interface FacBlockStatement extends BaseNode {
  *
  * Examples:
  *   probandum "Tokenizer" {
- *       ante { lexer = init() }
+ *       praepara { lexer = init() }
  *       proba "parses numbers" { ... }
  *   }
  */
 export interface ProbandumStatement extends BaseNode {
     type: 'ProbandumStatement';
     name: string;
-    body: (CuraBlock | ProbandumStatement | ProbaStatement)[];
+    body: (PraeparaBlock | ProbandumStatement | ProbaStatement)[];
 }
 
 /**
@@ -1419,9 +1419,11 @@ export interface ProbaStatement extends BaseNode {
 }
 
 /**
- * Timing for cura blocks in test context.
+ * Timing for praepara/postpara blocks in test context.
+ *
+ * WHY: 'praepara' = setup (before), 'postpara' = teardown (after)
  */
-export type CuraTiming = 'ante' | 'post';
+export type PraeparaTiming = 'praepara' | 'postpara';
 
 /**
  * Curator kinds for cura statements.
@@ -1434,20 +1436,17 @@ export type CuraTiming = 'ante' | 'post';
 export type CuratorKind = 'arena' | 'page';
 
 /**
- * Resource management / test setup-teardown block.
+ * Test setup/teardown block.
  *
  * GRAMMAR (in EBNF):
- *   curaBlock := 'cura' ('ante' | 'post') 'omnia'? blockStmt
+ *   praeparaBlock := ('praepara' | 'praeparabit' | 'postpara' | 'postparabit') 'omnia'? blockStmt
  *
- * INVARIANT: timing distinguishes setup (ante) vs teardown (post).
+ * INVARIANT: timing distinguishes setup (praepara) vs teardown (postpara).
+ * INVARIANT: async flag distinguishes sync (-a) vs async (-bit) variants.
  * INVARIANT: omnia flag distinguishes all vs each.
  *
- * WHY: Latin "cura" (care, concern) for resource management.
- *      In test context:
- *        cura ante { } = beforeEach (care before each test)
- *        cura ante omnia { } = beforeAll (care before all tests)
- *        cura post { } = afterEach (care after each test)
- *        cura post omnia { } = afterAll (care after all tests)
+ * WHY: Latin "praepara" (prepare!) for test setup, "postpara" (cleanup!) for teardown.
+ *      Uses -bit suffix for async (future tense), matching fit/fiet pattern.
  *
  * Target mappings:
  *   TypeScript: beforeEach() / beforeAll() / afterEach() / afterAll()
@@ -1457,14 +1456,17 @@ export type CuratorKind = 'arena' | 'page';
  *   C++:        inlined into each test
  *
  * Examples:
- *   cura ante { lexer = init() }
- *   cura ante omnia { db = connect() }
- *   cura post { cleanup() }
- *   cura post omnia { db.close() }
+ *   praepara { lexer = init() }
+ *   praepara omnia { db = connect() }
+ *   praeparabit omnia { db = cede connect() }
+ *   postpara { cleanup() }
+ *   postpara omnia { db.close() }
+ *   postparabit omnia { cede db.close() }
  */
-export interface CuraBlock extends BaseNode {
-    type: 'CuraBlock';
-    timing: CuraTiming;
+export interface PraeparaBlock extends BaseNode {
+    type: 'PraeparaBlock';
+    timing: PraeparaTiming;
+    async: boolean;
     omnia: boolean;
     body: BlockStatement;
 }

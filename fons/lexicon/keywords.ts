@@ -112,11 +112,20 @@ export const keywords: KeywordEntry[] = [
     //      Modifier for todo/pending tests
     { latin: 'futurum', meaning: 'todo', category: 'modifier' },
     // WHY: "omnia" (neuter plural) = "all things"
-    //      Used with cura ante/post for beforeAll/afterAll semantics
+    //      Used with praepara/postpara for beforeAll/afterAll semantics
     { latin: 'omnia', meaning: 'all', category: 'modifier' },
+    // WHY: "praepara" (prepare!) for test setup - imperative of praeparare
+    //      praepara { } = beforeEach, praepara omnia { } = beforeAll
+    //      praeparabit { } = async beforeEach (future tense)
+    { latin: 'praepara', meaning: 'prepare (beforeEach)', category: 'control' },
+    { latin: 'praeparabit', meaning: 'async prepare (beforeEach)', category: 'control' },
+    // WHY: "postpara" (prepare after) for test teardown - post + parare
+    //      postpara { } = afterEach, postpara omnia { } = afterAll
+    //      postparabit { } = async afterEach (future tense)
+    { latin: 'postpara', meaning: 'cleanup (afterEach)', category: 'control' },
+    { latin: 'postparabit', meaning: 'async cleanup (afterEach)', category: 'control' },
     // WHY: "cura" (care, concern) for resource management
-    //      Used for test setup/teardown: cura ante { }, cura post { }
-    //      Also for scoped resources: cura aperi "file" fit fd { }
+    //      Scoped resources: cura aperi "file" fit fd { }
     { latin: 'cura', meaning: 'care', category: 'control' },
     // WHY: Curator kinds for cura statements - explicit resource type
     //      arena = arena allocator (sand, open space)
@@ -262,7 +271,6 @@ export const keywords: KeywordEntry[] = [
     // WHY: "ante" (before) and "usque" (up to) for range operators
     //      ante = exclusive (0 ante 10 = 0-9)
     //      usque = inclusive (0 usque 10 = 0-10)
-    // NOTE: "ante" is also used in test setup blocks (cura ante { })
     { latin: 'ante', meaning: 'before (exclusive)', category: 'operator' },
     { latin: 'usque', meaning: 'up to (inclusive)', category: 'operator' },
 

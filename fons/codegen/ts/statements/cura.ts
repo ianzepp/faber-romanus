@@ -1,18 +1,24 @@
 /**
- * TypeScript Code Generator - CuraBlock and CuraStatement
+ * TypeScript Code Generator - PraeparaBlock and CuraStatement
  *
- * CuraBlock (test hooks):
- *   cura ante { lexer = init() }
+ * PraeparaBlock (test hooks):
+ *   praepara { lexer = init() }
  *   -> beforeEach(() => { lexer = init(); });
  *
- *   cura ante omnia { db = connect() }
+ *   praepara omnia { db = connect() }
  *   -> beforeAll(() => { db = connect(); });
  *
- *   cura post { cleanup() }
+ *   praeparabit omnia { db = cede connect() }
+ *   -> beforeAll(async () => { db = await connect(); });
+ *
+ *   postpara { cleanup() }
  *   -> afterEach(() => { cleanup(); });
  *
- *   cura post omnia { db.close() }
+ *   postpara omnia { db.close() }
  *   -> afterAll(() => { db.close(); });
+ *
+ *   postparabit omnia { cede db.close() }
+ *   -> afterAll(async () => { await db.close(); });
  *
  * CuraStatement (resource management):
  *   cura aperi("file.txt") fit fd { lege(fd) }
@@ -35,19 +41,20 @@
  *      Uses optional chaining (?.) so it works even if object doesn't implement curator.
  */
 
-import type { CuraBlock, CuraStatement } from '../../../parser/ast';
+import type { PraeparaBlock, CuraStatement } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
 import { genBlockStatement } from './functio';
 
-export function genCuraBlock(node: CuraBlock, g: TsGenerator, semi: boolean): string {
+export function genPraeparaBlock(node: PraeparaBlock, g: TsGenerator, semi: boolean): string {
     let hook: string;
-    if (node.timing === 'ante') {
+    if (node.timing === 'praepara') {
         hook = node.omnia ? 'beforeAll' : 'beforeEach';
     } else {
         hook = node.omnia ? 'afterAll' : 'afterEach';
     }
+    const asyncPrefix = node.async ? 'async ' : '';
     const body = genBlockStatement(node.body, g);
-    return `${g.ind()}${hook}(() => ${body})${semi ? ';' : ''}`;
+    return `${g.ind()}${hook}(${asyncPrefix}() => ${body})${semi ? ';' : ''}`;
 }
 
 export function genCuraStatement(node: CuraStatement, g: TsGenerator, semi: boolean): string {

@@ -79,7 +79,7 @@ import type {
     LambdaExpression,
     ProbandumStatement,
     ProbaStatement,
-    CuraBlock,
+    PraeparaBlock,
     CuraStatement,
     DiscretioDeclaration,
     CollectionDSLExpression,
@@ -1267,9 +1267,9 @@ export function analyze(program: Program): SemanticResult {
                 analyzeProbaStatement(node);
                 break;
 
-            case 'CuraBlock':
-                // Resource management block
-                analyzeCuraBlock(node);
+            case 'PraeparaBlock':
+                // Test setup/teardown block
+                analyzePraeparaBlock(node);
                 break;
 
             case 'CuraStatement':
@@ -1639,8 +1639,8 @@ export function analyze(program: Program): SemanticResult {
         exitScope();
     }
 
-    function analyzeCuraBlock(node: CuraBlock): void {
-        // Resource management block with cleanup
+    function analyzePraeparaBlock(node: PraeparaBlock): void {
+        // Test setup/teardown block
         enterScope();
         analyzeBlock(node.body);
         exitScope();

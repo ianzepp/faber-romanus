@@ -36,7 +36,7 @@ import { genFacBlockStatement } from './statements/fac';
 import { genExpressionStatement } from './statements/expression';
 import { genProbandumStatement } from './statements/probandum';
 import { genProbaStatement } from './statements/proba';
-import { genCuraBlock, genCuraStatement } from './statements/cura';
+import { genPraeparaBlock, genCuraStatement } from './statements/cura';
 import { genIncipitStatement } from './statements/incipit';
 import { genIncipietStatement } from './statements/incipiet';
 
@@ -176,8 +176,8 @@ export class RsGenerator {
                 return genProbandumStatement(node, this);
             case 'ProbaStatement':
                 return genProbaStatement(node, this);
-            case 'CuraBlock':
-                return genCuraBlock(node, this);
+            case 'PraeparaBlock':
+                return genPraeparaBlock(node, this);
             case 'CuraStatement':
                 return genCuraStatement(node, this);
             case 'IncipitStatement':
