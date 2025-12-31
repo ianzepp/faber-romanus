@@ -1,463 +1,304 @@
 ---
 status: planned
 note: Architectural design for forward references and throwability propagation; not yet implemented
-updated: 2025-01
+updated: 2025-12
 ---
 
-# Two-Pass Semantic Analysis
+# Two-Pass Semantic Analysis (Revised)
 
-The current semantic analyzer uses a single pass over the AST. This works for simple cases but fails when analysis of one construct depends on information from another construct that hasn't been visited yet.
+Faber’s semantic analyzer currently performs a **single pass** over the AST. This is sufficient for many local checks, but it breaks down when analysis of one construct depends on information that appears later in the same file.
 
-## Current State
+This document updates the original proposal with **findings from the current codebase** and a revised implementation plan that fits existing architecture.
 
-### What's Already Working
+## Current State (Verified In Repo)
 
-Cross-file imports are handled by `fons/semantic/modules.ts`:
+### Semantic Analyzer is Single-Pass (Within a File)
 
-- **Import resolution:** `ex "./module" importa X` parses and extracts exports
-- **Cycle detection:** Circular imports between files are detected and reported
-- **Caching:** Diamond dependencies handled efficiently
-- **Export extraction:** Functions, genus, pactum, ordo, discretio, typus all extractable
+The main entry point `fons/semantic/index.ts` walks statements in source order:
 
-### What Two-Pass Is Still Needed For
+- `for (const stmt of program.body) analyzeStatement(stmt)`
 
-Two-pass is specifically needed for **within-file** forward references:
+Declarations are registered only when their statement is visited:
 
-- **Within-file function calls:** `functio b() { a() }; functio a() { ... }` — fails because `a` not yet in scope when `b` is analyzed
-- **Within-file circular types:** `genus A { B campo }; genus B { A campo }` — fails in same file (works across files)
-- **Within-file mutual recursion:** `functio ping() { pong() }; functio pong() { ping() }` — neither defined when other analyzed
+- `analyzeFunctioDeclaration` defines the function symbol, then analyzes its body.
 
-### Current Workaround
+This means **within-file forward references are currently invalid** for functions (and anything else that depends on a symbol being defined earlier).
 
-Faber currently requires functions to be defined before use (bottom-up ordering). This affects the self-hosted compiler (`fons-fab/`):
+### Cross-File Imports Already Do a “Pre-Pass”
 
-- **Expression parser chain:** `parseAssignatio → parseCondicio → ... → parsePrimaria` requires bottom-up ordering in source files
-- **Workaround:** Functions in `binaria.fab` are ordered from highest precedence (bottom) to lowest (top)
-- **Impact:** Unnatural code organization; mutual recursion impossible without restructuring
+Local import resolution (`fons/semantic/modules.ts`) parses imported modules and extracts exports by scanning all top-level statements.
 
-## Alternative Approaches
+Important detail: export extraction intentionally creates **placeholder types** (e.g. a genus export uses a `genusType` with empty maps). This is a big reason cross-file references are more forgiving than within-file references.
 
-| Approach | Complexity | User Experience | Compile Speed |
-|----------|------------|-----------------|---------------|
-| Forward declarations (C-style) | Low | Verbose | Fast |
-| Two-pass analysis (Go/Rust) | Medium | Clean | Slight overhead |
-| Lazy resolution (JS hoisting) | Higher | Clean | Deferred errors |
+### Type Resolution is Permissive for Unknown Types
 
-**Forward declarations** would add syntax like:
-```fab
-functio process() -> numerus  // declaration only
-functio main() { process() }  // now valid
-functio process() -> numerus { redde 42 }  // definition
-```
+`resolveTypeAnnotation` behaves as follows:
 
-**Two-pass analysis** (this document) is the recommended approach for Faber's style—no extra syntax burden, natural ordering.
+- Built-ins map via `LATIN_TYPE_MAP`
+- Known generics map via `GENERIC_TYPES`
+- If the name resolves to a `kind === 'type'` alias in scope, it expands
+- Otherwise it returns `userType(name)` (no error)
 
-**Lazy resolution** defers all symbol resolution until codegen, which complicates error reporting.
+So _spelling a type that is not yet defined_ typically does not error immediately; it becomes an opaque user type.
 
-## Problems Requiring Two-Pass
-
-### 1. Forward References
-
-```
-functio b() { a() }  // calls a, but a not yet defined
-functio a() { redde 1 }
-```
-
-Single-pass fails: when analyzing `b`, `a` isn't in the symbol table yet.
-
-### 2. Throwability Propagation
-
-```
-functio a() { iace "error" }     // throws directly
-functio b() { a() }              // throws because calls a
-functio c() { b() }              // throws because calls b
-```
-
-For Zig codegen, functions that can throw need `!T` return types. We must know if `a` throws before we can determine if `b` throws.
-
-### 3. Mutual Recursion
-
-```
-functio ping() { pong() }
-functio pong() { ping() }
-```
-
-Neither function is defined when the other's body is analyzed.
-
-### 4. Type Inference Across Functions
-
-```
-functio getUser() { redde { nomen: "X" } }
-functio getName() { redde getUser().nomen }  // need getUser's return type
-```
-
-If `getUser` is defined after `getName`, we can't infer the type of `getUser().nomen`.
-
-## Proposed Architecture
-
-### Pass 1: Declaration Collection
-
-Walk all top-level declarations. Register signatures without analyzing bodies.
-
-**Collected information:**
-
-- Function names, parameter types, return types
-- Type aliases
-- Enum declarations
-- Genus (struct) declarations with field types
-- Pactum (interface) declarations with method signatures
-
-**Not analyzed:**
-
-- Function bodies
-- Initializer expressions (beyond type inference)
-- Control flow
-
-After Pass 1, all names are known. Forward references resolve.
-
-### Pass 2: Body Analysis
-
-Walk all statements and expressions. All declarations are now available.
-
-**Performed analysis:**
-
-- Type checking in function bodies
-- Expression type resolution
-- Variable scope validation
-- Property propagation (throwability, purity, async)
-
-### Pass 2 Sub-Phases
-
-Some properties require multiple iterations within Pass 2.
-
-#### 2a: Direct Property Detection
-
-Walk each function body once. Mark direct properties:
-
-- `canThrow: true` if body contains `iace`
-- `isAsync: true` if body contains `cede` (already tracked via `futura`)
-- `isPure: true` if no side effects (future)
-
-#### 2b: Transitive Propagation (Fixed-Point)
-
-Propagate properties through call graph until stable:
-
-```
-repeat:
-    changed = false
-    for each function f:
-        for each call to g in f.body:
-            if g.canThrow and not f.canThrow:
-                f.canThrow = true
-                changed = true
-until not changed
-```
-
-This handles mutual recursion. If `a` calls `b` and `b` calls `a`, and either contains `iace`, both eventually get `canThrow = true`.
-
-## Implementation
-
-### Changes to AST
-
-Add optional properties to `FunctionDeclaration`:
-
-```typescript
-export interface FunctionDeclaration extends BaseNode {
-    type: 'FunctionDeclaration';
-    name: Identifier;
-    params: Parameter[];
-    returnType?: TypeAnnotation;
-    body: BlockStatement;
-    async: boolean;
-    generator: boolean;
-    isConstructor?: boolean;
-    // New: set by semantic analyzer
-    canThrow?: boolean;
-}
-```
-
-### Changes to Semantic Analyzer
-
-Restructure `analyzeProgram`:
-
-```typescript
-function analyzeProgram(node: Program): SemanticResult {
-    // Pass 1: Collect declarations
-    for (const stmt of node.body) {
-        if (isDeclaration(stmt)) {
-            collectDeclaration(stmt);
-        }
-    }
-
-    // Pass 2a: Analyze bodies, detect direct properties
-    for (const stmt of node.body) {
-        analyzeStatement(stmt);
-    }
-
-    // Pass 2b: Propagate transitive properties
-    propagateThrowability();
-
-    return { program: node, errors };
-}
-
-function collectDeclaration(node: Statement): void {
-    switch (node.type) {
-        case 'FunctionDeclaration':
-            // Register name and signature, don't analyze body
-            const fnType = buildFunctionType(node);
-            define({ name: node.name.name, type: fnType, kind: 'function' });
-            break;
-        case 'GenusDeclaration':
-            // Register struct type with fields
-            break;
-        case 'PactumDeclaration':
-            // Register interface type with methods
-            break;
-        case 'TypeAliasDeclaration':
-            // Register type alias
-            break;
-        case 'EnumDeclaration':
-            // Register enum type
-            break;
-    }
-}
-
-function propagateThrowability(): void {
-    let changed = true;
-    while (changed) {
-        changed = false;
-        for (const fn of allFunctions) {
-            if (fn.canThrow) continue;
-            for (const call of callsInBody(fn)) {
-                const callee = lookupFunction(call);
-                if (callee?.canThrow) {
-                    fn.canThrow = true;
-                    changed = true;
-                    break;
-                }
-            }
-        }
-    }
-}
-```
-
-### Call Graph Construction
-
-During body analysis, record which functions each function calls:
-
-```typescript
-const callGraph = new Map<string, Set<string>>();
-
-function analyzeCallExpression(node: CallExpression): void {
-    // existing analysis...
-
-    // Record call relationship
-    if (currentFunction && node.callee.type === 'Identifier') {
-        const calleeName = node.callee.name;
-        if (!callGraph.has(currentFunction)) {
-            callGraph.set(currentFunction, new Set());
-        }
-        callGraph.get(currentFunction)!.add(calleeName);
-    }
-}
-```
-
-## Impact on Codegen
-
-### Zig
-
-With `canThrow` available on function nodes:
-
-```typescript
-function genFunctionDeclaration(node: FunctionDeclaration): string {
-    const returnType = node.returnType ? genType(node.returnType) : 'void';
-
-    // Add error union if function can throw
-    const retType = node.canThrow ? `!${returnType}` : returnType;
-
-    // ... rest of generation
-}
-
-function genCallExpression(node: CallExpression): string {
-    const callee = genExpression(node.callee);
-    const args = node.arguments.map(genExpression).join(', ');
-
-    // Insert try if calling a throwing function
-    const calleeSymbol = lookupSymbol(node.callee);
-    if (calleeSymbol?.canThrow) {
-        return `try ${callee}(${args})`;
-    }
-
-    return `${callee}(${args})`;
-}
-
-function genThrowStatement(node: ThrowStatement): string {
-    if (node.fatal) {
-        // mori -> @panic (unchanged)
-        return `${ind()}@panic(${genExpression(node.argument)});`;
-    }
-
-    // iace -> return error
-    // Convert string to error name: "timeout" -> error.Timeout
-    const errorName = deriveErrorName(node.argument);
-    return `${ind()}return error.${errorName};`;
-}
-
-function deriveErrorName(expr: Expression): string {
-    if (expr.type === 'Literal' && typeof expr.value === 'string') {
-        // "not found" -> NotFound
-        // "timeout" -> Timeout
-        return toPascalCase(expr.value);
-    }
-    // Generic fallback
-    return 'FaberError';
-}
-```
-
-### Error Set Generation
-
-Functions that throw need an error set. Options:
-
-**Option A: Global error set**
-
-Generate one error set containing all possible errors:
-
-```zig
-const FaberError = error{
-    Timeout,
-    NotFound,
-    ValidationFailed,
-    // ... all errors from all iace statements
-};
-```
-
-Simple but loses specificity.
-
-**Option B: Per-function error sets**
-
-Each function declares its own errors:
-
-```zig
-const FetchError = error{ Timeout, NetworkError };
-fn fetch() FetchError![]const u8 { ... }
-```
-
-More precise but complex to implement (need to track which errors each function can produce).
-
-**Recommendation:** Start with Option A (global set). Refine later if needed.
-
-### Rust
-
-Same pattern applies. `canThrow` determines whether return type is `T` or `Result<T, FaberError>`.
-
-### C++
-
-With `std::expected`, same pattern: `canThrow` determines `T` vs `std::expected<T, FaberError>`.
-
-## Future Properties
-
-The two-pass architecture enables other transitive analyses:
-
-| Property         | Direct Detection | Propagation               |
-| ---------------- | ---------------- | ------------------------- |
-| `canThrow`       | Contains `iace`  | Calls throwing function   |
-| `isAsync`        | Contains `cede`  | Calls async function      |
-| `isPure`         | No side effects  | Only calls pure functions |
-| `needsAllocator` | Allocates memory | Calls allocating function |
-
-## Scope
-
-This design focuses on top-level functions. Nested functions (lambdas, closures) need additional handling:
-
-- Lambdas inherit throwability from their containing function
-- Or: analyze lambdas as separate units with their own properties
-
-For now, treat lambdas conservatively (assume they can throw if parent can).
-
-## Open Questions
-
-### Genus Methods
-
-Class methods need the same forward-reference treatment as top-level functions. If method `a()` calls method `b()` defined later in the same genus, Pass 1 must collect all method signatures first.
+This permissive behavior helps parsing/analysis continue, but it also means that without a later “linking” phase, code like:
 
 ```fab
-genus Service {
-    functio init() { ego.connect() }  // connect not yet defined
-    functio connect() { ... }
-}
+functio getName(B user) { redde user.nomen }
+
+genus B { textus nomen }
 ```
 
-**Decision needed:** Collect genus method signatures in Pass 1 alongside top-level functions.
+cannot be validated properly when `B` isn’t yet a `genusType` at the time `getName` is analyzed.
 
-### tempta/cape Effect on Throwability
+### `tempta/cape` Exists as Syntax and Scoping, Not as Effect Masking
 
-A function that catches errors doesn't propagate throwability:
+The parser supports `tempta/cape` and also `cape` clauses on several control-flow constructs. The semantic analyzer:
+
+- Analyzes the try block and catch block in their own scopes
+- Defines the catch variable as `Error`
+
+There is **no semantic notion of “caught vs propagated”** today.
+
+### `iace` Codegen Exists, But “Throwability” is Not a Semantic Property Yet
+
+This repo already has meaningful `iace` codegen, but it is target-specific and not driven by semantic throwability.
+
+**Rust**
+
+- `iace expr` becomes `return Err(expr);`.
+- Function signatures are **not automatically rewritten to `Result<..., ...>`**; they only emit the explicit return annotation (or none).
+- `incipit` generates `fn main() { ... }` (not `-> Result<...>`).
+
+So Rust currently has _Err-returning statements_, but not an end-to-end “throwability type” story.
+
+**Zig**
+
+- A function return type becomes `!T` if its body contains a non-fatal `iace` (a recursive AST scan during codegen).
+- This is **local-only**: callers do not become throwing just because they call a throwing callee.
+- Call expressions do not insert `try` based on callee throwability.
+- `tempta` codegen for Zig is explicitly a stub/comment.
+
+**C++**
+
+- The current target note says it uses exceptions “for simplicity”, not `std::expected`.
+
+Conclusion: “throwability propagation” remains a semantic gap (and Zig’s current behavior is a syntactic approximation limited to direct `iace` within a function).
+
+## Why Two-Pass (Still) Matters
+
+Two-pass is still the cleanest approach for Faber’s goals:
+
+- Natural ordering within files
+- Mutual recursion
+- Enabling transitive analyses (throwability, async, allocator needs, purity)
+
+But the repo realities suggest that “two-pass” should be implemented as **two passes plus a couple micro-phases**.
+
+## Problems to Solve (Reframed)
+
+### 1) Within-File Forward References (Functions)
+
+```fab
+functio b() { a() }
+functio a() { }
+```
+
+Current semantics fails because `a` is undefined at the time `b` is analyzed.
+
+### 2) Within-File Forward References (Types)
+
+```fab
+genus A { B campo }
+genus B { A campo }
+```
+
+Today this typically becomes `userType('B')` when `A` is analyzed first, which prevents accurate field/member validation later.
+
+### 3) Throwability (as a Transitive Property)
+
+```fab
+functio a() { iace "error" }
+functio b() { a() }
+```
+
+For Zig (and potentially Rust/C++ in the future), the compiler needs to know that `b` also throws.
+
+### 4) `tempta/cape` Masking
 
 ```fab
 functio safe() {
-    tempta { mayThrow() } cape e { log(e) }
+    tempta { mayThrow() } cape e { scribe(e) }
 }
-// safe() does NOT throw - it catches
 ```
 
-Current propagation logic marks `safe` as throwing because it calls `mayThrow`. Need to detect when errors are caught vs propagated.
+A naive call-graph propagation would mark `safe` as throwing; semantically it should not.
 
-**Decision needed:** Track "catches all" vs "catches some" in tempta blocks.
+## Minimum Viable: Function Hoisting Only
 
-### Pactum Conformance
+If the immediate goal is just to avoid within-file function ordering constraints (bootstrap-friendly), implement a minimal two-pass semantic flow:
 
-When is `genus X implet Y` validated? Both declarations must be collected in Pass 1, then conformance checked in Pass 2.
+- **Pass 0:** Predeclare all top-level `functio` names and signatures in the file scope.
+- **Pass 1:** Analyze statements and function bodies as today, but skip redefining functions (only analyze bodies).
+
+This solves:
 
 ```fab
-pactum Readable { functio read() -> textus }
-genus File implet Readable { functio read() -> textus { ... } }
+functio b() { a() }
+functio a() { }
 ```
 
-**Decision needed:** Add conformance checking as Pass 2 sub-phase after body analysis.
+It intentionally does **not** solve forward references for genus/pactum/type aliases, nor does it add throwability propagation.
 
-### Top-Level Variable Ordering
+## Recommended Architecture
 
-Does Faber allow forward references in variable initializers?
+### Phase 1a: Predeclare (Names Only)
 
-```fab
-fixum a = b + 1  // b not yet defined?
-fixum b = 2
-```
+Walk the entire file and predeclare top-level names _without analyzing bodies_.
 
-**Decision needed:** Either disallow (simpler) or add variable ordering analysis.
+Predeclare:
 
-### Generics (`prae typus T`)
+- Functions: name + (possibly unresolved) function type shell
+- Type aliases: name (and later expansion)
+- Ordo (enum): name shell
+- Genus (struct/class): name shell
+- Pactum (interface): name shell
 
-Type parameter inference across generic instantiations may require additional passes or constraint solving.
+**Key design choice:** for genus/pactum/ordo, create a nominal entry up front (a “shell”) so later references can be linked to the same semantic identity.
 
-```fab
-functio max(prae typus T, T a, T b) -> T { ... }
-fixum x = max(1, 2)  // infer T = numerus
-```
+This phase should be conceptually similar to cross-file export extraction, but for the current file.
 
-**Decision needed:** Defer to later; current explicit types work.
+### Phase 1b: Resolve Signatures and Type Shapes (No Bodies)
 
-## Testing
+Now that all names exist:
 
-Add tests for:
+- Resolve function parameter/return annotations
+- Resolve genus fields + method signatures
+- Resolve pactum methods
+- Resolve type aliases (potentially with cycle checks)
 
-1. Forward reference resolution
-2. Direct throw detection
-3. Single-level propagation (a calls b, b throws)
-4. Multi-level propagation (a calls b calls c, c throws)
-5. Mutual recursion (a calls b, b calls a, one throws)
-6. Diamond patterns (a calls b and c, both call d, d throws)
-7. Genus method forward references
-8. tempta/cape throwability masking
-9. Pactum conformance across declaration order
+Important: this is what turns `userType("B")` references into a resolvable nominal `genusType("B", ...)` when `B` is in the same file.
 
-## Migration
+### Phase 2: Analyze Bodies (Typecheck + Scopes)
 
-This is a significant change to the semantic analyzer. Approach:
+Perform existing body analysis using a stable, complete symbol table.
 
-1. Add `canThrow` field to AST (backward compatible, optional)
-2. Implement Pass 1 collection alongside existing single-pass
-3. Refactor existing analysis into Pass 2
-4. Add propagation phase
-5. Update Zig codegen to use `canThrow`
-6. Test thoroughly before enabling by default
+This phase includes:
+
+- Variable resolution and assignment checks
+- Expression typing
+- Return checking
+- Existing async/generator checks
+
+### Phase 3: Effect Analysis (Throwability, Async Propagation, …)
+
+This repo already has a precedent for “semantic properties driving codegen”:
+
+- `CallExpression.needsCurator` is set semantically based on function type metadata.
+
+Throwability should follow that approach:
+
+- Semantic analysis computes per-function properties
+- Codegen consumes those properties (rather than re-scanning the AST in codegen)
+
+#### 3a: Build a Call Graph (Static Edges Only)
+
+During body analysis, record static call edges:
+
+- identifier calls: `a()`
+- method calls on genus instances: `ego.connect()` when resolved to a known method symbol
+
+Dynamic calls (function values) should be treated conservatively:
+
+- Either: record as “unknown call” and assume `mayThrow`
+- Or: skip propagation from them (unsound, not recommended)
+
+#### 3b: Compute `canThrow` With Catch-Awareness
+
+Instead of a simple propagation pass that ignores `cape`, compute **uncaught-throw** inside each function body.
+
+A minimal viable approach:
+
+- When analyzing a call to a potentially-throwing callee, determine whether it occurs in a “caught context” (inside `tempta` try region that has a handler, inside a `cape`-capable statement region, etc.).
+- Only record edges that represent _uncaught propagation_.
+
+Then, compute a fixed point (or SCC propagation) over the uncaught call graph:
+
+- If `a` contains an uncaught `iace`, mark `a` throws.
+- If `b` has an uncaught call edge to `a`, mark `b` throws.
+- Repeat to stability (mutual recursion works).
+
+SCC propagation is a nice optimization, but a simple fixed-point loop is acceptable to start.
+
+## Impact on Codegen (Revised)
+
+### Zig
+
+Today Zig codegen scans the body to decide whether a function needs `!T`. That should move to semantic.
+
+- `FunctioDeclaration.canThrow` (or an external semantic side-table keyed by node) becomes the source of truth.
+- `genCallExpression` can insert `try` when calling a throwing callee.
+
+Also note: Zig `tempta` codegen is currently a stub. If Zig is meant to use error unions, then `tempta/cape` semantics likely need to be expressed as:
+
+- `expr catch |err| { ... }` patterns for expressions
+- or a structured lowering strategy for statement blocks
+
+This is non-trivial, but semantic throwability should still be implemented because it is useful even without full Zig `tempta` support.
+
+### Rust
+
+Rust currently emits `return Err(expr);` for `iace`, but does not wrap function return types.
+
+Two realistic near-term options:
+
+- Keep Rust “manual”: require explicit `-> Result<T, E>` when using `iace`.
+- Or: add codegen that rewrites return types to `Result<...>` when `canThrow` is true (requires choosing an error type and updating `incipit`/`main`).
+
+### C++
+
+C++ currently uses exceptions. If the long-term goal is `std::expected`, throwability analysis still helps, but codegen needs a much larger design (expected propagation, early returns, etc.).
+
+## Open Questions (Updated)
+
+### Top-Level Variable Forward References
+
+Currently, variable initializers are analyzed immediately and will fail if they reference later bindings.
+
+This design suggests continuing to **disallow forward references in initializers** for now.
+
+### Generics and Inference
+
+The current semantic implementation does not infer function return types from `redde` expressions; unannotated functions default to `vacuum`.
+
+So “type inference across functions” is not solved by two-pass alone.
+
+If function return inference becomes a goal later, it likely requires:
+
+- Another fixed-point analysis (possibly over SCCs)
+- Conservative widening
+- Explicit restrictions for recursion
+
+## Migration Plan (Revised)
+
+0. MVP: Predeclare top-level functions only (hoisting)
+1. Add an internal “predeclare” pass in `fons/semantic/index.ts`
+2. Split type-shape resolution into a signatures-only phase (no bodies)
+3. Run existing body analysis as Phase 2
+4. Add call graph collection during Phase 2
+5. Add throwability computation as Phase 3 (uncaught edges)
+6. Teach Zig codegen to rely on semantic `canThrow` instead of AST scanning
+7. Add tests mirroring the cases below
+
+## Testing (Revised)
+
+1. Within-file forward function reference
+2. Mutual recursion
+3. Within-file genus forward type reference + member access validity
+4. Direct `iace` marks function throwing
+5. Transitive propagation (a calls b, b throws)
+6. Mutual recursion propagation (SCC)
+7. `tempta/cape` masks throwability for caught calls
+8. Zig: `try` insertion at call sites (when enabled)
+
+Opus nondum perfectum est, sed via est clara.

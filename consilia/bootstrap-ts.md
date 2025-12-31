@@ -89,9 +89,9 @@ Parsing functions receive `Resolvitor r` and call `r.expressia()`, `r.sententia(
 
 ### 1. AST Types Are Not Discretio Variants (HIGH PRIORITY)
 
-Expression and statement parsers return `Expressia` or `Sententia` discretio types, but the actual AST nodes (like `BinariaExpressia`, `VariaSententia`) are defined as separate `genus` types.
+Expression and statement parsers want to return `Expressia` / `Sententia` sum types, but many AST nodes are currently modeled as separate `genus` types.
 
-**Problem:** Faber's type system doesn't allow assigning a genus instance to a discretio type:
+**Problem:** Faber's type system does not allow assigning a genus instance to a discretio type:
 
 ```faber
 // This fails:
@@ -101,6 +101,8 @@ functio parseAssignatio(Resolvitor r) -> Expressia {
     // Error: AssignatioExpressia is not assignable to Expressia
 }
 ```
+
+**Update:** This was originally blocked because there was no way to instantiate a discretio variant. The TS compiler now has `finge`, which can construct discriminated-union objects for the TS target. With explicit `qua Expressia` / `qua Sententia`, this unblocks a discretio-based AST without needing subtyping.
 
 **Solutions:**
 
@@ -115,15 +117,23 @@ functio parseAssignatio(Resolvitor r) -> Expressia {
     }
     ```
 
+    Then construct nodes via:
+
+    ```faber
+    redde finge Binaria { locus: l, signum: s, sinister: a, dexter: b } qua Expressia
+    ```
+
 2. **Use objectum return type** (loses type safety)
 
-3. **Add subtyping/implements** for genus types
+3. **Add subtyping/implements** for genus types (higher semantic complexity)
 
 ### 2. No Function Hoisting
 
-Faber requires functions to be defined before use. The expression parser chain (`parseAssignatio → parseCondicio → ... → parsePrimaria`) requires bottom-up ordering.
+Faber’s semantic analyzer currently requires functions to be defined before use within a file. The expression parser chain (`parseAssignatio → parseCondicio → ... → parsePrimaria`) tends to want natural top-down ordering, so this forces precedence chains into bottom-up file ordering.
 
 **Current workaround:** Functions are ordered from highest precedence (bottom) to lowest (top) in `binaria.fab`.
+
+**Minimal fix (recommended):** Implement a small two-pass semantic phase that predeclares all top-level function signatures before analyzing bodies. This removes the ordering constraint without needing full two-pass type linking.
 
 ### 3. No Do-While Loop
 
@@ -140,7 +150,7 @@ The `fac { } dum condition` syntax doesn't exist. Must use regular `dum` loops.
 1. ✅ Create `genus Parser` with token stream state
 2. ✅ Create `pactum Resolvitor` for mutual recursion
 3. ✅ Port parsing functions to use Resolvitor
-4. ⏳ Resolve AST type system issue
+4. ⏳ Resolve AST type system issue (use `discretio` + `finge`)
 5. ⏳ Implement `ResolvitorImpl`
 6. ⏳ Complete remaining statement parsers
 
@@ -289,9 +299,10 @@ parser/
 ### Session 3: Resolvitor Pattern
 
 1. **Pactum solves circular deps** — The `pactum Resolvitor` pattern cleanly separates interface from implementation.
-2. **Function ordering matters** — No hoisting means bottom-up function order in precedence chains.
+2. **Function ordering matters** — No hoisting means bottom-up function order in precedence chains (until two-pass predeclaration exists).
 3. **Keyword conflicts** — Avoid `typus`, `genus` as identifiers; use `adnotatio`, `modus`.
-4. **Type system is strict** — Genus types are not assignable to discretio types. AST needs restructuring.
+4. **Type system is strict** — Genus types are not assignable to discretio types.
+5. **`finge` enables discretio AST** — With `finge ... qua Expressia|Sententia`, the bootstrap can return real discretio variants instead of genus nodes.
 
 ## Build Commands
 
