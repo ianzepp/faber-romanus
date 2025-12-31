@@ -13,21 +13,18 @@
 /// - sententia = statement
 /// - expressia = expression
 
-ex "../resolvitor" importa Resolvitor, Expressia, Sententia, MassaSententia
+ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
+ex "../../ast/expressia" importa Expressia
+ex "../../ast/sententia" importa Sententia
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
 /// Programma - top-level program AST node
+/// NOTE: This is separate from Sententia since it's the root
 genus Programma {
     Locus locus
     lista<Sententia> corpus
-}
-
-/// ExpressiaSententia - expression statement AST node
-genus ExpressiaSententia {
-    Locus locus
-    Expressia expressia
 }
 
 /// Parse a block statement
@@ -36,7 +33,7 @@ genus ExpressiaSententia {
 ///
 /// Consumes opening brace, parses statements until closing brace.
 /// Handles optional semicolons between statements.
-functio parseMassaSententia(Resolvitor r) -> MassaSententia {
+functio parseMassaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
@@ -64,10 +61,10 @@ functio parseMassaSententia(Resolvitor r) -> MassaSententia {
     // Expect closing brace
     p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
 
-    redde {
+    redde finge MassaSententia {
         locus: locus,
         corpus: corpus
-    } qua MassaSententia
+    } qua Sententia
 }
 
 /// Parse an expression statement
@@ -75,15 +72,15 @@ functio parseMassaSententia(Resolvitor r) -> MassaSententia {
 /// GRAMMAR: exprStmt := expression
 ///
 /// Wraps a standalone expression as a statement.
-functio parseExpressiaSententia(Resolvitor r) -> ExpressiaSententia {
+functio parseExpressiaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
     fixum expressia = r.expressia()
 
-    redde {
+    redde finge ExpressiaSententia {
         locus: locus,
         expressia: expressia
-    } qua ExpressiaSententia
+    } qua Sententia
 }
 
 /// Parse top-level program

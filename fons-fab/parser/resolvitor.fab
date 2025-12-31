@@ -15,41 +15,33 @@
 /// LATIN: resolvitor = "one who resolves/parses"
 
 ex "./nucleus" importa Parser
-ex "../ast/positio" importa Locus
-
-// Forward declarations for AST types used in method signatures.
-// These are minimal stubs - the real types live in ast/.
-
-discretio Expressia {
-    Vacua { }
-}
-
-discretio Sententia {
-    Vacua { }
-}
-
-genus MassaSententia {
-    Locus locus
-    lista<Sententia> corpus
-}
-
-genus TypusAnnotatio {
-    Locus locus
-    textus nomen
-}
+ex "../ast/expressia" importa Expressia
+ex "../ast/sententia" importa Sententia
+ex "../ast/typus" importa TypusAnnotatio
 
 /// Parser interface for cross-module parsing.
 ///
 /// Usage in parsing functions:
 ///   functio parseFoo(Resolvitor r) -> Foo {
-///       fixum expr = r.expressia()    // parse expression
-///       fixum block = r.massa()       // parse block
+///       fixum p = r.parser()           // get parser state
+///       fixum expr = r.expressia()     // parse expression
+///       fixum block = r.massa()        // parse block
+///       fixum typ = r.adnotatio()      // parse type annotation
 ///       ...
 ///   }
 pactum Resolvitor {
+    /// Get the underlying parser state
     functio parser() -> Parser
+    
+    /// Parse an expression (handles precedence)
     functio expressia() -> Expressia
+    
+    /// Parse a single statement
     functio sententia() -> Sententia
-    functio massa() -> MassaSententia
+    
+    /// Parse a block of statements (MassaSententia)
+    functio massa() -> Sententia
+    
+    /// Parse a type annotation
     functio adnotatio() -> TypusAnnotatio
 }

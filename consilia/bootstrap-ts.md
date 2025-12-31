@@ -271,6 +271,7 @@ parser/
 3. **Two-pass semantic analysis** — Functions can now be called before definition (forward references work).
 4. **`fac...dum` for do-while** — Use `fac { body } dum condition` for loops that execute at least once.
 5. **Keywords as identifiers** — Keywords like `typus`, `genus` can be used as variable/field names.
+6. **Keyword-as-identifier has multiple code paths** — There are three places that decide whether a keyword can be an identifier: (1) `parseVariaDeclaration()` uses `parseIdentifierOrKeyword()`, (2) field/param declarations use `parseIdentifierOrKeyword()`, (3) `parsePrimary()` has its own hardcoded `statementKeywords` blocklist. This is an architectural smell — a cleaner design would have a single `isContextualKeyword(kw)` function that all sites consult. For now, just ensure the blocklist only contains true statement-starting keywords (like `si`, `dum`, `redde`), not contextual keywords that are only meaningful within specific constructs (like `cape`/`demum` which only matter inside `tempta`/`fac`).
 
 ### Session 4: AST Restructure
 

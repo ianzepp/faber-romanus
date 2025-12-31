@@ -4715,6 +4715,10 @@ export function parse(tokens: Token[]): ParserResult {
         if (check('KEYWORD')) {
             const kw = peek().keyword ?? '';
             // Reject statement-starting keywords that would never be variable names
+            // WHY: Only true statement-starting keywords belong here.
+            // Contextual keywords like 'cape'/'demum' (only meaningful within
+            // tempta/fac) should NOT be blocked - they're valid identifiers
+            // in expression context.
             const statementKeywords = [
                 'si',
                 'sin',
@@ -4730,8 +4734,6 @@ export function parse(tokens: Token[]): ParserResult {
                 'iace',
                 'mori',
                 'tempta',
-                'cape',
-                'demum',
                 'fac',
                 'scribe',
                 'vide',
