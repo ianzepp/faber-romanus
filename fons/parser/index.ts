@@ -1002,16 +1002,17 @@ export function parse(tokens: Token[]): ParserResult {
         } else if (isTypeName(peek())) {
             // Builtin type: fixum numerus x = 42
             typeAnnotation = parseTypeAnnotation();
-            name = parseIdentifier();
+            name = parseIdentifierOrKeyword();
         } else if (check('IDENTIFIER') && peek(1).type === 'IDENTIFIER') {
             // Custom type: fixum UserId id = 42
             // WHY: Two consecutive identifiers means first is type, second is name.
             // This handles user-defined types (typus aliases) without requiring
             // two-pass parsing or explicit type markers.
             typeAnnotation = parseTypeAnnotation();
-            name = parseIdentifier();
+            name = parseIdentifierOrKeyword();
         } else {
-            name = parseIdentifier();
+            // WHY: Allow keywords as variable names for consistency with fields/params
+            name = parseIdentifierOrKeyword();
         }
 
         let init: Expression | undefined;

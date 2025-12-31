@@ -261,3 +261,54 @@
       - 'redde u.name'
       - 'genus User {'
       - 'textus name'
+
+# =============================================================================
+# Keywords as Identifiers
+# =============================================================================
+
+# Keywords can be used as variable names
+- name: 'keyword typus as variable name'
+  input: |
+      fixum numerus typus = 42
+      scribe typus
+  ts:
+      - 'const typus: number = 42'
+      - 'console.log(typus)'
+  py:
+      - 'typus: int = 42'
+      - 'print(typus)'
+  cpp:
+      - 'const int64_t typus = 42'
+      - 'std::print("{}\n", typus)'
+  rs:
+      - 'let typus: i64 = 42'
+      - 'println!("{}", typus)'
+  zig:
+      - 'const typus: i64 = 42'
+      - 'stdout.print("{d}\n", .{ typus })'
+  fab:
+      - 'fixum numerus typus = 42'
+      - 'scribe typus'
+
+- name: 'keyword genus as variable name'
+  input: |
+      fixum textus genus = "species"
+      scribe genus
+  ts:
+      - 'const genus: string = "species"'
+      - 'console.log(genus)'
+  py:
+      - 'genus: str = "species"'
+      - 'print(genus)'
+  cpp:
+      - 'const std::string genus = std::string("species")'
+      - 'std::print("{}\n", genus)'
+  rs:
+      - 'let genus: String = String::from("species")'
+      - 'println!("{}", genus)'
+  zig:
+      - 'const genus: []const u8 = "species"'
+      - 'stdout.print("{s}\n", .{ genus })'
+  fab:
+      - 'fixum textus genus = "species"'
+      - 'scribe genus'
