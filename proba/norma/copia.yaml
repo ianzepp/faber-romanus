@@ -11,6 +11,7 @@
   input: |
       varia copia<numerus> set = {}
       set.adde(5)
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - '.insert(5)'
   rs:

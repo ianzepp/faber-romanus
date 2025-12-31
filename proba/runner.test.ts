@@ -32,6 +32,7 @@
  *   - name: test name
  *     faber: |
  *       fixum x = 1 + 2
+ *     wrap: 'cura arena fit alloc { $ }'  # optional: wrap input ($ = placeholder)
  *     expect:
  *       ts: "const x = (1 + 2);"
  *       py: "x = (1 + 2)"
@@ -113,6 +114,7 @@ type ErrataExpectation = true | string | string[];
 interface LegacyTestCase {
     name: string;
     input: string;
+    wrap?: string;
     ts?: string | string[] | TargetExpectation;
     py?: string | string[] | TargetExpectation;
     zig?: string | string[] | TargetExpectation;
@@ -126,6 +128,7 @@ interface LegacyTestCase {
 interface ModernTestCase {
     name: string;
     faber: string;
+    wrap?: string;
     expect?: {
         ts?: string | string[] | TargetExpectation;
         py?: string | string[] | TargetExpectation;
@@ -144,7 +147,11 @@ function isModernTestCase(tc: TestCase): tc is ModernTestCase {
 }
 
 function getInput(tc: TestCase): string {
-    return isModernTestCase(tc) ? tc.faber : tc.input;
+    const raw = isModernTestCase(tc) ? tc.faber : tc.input;
+    if (tc.wrap) {
+        return tc.wrap.replace('$', raw);
+    }
+    return raw;
 }
 
 function getExpectation(tc: TestCase, target: Target): string | string[] | TargetExpectation | undefined {

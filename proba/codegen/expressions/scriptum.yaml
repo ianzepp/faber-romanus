@@ -3,6 +3,7 @@
 
 - name: scriptum with single argument
   faber: 'scriptum("Hello, {}", name)'
+  wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
           - '`Hello, ${name}`'
@@ -19,6 +20,7 @@
 
 - name: scriptum with multiple arguments
   faber: 'scriptum("{} + {} = {}", a, b, c)'
+  wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
           - '`${a} + ${b} = ${c}`'
@@ -35,6 +37,7 @@
 
 - name: scriptum with no arguments (constant string)
   faber: 'scriptum("Hello, World!")'
+  wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
           - '"Hello, World!"'
@@ -51,6 +54,7 @@
 
 - name: scriptum in variable assignment
   faber: 'fixum greeting = scriptum("Hello, {}", name)'
+  wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
           - 'const greeting = `Hello, ${name}`'
@@ -67,6 +71,7 @@
 
 - name: scriptum with expression argument
   faber: 'scriptum("Result: {}", a + b)'
+  wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
           - '`Result: ${(a + b)}`'

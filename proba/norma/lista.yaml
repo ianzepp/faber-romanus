@@ -11,6 +11,7 @@
 # adde mutates the list by appending (push_back in C++)
 - name: 'adde -> push_back'
   input: 'items.adde(1)'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - '.push_back(1)'
   ts:
@@ -25,6 +26,7 @@
 # addita returns a new list with the element appended (copy + push_back)
 - name: 'addita -> copy and push_back'
   input: 'items.addita(1)'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'auto v = items'
       - 'v.push_back(1)'
@@ -42,6 +44,7 @@
 # praepone inserts at the beginning
 - name: 'praepone -> insert at begin'
   input: 'items.praepone(1)'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - '.insert('
       - '.begin()'
@@ -217,6 +220,7 @@
 # filtrata returns filtered copy using views::filter
 - name: 'filtrata -> views::filter'
   input: 'items.filtrata(pro x: x > 0)'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::filter'
       - 'std::ranges::to<std::vector>'
@@ -233,6 +237,7 @@
 # mappata transforms elements using views::transform
 - name: 'mappata -> views::transform'
   input: 'items.mappata(pro x: x * 2)'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::transform'
       - 'std::ranges::to<std::vector>'
@@ -249,6 +254,7 @@
 # inversa returns reversed copy
 - name: 'inversa -> views::reverse'
   input: 'items.inversa()'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::reverse'
       - 'std::ranges::to<std::vector>'
@@ -265,6 +271,7 @@
 # prima takes first n elements
 - name: 'prima -> views::take'
   input: 'items.prima(5)'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::take(5)'
       - 'std::ranges::to<std::vector>'
@@ -281,6 +288,7 @@
 # omitte drops first n elements
 - name: 'omitte -> views::drop'
   input: 'items.omitte(2)'
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::drop(2)'
       - 'std::ranges::to<std::vector>'

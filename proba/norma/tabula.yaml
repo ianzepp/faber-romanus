@@ -11,6 +11,7 @@
   input: |
       fixum tabula<textus, numerus> map = {}
       map.pone("key", 42)
+  wrap: 'cura arena fit alloc { $ }'
   cpp:
       - '.insert_or_assign('
   ts:
