@@ -4721,9 +4721,6 @@ export function parse(tokens: Token[]): ParserResult {
             // in expression context.
             const statementKeywords = [
                 'si',
-                'sin',
-                'aliter',
-                'secus',
                 'dum',
                 'ex',
                 'de',
