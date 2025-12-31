@@ -3,7 +3,7 @@
 // de <object> pro <key> { <body> }
 // de <array> pro <index> { <body> }
 
-incipit {
+incipit ergo cura arena {
     // Iterate over object keys
     fixum persona = { nomen: "Marcus", aetas: 30, urbs: "Roma" }
 

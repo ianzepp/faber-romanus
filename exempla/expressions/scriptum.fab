@@ -1,6 +1,6 @@
 // Format string expressions using scriptum()
 
-incipit {
+incipit ergo cura arena {
     fixum name = "Marcus"
     fixum age = 30
 

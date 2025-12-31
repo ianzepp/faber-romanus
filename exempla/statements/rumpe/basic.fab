@@ -2,7 +2,7 @@
 //
 // rumpe exits the innermost loop immediately
 
-incipit {
+incipit ergo cura arena {
     // Break when reaching 5
     varia i = 0
 

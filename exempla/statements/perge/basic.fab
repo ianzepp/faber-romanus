@@ -2,7 +2,7 @@
 //
 // perge skips to the next iteration of the innermost loop
 
-incipit {
+incipit ergo cura arena {
     // Skip even numbers
     varia i = 0
 
