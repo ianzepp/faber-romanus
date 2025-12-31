@@ -1,5 +1,17 @@
 // Type casting with qua: converts values between types
 
+functio getData() -> lista<numerus> {
+    redde [1, 2, 3]
+}
+
+functio getResponse() -> objectum {
+    redde { body: "body" }
+}
+
+functio getValue() -> numerus {
+    redde 42
+}
+
 incipit {
     // Cast to string
     fixum data = 42
@@ -13,7 +25,7 @@ incipit {
 
     // Cast to boolean
     fixum value = 1
-    fixum asBool = value qua logicum
+    fixum asBool = value qua bivalens
     scribe asBool
 
     // Cast to nullable type
