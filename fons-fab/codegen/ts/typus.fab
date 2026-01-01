@@ -82,14 +82,14 @@ functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
                 }
             }
             si params.numerus() > 0 {
-                result = result + "<" + params.iunge(", ") + ">"
+                result = scriptum("{}<{}>", result, params.iunge(", "))
             }
         }
     }
 
     # Handle nullable: textus? -> string | null
     si adnotatio.nullabilis {
-        result = result + " | null"
+        result = scriptum("{} | null", result)
     }
 
     # Handle union types
@@ -111,10 +111,10 @@ functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
 @ publica
 functio genTypusParametrum(TypusParametrum param, TsGenerator g) -> textus? {
     discerne param {
-        si Typus pro adnotatio {
-            redde genTypus(adnotatio, g)
+        si Typus ut p {
+            redde genTypus(p.adnotatio, g)
         }
-        si Littera pro valor {
+        si Littera {
             # Ignore numeric parameters (e.g., numerus<32>)
             redde nihil
         }
@@ -126,5 +126,5 @@ functio genTypusParametrum(TypusParametrum param, TsGenerator g) -> textus? {
 # Example: <T, U, V>
 @ publica
 functio genTypusParametra(lista<textus> parametra) -> textus {
-    redde "<" + parametra.iunge(", ") + ">"
+    redde scriptum("<{}>", parametra.iunge(", "))
 }

@@ -450,101 +450,81 @@ functio estNumericum(textus nomen) -> bivalens {
 @ publica
 functio formaTypum(SemanticTypus t) -> textus {
     discerne t {
-        si Primitivum pro p {
+        si Primitivum ut p {
             varia resultatum = p.nomen
             si p.amplitudo != nihil {
                 resultatum = scriptum("{}<{}>", resultatum, p.amplitudo)
             }
             si p.nullabilis {
-                resultatum = resultatum + "?"
+                resultatum = scriptum("{}?", resultatum)
             }
             redde resultatum
         }
 
-        si Genericum pro g {
-            varia parametri = ""
-            varia i = 0
-            ex g.parametri pro t {
-                si i > 0 {
-                    parametri = parametri + ", "
-                }
-                parametri = parametri + formaTypum(t)
-                i = i + 1
+        si Genericum ut g {
+            # Build parameter list
+            varia params = [] qua lista<textus>
+            ex g.parametri pro typ {
+                params.adde(formaTypum(typ))
             }
-            varia resultatum = scriptum("{}<{}>", g.nomen, parametri)
+            varia resultatum = scriptum("{}<{}>", g.nomen, params.iunge(", "))
             si g.nullabilis {
-                resultatum = resultatum + "?"
+                resultatum = scriptum("{}?", resultatum)
             }
             redde resultatum
         }
 
-        si Functio pro f {
-            varia parametri = ""
-            varia i = 0
-            ex f.parametriTypi pro t {
-                si i > 0 {
-                    parametri = parametri + ", "
-                }
-                parametri = parametri + formaTypum(t)
-                i = i + 1
+        si Functio ut f {
+            # Build parameter list
+            varia params = [] qua lista<textus>
+            ex f.parametriTypi pro typ {
+                params.adde(formaTypum(typ))
             }
-            varia asyncPraefix = ""
-            si f.asyncronum {
-                asyncPraefix = "futura "
-            }
-            redde scriptum("{}({}) -> {}", asyncPraefix, parametri, formaTypum(f.reditusTypus))
+            fixum asyncPraefix = f.asyncronum sic "futura " secus ""
+            redde scriptum("{}({}) -> {}", asyncPraefix, params.iunge(", "), formaTypum(f.reditusTypus))
         }
 
-        si Unio pro u {
-            varia resultatum = ""
-            varia i = 0
-            ex u.typi pro t {
-                si i > 0 {
-                    resultatum = resultatum + " | "
-                }
-                resultatum = resultatum + formaTypum(t)
-                i = i + 1
+        si Unio ut u {
+            varia parts = [] qua lista<textus>
+            ex u.typi pro typ {
+                parts.adde(formaTypum(typ))
             }
-            redde resultatum
+            redde parts.iunge(" | ")
         }
 
-        si Ignotum pro ig {
+        si Ignotum ut ig {
             si ig.ratio != nihil {
                 redde scriptum("ignotum({})", ig.ratio)
             }
             redde "ignotum"
         }
 
-        si Usitatum pro u {
-            varia resultatum = u.nomen
+        si Usitatum ut u {
             si u.nullabilis {
-                resultatum = resultatum + "?"
+                redde scriptum("{}?", u.nomen)
             }
-            redde resultatum
+            redde u.nomen
         }
 
-        si Ordo pro o {
-            varia resultatum = scriptum("ordo {}", o.nomen)
+        si Ordo ut o {
             si o.nullabilis {
-                resultatum = resultatum + "?"
+                redde scriptum("ordo {}?", o.nomen)
             }
-            redde resultatum
+            redde scriptum("ordo {}", o.nomen)
         }
 
-        si Genus pro g {
-            varia resultatum = scriptum("genus {}", g.nomen)
+        si Genus ut g {
             si g.nullabilis {
-                resultatum = resultatum + "?"
+                redde scriptum("genus {}?", g.nomen)
             }
-            redde resultatum
+            redde scriptum("genus {}", g.nomen)
         }
 
-        si Pactum pro p {
-            varia resultatum = scriptum("pactum {}", p.nomen)
+        si Pactum ut p {
             si p.nullabilis {
-                resultatum = resultatum + "?"
+                redde scriptum("pactum {}?", p.nomen)
             }
-            redde resultatum
+            redde scriptum("pactum {}", p.nomen)
         }
     }
 
