@@ -29,6 +29,7 @@ ex "../ast/lexema" importa Symbolum, SymbolumGenus
 ex "../ast/radix" importa Nota, NotaGenus
 ex "../ast/positio" importa Locus
 ex "./errores" importa ParserError, ParserErrorCodice, error
+ex "../lexicon/verba" importa estVerbumSententiae, estVerbumGeneris
 
 # Parser state machine
 #
@@ -325,40 +326,29 @@ genus Parser {
 
     # Skip tokens until reaching a statement boundary keyword
     # Called after catching parse error to resume at known-good state
+    #
+    # WHY: Uses estVerbumSententiae from lexicon/verba.fab as single source
+    #      of truth for statement-starting keywords. This prevents drift
+    #      between the grammar and error recovery.
     functio synchrona() -> vacuum {
         # Skip current problematic token
         ego.procede()
 
         # Keep advancing until we hit a statement-starting keyword
         dum non ego.estFinis() {
-            # Check for statement-starting keywords
-            si ego.probaVerbum("functio") aut
-               ego.probaVerbum("varia") aut
-               ego.probaVerbum("fixum") aut
-               ego.probaVerbum("figendum") aut
-               ego.probaVerbum("variandum") aut
-               ego.probaVerbum("typus") aut
-               ego.probaVerbum("ordo") aut
-               ego.probaVerbum("genus") aut
-               ego.probaVerbum("pactum") aut
-               ego.probaVerbum("discretio") aut
-               ego.probaVerbum("si") aut
-               ego.probaVerbum("dum") aut
-               ego.probaVerbum("ex") aut
-               ego.probaVerbum("de") aut
-               ego.probaVerbum("redde") aut
-               ego.probaVerbum("tempta") aut
-               ego.probaVerbum("probandum") aut
-               ego.probaVerbum("proba") {
+            fixum s = ego.specta(0)
+            si s.species === SymbolumGenus.Verbum et estVerbumSententiae(s.verbum) {
                 redde
             }
-
             ego.procede()
         }
     }
 
     # Synchronize within genus body (for field/method recovery)
     # Looks for field types, method declarations, or closing brace
+    #
+    # WHY: Uses estVerbumGeneris from lexicon/verba.fab as single source
+    #      of truth for genus member boundaries.
     functio synchronaGenusMembrum() -> vacuum {
         ego.procede()
 
@@ -368,23 +358,9 @@ genus Parser {
                 redde
             }
 
-            # Stop at visibility modifiers
-            si ego.probaVerbum("privatus") aut ego.probaVerbum("protectus") {
-                redde
-            }
-
-            # Stop at static modifier
-            si ego.probaVerbum("generis") {
-                redde
-            }
-
-            # Stop at method declaration
-            si ego.probaVerbum("functio") {
-                redde
-            }
-
-            # Stop at abstract modifier
-            si ego.probaVerbum("abstractus") {
+            # Stop at member-starting keywords
+            fixum s = ego.specta(0)
+            si s.species === SymbolumGenus.Verbum et estVerbumGeneris(s.verbum) {
                 redde
             }
 

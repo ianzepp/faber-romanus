@@ -1,7 +1,10 @@
 # Verba - Latin reserved words
 #
-# Keyword recognition for the lexer.
+# Keyword recognition for the lexer and parser.
 # Uses switch-based lookup (no heap allocation).
+#
+# This is the single source of truth for keyword classification.
+# Parser error recovery uses these predicates to find sync points.
 
 # Check if a word is a reserved keyword
 #
@@ -128,6 +131,89 @@ functio estVerbum(textus v) -> bivalens {
         si "collige" { redde verum }
         si "grupa" { redde verum }
         si "sed" { redde verum }
+
+        secus { redde falsum }
+    }
+}
+
+# Check if a word starts a statement (for error recovery sync points)
+#
+# WHY: Parser error recovery skips tokens until hitting a statement boundary.
+#      This list defines where the parser can safely resume after an error.
+#      Keeping it here ensures sync points stay aligned with the grammar.
+functio estVerbumSententiae(textus v) -> bivalens {
+    elige v {
+        # Declarations
+        si "functio" { redde verum }
+        si "varia" { redde verum }
+        si "fixum" { redde verum }
+        si "figendum" { redde verum }
+        si "variandum" { redde verum }
+        si "typus" { redde verum }
+        si "ordo" { redde verum }
+        si "genus" { redde verum }
+        si "pactum" { redde verum }
+        si "discretio" { redde verum }
+
+        # Control flow
+        si "si" { redde verum }
+        si "dum" { redde verum }
+        si "ex" { redde verum }
+        si "de" { redde verum }
+        si "elige" { redde verum }
+        si "discerne" { redde verum }
+        si "custodi" { redde verum }
+        si "fac" { redde verum }
+        si "in" { redde verum }
+
+        # Actions
+        si "redde" { redde verum }
+        si "rumpe" { redde verum }
+        si "perge" { redde verum }
+        si "scribe" { redde verum }
+        si "vide" { redde verum }
+        si "mone" { redde verum }
+        si "adfirma" { redde verum }
+        si "iace" { redde verum }
+        si "mori" { redde verum }
+        si "cede" { redde verum }
+
+        # Error handling
+        si "tempta" { redde verum }
+        si "cura" { redde verum }
+
+        # Entry points
+        si "incipit" { redde verum }
+        si "incipiet" { redde verum }
+
+        # Testing
+        si "probandum" { redde verum }
+        si "proba" { redde verum }
+        si "praepara" { redde verum }
+        si "postpara" { redde verum }
+
+        secus { redde falsum }
+    }
+}
+
+# Check if a word starts a genus member (for genus body error recovery)
+#
+# WHY: When parsing a genus body fails, we need to skip to the next
+#      field or method declaration. This defines those boundaries.
+functio estVerbumGeneris(textus v) -> bivalens {
+    elige v {
+        # Method declaration
+        si "functio" { redde verum }
+
+        # Visibility modifiers (precede fields/methods)
+        si "privatus" { redde verum }
+        si "protectus" { redde verum }
+
+        # Static modifier
+        si "generis" { redde verum }
+
+        # Abstract modifier
+        si "abstractus" { redde verum }
 
         secus { redde falsum }
     }
