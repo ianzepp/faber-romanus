@@ -94,14 +94,12 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 - `sententia/error.fab` - tempta/cape/demum, fac...dum, adfirma
 - `sententia/massa.fab` - Block parsing, program parsing
 - `sententia/varia.fab` - Variable declarations, destructuring
+- `sententia/fluxus.fab` - elige (switch), discerne (pattern match), custodi (guard)
+- `sententia/initus.fab` - incipit/incipiet (entry points), cura (resources), ad (dispatch)
 
 **Not yet implemented:**
 
-- Pattern matching: `elige`, `discerne`, `custodi`
-- Testing: `probandum`, `proba`, `praepara`
-- Entry points: `incipit`, `incipiet`
-- Resource management: `cura...fit`
-- Scoped blocks: `ad`
+- Testing: `probandum`, `proba`, `praepara` (not needed for bootstrap)
 
 ### Remaining Modules
 
@@ -114,15 +112,17 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 
 ## Bootstrap Strategy
 
-### Phase 1: Parser (`fons-fab/parser/`) — 95% COMPLETE
+### Phase 1: Parser (`fons-fab/parser/`) — COMPLETE
 
 1. ✅ Create `genus Parser` with token stream state
 2. ✅ Create `pactum Resolvitor` for mutual recursion
 3. ✅ Implement `Parsator` (Resolvitor implementation)
 4. ✅ Restructure AST as `discretio` variants with `finge`
 5. ✅ Expression parsers (binary, unary, postfix, primary, objects, lambdas)
-6. ✅ Statement dispatcher and most statement parsers
-7. ⏳ Add remaining statements (elige, discerne, custodi, probandum, incipit, cura, ad)
+6. ✅ Statement dispatcher and all statement parsers
+7. ✅ Pattern matching (elige, discerne, custodi), entry points (incipit, incipiet), resources (cura, ad)
+
+**27 files, all compiling successfully.**
 
 ### Phase 2: Semantic Analyzer (`fons-fab/semantic/`)
 
@@ -244,7 +244,9 @@ parser/
 │   ├── actio.fab          # redde, rumpe, perge, iace, scribe
 │   ├── declara.fab        # functio, genus, pactum, ordo, discretio, typus, importa
 │   ├── error.fab          # tempta/cape/demum, fac, adfirma
+│   ├── fluxus.fab         # elige, discerne, custodi
 │   ├── imperium.fab       # si, dum, ex...pro, de...pro
+│   ├── initus.fab         # incipit, incipiet, cura, ad
 │   ├── massa.fab          # Blocks, program
 │   └── varia.fab          # Variable declarations
 └── expressia/             # Expression parsers
@@ -284,6 +286,14 @@ parser/
 3. **Parser integration verified** — Updated `actio.fab` and `primaria.fab` to use `finge`, generates correct tagged unions.
 4. **Generated code** — `finge Littera { ... } qua Expressia` produces `{ tag: 'Littera', ... }` in TypeScript.
 
+### Session 5: Parser Complete
+
+1. **Avoid `typus` as variable name** — The keyword `typus` (used for type aliases) confuses the parser when used as a variable. Use `adnotatioTypus` or similar instead.
+2. **Object literals and lambdas** — `parseObiectumExpressia()` supports shorthand, computed keys, spread. `parseLambdaExpressia()` handles params and return types.
+3. **All control flow complete** — elige (switch), discerne (pattern match), custodi (guard), si/sin/secus chains all implemented.
+4. **Entry points and resources** — incipit/incipiet for program entry, cura for resource management with automatic cleanup.
+5. **27 files total** — Parser phase complete with full coverage of Faber syntax needed for self-hosting.
+
 ## Build Commands
 
 ```bash
@@ -310,21 +320,17 @@ diff -r opus/ opus2/  # Should be identical
 
 ## Timeline
 
-| Phase       | Scope        | Est. Days      | Status        |
-| ----------- | ------------ | -------------- | ------------- |
-| Parser      | ~2,000 lines | 5-7            | ~90% complete |
-| Semantic    | ~2,600 lines | 3-4            | Not started   |
-| Codegen     | ~2,000 lines | 3-4            | Not started   |
-| CLI         | ~600 lines   | 1              | Not started   |
-| Integration | Debug, iter  | 2-3            | Not started   |
-| **Total**   |              | **14-19 days** |               |
+| Phase       | Scope        | Est. Days      | Status      |
+| ----------- | ------------ | -------------- | ----------- |
+| Parser      | ~2,500 lines | 5-7            | Complete    |
+| Semantic    | ~2,600 lines | 3-4            | Not started |
+| Codegen     | ~2,000 lines | 3-4            | Not started |
+| CLI         | ~600 lines   | 1              | Not started |
+| Integration | Debug, iter  | 2-3            | Not started |
+| **Total**   |              | **14-19 days** |             |
 
 ## Next Steps
 
-1. **Add remaining statements**:
-    - `elige` (switch), `discerne` (pattern match), `custodi` (guard)
-    - `probandum`/`proba`/`praepara` (testing)
-    - `incipit`/`incipiet` (entry points)
-    - `cura...fit` (resource management)
-    - `ad` (scoped blocks)
-2. **Begin Phase 2: Semantic Analyzer**
+1. **Begin Phase 2: Semantic Analyzer** — Port `fons/semantic/` to Faber
+2. **Phase 3: TypeScript Codegen** — Port `fons/codegen/ts/` to Faber
+3. **Phase 4: CLI** — Create `fons-fab/cli.fab` entry point

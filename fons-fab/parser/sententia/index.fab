@@ -25,6 +25,8 @@ ex "./actio" importa parseReddeSententia, parseRumpeSententia, parsePergeSentent
 ex "./declara" importa parseFunctioDeclaratio, parseGenusDeclaratio, parsePactumDeclaratio, parseOrdoDeclaratio, parseDiscretioDeclaratio, parseTypusAliasDeclaratio, parseImportaSententia
 ex "./error" importa parseTemptaSententia, parseFacSententia, parseAdfirmaSententia
 ex "./imperium" importa parseSiSententia, parseDumSententia, parseExSententia, parseDeSententia
+ex "./fluxus" importa parseEligeSententia, parseDiscerneSententia, parseCustodiSententia
+ex "./initus" importa parseIncipitSententia, parseIncipietSententia, parseCuraSententia, parseAdSententia
 ex "./massa" importa parseMassaSententia, parseExpressiaSententia
 ex "./varia" importa parseVariaSententia
 
@@ -135,8 +137,34 @@ functio parseSententia(Resolvitor r) -> Sententia {
             redde parseTypusAliasDeclaratio(r)
         }
 
-        # TODO: Add remaining statement parsers
-        # elige, discerne, custodi, probandum, proba, incipit, incipiet, cura, ad, importa
+        # Pattern matching and flow control
+        si verbum === "elige" {
+            redde parseEligeSententia(r)
+        }
+        si verbum === "discerne" {
+            redde parseDiscerneSententia(r)
+        }
+        si verbum === "custodi" {
+            redde parseCustodiSententia(r)
+        }
+
+        # Entry points
+        si verbum === "incipit" {
+            redde parseIncipitSententia(r)
+        }
+        si verbum === "incipiet" {
+            redde parseIncipietSententia(r)
+        }
+
+        # Resource management and dispatch
+        si verbum === "cura" {
+            redde parseCuraSententia(r)
+        }
+        si verbum === "ad" {
+            redde parseAdSententia(r)
+        }
+
+        # TODO: probandum, proba, praepara (testing - not needed for bootstrap)
     }
 
     # Fall through to expression statement
