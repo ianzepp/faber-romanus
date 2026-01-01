@@ -148,15 +148,9 @@ export interface Position {
 /**
  * Comment type for COMMENT tokens.
  *
- * WHY: Distinguishes between comment styles for proper target-specific emission.
- *
- * | Type  | Syntax      | Purpose                            |
- * |-------|-------------|------------------------------------|
- * | line  | // ...      | Single-line comment                |
- * | block | slash-star  | Multi-line block comment           |
- * | doc   | slash-star2 | Documentation comment (JSDoc-like) |
+ * Faber uses # for all comments. Only 'line' type exists.
  */
-export type CommentTokenType = 'line' | 'block' | 'doc';
+export type CommentTokenType = 'line';
 
 /**
  * A single lexical token with source position.

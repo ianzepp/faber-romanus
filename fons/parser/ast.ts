@@ -48,15 +48,9 @@ import type { SemanticType } from '../semantic/types';
 /**
  * Comment type discriminator.
  *
- * WHY: Distinguishes between comment styles for proper target-specific emission.
- *
- * | Type  | Syntax      | Purpose                            |
- * |-------|-------------|------------------------------------|
- * | line  | // ...      | Single-line comment                |
- * | block | slash-star  | Multi-line block comment           |
- * | doc   | slash-star2 | Documentation comment (JSDoc-like) |
+ * Faber uses # for all comments. Only 'line' type exists.
  */
-export type CommentType = 'line' | 'block' | 'doc';
+export type CommentType = 'line';
 
 /**
  * Comment node attached to AST nodes.
