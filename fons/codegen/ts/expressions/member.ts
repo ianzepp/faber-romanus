@@ -8,6 +8,18 @@
  *   obj?[key]     -> obj?.[key]   (TS requires dot before bracket)
  *   obj!.prop     -> obj!.prop
  *   obj![key]     -> obj![key]
+ *
+ * BUG: Norma property translations (e.g., lista.longitudo -> array.length)
+ *      are not applied here. The translations exist in fons/codegen/lista.ts
+ *      etc. but only work for method calls, not property accesses.
+ *
+ *      Example: `items.longitudo` should become `items.length` in TS,
+ *      but currently emits `items.longitudo` (invalid JS).
+ *
+ *      Fix requires type information at codegen time to know that `items`
+ *      is a lista and `longitudo` should translate to `length`.
+ *
+ *      See also: fons/codegen/lista.ts (longitudo translation exists but unused)
  */
 
 import type { MemberExpression, Identifier, Expression, RangeExpression } from '../../../parser/ast';
