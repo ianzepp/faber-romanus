@@ -795,4 +795,106 @@ describe('Semantic Analyzer', () => {
             }
         });
     });
+
+    describe('Discretio Pattern Matching', () => {
+        it('infers binding types from discretio variant fields', () => {
+            const source = `
+                discretio Event {
+                    Click { numerus x, numerus y }
+                    Keypress { textus key }
+                    Quit
+                }
+
+                functio handle(Event e) -> vacuum {
+                    discerne e {
+                        si Click pro a, b {
+                            varia numerus sum = a + b
+                        }
+                        si Keypress pro k {
+                            varia textus msg = k
+                        }
+                        si Quit {
+                            redde
+                        }
+                    }
+                }
+            `;
+
+            const { tokens } = tokenize(source);
+            const { program } = parse(tokens);
+
+            if (!program) {
+                throw new Error('Parse failed');
+            }
+
+            const result = analyze(program);
+
+            // Should succeed with no errors — bindings are correctly typed
+            expect(result.errors).toHaveLength(0);
+        });
+
+        it('detects type mismatch when binding used incorrectly', () => {
+            const source = `
+                discretio Event {
+                    Click { numerus x, numerus y }
+                }
+
+                functio handle(Event e) -> vacuum {
+                    discerne e {
+                        si Click pro a, b {
+                            # a is numerus, cannot assign to textus
+                            varia textus wrong = a
+                        }
+                    }
+                }
+            `;
+
+            const { tokens } = tokenize(source);
+            const { program } = parse(tokens);
+
+            if (!program) {
+                throw new Error('Parse failed');
+            }
+
+            const result = analyze(program);
+
+            // Should detect type mismatch: numerus assigned to textus
+            expect(result.errors.length).toBeGreaterThan(0);
+            expect(result.errors[0]!.message).toContain('numerus');
+        });
+
+        it('resolves discretio type from function parameter', () => {
+            // WHY: Using function parameter avoids needing variant constructors
+            // which are not yet implemented
+            const source = `
+                discretio Option {
+                    Some { numerus value }
+                    None
+                }
+
+                functio unwrap(Option opt) -> numerus {
+                    discerne opt {
+                        si Some pro v {
+                            # v should be numerus
+                            redde v
+                        }
+                        si None {
+                            redde 0
+                        }
+                    }
+                }
+            `;
+
+            const { tokens } = tokenize(source);
+            const { program } = parse(tokens);
+
+            if (!program) {
+                throw new Error('Parse failed');
+            }
+
+            const result = analyze(program);
+
+            expect(result.errors).toHaveLength(0);
+        });
+    });
 });

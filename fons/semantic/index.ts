@@ -99,7 +99,7 @@ import type {
 import type { Position } from '../tokenizer/types';
 import type { Scope, Symbol } from './scope';
 import { createGlobalScope, createScope, defineSymbol, lookupSymbol, lookupSymbolLocal, updateSymbolType } from './scope';
-import type { SemanticType, FunctionType } from './types';
+import type { SemanticType, FunctionType, DiscretioType, VariantInfo } from './types';
 import {
     genericType,
     functionType,
@@ -108,6 +108,7 @@ import {
     enumType,
     genusType,
     pactumType,
+    discretioType,
     TEXTUS,
     NUMERUS,
     FRACTUS,
@@ -1771,12 +1772,25 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
      * Analyze discretio (tagged union) declaration.
      *
      * WHY: Discretio declarations define sum types with tagged variants.
-     *      For now, we just register the type name. Full variant checking
-     *      will be added when semantic analysis is extended for pattern matching.
+     *      Each variant's fields are tracked to enable type inference
+     *      for discerne pattern matching bindings.
      */
     function analyzeDiscretioDeclaration(node: DiscretioDeclaration): void {
-        // Register the discretio as a user-defined type
-        const type = userType(node.name.name);
+        // Build variant info map with field types in declaration order
+        const variants = new Map<string, VariantInfo>();
+
+        for (const variant of node.variants) {
+            const fields: { name: string; type: SemanticType }[] = [];
+
+            for (const field of variant.fields) {
+                const fieldType = resolveTypeAnnotation(field.fieldType);
+                fields.push({ name: field.name.name, type: fieldType });
+            }
+
+            variants.set(variant.name.name, { fields });
+        }
+
+        const type = discretioType(node.name.name, variants);
 
         // WHY: Skip define if predeclared (two-pass analysis)
         if (!lookupSymbolLocal(currentScope, node.name.name)) {
@@ -1787,13 +1801,13 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
                 mutable: false,
                 position: node.position,
             });
+        } else {
+            // Update the predeclared symbol with the full type
+            updateSymbolType(currentScope, node.name.name, type);
         }
 
         node.resolvedType = type;
         node.name.resolvedType = type;
-
-        // TODO: Register each variant as a constructor function
-        // TODO: Track variant fields for pattern matching validation
     }
 
     /**
@@ -2041,22 +2055,48 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
     }
 
     function analyzeDiscerneStatement(node: DiscerneStatement): void {
-        resolveExpression(node.discriminant);
+        const discriminantType = resolveExpression(node.discriminant);
+
+        // Try to get variant info if discriminant is a discretio type
+        let discretio: DiscretioType | null = null;
+
+        if (discriminantType.kind === 'discretio') {
+            discretio = discriminantType;
+        } else if (discriminantType.kind === 'user') {
+            // Look up the type in scope — it might be a discretio
+            const symbol = lookupSymbol(currentScope, discriminantType.name);
+
+            if (symbol?.type.kind === 'discretio') {
+                discretio = symbol.type;
+            }
+        }
 
         for (const caseNode of node.cases) {
             // Variant matching: si VariantName pro bindings { ... }
             // WHY: VariantCase introduces bindings into scope
             enterScope();
 
+            // Get variant field types if available
+            const variantName = caseNode.variant.name;
+            const variantInfo = discretio?.variants.get(variantName);
+
             // Define each binding as a variable in this scope
-            for (const binding of caseNode.bindings) {
+            for (let i = 0; i < caseNode.bindings.length; i++) {
+                const binding = caseNode.bindings[i]!;
+
+                // Infer type from variant field at same position
+                const fieldType = variantInfo?.fields[i]?.type ?? UNKNOWN;
+
                 define({
                     name: binding.name,
-                    type: UNKNOWN, // TODO: Infer from variant field type
+                    type: fieldType,
                     kind: 'variable',
                     mutable: false, // Pattern bindings are immutable
                     position: caseNode.position,
                 });
+
+                // Also set the resolved type on the binding identifier
+                binding.resolvedType = fieldType;
             }
 
             analyzeBlock(caseNode.consequent);
@@ -2244,8 +2284,8 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             }
 
             case 'DiscretioDeclaration': {
-                // WHY: Register discretio as user type - full variant resolution is TODO
-                const type = userType(stmt.name.name);
+                // WHY: Predeclare with empty variants — full resolution in analyzeDiscretioDeclaration
+                const type = discretioType(stmt.name.name, new Map());
 
                 define({
                     name: stmt.name.name,

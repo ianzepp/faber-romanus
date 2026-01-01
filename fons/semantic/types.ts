@@ -146,9 +146,41 @@ export interface PactumType extends BaseType {
 }
 
 /**
+ * Variant info for discretio pattern matching.
+ *
+ * WHY: Stores field names and types in declaration order for binding inference.
+ */
+export interface VariantInfo {
+    fields: { name: string; type: SemanticType }[];
+}
+
+/**
+ * Discretio (tagged union) type with variant information.
+ *
+ * WHY: Discretio declarations define sum types with tagged variants.
+ *      Each variant has an ordered list of fields with types.
+ *      This enables type inference for discerne pattern bindings.
+ */
+export interface DiscretioType extends BaseType {
+    kind: 'discretio';
+    name: string;
+    variants: Map<string, VariantInfo>;
+}
+
+/**
  * Discriminated union of all semantic types.
  */
-export type SemanticType = PrimitiveType | GenericType | FunctionType | UnionType | UnknownType | UserType | EnumType | GenusType | PactumType;
+export type SemanticType =
+    | PrimitiveType
+    | GenericType
+    | FunctionType
+    | UnionType
+    | UnknownType
+    | UserType
+    | EnumType
+    | GenusType
+    | PactumType
+    | DiscretioType;
 
 // =============================================================================
 // TYPE CONSTRUCTORS
@@ -222,6 +254,13 @@ export function genusType(
  */
 export function pactumType(name: string, methods: Map<string, FunctionType>, nullable?: boolean): PactumType {
     return { kind: 'pactum', name, methods, nullable };
+}
+
+/**
+ * Create a discretio (tagged union) type.
+ */
+export function discretioType(name: string, variants: Map<string, VariantInfo>, nullable?: boolean): DiscretioType {
+    return { kind: 'discretio', name, variants, nullable };
 }
 
 // =============================================================================
@@ -308,6 +347,8 @@ export function typesEqual(a: SemanticType, b: SemanticType): boolean {
             return a.name === (b as GenusType).name;
         case 'pactum':
             return a.name === (b as PactumType).name;
+        case 'discretio':
+            return a.name === (b as DiscretioType).name;
     }
 }
 
@@ -395,5 +436,7 @@ export function formatType(type: SemanticType): string {
             return `genus ${type.name}` + (type.nullable ? '?' : '');
         case 'pactum':
             return `pactum ${type.name}` + (type.nullable ? '?' : '');
+        case 'discretio':
+            return `discretio ${type.name}` + (type.nullable ? '?' : '');
     }
 }
