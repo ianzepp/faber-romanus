@@ -110,7 +110,11 @@
 
 # Private fields
 - name: genus with private field
-  faber: 'genus Persona { privatus textus secretum }'
+  faber: |
+      genus Persona {
+          @ privatum
+          textus secretum
+      }
   expect:
       ts:
           - 'private secretum: string'
@@ -124,7 +128,8 @@
           - 'secretum: []const u8'
       fab:
           - 'genus Persona'
-          - 'privatus textus secretum'
+          - '@ privatum'
+          - 'textus secretum'
 
 # Static fields
 - name: genus with static field
@@ -508,14 +513,21 @@
 
 # Abstract genus
 - name: abstract genus with abstract method
-  faber: 'abstractus genus Animal { abstractus functio speak() -> textus }'
+  faber: |
+      @ abstractum
+      genus Animal {
+          @ abstracta
+          functio speak() -> textus
+      }
   expect:
       ts:
           - 'abstract class Animal'
           - 'abstract speak(): string'
       fab:
-          - 'abstractus genus Animal'
-          - 'abstractus functio speak() -> textus'
+          - '@ abstractum'
+          - 'genus Animal'
+          - '@ abstracta'
+          - 'functio speak() -> textus'
 
 # Concrete genus extending abstract
 - name: genus extending abstract class
@@ -541,22 +553,32 @@
 
 # Protected field
 - name: genus with protected field
-  faber: 'genus Animal { protectus textus species }'
+  faber: |
+      genus Animal {
+          @ protectum
+          textus species
+      }
   expect:
       ts:
           - 'class Animal'
           - 'protected species: string'
       fab:
           - 'genus Animal'
-          - 'protectus textus species'
+          - '@ protectum'
+          - 'textus species'
 
 # Protected method
 - name: genus with protected method
-  faber: 'genus Animal { protectus functio internal() { } }'
+  faber: |
+      genus Animal {
+          @ protecta
+          functio internal() { }
+      }
   expect:
       ts:
           - 'class Animal'
           - 'protected internal()'
       fab:
           - 'genus Animal'
-          - 'protectus functio internal()'
+          - '@ protecta'
+          - 'functio internal()'

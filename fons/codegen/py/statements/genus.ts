@@ -21,6 +21,7 @@
 
 import type { GenusDeclaration, FieldDeclaration, FunctioDeclaration } from '../../../parser/ast';
 import type { PyGenerator } from '../generator';
+import { getVisibilityFromAnnotations } from '../../types';
 
 export function genGenusDeclaration(node: GenusDeclaration, g: PyGenerator): string {
     const name = node.name.name;
@@ -173,7 +174,8 @@ function genFieldDeclaration(node: FieldDeclaration, g: PyGenerator): string {
 
     // Python doesn't have private/static modifiers in the same way
     // Use underscore prefix convention for private
-    const prefix = node.visibility === 'private' ? '_' : '';
+    const visibility = getVisibilityFromAnnotations(node.annotations);
+    const prefix = visibility === 'private' ? '_' : '';
 
     return `${g.ind()}${prefix}${name}: ${type}${init}`;
 }

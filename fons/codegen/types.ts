@@ -171,7 +171,84 @@ export interface CodegenOptions {
 // COMMENT FORMATTING
 // =============================================================================
 
-import type { Comment, BaseNode } from '../parser/ast';
+import type { Comment, BaseNode, Annotation, Visibility } from '../parser/ast';
+
+// =============================================================================
+// ANNOTATION UTILITIES
+// =============================================================================
+
+/**
+ * Extract visibility from annotations.
+ *
+ * WHY: Visibility modifiers in Latin have gender agreement, but all forms
+ *      map to the same semantic meaning. This normalizes to English visibility.
+ *
+ * @param annotations - Array of annotations from an AST node
+ * @returns Visibility level, or 'public' if not specified
+ */
+export function getVisibilityFromAnnotations(annotations?: Annotation[]): Visibility {
+    if (!annotations) return 'public';
+
+    for (const ann of annotations) {
+        for (const mod of ann.modifiers) {
+            if (mod === 'publicum' || mod === 'publica' || mod === 'publicus') return 'public';
+            if (mod === 'privatum' || mod === 'privata' || mod === 'privatus') return 'private';
+            if (mod === 'protectum' || mod === 'protecta' || mod === 'protectus') return 'protected';
+        }
+    }
+
+    return 'public';
+}
+
+/**
+ * Check if annotations include abstract modifier.
+ *
+ * @param annotations - Array of annotations from an AST node
+ * @returns true if abstractum/abstracta/abstractus is present
+ */
+export function isAbstractFromAnnotations(annotations?: Annotation[]): boolean {
+    if (!annotations) return false;
+
+    for (const ann of annotations) {
+        for (const mod of ann.modifiers) {
+            if (mod === 'abstractum' || mod === 'abstracta' || mod === 'abstractus') return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Check if annotations include async modifier.
+ *
+ * @param annotations - Array of annotations from an AST node
+ * @returns true if futura is present
+ */
+export function isAsyncFromAnnotations(annotations?: Annotation[]): boolean {
+    if (!annotations) return false;
+
+    for (const ann of annotations) {
+        if (ann.modifiers.includes('futura')) return true;
+    }
+
+    return false;
+}
+
+/**
+ * Check if annotations include generator modifier.
+ *
+ * @param annotations - Array of annotations from an AST node
+ * @returns true if cursor is present
+ */
+export function isGeneratorFromAnnotations(annotations?: Annotation[]): boolean {
+    if (!annotations) return false;
+
+    for (const ann of annotations) {
+        if (ann.modifiers.includes('cursor')) return true;
+    }
+
+    return false;
+}
 
 /**
  * Comment syntax configuration per target.

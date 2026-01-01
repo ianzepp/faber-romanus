@@ -81,6 +81,7 @@ import type {
     Statement,
     Expression,
     Comment,
+    Annotation,
     ImportaDeclaration,
     VariaDeclaration,
     FunctioDeclaration,
@@ -499,6 +500,33 @@ export function parse(tokens: Token[]): ParserResult {
         throw new Error(PARSER_ERRORS[code].text);
     }
 
+    function parseAnnotation(): Annotation {
+        const position = peek().position;
+        const startLine = position.line;
+        advance(); // consume '@'
+
+        const modifiers: string[] = [];
+
+        // Collect identifiers on the same line as @
+        while ((check('IDENTIFIER') || check('KEYWORD')) && peek().position.line === startLine) {
+            modifiers.push(advance().value);
+        }
+
+        if (modifiers.length === 0) {
+            errors.push({
+                code: ParserErrorCode.UnexpectedToken,
+                message: `Expected modifier after '@', got '${peek().value}'`,
+                position: peek().position,
+            });
+        }
+
+        return {
+            type: 'Annotation',
+            modifiers,
+            position,
+        };
+    }
+
     // ---------------------------------------------------------------------------
     // Type Name Helpers
     // ---------------------------------------------------------------------------
@@ -658,6 +686,47 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
+     * Parse annotation (@ modifier+).
+     *
+     * GRAMMAR:
+     *   annotation := '@' IDENTIFIER+
+     *
+     * WHY: Annotations modify the following declaration with metadata like
+     *      visibility (publicum, privatum), async (futura), abstract (abstractum).
+     *
+     * INVARIANT: Called when current token is AT.
+     * INVARIANT: Consumes AT and all following identifiers on the same logical line.
+     *
+     * Examples:
+     *   @ publicum
+     *   @ publica futura
+     *   @ privatum abstractum
+     */
+
+    /**
+     * Parse zero or more annotations before a declaration.
+     *
+     * GRAMMAR:
+     *   annotations := annotation*
+     *
+     * WHY: Multiple annotations can be stacked before a declaration.
+     *
+     * Examples:
+     *   @ publicum
+     *   @ futura
+     *   functio fetch() -> textus { }
+     */
+    function parseAnnotations(): Annotation[] {
+        const annotations: Annotation[] = [];
+
+        while (check('AT')) {
+            annotations.push(parseAnnotation());
+        }
+
+        return annotations;
+    }
+
+    /**
      * Parse any statement by dispatching to specific parser.
      *
      * GRAMMAR:
@@ -681,6 +750,43 @@ export function parse(tokens: Token[]): ParserResult {
      * WHY: Separates statement dispatch from comment handling for cleaner code.
      */
     function parseStatementWithoutComments(): Statement {
+        // Parse any leading annotations (@ modifier+)
+        // Annotations attach to the following declaration
+        const annotations = parseAnnotations();
+
+        // Parse the actual statement
+        const stmt = parseStatementCore();
+
+        // Attach annotations to declarations that support them
+        if (annotations.length > 0) {
+            if (
+                stmt.type === 'VariaDeclaration' ||
+                stmt.type === 'FunctioDeclaration' ||
+                stmt.type === 'GenusDeclaration' ||
+                stmt.type === 'PactumDeclaration' ||
+                stmt.type === 'OrdoDeclaration' ||
+                stmt.type === 'DiscretioDeclaration'
+            ) {
+                stmt.annotations = annotations;
+            } else {
+                // Warn about annotations on unsupported statements
+                errors.push({
+                    code: ParserErrorCode.UnexpectedToken,
+                    message: `Annotations are not allowed on ${stmt.type}`,
+                    position: annotations[0]!.position,
+                });
+            }
+        }
+
+        return stmt;
+    }
+
+    /**
+     * Core statement parsing logic (dispatches to specific parsers).
+     *
+     * WHY: Separated from parseStatementWithoutComments to allow annotation handling.
+     */
+    function parseStatementCore(): Statement {
         // Distinguish 'ex norma importa' (import), 'ex items pro n' (for-loop),
         // and 'ex response fixum { }' (destructuring)
         if (checkKeyword('ex')) {
@@ -721,19 +827,6 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (checkKeyword('ordo')) {
             return parseOrdoDeclaration();
-        }
-
-        if (checkKeyword('abstractus')) {
-            advance(); // consume 'abstractus'
-            if (checkKeyword('genus')) {
-                return parseGenusDeclaration(true);
-            }
-            // If not genus, error
-            errors.push({
-                code: ParserErrorCode.UnexpectedToken,
-                message: `Expected 'genus' after 'abstractus', got ${peek().type}`,
-                position: peek().position,
-            });
         }
 
         if (checkKeyword('genus')) {
@@ -1714,7 +1807,7 @@ export function parse(tokens: Token[]): ParserResult {
      *      'implet' (fulfills) for implementing pactum interfaces.
      *      'abstractus' for abstract classes that cannot be instantiated.
      */
-    function parseGenusDeclaration(isAbstract = false): GenusDeclaration {
+    function parseGenusDeclaration(): GenusDeclaration {
         const position = peek().position;
 
         expectKeyword('genus', ParserErrorCode.ExpectedKeywordGenus);
@@ -1800,7 +1893,7 @@ export function parse(tokens: Token[]): ParserResult {
             typeParameters,
             extends: extendsClause,
             implements: implementsList,
-            isAbstract,
+            isAbstract: false, // Semantic analyzer extracts from annotations
             fields,
             constructor: constructorMethod,
             methods,
@@ -1825,20 +1918,12 @@ export function parse(tokens: Token[]): ParserResult {
     function parseGenusMember(): FieldDeclaration | FunctioDeclaration {
         const position = peek().position;
 
-        // Parse modifiers
-        let visibility: Visibility = 'public';
+        // Parse any leading annotations (visibility, async, abstract, etc.)
+        const annotations = parseAnnotations();
+
+        // Parse inline modifiers that remain in signature
         let isStatic = false;
         let isReactive = false;
-        let isAbstract = false;
-
-        // Skip 'publicus' (no-op, fields are public by default)
-        matchKeyword('publicus');
-
-        if (matchKeyword('privatus')) {
-            visibility = 'private';
-        } else if (matchKeyword('protectus')) {
-            visibility = 'protected';
-        }
 
         if (matchKeyword('generis')) {
             isStatic = true;
@@ -1846,10 +1931,6 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (matchKeyword('nexum')) {
             isReactive = true;
-        }
-
-        if (matchKeyword('abstractus')) {
-            isAbstract = true;
         }
 
         // If we see 'functio', it's a method
@@ -1921,7 +2002,9 @@ export function parse(tokens: Token[]): ParserResult {
                 });
             }
 
-            // Abstract methods have no body
+            // Abstract methods (from annotation) have no body
+            const isAbstract = annotations.some(a => a.modifiers.some(m => m === 'abstractum' || m === 'abstracta' || m === 'abstractus'));
+
             let body: BlockStatement | undefined;
             if (!isAbstract) {
                 body = parseBlockStatement();
@@ -1937,8 +2020,8 @@ export function parse(tokens: Token[]): ParserResult {
                 generator: returnVerb === undefined ? modifierGenerator : returnVerb === 'arrow' ? modifierGenerator : verbGenerator!,
                 curatorName,
                 isAbstract: isAbstract || undefined,
-                visibility: visibility !== 'public' ? visibility : undefined,
                 position,
+                annotations: annotations.length > 0 ? annotations : undefined,
             };
 
             if (methodName.name === 'creo') {
@@ -1965,10 +2048,11 @@ export function parse(tokens: Token[]): ParserResult {
             name: fieldName,
             fieldType,
             init,
-            visibility,
+            visibility: 'public', // Default; semantic analyzer extracts from annotations
             isStatic,
             isReactive,
             position,
+            annotations: annotations.length > 0 ? annotations : undefined,
         };
     }
 
@@ -2038,6 +2122,9 @@ export function parse(tokens: Token[]): ParserResult {
      */
     function parsePactumMethod(): PactumMethod {
         const position = peek().position;
+
+        // Parse any leading annotations
+        const annotations = parseAnnotations();
 
         expectKeyword('functio', ParserErrorCode.ExpectedKeywordFunctio);
 
@@ -2114,6 +2201,7 @@ export function parse(tokens: Token[]): ParserResult {
             generator: returnVerb === undefined ? modifierGenerator : returnVerb === 'arrow' ? modifierGenerator : verbGenerator!,
             curatorName,
             position,
+            annotations: annotations.length > 0 ? annotations : undefined,
         };
     }
 

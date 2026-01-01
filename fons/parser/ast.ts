@@ -341,6 +341,7 @@ export interface VariaDeclaration extends BaseNode {
     name: Identifier | ArrayPattern;
     typeAnnotation?: TypeAnnotation;
     init?: Expression;
+    annotations?: Annotation[];
 }
 
 /**
@@ -424,6 +425,7 @@ export interface FunctioDeclaration extends BaseNode {
     isAbstract?: boolean;
     visibility?: Visibility;
     returnVerb?: ReturnVerb; // WHY: Tracks syntax used for return type (-> vs fit/fiet/fiunt/fient)
+    annotations?: Annotation[];
 }
 
 /**
@@ -546,6 +548,7 @@ export interface OrdoDeclaration extends BaseNode {
     type: 'OrdoDeclaration';
     name: Identifier;
     members: OrdoMember[];
+    annotations?: Annotation[];
 }
 
 // ---------------------------------------------------------------------------
@@ -622,6 +625,7 @@ export interface DiscretioDeclaration extends BaseNode {
     name: Identifier;
     typeParameters?: Identifier[];
     variants: VariantDeclaration[];
+    annotations?: Annotation[];
 }
 
 // ---------------------------------------------------------------------------
@@ -637,6 +641,34 @@ export interface DiscretioDeclaration extends BaseNode {
  *   - private: accessible only within the class
  */
 export type Visibility = 'public' | 'protected' | 'private';
+
+/**
+ * Annotation (nota) for modifying declarations.
+ *
+ * GRAMMAR (in EBNF):
+ *   annotation := '@' IDENTIFIER+
+ *
+ * INVARIANT: modifiers is a non-empty array of identifier names.
+ * INVARIANT: Annotations must appear on their own line before a declaration.
+ *
+ * WHY: Annotations provide a clean way to attach metadata to declarations
+ *      without cluttering the declaration syntax itself. All modifiers
+ *      (visibility, async, abstract) move to annotations.
+ *
+ * Gender agreement: All gender variants are semantically equivalent.
+ *   publicum/publica/publicus → public
+ *   privatum/privata/privatus → private
+ *   protectum/protecta/protectus → protected
+ *
+ * Examples:
+ *   @ publicum
+ *   @ publica futura
+ *   @ privatum abstractum
+ */
+export interface Annotation extends BaseNode {
+    type: 'Annotation';
+    modifiers: string[];
+}
 
 /**
  * Field declaration within a genus.
@@ -670,6 +702,7 @@ export interface FieldDeclaration extends BaseNode {
     visibility: Visibility;
     isStatic: boolean;
     isReactive: boolean; // nexum fields trigger re-render on change
+    annotations?: Annotation[];
 }
 
 /**
@@ -727,6 +760,7 @@ export interface GenusDeclaration extends BaseNode {
     fields: FieldDeclaration[];
     constructor?: FunctioDeclaration;
     methods: FunctioDeclaration[];
+    annotations?: Annotation[];
 }
 
 // ---------------------------------------------------------------------------
@@ -741,6 +775,7 @@ export interface PactumDeclaration extends BaseNode {
     name: Identifier;
     typeParameters?: Identifier[];
     methods: PactumMethod[];
+    annotations?: Annotation[];
 }
 
 /**
@@ -758,6 +793,7 @@ export interface PactumMethod extends BaseNode {
     async: boolean;
     generator: boolean;
     curatorName?: string;
+    annotations?: Annotation[];
 }
 
 // ---------------------------------------------------------------------------

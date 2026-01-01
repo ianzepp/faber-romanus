@@ -115,6 +115,7 @@ export type TokenType =
     | 'RBRACKET' // ]
     | 'COMMA' // ,
     | 'SEMICOLON' // ;
+    | 'AT' // @ (annotation marker)
 
     // ---------------------------------------------------------------------------
     // Special

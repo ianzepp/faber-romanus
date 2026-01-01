@@ -21,13 +21,14 @@
 import type { GenusDeclaration, FunctioDeclaration, FieldDeclaration } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
 import { genBlockStatement, genMethodDeclaration } from './functio';
+import { getVisibilityFromAnnotations, isAbstractFromAnnotations } from '../../types';
 
 export function genGenusDeclaration(node: GenusDeclaration, g: TsGenerator, semi: boolean): string {
     const name = node.name.name;
     const typeParams = node.typeParameters ? `<${node.typeParameters.map(p => p.name).join(', ')}>` : '';
     const ext = node.extends ? ` extends ${node.extends.name}` : '';
     const impl = node.implements ? ` implements ${node.implements.map(i => i.name).join(', ')}` : '';
-    const abstractMod = node.isAbstract ? 'abstract ' : '';
+    const abstractMod = isAbstractFromAnnotations(node.annotations) ? 'abstract ' : '';
 
     const lines: string[] = [];
     lines.push(`${g.ind()}${abstractMod}class ${name}${typeParams}${ext}${impl} {`);
@@ -146,7 +147,8 @@ function genFieldDeclaration(node: FieldDeclaration, g: TsGenerator, semi: boole
     }
 
     // Regular fields - public by default (struct semantics)
-    const visibilityMod = node.visibility === 'private' ? 'private ' : node.visibility === 'protected' ? 'protected ' : '';
+    const visibility = getVisibilityFromAnnotations(node.annotations);
+    const visibilityMod = visibility === 'private' ? 'private ' : visibility === 'protected' ? 'protected ' : '';
     const staticMod = node.isStatic ? 'static ' : '';
     const init = node.init ? ` = ${g.genExpression(node.init)}` : '';
 

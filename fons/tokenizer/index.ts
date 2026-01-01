@@ -746,6 +746,11 @@ export function tokenize(source: string): TokenizerResult {
                 addToken('TILDE', char, pos);
                 break;
 
+            // Annotation marker
+            case '@':
+                addToken('AT', char, pos);
+                break;
+
             // Single-character arithmetic operators
             case '+':
                 if (peek() === '=') {

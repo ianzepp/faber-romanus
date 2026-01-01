@@ -261,10 +261,18 @@ describe('tokenizer', () => {
         });
 
         test('reports unexpected character', () => {
-            const { errors } = tokenize('fixum @ nomen');
+            const { errors } = tokenize('fixum $ nomen');
 
             expect(errors.length).toBeGreaterThan(0);
             expect(errors[0]!.text).toContain('Unexpected');
+        });
+
+        test('at sign for annotations', () => {
+            const { tokens, errors } = tokenize('@ publicum');
+
+            expect(errors).toHaveLength(0);
+            expect(tokens.map(t => t.type)).toEqual(['AT', 'IDENTIFIER', 'EOF']);
+            expect(tokens[0]!.value).toBe('@');
         });
     });
 

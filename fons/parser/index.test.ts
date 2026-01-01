@@ -1255,10 +1255,11 @@ describe('parser', () => {
         });
 
         test('genus with private field', () => {
-            const { program } = parseCode('genus persona { privatus textus nomen }');
+            const { program } = parseCode('genus persona { @ privatum\n textus nomen }');
             const genus = program!.body[0] as any;
 
-            expect(genus.fields[0].visibility).toBe('private');
+            expect(genus.fields[0].annotations).toHaveLength(1);
+            expect(genus.fields[0].annotations[0].modifiers).toEqual(['privatum']);
         });
 
         test('genus field is public by default', () => {
@@ -1316,11 +1317,11 @@ describe('parser', () => {
             expect(genus.fields[0].isReactive).toBe(true);
         });
 
-        test('genus with nexum and privatus modifiers', () => {
-            const { program } = parseCode('genus widget { privatus nexum numerus value: 0 }');
+        test('genus with nexum and privatum annotation', () => {
+            const { program } = parseCode('genus widget { @ privatum\n nexum numerus value: 0 }');
             const genus = program!.body[0] as any;
 
-            expect(genus.fields[0].visibility).toBe('private');
+            expect(genus.fields[0].annotations[0].modifiers).toEqual(['privatum']);
             expect(genus.fields[0].isReactive).toBe(true);
         });
 
@@ -1367,42 +1368,44 @@ describe('parser', () => {
             expect(genus.implements[0].name).toBe('worker');
         });
 
-        test('abstractus genus', () => {
-            const { program } = parseCode('abstractus genus animal { abstractus functio speak() -> textus }');
+        test('abstractum genus with annotation', () => {
+            const { program } = parseCode('@ abstractum\n genus animal { @ abstracta\n functio speak() -> textus }');
             const genus = program!.body[0] as any;
 
             expect(genus.type).toBe('GenusDeclaration');
-            expect(genus.isAbstract).toBe(true);
+            expect(genus.annotations[0].modifiers).toEqual(['abstractum']);
             expect(genus.name.name).toBe('animal');
             expect(genus.methods).toHaveLength(1);
+            expect(genus.methods[0].annotations[0].modifiers).toEqual(['abstracta']);
             expect(genus.methods[0].isAbstract).toBe(true);
             expect(genus.methods[0].body).toBeUndefined();
         });
 
         test('genus with protected field', () => {
-            const { program } = parseCode('genus animal { protectus textus species }');
+            const { program } = parseCode('genus animal { @ protectum\n textus species }');
             const genus = program!.body[0] as any;
 
-            expect(genus.fields[0].visibility).toBe('protected');
+            expect(genus.fields[0].annotations[0].modifiers).toEqual(['protectum']);
         });
 
         test('genus with protected method', () => {
-            const { program } = parseCode('genus animal { protectus functio internal() { redde nihil } }');
+            const { program } = parseCode('genus animal { @ protecta\n functio internal() { redde nihil } }');
             const genus = program!.body[0] as any;
 
-            expect(genus.methods[0].visibility).toBe('protected');
+            expect(genus.methods[0].annotations[0].modifiers).toEqual(['protecta']);
         });
 
         test('genus extending abstract class', () => {
             const { program } = parseCode(`
-                abstractus genus animal { abstractus functio speak() -> textus }
+                @ abstractum
+                genus animal { @ abstracta\n functio speak() -> textus }
                 genus dog sub animal { functio speak() -> textus { redde "woof" } }
             `);
             const abstractGenus = program!.body[0] as any;
             const concreteGenus = program!.body[1] as any;
 
-            expect(abstractGenus.isAbstract).toBe(true);
-            expect(concreteGenus.isAbstract).toBe(false);
+            expect(abstractGenus.annotations[0].modifiers).toEqual(['abstractum']);
+            expect(concreteGenus.annotations).toBeUndefined();
             expect(concreteGenus.extends.name).toBe('animal');
         });
     });
@@ -4139,6 +4142,160 @@ describe('parser', () => {
                     expect(stmt.target).toBe('hono/Hono');
                 });
             });
+        });
+    });
+
+    describe('annotations', () => {
+        test('single annotation on functio', () => {
+            const { program, errors } = parseCode('@ publica\nfunctio greet() -> textus { redde "hello" }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('FunctioDeclaration');
+            expect(decl.annotations).toHaveLength(1);
+            expect(decl.annotations[0].modifiers).toEqual(['publica']);
+        });
+
+        test('multiple modifiers in one annotation', () => {
+            const { program, errors } = parseCode('@ publica futura\nfunctio fetch() -> textus { redde "data" }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.annotations).toHaveLength(1);
+            expect(decl.annotations[0].modifiers).toEqual(['publica', 'futura']);
+        });
+
+        test('multiple annotations stacked', () => {
+            const { program, errors } = parseCode('@ publicum\n@ abstractum\ngenus Base { }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('GenusDeclaration');
+            expect(decl.annotations).toHaveLength(2);
+            expect(decl.annotations[0]!.modifiers).toEqual(['publicum']);
+            expect(decl.annotations[1]!.modifiers).toEqual(['abstractum']);
+        });
+
+        test('annotation on genus', () => {
+            const { program, errors } = parseCode('@ publicum\ngenus User { textus nomen }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('GenusDeclaration');
+            expect(decl.annotations).toHaveLength(1);
+            expect(decl.annotations[0].modifiers).toEqual(['publicum']);
+        });
+
+        test('annotation on pactum', () => {
+            const { program, errors } = parseCode('@ publicum\npactum Readable { functio read() -> textus }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('PactumDeclaration');
+            expect(decl.annotations).toHaveLength(1);
+        });
+
+        test('annotation on ordo', () => {
+            const { program, errors } = parseCode('@ publicus\nordo Status { Active, Inactive }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('OrdoDeclaration');
+            expect(decl.annotations).toHaveLength(1);
+            expect(decl.annotations[0].modifiers).toEqual(['publicus']);
+        });
+
+        test('annotation on discretio', () => {
+            const { program, errors } = parseCode('@ publicum\ndiscretio Result { Ok, Err }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('DiscretioDeclaration');
+            expect(decl.annotations).toHaveLength(1);
+        });
+
+        test('annotation on varia', () => {
+            const { program, errors } = parseCode('@ publicum\nfixum PI = 3.14159');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('VariaDeclaration');
+            expect(decl.annotations).toHaveLength(1);
+        });
+
+        test('annotation on unsupported statement produces error', () => {
+            const { program, errors } = parseCode('@ publicum\nsi verum { }');
+
+            expect(program).not.toBeNull();
+            expect(errors).toHaveLength(1);
+            expect(errors[0]!.message).toContain('Annotations are not allowed');
+        });
+
+        test('empty annotation produces error', () => {
+            const { program, errors } = parseCode('@ \nfunctio f() { }');
+
+            expect(program).not.toBeNull();
+            expect(errors).toHaveLength(1);
+            expect(errors[0]!.message).toContain('Expected modifier');
+        });
+
+        test('no annotation means undefined annotations field', () => {
+            const { program, errors } = parseCode('functio greet() -> textus { redde "hello" }');
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('FunctioDeclaration');
+            expect(decl.annotations).toBeUndefined();
+        });
+
+        test('annotation on genus field', () => {
+            const { program, errors } = parseCode(`
+                genus User {
+                    textus nomen
+                    @ privatum
+                    textus secret
+                }
+            `);
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('GenusDeclaration');
+            expect(decl.fields).toHaveLength(2);
+            expect(decl.fields[0].annotations).toBeUndefined();
+            expect(decl.fields[1].annotations).toHaveLength(1);
+            expect(decl.fields[1].annotations[0].modifiers).toEqual(['privatum']);
+        });
+
+        test('annotation on genus method', () => {
+            const { program, errors } = parseCode(`
+                genus User {
+                    @ privata
+                    functio validate() -> bivalens { redde verum }
+                }
+            `);
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('GenusDeclaration');
+            expect(decl.methods).toHaveLength(1);
+            expect(decl.methods[0].annotations).toHaveLength(1);
+            expect(decl.methods[0].annotations[0].modifiers).toEqual(['privata']);
+        });
+
+        test('annotation on pactum method', () => {
+            const { program, errors } = parseCode(`
+                pactum Readable {
+                    @ publica
+                    functio read() -> textus
+                }
+            `);
+
+            expect(errors).toHaveLength(0);
+            const decl = program!.body[0] as any;
+            expect(decl.type).toBe('PactumDeclaration');
+            expect(decl.methods).toHaveLength(1);
+            expect(decl.methods[0].annotations).toHaveLength(1);
+            expect(decl.methods[0].annotations[0].modifiers).toEqual(['publica']);
         });
     });
 });

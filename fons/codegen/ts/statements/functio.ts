@@ -20,6 +20,7 @@
 
 import type { FunctioDeclaration, BlockStatement } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
+import { getVisibilityFromAnnotations, isAbstractFromAnnotations } from '../../types';
 
 export function genFunctioDeclaration(node: FunctioDeclaration, g: TsGenerator): string {
     const name = node.name.name;
@@ -216,15 +217,19 @@ export function genMethodDeclaration(node: FunctioDeclaration, g: TsGenerator): 
         returnType = `: ${baseType}`;
     }
 
+    // Get visibility from annotations
+    const visibility = getVisibilityFromAnnotations(node.annotations);
+    const isAbstract = isAbstractFromAnnotations(node.annotations) || node.isAbstract;
+
     // Handle abstract methods (no body)
-    if (node.isAbstract || !node.body) {
-        const visibilityMod = node.visibility === 'protected' ? 'protected ' : '';
+    if (isAbstract || !node.body) {
+        const visibilityMod = visibility === 'protected' ? 'protected ' : '';
         return `${g.ind()}${visibilityMod}abstract ${name}(${params})${returnType};`;
     }
 
     const asyncMod = node.async ? 'async ' : '';
     const star = node.generator ? '*' : '';
-    const visibilityMod = node.visibility === 'private' ? 'private ' : node.visibility === 'protected' ? 'protected ' : '';
+    const visibilityMod = visibility === 'private' ? 'private ' : visibility === 'protected' ? 'protected ' : '';
 
     // Track generator context for cede -> yield vs await
     const prevInGenerator = g.inGenerator;
