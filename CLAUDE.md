@@ -60,6 +60,7 @@ See `GRAMMAR.md` for the complete syntax reference. It is auto-generated from pa
 3. Validate with `bun run faber check <file.fab>` before committing
 
 Common pitfalls:
+
 - Don't invent syntax (e.g., `Type?` for nullable) — verify it exists first
 - Empty collections need explicit types: `[] qua lista<T>`, `{} qua tabula<K,V>`
 - Use `ignotum` for parameters that may be null, not invented suffixes
@@ -79,16 +80,34 @@ Common pitfalls:
 
 Faber uses a consistent `keyword expr VERB name { body }` pattern:
 
-| Construct       | Syntax                                    | Purpose        |
-| --------------- | ----------------------------------------- | -------------- |
-| `ex...pro`      | `ex items pro item { }`                   | iterate values |
-| `de...pro`      | `de obj pro key { }`                      | iterate keys   |
-| `cura...fit`    | `cura resource fit handle { }`            | resource scope |
-| `tempta...cape` | `tempta { } cape err { }`                 | error handling |
-| `dum`           | `dum condition { }`                       | while loop     |
-| `si`            | `si condition { }`                        | conditional    |
-| `elige`         | `elige value { si case { } }`             | switch         |
-| `discerne`      | `discerne value { si Variant pro x { } }` | pattern match  |
+| Construct       | Syntax                                   | Purpose        |
+| --------------- | ---------------------------------------- | -------------- |
+| `ex...pro`      | `ex items pro item { }`                  | iterate values |
+| `de...pro`      | `de obj pro key { }`                     | iterate keys   |
+| `cura...fit`    | `cura resource fit handle { }`           | resource scope |
+| `tempta...cape` | `tempta { } cape err { }`                | error handling |
+| `dum`           | `dum condition { }`                      | while loop     |
+| `si`            | `si condition { }`                       | conditional    |
+| `elige`         | `elige value { si case { } }`            | switch         |
+| `discerne`      | `discerne value { si Variant ut v { } }` | pattern match  |
+
+**discerne binding style:** Prefer `ut` (whole variant) over `pro` (positional extraction):
+
+```fab
+# Preferred: ut binds the whole variant
+discerne node {
+    si BinaryExpr ut e {
+        process(e.left, e.operator, e.right)
+    }
+}
+
+# Avoid: pro extracts by field position (fragile, obscure)
+discerne node {
+    si BinaryExpr pro left, op, right {
+        process(left, op, right)
+    }
+}
+```
 
 ### Return Type Verbs
 
@@ -103,16 +122,17 @@ Faber uses a consistent `keyword expr VERB name { body }` pattern:
 
 Function parameters follow the pattern: `[preposition] [si] [ceteri] type name [ut alias] [vel default]`
 
-| Modifier | Position | Purpose | Example |
-| -------- | -------- | ------- | ------- |
-| `de`     | prefix   | borrowed, read-only | `de textus source` |
-| `in`     | prefix   | mutable borrow | `in lista<T> items` |
-| `si`     | after preposition | optional parameter | `si numerus depth` |
-| `ceteri` | after si | rest/variadic | `ceteri textus[] args` |
-| `ut`     | after name | internal alias | `textus location ut loc` |
-| `vel`    | after name/alias | default value | `si numerus page vel 1` |
+| Modifier | Position          | Purpose             | Example                  |
+| -------- | ----------------- | ------------------- | ------------------------ |
+| `de`     | prefix            | borrowed, read-only | `de textus source`       |
+| `in`     | prefix            | mutable borrow      | `in lista<T> items`      |
+| `si`     | after preposition | optional parameter  | `si numerus depth`       |
+| `ceteri` | after si          | rest/variadic       | `ceteri textus[] args`   |
+| `ut`     | after name        | internal alias      | `textus location ut loc` |
+| `vel`    | after name/alias  | default value       | `si numerus page vel 1`  |
 
 **Optional parameters (`si`):**
+
 - Without `vel`: type becomes nullable, caller can omit, body receives `nihil`
 - With `vel`: parameter has default value, type stays as declared
 - Required params cannot follow optional (except `ceteri`)
