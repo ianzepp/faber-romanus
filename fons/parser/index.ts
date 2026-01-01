@@ -1905,15 +1905,16 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse a member of a genus (field or method).
      *
      * GRAMMAR:
-     *   genusMember := fieldDecl | methodDecl
-     *   fieldDecl := ('privatus' | 'protectus')? 'generis'? typeAnnotation IDENTIFIER (':' expression)?
-     *   methodDecl := ('privatus' | 'protectus')? 'generis'? 'abstractus'? 'functio' IDENTIFIER '(' paramList ')' funcModifier* returnClause? blockStmt?
+     *   genusMember := annotation* (fieldDecl | methodDecl)
+     *   annotation := '@' IDENTIFIER+
+     *   fieldDecl := 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
+     *   methodDecl := 'functio' IDENTIFIER '(' paramList ')' funcModifier* returnClause? blockStmt?
      *   funcModifier := 'futura' | 'cursor' | 'curata' IDENTIFIER
      *
      * WHY: Distinguishes between fields and methods by looking for 'functio' keyword.
-     * WHY: Fields are public by default (struct semantics), use 'privatus' for private.
-     * WHY: 'protectus' for protected visibility (subclass access).
-     * WHY: 'abstractus' for abstract methods (no body, must be overridden).
+     * WHY: Fields are public by default (struct semantics).
+     * WHY: Use annotations for visibility: @ privatum, @ protectum.
+     * WHY: Use annotations for abstract methods: @ abstracta (no body, must be overridden).
      */
     function parseGenusMember(): FieldDeclaration | FunctioDeclaration {
         const position = peek().position;

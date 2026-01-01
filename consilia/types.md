@@ -97,24 +97,28 @@ This aligns field defaults with object literal syntax (`{ nomen: "Marcus" }`) an
 ### Field Visibility
 
 - Fields are **public by default** (struct semantics)
-- Use `privatus` for private fields:
+- Use `@ privatum` annotation for private fields:
 
-```
+```fab
 genus persona {
-    textus nomen              // public (default)
-    privatus numerus aetas    // private
+    textus nomen           # public (default)
+
+    @ privatum
+    numerus aetas          # private
 }
 ```
 
 ### Method Visibility
 
 - Methods are **public by default** (struct semantics)
-- Use `privatus` for private methods:
+- Use `@ privata` annotation for private methods:
 
-```
+```fab
 genus persona {
-    functio saluta() -> textus { ... }      // public (default)
-    privatus functio auxilium() { ... }     // private helper
+    functio saluta() -> textus { ... }       # public (default)
+
+    @ privata
+    functio auxilium() { ... }               # private helper
 }
 ```
 

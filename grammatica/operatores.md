@@ -28,9 +28,9 @@ ternary := or (('?' expression ':' | 'sic' expression 'secus') ternary)?
 **Examples:**
 
 ```fab
-verum ? 1 : 0              # symbolic style
-verum sic 1 secus 0        # Latin style
-a ? b ? c : d : e          # nested (right-associative)
+verum ? 1 : 0              // symbolic style
+verum sic 1 secus 0        // Latin style
+a ? b ? c : d : e          // nested (right-associative)
 ```
 
 ### Or
@@ -103,12 +103,13 @@ multiplicative := unary (('*' | '/' | '%') unary)*
 ### Unary
 
 ```ebnf
-unary := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'nihil' | 'nonnihil' | 'negativum' | 'positivum' | 'cede' | 'novum') unary | cast
+unary := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'nihil' | 'nonnihil' | 'negativum' | 'positivum' | 'cede' | 'novum' | 'finge') unary | cast
 ```
 
 > Latin 'non' (not), 'nulla' (none/empty), 'nonnulla' (some/non-empty),
 > 'nihil' (is null), 'nonnihil' (is not null),
-> 'negativum' (< 0), 'positivum' (> 0), 'cede' (await), 'novum' (new).
+> 'negativum' (< 0), 'positivum' (> 0), 'cede' (await), 'novum' (new),
+> 'finge' (form variant).
 
 ---
 

@@ -28,34 +28,34 @@ Output uses canonical Faber style:
 
 ### Control Flow
 
-| Construct | Output | Avoid |
-|-----------|--------|-------|
-| if | `si` | — |
-| else-if | `sin` | `sin` |
-| else | `secus` | `secus` |
+| Construct | Output  | Avoid   |
+| --------- | ------- | ------- |
+| if        | `si`    | —       |
+| else-if   | `sin`   | `sin`   |
+| else      | `secus` | `secus` |
 
 ### Operators
 
-| Construct | Output | Avoid |
-|-----------|--------|-------|
-| logical and | `&&` | `et` |
-| logical or | `||` | `aut` |
-| logical not | `non` | `!` |
+| Construct   | Output | Avoid |
+| ----------- | ------ | ----- | --- | ----- |
+| logical and | `&&`   | `et`  |
+| logical or  | `      |       | `   | `aut` |
+| logical not | `non`  | `!`   |
 
 ### Functions
 
-| Construct | Output | Avoid |
-|-----------|--------|-------|
-| return type | `->` | `fit/fiet/fiunt/fient` |
-| lambda | `pro x: expr` | `pro x redde expr` |
+| Construct   | Output        | Avoid                  |
+| ----------- | ------------- | ---------------------- |
+| return type | `->`          | `fit/fiet/fiunt/fient` |
+| lambda      | `pro x: expr` | `pro x redde expr`     |
 
 ### Formatting
 
-| Setting | Value |
-|---------|-------|
-| Indentation | 4 spaces |
-| Braces | same line |
-| Other | defer to prettier |
+| Setting     | Value             |
+| ----------- | ----------------- |
+| Indentation | 4 spaces          |
+| Braces      | same line         |
+| Other       | defer to prettier |
 
 ## Integration with TS Parser
 
@@ -78,17 +78,17 @@ The TS-to-Faber pipeline:
 
 ```ts
 class Dog extends Animal {
-  protected name: string;
+    protected name: string;
 
-  constructor(name: string) {
-    super();
-    this.name = name;
-  }
+    constructor(name: string) {
+        super();
+        this.name = name;
+    }
 
-  async fetch(): Promise<Ball> {
-    const ball = await findBall();
-    return ball;
-  }
+    async fetch(): Promise<Ball> {
+        const ball = await findBall();
+        return ball;
+    }
 }
 
 export { Dog };
@@ -98,7 +98,8 @@ export { Dog };
 
 ```fab
 genus Dog sub Animal {
-    protectus textus name
+    @ protectum
+    textus name
 
     functio creo(textus name) {
         supra()
@@ -128,14 +129,14 @@ Tests in `proba/codegen/fab/` using YAML format:
 ```yaml
 name: genus with inheritance
 input: |
-  genus Dog sub Animal {
-      textus name
-  }
-expected:
-  fab: |
     genus Dog sub Animal {
         textus name
     }
+expected:
+    fab: |
+        genus Dog sub Animal {
+            textus name
+        }
 ```
 
 Round-trip tests: parse → AST → codegen → parse → compare ASTs.

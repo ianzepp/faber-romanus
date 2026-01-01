@@ -171,7 +171,8 @@ Common array methods (see README for complete list):
 ex hono importa Hono, Context
 
 genus UserService {
-    privatus textus baseUrl
+    @ privatum
+    textus baseUrl
 
     functio creo(textus url) {
         ego.baseUrl = url

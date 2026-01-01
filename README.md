@@ -232,8 +232,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Feature                       | TypeScript | Zig | Python | Rust | C++23 |
 | ----------------------------- | :--------: | :-: | :----: | :--: | :---: |
 | `si` (if)                     |    [x]     | [x] |  [x]   | [x]  |  [x]  |
-| `secus` (else)               |    [x]     | [x] |  [x]   | [x]  |  [x]  |
-| `sin` (else if)         |    [x]     | [x] |  [x]   | [x]  |  [x]  |
+| `secus` (else)                |    [x]     | [x] |  [x]   | [x]  |  [x]  |
+| `sin` (else if)               |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `dum` (while)                 |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `ex...pro` (for-of)           |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `ex...fit` (for-of verb form) |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
@@ -247,7 +247,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `in` (mutation block)         |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
 | `elige` (switch)              |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | Switch cases (`si`)           |    [x]     | [x] |  [x]   | [x]  |  [x]  |
-| Switch default (`secus`)     |    [x]     | [x] |  [x]   | [x]  |  [x]  |
+| Switch default (`secus`)      |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `discerne` (pattern match)    |    [x]     | [x] |  [x]   | [x]  |  [~]  |
 | `secus` (else/ternary alt)    |    [x]     | [ ] |  [x]   | [x]  |  [ ]  |
 | `fac` (do/block)              |    [x]     | [x] |  [x]   | [x]  |  [x]  |
@@ -363,8 +363,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Field defaults            |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `nexum` (reactive field)  |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
 | Static fields (`generis`) |    [x]     | [ ] |  [~]   | [ ]  |  [ ]  |
-| `privatus` (private)      |    [x]     | [ ] |  [x]   | [x]  |  [ ]  |
-| `protectus` (protected)   |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `@ privatum` (private)    |    [x]     | [ ] |  [x]   | [x]  |  [ ]  |
+| `@ protectum` (protected) |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
 | `creo` (constructor hook) |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `deleo` (destructor)      |    [c]     | [c] |  [c]   | [c]  |  [c]  |
 | `pingo` (render method)   |    [c]     | [c] |  [c]   | [c]  |  [c]  |
@@ -375,8 +375,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `sub` (extends)           |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
 | `implet` (implements)     |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
 | Multiple `implet`         |    [x]     | [ ] |  [x]   | [x]  |  [ ]  |
-| `abstractus` class        |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
-| `abstractus` method       |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `@ abstractum` class      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
+| `@ abstracta` method      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |
 | `aperit` (index sig)      |    [ ]     | [-] |  [-]   | [-]  |  [-]  |
 | Generic classes           |    [x]     | [ ] |  [x]   | [x]  |  [ ]  |
 | `pactum` declaration      |    [x]     | [x] |  [x]   | [x]  |  [x]  |

@@ -26,16 +26,17 @@ genusMember := fieldDecl | methodDecl
 ### Genus Member
 
 ```ebnf
-genusMember := fieldDecl | methodDecl
-fieldDecl := ('privatus' | 'protectus')? 'generis'? typeAnnotation IDENTIFIER (':' expression)?
-methodDecl := ('privatus' | 'protectus')? 'generis'? 'abstractus'? 'functio' IDENTIFIER '(' paramList ')' funcModifier* returnClause? blockStmt?
+genusMember := annotation* (fieldDecl | methodDecl)
+annotation := '@' IDENTIFIER+
+fieldDecl := 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
+methodDecl := 'functio' IDENTIFIER '(' paramList ')' funcModifier* returnClause? blockStmt?
 funcModifier := 'futura' | 'cursor' | 'curata' IDENTIFIER
 ```
 
 > Distinguishes between fields and methods by looking for 'functio' keyword.
-> Fields are public by default (struct semantics), use 'privatus' for private.
-> 'protectus' for protected visibility (subclass access).
-> 'abstractus' for abstract methods (no body, must be overridden).
+> Fields are public by default (struct semantics).
+> Use annotations for visibility: @ privatum, @ protectum.
+> Use annotations for abstract methods: @ abstracta (no body, must be overridden).
 
 ### Pactum Declaration
 

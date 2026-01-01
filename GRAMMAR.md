@@ -171,7 +171,8 @@ Common array methods (see README for complete list):
 ex hono importa Hono, Context
 
 genus UserService {
-    privatus textus baseUrl
+    @ privatum
+    textus baseUrl
 
     functio creo(textus url) {
         ego.baseUrl = url
@@ -241,14 +242,14 @@ patternProperty := 'ceteri'? IDENTIFIER (':' IDENTIFIER)?
 **Examples:**
 
 ```fab
-{ nomen, aetas }              # extract nomen and aetas
-{ nomen: localName, aetas }   # rename nomen to localName
-{ nomen, ceteri rest }        # extract nomen, collect rest
+{ nomen, aetas }              // extract nomen and aetas
+{ nomen: localName, aetas }   // rename nomen to localName
+{ nomen, ceteri rest }        // extract nomen, collect rest
 
 T SUPPORTED (will produce parser errors):
-{ ...rest }    # JS spread syntax
-{ *rest }      # Python unpack syntax
-{ **rest }     # Python kwargs syntax
+{ ...rest }    // JS spread syntax
+{ *rest }      // Python unpack syntax
+{ **rest }     // Python kwargs syntax
 ```
 
 ---
@@ -272,7 +273,7 @@ typeAliasDecl := 'typus' IDENTIFIER '=' typeAnnotation
 ```fab
 typus ID = textus
 typus UserID = numerus<32, Naturalis>
-typus ConfigTypus = typus config    # typeof
+typus ConfigTypus = typus config    // typeof
 ```
 
 ### Type Annotation
@@ -313,9 +314,9 @@ ternary := or (('?' expression ':' | 'sic' expression 'secus') ternary)?
 **Examples:**
 
 ```fab
-verum ? 1 : 0              # symbolic style
-verum sic 1 secus 0        # Latin style
-a ? b ? c : d : e          # nested (right-associative)
+verum ? 1 : 0              // symbolic style
+verum sic 1 secus 0        // Latin style
+a ? b ? c : d : e          // nested (right-associative)
 ```
 
 ### Or
@@ -388,12 +389,13 @@ multiplicative := unary (('*' | '/' | '%') unary)*
 ### Unary
 
 ```ebnf
-unary := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'nihil' | 'nonnihil' | 'negativum' | 'positivum' | 'cede' | 'novum') unary | cast
+unary := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'nihil' | 'nonnihil' | 'negativum' | 'positivum' | 'cede' | 'novum' | 'finge') unary | cast
 ```
 
 > Latin 'non' (not), 'nulla' (none/empty), 'nonnulla' (some/non-empty),
 > 'nihil' (is null), 'nonnihil' (is not null),
-> 'negativum' (< 0), 'positivum' (> 0), 'cede' (await), 'novum' (new).
+> 'negativum' (< 0), 'positivum' (> 0), 'cede' (await), 'novum' (new),
+> 'finge' (form variant).
 
 ---
 
@@ -434,6 +436,15 @@ Control flow: conditionals, loops, guards, assertions, and program structure.
 ```ebnf
 program := statement*
 ```
+
+### Annotations
+
+```ebnf
+annotation := '@' IDENTIFIER+
+```
+
+> Annotations modify the following declaration with metadata like
+> visibility (publicum, privatum), async (futura), abstract (abstractum).
 
 ### Statement
 
@@ -499,13 +510,13 @@ arrayPatternElement := '_' | 'ceteri'? IDENTIFIER
 **Examples:**
 
 ```fab
-[a, b, c]                 # extract first three elements
-[first, ceteri rest]     # extract first, collect rest
-[_, second, _]           # skip first and third, extract second
+[a, b, c]                 // extract first three elements
+[first, ceteri rest]     // extract first, collect rest
+[_, second, _]           // skip first and third, extract second
 
 T SUPPORTED:
-[...rest]                # JS spread syntax
-[*rest]                  # Python unpack syntax
+[...rest]                // JS spread syntax
+[*rest]                  // Python unpack syntax
 ```
 
 ### Functio Declaration
@@ -537,14 +548,14 @@ returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 > 
 > When using verb forms, the futura/cursor modifier is NOT required - the verb
 > itself carries the semantic information. The modifier becomes redundant:
-> functio compute() -> numerus { ... }         # arrow: sync by default
-> functio compute() fit numerus { ... }        # verb: explicitly sync
-> functio fetch() futura -> textus { ... }     # modifier: async
-> functio fetch() fiet textus { ... }          # verb implies async
-> functio items() cursor -> numerus { ... }    # modifier: generator
-> functio items() fiunt numerus { ... }        # verb implies generator
-> functio stream() fient datum { ... }         # verb implies async generator
-> functio alloc(textus s) curata a -> T { ... } # managed, allocator bound as 'a'
+> functio compute() -> numerus { ... }         // arrow: sync by default
+> functio compute() fit numerus { ... }        // verb: explicitly sync
+> functio fetch() futura -> textus { ... }     // modifier: async
+> functio fetch() fiet textus { ... }          // verb implies async
+> functio items() cursor -> numerus { ... }    // modifier: generator
+> functio items() fiunt numerus { ... }        // verb implies generator
+> functio stream() fient datum { ... }         // verb implies async generator
+> functio alloc(textus s) curata a -> T { ... } // managed, allocator bound as 'a'
 > 
 > Modifier is still allowed for emphasis, but verb/modifier conflicts are errors.
 > 
@@ -650,8 +661,8 @@ elseClause := ('secus' | 'secus') (ifStmt | blockStmt | statement)
 > 
 > Poetic style: si / sin / secus
 > si x > 0 { positive() }
-> sin x < 0 { negative() }    # "sin" = "but if" (classical Latin)
-> secus { zero() }            # "secus" = "otherwise"
+> sin x < 0 { negative() }    // "sin" = "but if" (classical Latin)
+> secus { zero() }            // "secus" = "otherwise"
 > 
 > Keywords are interchangeable at each branch point:
 > - 'sin' ≡ 'sin' (else-if)
@@ -707,17 +718,17 @@ specifier := 'ceteri'? IDENTIFIER ('ut' IDENTIFIER)?
 **Examples:**
 
 ```fab
-ex numeri pro n { ... }              # for-loop (sync)
-ex numeri fiet n { ... }             # for-await-of loop (async)
-ex persona fixum nomen, aetas        # object destructuring
-ex persona fixum nomen ut n          # object destructuring with alias
-ex persona fixum nomen, ceteri rest  # object destructuring with rest
-ex coords fixum [x, y, z]            # array destructuring
-ex fetchData() figendum result       # async destructuring
+ex numeri pro n { ... }              // for-loop (sync)
+ex numeri fiet n { ... }             // for-await-of loop (async)
+ex persona fixum nomen, aetas        // object destructuring
+ex persona fixum nomen ut n          // object destructuring with alias
+ex persona fixum nomen, ceteri rest  // object destructuring with rest
+ex coords fixum [x, y, z]            // array destructuring
+ex fetchData() figendum result       // async destructuring
 
 llection DSL forms:
-ex items prima 5 pro item { }        # iteration with transforms
-ex items prima 5, ultima 2 pro x {}  # multiple transforms
+ex items prima 5 pro item { }        // iteration with transforms
+ex items prima 5, ultima 2 pro x {}  // multiple transforms
 ```
 
 ### D S L Transforms
@@ -772,12 +783,12 @@ condition := expression
 **Examples:**
 
 ```fab
-ab users activus                     # boolean property shorthand
-ab users non banned                  # negated boolean property
-ab users ubi aetas >= 18             # condition with ubi
-ab users non ubi banned et suspended # negated compound condition
-ab users activus, prima 10           # filter + transforms
-ab users activus pro user { }        # iteration form
+ab users activus                     // boolean property shorthand
+ab users non banned                  // negated boolean property
+ab users ubi aetas >= 18             // condition with ubi
+ab users non ubi banned et suspended // negated compound condition
+ab users activus, prima 10           // filter + transforms
+ab users activus pro user { }        // iteration form
 ```
 
 ### Regex Literal
@@ -793,9 +804,9 @@ regexLiteral := 'sed' STRING IDENTIFIER?
 **Examples:**
 
 ```fab
-sed "\\d+"           # pattern only
-sed "hello" i        # case insensitive
-sed "^start" im      # multiple flags
+sed "\\d+"           // pattern only
+sed "hello" i        // case insensitive
+sed "^start" im      // multiple flags
 ```
 
 ### De Statement
@@ -811,8 +822,8 @@ deStmt := 'de' expression ('pro' | 'fit' | 'fiet') IDENTIFIER
 **Examples:**
 
 ```fab
-de tabula pro clavis { ... }  # from table, for each key
-de object pro k ergo scribe k # one-liner form
+de tabula pro clavis { ... }  // from table, for each key
+de object pro k ergo scribe k // one-liner form
 ```
 
 ### In Statement
@@ -827,7 +838,7 @@ inStmt := 'in' expression blockStmt
 **Examples:**
 
 ```fab
-in user { nomen = "Marcus" }  # mutation block
+in user { nomen = "Marcus" }  // mutation block
 ```
 
 ### Elige Statement
@@ -1032,10 +1043,10 @@ argumentList := (expression (',' expression)*)?
 **Examples:**
 
 ```fab
-ad "console:log" ("hello")                           # fire-and-forget
-ad "fasciculus:lege" ("file.txt") fit textus pro c { }  # sync binding
-ad "http:get" (url) fiet Response pro r { }          # async binding
-ad "http:batch" (urls) fient Response[] pro rs { }   # async plural
+ad "console:log" ("hello")                           // fire-and-forget
+ad "fasciculus:lege" ("file.txt") fit textus pro c { }  // sync binding
+ad "http:get" (url) fiet Response pro r { }          // async binding
+ad "http:batch" (urls) fient Response[] pro rs { }   // async plural
 ```
 
 ### Praepara Block
@@ -1075,10 +1086,10 @@ curatorKind := 'arena' | 'page'
 **Examples:**
 
 ```fab
-cura arena fit mem { ... }                    # arena allocator
-cura page fit mem { ... }                     # page allocator
-cura aperi("data.bin") fit fd { lege(fd) }   # generic resource
-cura connect(url) fiet conn { ... }          # async resource
+cura arena fit mem { ... }                    // arena allocator
+cura page fit mem { ... }                     // page allocator
+cura aperi("data.bin") fit fd { lege(fd) }   // generic resource
+cura connect(url) fiet conn { ... }          // async resource
 ```
 
 ### Incipit Statement
@@ -1253,6 +1264,25 @@ newExpr := 'novum' IDENTIFIER ('(' argumentList ')')? (objectLiteral | 'de' expr
 > 
 > The `de` (from) form allows dynamic overrides from variables or function results.
 
+### Finge Expression
+
+```ebnf
+fingeExpr := 'finge' IDENTIFIER ('{' fieldList '}')? ('qua' IDENTIFIER)?
+```
+
+> Latin 'finge' (form/shape) for constructing discretio variants.
+> Variant name comes first, optional fields in braces, optional qua for
+> explicit discretio type when not inferrable from context.
+
+**Examples:**
+
+```fab
+finge Click { x: 10, y: 20 }           - payload variant
+finge Click { x: 10, y: 20 } qua Event - with explicit type
+finge Active                            - unit variant
+finge Active qua Status                 - unit variant with explicit type
+```
+
 ### Lambda Expression
 
 ```ebnf
@@ -1326,16 +1356,17 @@ genusMember := fieldDecl | methodDecl
 ### Genus Member
 
 ```ebnf
-genusMember := fieldDecl | methodDecl
-fieldDecl := ('privatus' | 'protectus')? 'generis'? typeAnnotation IDENTIFIER (':' expression)?
-methodDecl := ('privatus' | 'protectus')? 'generis'? 'abstractus'? 'functio' IDENTIFIER '(' paramList ')' funcModifier* returnClause? blockStmt?
+genusMember := annotation* (fieldDecl | methodDecl)
+annotation := '@' IDENTIFIER+
+fieldDecl := 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
+methodDecl := 'functio' IDENTIFIER '(' paramList ')' funcModifier* returnClause? blockStmt?
 funcModifier := 'futura' | 'cursor' | 'curata' IDENTIFIER
 ```
 
 > Distinguishes between fields and methods by looking for 'functio' keyword.
-> Fields are public by default (struct semantics), use 'privatus' for private.
-> 'protectus' for protected visibility (subclass access).
-> 'abstractus' for abstract methods (no body, must be overridden).
+> Fields are public by default (struct semantics).
+> Use annotations for visibility: @ privatum, @ protectum.
+> Use annotations for abstract methods: @ abstracta (no body, must be overridden).
 
 ### Pactum Declaration
 

@@ -49,15 +49,15 @@ The curator kind is **optional**. When omitted, the resource expression is requi
 
 ## Well-Known Curators
 
-| Curator      | Latin meaning     | Use case              | Expression required? | Status      |
-| ------------ | ----------------- | --------------------- | -------------------- | ----------- |
-| (omitted)    | —                 | Generic resource      | yes                  | Implemented |
-| `arena`      | sand, open space  | Arena allocator       | no                   | Implemented |
-| `page`       | pagina            | Page allocator        | no                   | Implemented |
-| `liber`      | book, document    | File handle           | yes                  | Planned     |
-| `transactio` | transaction       | DB transaction        | yes                  | Planned     |
-| `mutex`      | mutual exclusion  | Lock guard            | yes                  | Planned     |
-| `conexio`    | connection        | Network/DB connection | yes                  | Planned     |
+| Curator      | Latin meaning    | Use case              | Expression required? | Status      |
+| ------------ | ---------------- | --------------------- | -------------------- | ----------- |
+| (omitted)    | —                | Generic resource      | yes                  | Implemented |
+| `arena`      | sand, open space | Arena allocator       | no                   | Implemented |
+| `page`       | pagina           | Page allocator        | no                   | Implemented |
+| `liber`      | book, document   | File handle           | yes                  | Planned     |
+| `transactio` | transaction      | DB transaction        | yes                  | Planned     |
+| `mutex`      | mutual exclusion | Lock guard            | yes                  | Planned     |
+| `conexio`    | connection       | Network/DB connection | yes                  | Planned     |
 
 ---
 
@@ -176,7 +176,8 @@ Custom resources:
 
 ```fab
 genus TempFile implet Curator {
-    privatus textus path
+    @ privatum
+    textus path
 
     functio solve() {
         dele(ego.path)
