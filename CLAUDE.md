@@ -53,6 +53,17 @@ A Latin programming language compiler. "The Roman Craftsman."
 
 See `GRAMMAR.md` for the complete syntax reference. It is auto-generated from parser source comments via `bun run grammar`.
 
+**Never assume Faber syntax.** Before writing `.fab` code:
+
+1. Check `grammatica/*.md` for the relevant grammar rules
+2. Look at existing `.fab` files in `exempla/` or `fons-fab/` for patterns
+3. Validate with `bun run faber check <file.fab>` before committing
+
+Common pitfalls:
+- Don't invent syntax (e.g., `Type?` for nullable) — verify it exists first
+- Empty collections need explicit types: `[] qua lista<T>`, `{} qua tabula<K,V>`
+- Use `ignotum` for parameters that may be null, not invented suffixes
+
 ### Primitive Types
 
 | Faber      | TypeScript | Python  | Zig          | C++            | Rust     |
