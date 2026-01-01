@@ -1556,11 +1556,22 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
     }
 
     function analyzeFunctioDeclaration(node: FunctioDeclaration): void {
-        // Validate parameters: borrowed params (de/in) cannot have defaults
+        // Validate parameters
+        let seenOptional = false;
         for (const param of node.params) {
+            // Borrowed params (de/in) cannot have defaults
             if (param.defaultValue && (param.preposition === 'de' || param.preposition === 'in')) {
                 const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.DefaultWithBorrowedParam];
                 error(`${text(param.preposition)}\n${help}`, param.position);
+            }
+
+            // Required params cannot follow optional params
+            if (param.optional || param.defaultValue) {
+                seenOptional = true;
+            } else if (seenOptional && !param.rest) {
+                // Rest params (ceteri) can come after optional
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.RequiredAfterOptional];
+                error(`${text(param.name.name)}\n${help}`, param.position);
             }
         }
 

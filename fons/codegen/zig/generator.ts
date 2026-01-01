@@ -520,14 +520,21 @@ export class ZigGenerator {
      * WHY: Zig requires type annotations on all parameters.
      *      Rest parameters use ... prefix syntax.
      *      Dual naming (textus location ut loc) uses internal name (alias) in generated code.
-     *      NOTE: Zig doesn't support default parameters. Default values are ignored.
-     *            Use optional parameters (?T) with orelse for default behavior in Zig.
+     *      Optional params (si) use ?T syntax. Caller passes null for omitted.
+     *      NOTE: Zig doesn't support default parameters directly.
+     *            Use orelse at call sites for default behavior.
      */
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name
         const name = node.alias?.name ?? node.name.name;
         const preposition = node.preposition;
-        const type = node.typeAnnotation ? this.genTypeWithPreposition(node.typeAnnotation, preposition) : 'anytype';
+        let type = node.typeAnnotation ? this.genTypeWithPreposition(node.typeAnnotation, preposition) : 'anytype';
+
+        // Optional params (si) wrap in ?T
+        if (node.optional) {
+            type = `?${type}`;
+        }
+
         return `${name}: ${type}`;
     }
 

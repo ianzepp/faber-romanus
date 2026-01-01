@@ -1463,7 +1463,7 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse single function parameter.
      *
      * GRAMMAR:
-     *   parameter := ('de' | 'in' | 'ex')? (typeAnnotation IDENTIFIER | IDENTIFIER)
+     *   parameter := ('de' | 'in' | 'ex')? 'si'? 'ceteri'? (typeAnnotation IDENTIFIER | IDENTIFIER) ('ut' IDENTIFIER)? ('vel' expression)?
      *
      * WHY: Type-first syntax: "textus name" or "de textus source"
      *      Prepositional prefixes indicate semantic roles:
@@ -1471,7 +1471,12 @@ export function parse(tokens: Token[]): ParserResult {
      *      in = in/into (mutable borrow),
      *      ex = from/out of (source)
      *
-     * EDGE: Preposition comes first (if present), then type (if present), then identifier.
+     * OPTIONAL PARAMETERS:
+     *      'si' marks a parameter as optional. Without 'vel', type becomes ignotum<T>.
+     *      With 'vel', parameter has a default value and type stays T.
+     *      Order: preposition, then si, then ceteri, then type, then name.
+     *
+     * EDGE: Preposition comes first (if present), then si, then type (if present), then identifier.
      *
      * TYPE DETECTION: Uses lookahead to detect type annotations for user-defined types.
      *   - Builtin type names (textus, numerus, etc.) are recognized directly
@@ -1485,6 +1490,13 @@ export function parse(tokens: Token[]): ParserResult {
 
         if (isPreposition(peek())) {
             preposition = advance().keyword;
+        }
+
+        // Check for optional parameter: si [type] name [vel default]
+        let optional = false;
+        if (checkKeyword('si')) {
+            advance(); // consume 'si'
+            optional = true;
         }
 
         // Check for rest parameter: ceteri [type] name
@@ -1521,14 +1533,24 @@ export function parse(tokens: Token[]): ParserResult {
         }
 
         // Check for default value: 'vel' introduces default expression
-        // textus name vel "World" -> defaults to "World" if not provided
+        // si numerus aetas vel 18 -> optional with default
         let defaultValue: Expression | undefined;
         if (checkKeyword('vel')) {
             advance(); // consume 'vel'
             defaultValue = parseExpression();
         }
 
-        return { type: 'Parameter', name, alias, defaultValue, typeAnnotation, preposition, rest, position };
+        return {
+            type: 'Parameter',
+            name,
+            alias,
+            defaultValue,
+            typeAnnotation,
+            preposition,
+            rest,
+            optional: optional || undefined,
+            position,
+        };
     }
 
     /**

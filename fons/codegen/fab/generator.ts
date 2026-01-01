@@ -261,6 +261,7 @@ export class FabGenerator {
      * Generate function parameter in Faber syntax.
      *
      * WHY: Faber uses type-first: `textus name` not `name: textus`
+     *      Order: preposition, si, ceteri, type, name, ut, vel
      */
     genParameter(node: Parameter): string {
         const parts: string[] = [];
@@ -268,6 +269,11 @@ export class FabGenerator {
         // Preposition (de/in/ex)
         if (node.preposition) {
             parts.push(node.preposition);
+        }
+
+        // Optional modifier (si)
+        if (node.optional) {
+            parts.push('si');
         }
 
         // Rest modifier

@@ -292,13 +292,14 @@ export class CppGenerator {
     /**
      * Generate function parameter.
      *
-     * WHY: C++ uses type-first syntax: "const std::string& name"
+     * WHY: C++ uses const references for complex types, value for primitives.
      *      Rest parameters use initializer_list or variadic templates.
      *      Latin prepositions encode reference semantics:
      *      de = "from/concerning" = const reference (read-only)
      *      in = "into" = mutable reference (will be modified)
      *      Dual naming (textus location ut loc) uses internal name (alias) in generated code.
      *      Default values (vel) generate = default syntax.
+     *      Optional params (si) without default use std::optional<T> = std::nullopt.
      */
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name
@@ -307,7 +308,14 @@ export class CppGenerator {
         const defaultVal = node.defaultValue ? ` = ${this.genExpression(node.defaultValue)}` : '';
 
         if (node.typeAnnotation) {
-            const type = this.genType(node.typeAnnotation);
+            let type = this.genType(node.typeAnnotation);
+
+            // Optional without default: wrap in std::optional
+            if (node.optional && !node.defaultValue) {
+                this.includes.add('<optional>');
+                type = `std::optional<${type}>`;
+                return `${type} ${name} = std::nullopt`;
+            }
 
             // Explicit prepositions override default behavior
             if (preposition === 'de') {
@@ -336,6 +344,12 @@ export class CppGenerator {
         }
 
         // No type annotation - use auto (requires C++20 abbreviated function template)
+        // Handle optional without type
+        if (node.optional && !node.defaultValue) {
+            this.includes.add('<optional>');
+            return `std::optional<auto> ${name} = std::nullopt`;
+        }
+
         // Still respect prepositions
         if (preposition === 'de') {
             return `const auto& ${name}${defaultVal}`;

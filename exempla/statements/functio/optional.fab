@@ -1,0 +1,59 @@
+# Optional parameters with si and vel
+#
+# si marks a parameter as optional
+# vel provides a default value
+#
+# GRAMMAR:
+#   parameter := (preposition)? 'si'? type name ('ut' alias)? ('vel' default)?
+
+# Optional parameter without default (receives nihil if omitted)
+functio greet(textus nomen, si textus titulus) -> textus {
+    si titulus est nihil {
+        redde scriptum("Salve, {}!", nomen)
+    }
+    redde scriptum("Salve, {} {}!", titulus, nomen)
+}
+
+# Optional parameter with default value
+functio paginate(si numerus pagina vel 1, si numerus per_pagina vel 10) -> textus {
+    redde scriptum("Page {} with {} items", pagina, per_pagina)
+}
+
+# Preposition with optional: de si (borrowed, optional without default)
+functio analyze(textus source, de si numerus depth) -> numerus {
+    si depth est nihil {
+        redde 3
+    }
+    redde depth
+}
+
+# Mixed required and optional parameters
+functio createUser(textus nomen, si numerus aetas vel 0, si bivalens activus vel verum) -> textus {
+    redde scriptum("User: {}, age: {}, active: {}", nomen, aetas, activus)
+}
+
+incipit {
+    # Without optional arg
+    scribe greet("Marcus")
+
+    # With optional arg
+    scribe greet("Marcus", "Dominus")
+
+    # Default pagination
+    scribe paginate()
+
+    # Custom pagination
+    scribe paginate(2, 25)
+
+    # Partial defaults
+    scribe paginate(5)
+
+    # With borrowed optional
+    scribe analyze("code")
+    scribe analyze("code", 5)
+
+    # Mixed args
+    scribe createUser("Julia")
+    scribe createUser("Julia", 25)
+    scribe createUser("Julia", 25, falsum)
+}

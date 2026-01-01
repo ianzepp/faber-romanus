@@ -19,7 +19,7 @@ paramList := (parameter (',' parameter)*)?
 ### Parameter
 
 ```ebnf
-parameter := ('de' | 'in' | 'ex')? (typeAnnotation IDENTIFIER | IDENTIFIER)
+parameter := ('de' | 'in' | 'ex')? 'si'? 'ceteri'? (typeAnnotation IDENTIFIER | IDENTIFIER) ('ut' IDENTIFIER)? ('vel' expression)?
 ```
 
 > Type-first syntax: "textus name" or "de textus source"
@@ -27,6 +27,11 @@ parameter := ('de' | 'in' | 'ex')? (typeAnnotation IDENTIFIER | IDENTIFIER)
 > de = from/concerning (borrowed, read-only),
 > in = in/into (mutable borrow),
 > ex = from/out of (source)
+> 
+> OPTIONAL PARAMETERS:
+> 'si' marks a parameter as optional. Without 'vel', type becomes ignotum<T>.
+> With 'vel', parameter has a default value and type stays T.
+> Order: preposition, then si, then ceteri, then type, then name.
 
 ---
 

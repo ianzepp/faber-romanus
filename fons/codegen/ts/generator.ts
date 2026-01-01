@@ -332,14 +332,20 @@ export class TsGenerator {
      * WHY: Dual naming (textus location ut loc) uses internal name (alias) in generated code.
      *      The external name is for callsite documentation only.
      *      Default values (vel) generate = default syntax.
+     *      Optional params (si) without default generate name?: type syntax.
      */
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name
         const name = node.alias?.name ?? node.name.name;
-        const typeAnno = node.typeAnnotation ? `: ${this.genType(node.typeAnnotation)}` : '';
         const prefix = node.rest ? '...' : '';
         const defaultVal = node.defaultValue ? ` = ${this.genExpression(node.defaultValue)}` : '';
-        return `${prefix}${name}${typeAnno}${defaultVal}`;
+
+        // Optional without default: name?: type
+        // Optional with default: name: type = value (default makes it optional)
+        const optionalMark = node.optional && !node.defaultValue ? '?' : '';
+        const typeAnno = node.typeAnnotation ? `: ${this.genType(node.typeAnnotation)}` : '';
+
+        return `${prefix}${name}${optionalMark}${typeAnno}${defaultVal}`;
     }
 
     /**

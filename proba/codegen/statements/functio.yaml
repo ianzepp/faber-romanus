@@ -879,3 +879,105 @@
       fab:
           - 'functio greet(textus greeting, textus name vel "World")'
           - 'scribe greeting'
+
+# =============================================================================
+# Optional Parameters (si)
+# =============================================================================
+# si marks a parameter as optional
+# - Without vel default: becomes nullable (?T for TS/Zig, Option<T> for Rust, T | None for Py)
+# - With vel default: parameter has default value
+
+# Optional parameter without default (becomes nullable)
+- name: optional parameter without default
+  faber: 'functio greet(textus name, si textus title) { scribe name }'
+  expect:
+      ts:
+          - 'function greet(name: string, title?: string)'
+      py:
+          - 'def greet(name: str, title: str | None = None):'
+      rs:
+          - 'fn greet(name: &str, title: Option<&str>)'
+      cpp:
+          - 'void greet(const std::string& name, std::optional<std::string> title = std::nullopt)'
+      zig:
+          - 'fn greet(name: []const u8, title: ?[]const u8)'
+      fab:
+          - 'functio greet(textus name, si textus title)'
+          - 'scribe name'
+
+# Optional parameter with default value
+- name: optional parameter with default value
+  faber: 'functio greet(si textus name vel "World") { scribe name }'
+  expect:
+      ts:
+          - 'function greet(name: string = "World")'
+      py:
+          - 'def greet(name: str = "World"):'
+      rs:
+          # Rust: si with vel becomes Option<T> (caller must pass Some/None)
+          - 'fn greet(name: Option<&str>)'
+      cpp:
+          - 'void greet(const std::string& name = std::string("World"))'
+      zig:
+          # Zig: si wraps in optional regardless of default
+          - 'fn greet(name: ?[]const u8)'
+      fab:
+          - 'functio greet(si textus name vel "World")'
+          - 'scribe name'
+
+# Optional numeric parameter with default
+- name: optional numeric parameter with default
+  faber: 'functio paginate(si numerus page vel 1, si numerus limit vel 10) -> textus { redde "ok" }'
+  expect:
+      ts:
+          - 'function paginate(page: number = 1, limit: number = 10): string'
+      py:
+          - 'def paginate(page: int = 1, limit: int = 10) -> str:'
+      rs:
+          - 'fn paginate(page: Option<i64>, limit: Option<i64>) -> String'
+      cpp:
+          - 'std::string paginate(int64_t page = 1, int64_t limit = 10)'
+      zig:
+          - 'fn paginate(page: ?i64, limit: ?i64)'
+      fab:
+          - 'functio paginate(si numerus page vel 1, si numerus limit vel 10) -> textus'
+          - 'redde "ok"'
+
+# Mixed required and optional parameters
+- name: mixed required and optional parameters
+  faber: 'functio create(textus name, si numerus age, si bivalens active vel verum) { scribe name }'
+  expect:
+      ts:
+          - 'function create(name: string, age?: number, active: boolean = true)'
+      py:
+          - 'def create(name: str, age: int | None = None, active: bool = True):'
+      rs:
+          - 'fn create(name: &str, age: Option<i64>, active: Option<bool>)'
+      cpp:
+          - 'void create(const std::string& name, std::optional<int64_t> age = std::nullopt, bool active = true)'
+      zig:
+          - 'fn create(name: []const u8, age: ?i64, active: ?bool)'
+      fab:
+          - 'functio create(textus name, si numerus age, si bivalens active vel verum)'
+          - 'scribe name'
+
+# Preposition with optional (de si - borrowed optional)
+- name: preposition with optional parameter
+  faber: 'functio analyze(textus source, de si numerus depth) { scribe source }'
+  expect:
+      ts:
+          - 'function analyze(source: string, depth?: number)'
+      py:
+          - 'def analyze(source: str, depth: int | None = None):'
+      rs:
+          # de si = borrowed optional -> Option<&T>
+          - 'fn analyze(source: &str, depth: Option<&i64>)'
+      cpp:
+          # de = const ref, si = optional
+          - 'void analyze(const std::string& source, std::optional<int64_t> depth = std::nullopt)'
+      zig:
+          # de = borrowed (const pointer), si = optional -> ?*const T
+          - 'fn analyze(source: []const u8, depth: ?*const i64)'
+      fab:
+          - 'functio analyze(textus source, de si numerus depth)'
+          - 'scribe source'

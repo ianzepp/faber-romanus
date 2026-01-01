@@ -281,14 +281,20 @@ export class RsGenerator {
      *      de = "from/concerning" = borrowed reference (&T)
      *      in = "into" = mutable reference (&mut T)
      *      Dual naming (textus location ut loc) uses internal name (alias) in generated code.
-     *      NOTE: Rust doesn't support default parameters natively. Default values are ignored.
-     *            Use Option<T> and unwrap_or() for optional parameters in Rust.
+     *      NOTE: Rust doesn't support default parameters natively.
+     *            Optional params (si) become Option<T>, caller passes None for omitted.
      */
     genParameter(node: Parameter): string {
         // Use alias (internal name) if present, otherwise external name
         const name = node.alias?.name ?? node.name.name;
         const preposition = node.preposition;
-        const type = node.typeAnnotation ? this.genTypeWithPreposition(node.typeAnnotation, preposition) : '_';
+        let type = node.typeAnnotation ? this.genTypeWithPreposition(node.typeAnnotation, preposition) : '_';
+
+        // Optional params (si) wrap in Option<T>
+        // Default values are not directly supported; caller must pass Some(value) or None
+        if (node.optional) {
+            type = `Option<${type}>`;
+        }
 
         return `${name}: ${type}`;
     }

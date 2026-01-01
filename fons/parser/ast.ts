@@ -457,14 +457,19 @@ export interface FunctioDeclaration extends BaseNode {
  *   textus name vel "World"   -> defaults to "World" if not provided
  *   NOTE: Defaults are invalid with de/in prepositions (borrowed params can't have defaults)
  *
+ * Optional parameters:
+ *   'si' marks a parameter as optional. Without 'vel', the type becomes ignotum<T>.
+ *   With 'vel', the parameter has a default value and the type stays T.
+ *
  * Examples:
  *   textus nomen              -> regular param
  *   de textus source          -> borrowed/read-only param
  *   in lista<T> items         -> mutable borrow param
  *   ceteri lista<textus> args -> rest param (...args: string[])
  *   textus location ut loc    -> dual naming (external: location, internal: loc)
- *   textus name vel "World"   -> default value
- *   textus loc ut l vel "Roma" -> dual naming with default
+ *   si numerus aetas          -> optional param (type becomes ignotum<numerus>)
+ *   si numerus aetas vel 18   -> optional with default (type stays numerus)
+ *   de si numerus depth vel 3 -> borrowed, optional, with default
  */
 export interface Parameter extends BaseNode {
     type: 'Parameter';
@@ -475,6 +480,7 @@ export interface Parameter extends BaseNode {
     case?: Case;
     preposition?: string;
     rest?: boolean;
+    optional?: boolean; // WHY: 'si' marks parameter as optional
 }
 
 /**

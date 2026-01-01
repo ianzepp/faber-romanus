@@ -48,6 +48,7 @@ export enum SemanticErrorCode {
     CedeOutsideAsyncOrGenerator = 'S009',
     AwaitOutsideAsync = 'S010',
     DefaultWithBorrowedParam = 'S011',
+    RequiredAfterOptional = 'S015',
     // Import resolution errors
     ModuleNotFound = 'S012',
     CircularImport = 'S013',
@@ -108,6 +109,10 @@ export const SEMANTIC_ERRORS = {
     [SemanticErrorCode.DefaultWithBorrowedParam]: {
         text: (preposition: string) => `Cannot use default value with '${preposition}' (borrowed) parameter`,
         help: "Default values require owned parameters. Remove the 'de' or 'in' preposition, or remove the default value.",
+    },
+    [SemanticErrorCode.RequiredAfterOptional]: {
+        text: (name: string) => `Required parameter '${name}' cannot follow optional parameters`,
+        help: "Optional parameters (marked with 'si') must come after all required parameters.",
     },
     [SemanticErrorCode.ModuleNotFound]: {
         text: (path: string) => `Cannot find module '${path}'`,
