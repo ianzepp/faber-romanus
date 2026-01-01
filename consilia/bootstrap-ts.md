@@ -34,6 +34,8 @@ Rewrite the Faber compiler in Faber, targeting TypeScript/Bun.
 | Statement dispatch   | `sententia/index.fab`    | 1     | Complete                   |
 | Declarations         | `sententia/declara.fab`  | 1     | Complete                   |
 | Control flow         | `sententia/imperium.fab` | 1     | Complete                   |
+| Pattern matching     | `sententia/fluxus.fab`   | 1     | Complete                   |
+| Entry/resources      | `sententia/initus.fab`   | 1     | Complete                   |
 | Action statements    | `sententia/actio.fab`    | 1     | Complete                   |
 | Error statements     | `sententia/error.fab`    | 1     | Complete                   |
 | Block/program        | `sententia/massa.fab`    | 1     | Complete                   |
@@ -43,7 +45,7 @@ Rewrite the Faber compiler in Faber, targeting TypeScript/Bun.
 | Unary/postfix        | `expressia/unaria.fab`   | 1     | Complete                   |
 | Primary expressions  | `expressia/primaria.fab` | 1     | Complete                   |
 
-**All 23 fons-fab files compile successfully.**
+**All 27 fons-fab files compile successfully (~6,259 lines).**
 
 ### Resolvitor Pattern
 
@@ -103,12 +105,11 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 
 ### Remaining Modules
 
-| Module            | Source                 | Est. Lines  | Notes                 |
-| ----------------- | ---------------------- | ----------- | --------------------- |
-| Parser (complete) | `fons/parser/index.ts` | ~3,500 more | Remaining statements  |
-| Semantic          | `fons/semantic/`       | ~2,600      | Type checking, scopes |
-| Codegen (TS)      | `fons/codegen/ts/`     | ~2,000      | TS target only        |
-| CLI               | `fons/cli.ts`          | ~600        | Entry point           |
+| Module   | Source             | Est. Lines | Notes                 |
+| -------- | ------------------ | ---------- | --------------------- |
+| Semantic | `fons/semantic/`   | ~2,600     | Type checking, scopes |
+| Codegen  | `fons/codegen/ts/` | ~2,000     | TS target only        |
+| CLI      | `fons/cli.ts`      | ~600       | Entry point           |
 
 ## Bootstrap Strategy
 
@@ -322,7 +323,7 @@ diff -r opus/ opus2/  # Should be identical
 
 | Phase       | Scope        | Est. Days      | Status      |
 | ----------- | ------------ | -------------- | ----------- |
-| Parser      | ~2,500 lines | 5-7            | Complete    |
+| Parser      | ~6,259 lines | 5-7            | ✅ Complete |
 | Semantic    | ~2,600 lines | 3-4            | Not started |
 | Codegen     | ~2,000 lines | 3-4            | Not started |
 | CLI         | ~600 lines   | 1              | Not started |
