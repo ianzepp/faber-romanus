@@ -1235,7 +1235,7 @@ scriptum("{} + {} = {}", a, b, a + b)
 ### Lege Expression
 
 ```ebnf
-legeExpr := 'lege' '(' ')'
+legeExpr := 'lege' ('lineam')?
 ```
 
 ### Qua Expression
