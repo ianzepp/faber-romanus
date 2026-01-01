@@ -23,128 +23,128 @@ ex "../expressia/index" importa genExpressia
 functio genSententia(Sententia stmt, TsGenerator g) -> textus {
     discerne stmt {
         # Block
-        si MassaSententia pro massaLocus, massaCorpus {
-            redde genMassa(massaCorpus qua lista<Sententia>, g)
+        si MassaSententia ut s {
+            redde genMassa(s.corpus qua lista<Sententia>, g)
         }
 
         # Variable declarations
-        si VariaSententia pro variaLocus, variaSpecies, variaNomen, variaTypus, variaValor {
-            redde genVaria(variaSpecies qua VariaGenus, variaNomen qua textus, variaTypus, variaValor, g)
+        si VariaSententia ut s {
+            redde genVaria(s.species qua VariaGenus, s.nomen qua textus, s.typus, s.valor, g)
         }
 
-        si ImportaSententia pro importaLocus, importaFons, importaSpecs, importaTotum, importaTotumAlias {
-            redde genImporta(importaFons qua textus, importaSpecs qua lista<ImportaSpecificator>, importaTotum qua bivalens, importaTotumAlias, g)
+        si ImportaSententia ut s {
+            redde genImporta(s.fons qua textus, s.specificatores qua lista<ImportaSpecificator>, s.totum qua bivalens, s.totumAlias, g)
         }
 
-        si DestructuraSententia pro destLocus, destFons, destSpecies, destSpecs {
-            redde genDestructura(destFons, destSpecies qua VariaGenus, destSpecs qua lista<ImportaSpecificator>, g)
+        si DestructuraSententia ut s {
+            redde genDestructura(s.fons, s.species qua VariaGenus, s.specificatores qua lista<ImportaSpecificator>, g)
         }
 
         # Function declaration
-        si FunctioDeclaratio pro funcLocus, funcNomen, funcGenera, funcParams, funcReditus, funcCorpus, funcAsynca, funcGen, funcAbstr, funcStruct, funcVis, funcVerb {
-            redde genFunctio(funcNomen qua textus, funcGenera, funcParams qua lista<Parametrum>, funcReditus, funcCorpus, funcAsynca qua bivalens, funcGen qua bivalens, funcStruct qua bivalens, g)
+        si FunctioDeclaratio ut f {
+            redde genFunctio(f.nomen qua textus, f.generaParametra, f.parametra qua lista<Parametrum>, f.typusReditus, f.corpus, f.asynca qua bivalens, f.generator qua bivalens, f.structor qua bivalens, g)
         }
 
         # Type declarations
-        si GenusDeclaratio pro genusLocus, genusNomen, genusGenera, genusExt, genusImpl, genusAbstr, genusCampi, genusStruct, genusMeth {
-            redde genGenus(genusNomen qua textus, genusGenera, genusExt, genusImpl, genusAbstr qua bivalens, genusCampi qua lista<CampusDeclaratio>, genusStruct, genusMeth qua lista<Sententia>, g)
+        si GenusDeclaratio ut s {
+            redde genGenus(s.nomen qua textus, s.generaParametra, s.extendit, s.implet, s.abstractum qua bivalens, s.campi qua lista<CampusDeclaratio>, s.structor, s.methodi qua lista<Sententia>, g)
         }
 
-        si PactumDeclaratio pro pactumLocus, pactumNomen, pactumGenera, pactumMeth {
-            redde genPactum(pactumNomen qua textus, pactumGenera, pactumMeth qua lista<PactumMethodus>, g)
+        si PactumDeclaratio ut s {
+            redde genPactum(s.nomen qua textus, s.generaParametra, s.methodi qua lista<PactumMethodus>, g)
         }
 
-        si TypusAliasDeclaratio pro typAliasLocus, typAliasNomen, typAliasTypus, typAliasScopus {
-            redde genTypusAlias(typAliasNomen qua textus, typAliasTypus qua TypusAnnotatio, typAliasScopus, g)
+        si TypusAliasDeclaratio ut s {
+            redde genTypusAlias(s.nomen qua textus, s.typus qua TypusAnnotatio, s.scopusNomen, g)
         }
 
-        si OrdoDeclaratio pro ordoLocus, ordoNomen, ordoMembra {
-            redde genOrdo(ordoNomen qua textus, ordoMembra qua lista<OrdoMembrum>, g)
+        si OrdoDeclaratio ut s {
+            redde genOrdo(s.nomen qua textus, s.membra qua lista<OrdoMembrum>, g)
         }
 
-        si DiscretioDeclaratio pro discrLocus, discrNomen, discrGenera, discrVar {
-            redde genDiscretio(discrNomen qua textus, discrGenera, discrVar qua lista<VariansDeclaratio>, g)
+        si DiscretioDeclaratio ut s {
+            redde genDiscretio(s.nomen qua textus, s.generaParametra, s.variantes qua lista<VariansDeclaratio>, g)
         }
 
         # Control flow
-        si SiSententia pro siLocus, siCond, siCons, siAlt, siCape {
-            redde genSi(siCond, siCons qua Sententia, siAlt, g)
+        si SiSententia ut s {
+            redde genSi(s.condicio, s.consequens qua Sententia, s.alternans, g)
         }
 
-        si DumSententia pro dumLocus, dumCond, dumCorpus, dumCape {
-            redde genDum(dumCond, dumCorpus qua Sententia, g)
+        si DumSententia ut s {
+            redde genDum(s.condicio, s.corpus qua Sententia, g)
         }
 
-        si IteratioSententia pro iterLocus, iterSpec, iterVar, iterIter, iterCorpus, iterAsynca, iterCape {
-            redde genIteratio(iterSpec qua IteratioGenus, iterVar qua textus, iterIter, iterCorpus qua Sententia, iterAsynca qua bivalens, g)
+        si IteratioSententia ut s {
+            redde genIteratio(s.species qua IteratioGenus, s.variabilis qua textus, s.iterabile, s.corpus qua Sententia, s.asynca qua bivalens, g)
         }
 
-        si InSententia pro inLocus, inObj, inCorpus {
-            fixum obj = genExpressia(inObj, g)
-            fixum block = genSententia(inCorpus qua Sententia, g)
+        si InSententia ut s {
+            fixum obj = genExpressia(s.obiectum, g)
+            fixum block = genSententia(s.corpus qua Sententia, g)
             redde scriptum("{}// in {}\n{}", g.ind(), obj, block)
         }
 
-        si EligeSententia pro eligeLocus, eligeDisc, eligeCasus, eligePraed, eligeCape {
-            redde genElige(eligeDisc, eligeCasus qua lista<EligeCasus>, eligePraed, g)
+        si EligeSententia ut s {
+            redde genElige(s.discriminans, s.casus qua lista<EligeCasus>, s.praedefinitum, g)
         }
 
-        si DiscerneSententia pro discerneLocus, discerneDisc, discerneCasus {
-            redde genDiscerne(discerneDisc, discerneCasus qua lista<VariansCasus>, g)
+        si DiscerneSententia ut s {
+            redde genDiscerne(s.discriminans, s.casus qua lista<VariansCasus>, g)
         }
 
-        si CustodiSententia pro custodiLocus, custodiClaus {
-            redde genCustodi(custodiClaus qua lista<CustodiClausula>, g)
+        si CustodiSententia ut s {
+            redde genCustodi(s.clausulae qua lista<CustodiClausula>, g)
         }
 
         # Error handling
-        si TemptaSententia pro temptaLocus, temptaCorpus, temptaCape, temptaDemum {
-            redde genTempta(temptaCorpus qua Sententia, temptaCape, temptaDemum, g)
+        si TemptaSententia ut s {
+            redde genTempta(s.corpus qua Sententia, s.cape, s.demum, g)
         }
 
-        si IaceSententia pro iaceLocus, iaceFatale, iaceArg {
-            redde genIace(iaceFatale qua bivalens, iaceArg, g)
+        si IaceSententia ut s {
+            redde genIace(s.fatale qua bivalens, s.argumentum, g)
         }
 
-        si FacSententia pro facLocus, facCorpus, facCape, facCond {
-            redde genFac(facCorpus qua Sententia, facCond, g)
+        si FacSententia ut s {
+            redde genFac(s.corpus qua Sententia, s.condicio, g)
         }
 
-        si AdfirmaSententia pro adfLocus, adfCond, adfNuntius {
-            redde genAdfirma(adfCond, adfNuntius, g)
+        si AdfirmaSententia ut s {
+            redde genAdfirma(s.condicio, s.nuntius, g)
         }
 
         # Actions
-        si ScribeSententia pro scribeLocus, scribeGradus, scribeArgs {
-            redde genScribe(scribeGradus qua ScribeGradus, scribeArgs qua lista<Expressia>, g)
+        si ScribeSententia ut s {
+            redde genScribe(s.gradus qua ScribeGradus, s.argumenta qua lista<Expressia>, g)
         }
 
-        si ReddeSententia pro reddeLocus, reddeValor {
-            redde genRedde(reddeValor, g)
+        si ReddeSententia ut s {
+            redde genRedde(s.valor, g)
         }
 
-        si RumpeSententia pro rumpeLocus {
+        si RumpeSententia {
             redde scriptum("{}break;", g.ind())
         }
 
-        si PergeSententia pro pergeLocus {
+        si PergeSententia {
             redde scriptum("{}continue;", g.ind())
         }
 
-        si ExpressiaSententia pro exprLocus, exprExpr {
-            redde scriptum("{}{};", g.ind(), genExpressia(exprExpr, g))
+        si ExpressiaSententia ut s {
+            redde scriptum("{}{};", g.ind(), genExpressia(s.expressia, g))
         }
 
-        si IncipitSententia pro incipitLocus, incipitCorpus, incipitErgo {
-            redde genIncipit(incipitCorpus, incipitErgo, g)
+        si IncipitSententia ut s {
+            redde genIncipit(s.corpus, s.ergo, g)
         }
 
-        si IncipietSententia pro incipietLocus, incipietCorpus, incipietErgo {
-            redde genIncipiet(incipietCorpus, incipietErgo, g)
+        si IncipietSententia ut s {
+            redde genIncipiet(s.corpus, s.ergo, g)
         }
 
-        si CuraSententia pro curaLocus, curaCurator, curaRes, curaVinc, curaTypus, curaAsynca, curaCorpus, curaCape {
-            redde genCura(curaRes, curaVinc qua textus, curaCorpus qua Sententia, curaAsynca qua bivalens, g)
+        si CuraSententia ut s {
+            redde genCura(s.res, s.vinculum qua textus, s.corpus qua Sententia, s.asynca qua bivalens, g)
         }
 
         si AdSententia {
@@ -152,16 +152,16 @@ functio genSententia(Sententia stmt, TsGenerator g) -> textus {
         }
 
         # Tests
-        si ProbandumSententia pro probandumLocus, probandumNomen, probandumCorpus {
-            redde genProbandum(probandumNomen qua textus, probandumCorpus qua lista<Sententia>, g)
+        si ProbandumSententia ut s {
+            redde genProbandum(s.nomen qua textus, s.corpus qua lista<Sententia>, g)
         }
 
-        si ProbaSententia pro probaLocus, probaNomen, probaMod, probaRatio, probaCorpus {
-            redde genProba(probaNomen qua textus, probaMod, probaCorpus qua Sententia, g)
+        si ProbaSententia ut s {
+            redde genProba(s.nomen qua textus, s.modificator, s.corpus qua Sententia, g)
         }
 
-        si PraeparaMassa pro praeparaLocus, praeparaTempus, praeparaAsynca, praeparaOmnia, praeparaCorpus {
-            redde genPraepara(praeparaTempus qua PraeparaTempus, praeparaAsynca qua bivalens, praeparaOmnia qua bivalens, praeparaCorpus qua Sententia, g)
+        si PraeparaMassa ut s {
+            redde genPraepara(s.tempus qua PraeparaTempus, s.asynca qua bivalens, s.omnia qua bivalens, s.corpus qua Sententia, g)
         }
     }
 
