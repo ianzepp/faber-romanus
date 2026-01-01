@@ -145,11 +145,31 @@ Note: Module resolution (`modules.ts`) skipped — requires file I/O not yet in 
 
 Port only the TS target from `fons/codegen/ts/`:
 
-1. Statement generators
-2. Expression generators
-3. Type emission
+1. Generator class with state (`depth`, `inGenerator`, `inFlumina`, etc.)
+2. Statement generators (one file per statement type)
+3. Expression generators (one file per expression type)
+4. Type emission (Latin → TypeScript type mapping)
+5. Preamble generation based on `RequiredFeatures`
 
-Skip other targets (py, rs, cpp, zig, fab) — they can be added later.
+**Architecture decisions:**
+
+- **Keep current file structure** — One file per node type mirrors the TS codebase
+- **Drop `semi` parameter** — Hardcode semicolons; no Faber code uses configurable semicolons
+- **Simplify `RequiredFeatures`** — Keep: `lista`, `tabula`, `copia`, `flumina`, `decimal`, `regex`. Drop Python/C++ specific fields.
+- **Port as-is first** — Refactor after bootstrap works, not before
+
+**Target languages (post-bootstrap):**
+
+| Target | Keep | Rationale                                                                   |
+| ------ | ---- | --------------------------------------------------------------------------- |
+| TS     | ✅   | Bootstrap, web, primary target                                              |
+| Zig    | ✅   | Native, systems, explicit memory                                            |
+| Rust   | ✅   | Native alternative, WASM, ownership model aligns with Faber's `de`/`in`     |
+| Fab    | ✅   | Self-hosting, canonical formatting                                          |
+| Python | ❌   | Dynamic mismatch, maintenance burden, 7+ special fields in RequiredFeatures |
+| C++    | ❌   | No audience, no compelling differentiator                                   |
+
+After bootstrap: remove `fons/codegen/py/` and `fons/codegen/cpp/`.
 
 ### Phase 4: CLI (`fons-fab/cli.fab`)
 
@@ -342,3 +362,34 @@ diff -r opus/ opus2/  # Should be identical
 
 1. **Phase 3: TypeScript Codegen** — Port `fons/codegen/ts/` to Faber
 2. **Phase 4: CLI** — Create `fons-fab/cli.fab` entry point
+3. **Post-bootstrap cleanup** — Remove Python and C++ targets from `fons/codegen/`
+
+## Design Decisions Log
+
+### 2026-01-01: Target Language Reduction
+
+**Decision:** Drop Python and C++ as codegen targets. Keep TS, Zig, Rust, Fab.
+
+**Rationale:**
+
+- **Python:** Dynamic typing fights Faber's static model. Heavy maintenance burden (7+ Python-specific fields in `RequiredFeatures`, special syntax handling everywhere). No clear audience — Python users write Python.
+- **C++:** No compelling use case. "Because it exists" isn't a roadmap.
+- **Rust stays:** Shares borrowing semantics with Zig (aligns with `de`/`in` prepositions), has mindshare, provides WASM path.
+
+**Impact:** Reduces target count from 6 to 4. Every language feature now costs 4x instead of 6x implementation effort. `RequiredFeatures` can drop ~10 Python-specific fields.
+
+### 2026-01-01: Codegen Architecture
+
+**Decision:** Port TS codegen as-is. No refactoring before bootstrap.
+
+**Rationale:**
+
+- Current design works. It's not elegant but it's mechanical.
+- Refactoring in TypeScript before bootstrap is wasted effort — the refactored code would need porting anyway.
+- Once bootstrap works, refactor in Faber itself (dog-fooding).
+
+**Specific changes:**
+
+- Drop `semi` parameter (hardcode `true` for TS)
+- Simplify `RequiredFeatures` to: `lista`, `tabula`, `copia`, `flumina`, `decimal`, `regex`
+- Accept dispatch switch duplication for now — Faber's `discerne` will clean it up post-bootstrap
