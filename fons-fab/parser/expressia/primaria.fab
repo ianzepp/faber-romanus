@@ -20,7 +20,8 @@
 
 ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
-ex "../../ast/expressia" importa Expressia, LitteraGenus
+ex "../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum
+ex "../../ast/typus" importa TypusAnnotatio
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
@@ -175,37 +176,162 @@ functio parseSeriesExpressia(Resolvitor r) -> Expressia {
 # Parse object literal
 #
 # GRAMMAR: objectLiteral := '{' (property (',' property)*)? '}'
-#          property := (IDENTIFIER | STRING | '[' expr ']') ':' expression
-#                    | IDENTIFIER  # shorthand
+#          property := (IDENTIFIER | STRING) ':' expression
+#                    | '[' expr ']' ':' expression  # computed key
+#                    | IDENTIFIER                    # shorthand { name } = { name: name }
+#                    | 'sparge' expression          # spread: sparge obj
+#
+# Examples:
+#   {}
+#   { name: "Alice" }
+#   { name: "Alice", age: 30 }
+#   { name }                      # shorthand
+#   { [key]: value }              # computed
+#   { sparge base, extra: 1 }    # spread
 functio parseObiectumExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
-    # TODO: Full object literal parsing
-    # For now, just consume braces and return empty object
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
+
+    varia proprietates = [] qua lista<ObiectumProprietas>
+
+    # Parse properties until closing brace
+    si non p.proba(SymbolumGenus.UncusDex) {
+        fac {
+            fixum propLocus = p.specta(0).locus
+
+            # Check for spread: sparge expr
+            si p.probaVerbum("sparge") {
+                p.procede()
+                fixum argumentum = r.expressia()
+
+                # Add as DispersioElementum property
+                # WHY: We wrap spread in ObiectumProprietas with special marker
+                #      by using the spread expression as both key and value
+                proprietates.adde({
+                    locus: propLocus,
+                    clavis: argumentum,
+                    valor: argumentum,
+                    brevitas: falsum,
+                    computatum: falsum
+                } qua ObiectumProprietas)
+            } secus {
+                # Parse the key
+                varia clavis = nihil qua Expressia?
+                varia computatum = falsum
+
+                # Computed property: [expr]
+                si p.congruet(SymbolumGenus.AngulusSin) {
+                    clavis = r.expressia()
+                    p.expecta(SymbolumGenus.AngulusDex, ParserErrorCodice.ExpectaturAngulusDex)
+                    computatum = verum
+                }
+                # String key: "name"
+                sin p.proba(SymbolumGenus.Textus) {
+                    fixum strSym = p.procede()
+                    clavis = finge Littera {
+                        locus: strSym.locus,
+                        species: LitteraGenus.Textus,
+                        crudus: strSym.valor
+                    } qua Expressia
+                }
+                # Identifier key: name
+                secus {
+                    fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
+                    clavis = finge Nomen {
+                        locus: nomenSym.locus,
+                        valor: nomenSym.valor
+                    } qua Expressia
+                }
+
+                # Check for colon (value follows) or shorthand
+                si p.congruet(SymbolumGenus.Colon) {
+                    # key: value
+                    fixum valor = r.expressia()
+
+                    proprietates.adde({
+                        locus: propLocus,
+                        clavis: clavis,
+                        valor: valor,
+                        brevitas: falsum,
+                        computatum: computatum
+                    } qua ObiectumProprietas)
+                } secus {
+                    # Shorthand: { name } means { name: name }
+                    # Only valid for identifier keys
+                    proprietates.adde({
+                        locus: propLocus,
+                        clavis: clavis,
+                        valor: clavis,
+                        brevitas: verum,
+                        computatum: falsum
+                    } qua ObiectumProprietas)
+                }
+            }
+        } dum p.congruet(SymbolumGenus.Virgula) et non p.proba(SymbolumGenus.UncusDex)
+    }
+
     p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
 
     redde finge ObiectumExpressia {
         locus: locus,
-        proprietates: [] qua lista<ObiectumProprietas>
+        proprietates: proprietates
     } qua Expressia
 }
 
 # Parse lambda expression
 #
-# GRAMMAR: lambdaExpr := 'pro' params? (':' expression | blockStmt)
-#          params := IDENTIFIER (',' IDENTIFIER)*
+# GRAMMAR:
+#   lambdaExpr := 'pro' params? ('->' type)? ':' expression
+#   params := IDENTIFIER (',' IDENTIFIER)*
+#
+# Examples:
+#   pro: 42                       # zero params
+#   pro x: x * 2                  # single param
+#   pro x, y: x + y               # multiple params
+#   pro x -> numerus: x * 2       # with return type
+#
+# Note: Block form (pro x { ... }) requires Sententia in corpus,
+#       which this AST doesn't support yet. Expression form only.
 functio parseLambdaExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
 
-    # TODO: Full lambda parsing
-    # For now, just consume 'pro' and return placeholder
+    # Consume 'pro'
     p.expectaVerbum("pro", ParserErrorCodice.ExpectaturPro)
 
-    redde finge Nomen {
+    varia parametra = [] qua lista<LambdaParametrum>
+
+    # Check for immediate : or -> (zero-param lambda)
+    si non p.proba(SymbolumGenus.Colon) et non p.proba(SymbolumGenus.Sagitta) {
+        # Parse parameters until we hit : or ->
+        fac {
+            fixum paramLocus = p.specta(0).locus
+            fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
+
+            parametra.adde({
+                locus: paramLocus,
+                nomen: nomenSym.valor,
+                typus: nihil
+            } qua LambdaParametrum)
+        } dum p.congruet(SymbolumGenus.Virgula)
+    }
+
+    # Optional return type: -> Type
+    varia typusReditus = nihil qua TypusAnnotatio?
+    si p.congruet(SymbolumGenus.Sagitta) {
+        typusReditus = r.adnotatio()
+    }
+
+    # Expression body: : expr
+    p.expecta(SymbolumGenus.Colon, ParserErrorCodice.ExpectaturColon)
+    fixum corpus = r.expressia()
+
+    redde finge LambdaExpressia {
         locus: locus,
-        valor: "lambda_placeholder"
+        parametra: parametra,
+        corpus: corpus,
+        typusReditus: typusReditus
     } qua Expressia
 }

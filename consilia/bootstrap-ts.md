@@ -41,7 +41,7 @@ Rewrite the Faber compiler in Faber, targeting TypeScript/Bun.
 | Expression entry     | `expressia/index.fab`    | 1     | Complete                   |
 | Binary operators     | `expressia/binaria.fab`  | 1     | Complete                   |
 | Unary/postfix        | `expressia/unaria.fab`   | 1     | Complete                   |
-| Primary expressions  | `expressia/primaria.fab` | 1     | Partial (see below)        |
+| Primary expressions  | `expressia/primaria.fab` | 1     | Complete                   |
 
 **All 23 fons-fab files compile successfully.**
 
@@ -86,7 +86,7 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 - `parser/typus.fab` - Type annotations with generics, nullable, array shorthand
 - `expressia/binaria.fab` - Full precedence chain (assignment → ternary → logical → comparison → arithmetic)
 - `expressia/unaria.fab` - Prefix operators (non, -, ~, cede, novum), postfix (call, member, qua)
-- `expressia/primaria.fab` - Literals, identifiers, ego, arrays, grouped expressions
+- `expressia/primaria.fab` - Literals, identifiers, ego, arrays, objects, lambdas, grouped expressions
 - `sententia/index.fab` - Statement dispatcher routing to all parsers
 - `sententia/declara.fab` - functio, genus, pactum, ordo, discretio, typus, importa
 - `sententia/imperium.fab` - si/sin/secus, dum, ex...pro, de...pro
@@ -94,12 +94,6 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 - `sententia/error.fab` - tempta/cape/demum, fac...dum, adfirma
 - `sententia/massa.fab` - Block parsing, program parsing
 - `sententia/varia.fab` - Variable declarations, destructuring
-
-**Partially implemented (stubs):**
-
-- `expressia/primaria.fab`:
-    - `parseObiectumExpressia()` - object literals (just returns empty object)
-    - `parseLambdaExpressia()` - lambdas (just returns placeholder)
 
 **Not yet implemented:**
 
@@ -120,16 +114,15 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 
 ## Bootstrap Strategy
 
-### Phase 1: Parser (`fons-fab/parser/`) — 90% COMPLETE
+### Phase 1: Parser (`fons-fab/parser/`) — 95% COMPLETE
 
 1. ✅ Create `genus Parser` with token stream state
 2. ✅ Create `pactum Resolvitor` for mutual recursion
 3. ✅ Implement `Parsator` (Resolvitor implementation)
 4. ✅ Restructure AST as `discretio` variants with `finge`
-5. ✅ Expression parsers (binary, unary, postfix, primary)
+5. ✅ Expression parsers (binary, unary, postfix, primary, objects, lambdas)
 6. ✅ Statement dispatcher and most statement parsers
-7. ⏳ Complete object literal and lambda expression parsers
-8. ⏳ Add remaining statements (elige, discerne, custodi, probandum, incipit, cura, ad)
+7. ⏳ Add remaining statements (elige, discerne, custodi, probandum, incipit, cura, ad)
 
 ### Phase 2: Semantic Analyzer (`fons-fab/semantic/`)
 
@@ -258,7 +251,7 @@ parser/
     ├── index.fab          # Entry point
     ├── binaria.fab        # Full precedence chain
     ├── unaria.fab         # Prefix and postfix
-    └── primaria.fab       # Terminals (partial: object/lambda stubbed)
+    └── primaria.fab       # Terminals (literals, identifiers, objects, lambdas)
 ```
 
 ## Lessons Learned
@@ -328,12 +321,10 @@ diff -r opus/ opus2/  # Should be identical
 
 ## Next Steps
 
-1. **Complete `parseObiectumExpressia()`** — Object literals with properties, shorthand, computed keys
-2. **Complete `parseLambdaExpressia()`** — `pro x: expr` and `pro x { stmts }` forms
-3. **Add remaining statements**:
+1. **Add remaining statements**:
     - `elige` (switch), `discerne` (pattern match), `custodi` (guard)
     - `probandum`/`proba`/`praepara` (testing)
     - `incipit`/`incipiet` (entry points)
     - `cura...fit` (resource management)
     - `ad` (scoped blocks)
-4. **Begin Phase 2: Semantic Analyzer**
+2. **Begin Phase 2: Semantic Analyzer**

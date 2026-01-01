@@ -1,5 +1,5 @@
 # Base AST node types shared by all nodes
-//
+#
 # WHY: Every AST node needs position info for error messages.
 #      Comments attach to nodes for formatting preservation.
 

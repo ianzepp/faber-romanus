@@ -1,5 +1,5 @@
 # Expression AST - All expression types as a unified discretio
-//
+#
 # WHY: Single file defines all expression variants for pattern matching.
 #      Parsers construct variants with `finge VariantName { ... } qua Expressia`.
 

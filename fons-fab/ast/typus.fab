@@ -1,7 +1,7 @@
 # Type System AST Nodes
-//
+#
 # Type annotations, type parameters, and related constructs.
-//
+#
 # LATIN VOCABULARY:
 # - typus = type
 # - adnotatio = annotation

@@ -1,5 +1,5 @@
 # Position and Span types for source location tracking
-//
+#
 # WHY: Every AST node and token needs location info for error messages.
 #      Locus is a single point; Tractus is a range.
 

@@ -1,5 +1,5 @@
 # Statement AST - All statement types as a unified discretio
-//
+#
 # WHY: Single file defines all statement variants for pattern matching.
 #      Parsers construct variants with `finge VariantName { ... } qua Sententia`.
 
