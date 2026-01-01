@@ -1,12 +1,12 @@
 # Variable Declaration Parsers
-///
+#
 # Variable declarations, destructuring patterns, and related constructs.
-///
+#
 # GRAMMAR:
 #   varDecl := ('varia' | 'fixum' | 'figendum' | 'variandum') typeAnnotation? IDENTIFIER ('=' expression)?
 #   arrayPattern := '[' arrayPatternElement (',' arrayPatternElement)* ']'
 #   objectPattern := '{' patternProperty (',' patternProperty)* '}'
-///
+#
 # LATIN VOCABULARY:
 # - varia = variable (let it vary)
 # - fixum = fixed (const)
@@ -48,9 +48,9 @@ functio parseNomenVelVerbum(Resolvitor r) -> textus {
 }
 
 # Parse variable declaration
-///
+#
 # GRAMMAR: varDecl := ('varia'|'fixum'|'figendum'|'variandum') type? name ('=' expr)?
-///
+#
 # Supports:
 # - Type inference: fixum x = 42
 # - Type-first: fixum numerus x = 42

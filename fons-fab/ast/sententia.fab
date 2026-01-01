@@ -199,7 +199,7 @@ genus AdVinculum {
 # ============================================================================
 
 # All statement types as a tagged union
-///
+#
 # Each variant contains its fields directly. Use `finge` to construct:
 #   finge MassaSententia { locus: loc, corpus: stmts } qua Sententia
 #   finge VariaSententia { ... } qua Sententia

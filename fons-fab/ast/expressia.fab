@@ -51,7 +51,7 @@ genus CatenaGradus {
 # ============================================================================
 
 # All expression types as a tagged union
-///
+#
 # Each variant contains its fields directly. Use `finge` to construct:
 #   finge Nomen { locus: loc, valor: "x" } qua Expressia
 #   finge Littera { locus: loc, species: LitteraGenus.Numerus, crudus: "42" } qua Expressia

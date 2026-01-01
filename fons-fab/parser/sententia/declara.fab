@@ -1,7 +1,7 @@
 # Declaration Statement Parsers
-///
+#
 # Handles: functio, genus, pactum, ordo, discretio, typus, importa
-///
+#
 # GRAMMAR:
 #   functioDecl := 'functio' IDENT '(' params? ')' returnType? blockStmt
 #   genusDecl := 'genus' IDENT genericParams? ('sub' IDENT)? ('implet' IDENT+)? '{' members '}'
@@ -10,7 +10,7 @@
 #   discretioDecl := 'discretio' IDENT genericParams? '{' variants '}'
 #   typusDecl := 'typus' IDENT '=' type
 #   importaDecl := 'ex' STRING 'importa' specifiers
-///
+#
 # LATIN VOCABULARY:
 # - functio = function
 # - genus = kind/class/struct
@@ -30,11 +30,11 @@ ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
 
 # Parse function declaration
-///
+#
 # GRAMMAR:
 #   functioDecl := 'functio' IDENT genericParams? '(' params? ')' returnType? blockStmt?
 #   returnType := '->' type | 'fit' type | 'fiet' type | 'fiunt' type | 'fient' type
-///
+#
 # Examples:
 #   functio salve() { scribe "hello" }
 #   functio add(numerus a, numerus b) -> numerus { redde a + b }
@@ -111,10 +111,10 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
 }
 
 # Parse genus (class/struct) declaration
-///
+#
 # GRAMMAR:
 #   genusDecl := 'genus' IDENT genericParams? ('sub' IDENT)? ('implet' IDENT+)? '{' members '}'
-///
+#
 # Examples:
 #   genus Persona { textus nomen, numerus aetas }
 #   genus Cursor<T> { varia index = 0 }
@@ -252,9 +252,9 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
 }
 
 # Parse pactum (interface) declaration
-///
+#
 # GRAMMAR: pactumDecl := 'pactum' IDENT genericParams? '{' methods '}'
-///
+#
 # Examples:
 #   pactum Iterabilis { functio sequens() fit T? }
 #   pactum Comparabilis<T> { functio compara(T alius) fit numerus }
@@ -335,9 +335,9 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
 }
 
 # Parse ordo (enum) declaration
-///
+#
 # GRAMMAR: ordoDecl := 'ordo' IDENT '{' (IDENT ('=' value)?)* '}'
-///
+#
 # Examples:
 #   ordo Color { Rubrum, Viridis, Caeruleum }
 #   ordo Status { Pendens = 0, Actum = 1, Completum = 2 }
@@ -389,9 +389,9 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
 }
 
 # Parse discretio (tagged union) declaration
-///
+#
 # GRAMMAR: discretioDecl := 'discretio' IDENT genericParams? '{' variants '}'
-///
+#
 # Examples:
 #   discretio Option<T> { Aliquid { T valor }, Nihil }
 #   discretio Event { Click { numerus x, numerus y }, Quit }
@@ -464,9 +464,9 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
 }
 
 # Parse type alias declaration
-///
+#
 # GRAMMAR: typusDecl := 'typus' IDENT '=' type
-///
+#
 # Examples:
 #   typus ID = textus
 #   typus Callback = functio(numerus) -> vacuum
@@ -604,14 +604,14 @@ functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
 }
 
 # Parse import declaration
-///
+#
 # GRAMMAR:
 #   importaDecl := 'ex' (STRING | IDENT) 'importa' specifiers
 #   specifiers := specifier (',' specifier)*
 #   specifier := IDENT ('ut' IDENT)?
 #              | '*' ('ut' IDENT)?
 #              | 'ceteri' IDENT
-///
+#
 # Examples:
 #   ex "norma/mathesis" importa sinus, cosinus
 #   ex norma importa scribe ut s

@@ -21,25 +21,27 @@ Rewrite the Faber compiler in Faber, targeting TypeScript/Bun.
 
 ### Compiles Successfully
 
-| Module               | Location                 | Files | Status                        |
-| -------------------- | ------------------------ | ----- | ----------------------------- |
-| AST types            | `fons-fab/ast/`          | 6     | **Restructured as discretio** |
-| Lexer                | `fons-fab/lexor/`        | 2     | Complete                      |
-| Keywords             | `fons-fab/lexicon/`      | 1     | Complete                      |
-| Parser errors        | `parser/errores.fab`     | 1     | Complete                      |
-| Parser core          | `parser/nucleus.fab`     | 1     | Complete                      |
-| Resolvitor interface | `parser/resolvitor.fab`  | 1     | Complete                      |
-| Type parser          | `parser/typus.fab`       | 1     | Complete                      |
-| Parser entry         | `parser/index.fab`       | 1     | Stubbed, needs impl           |
-| Statement dispatch   | `sententia/index.fab`    | 1     | Stubbed, needs impl           |
-| Action statements    | `sententia/actio.fab`    | 1     | **Uses finge + discretio**    |
-| Error statements     | `sententia/error.fab`    | 1     | Complete                      |
-| Block/program        | `sententia/massa.fab`    | 1     | Complete                      |
-| Variable decls       | `sententia/varia.fab`    | 1     | Complete                      |
-| Expression entry     | `expressia/index.fab`    | 1     | Complete                      |
-| Binary operators     | `expressia/binaria.fab`  | 1     | Stubbed, needs impl           |
-| Unary/postfix        | `expressia/unaria.fab`   | 1     | Stubbed, needs impl           |
-| Primary expressions  | `expressia/primaria.fab` | 1     | **Partial impl with finge**   |
+| Module               | Location                 | Files | Status                     |
+| -------------------- | ------------------------ | ----- | -------------------------- |
+| AST types            | `fons-fab/ast/`          | 6     | Complete (discretio-based) |
+| Lexer                | `fons-fab/lexor/`        | 2     | Complete                   |
+| Keywords             | `fons-fab/lexicon/`      | 1     | Complete                   |
+| Parser errors        | `parser/errores.fab`     | 1     | Complete                   |
+| Parser core          | `parser/nucleus.fab`     | 1     | Complete                   |
+| Resolvitor interface | `parser/resolvitor.fab`  | 1     | Complete                   |
+| Type parser          | `parser/typus.fab`       | 1     | Complete                   |
+| Parser entry         | `parser/index.fab`       | 1     | Complete (Parsator wired)  |
+| Statement dispatch   | `sententia/index.fab`    | 1     | Complete                   |
+| Declarations         | `sententia/declara.fab`  | 1     | Complete                   |
+| Control flow         | `sententia/imperium.fab` | 1     | Complete                   |
+| Action statements    | `sententia/actio.fab`    | 1     | Complete                   |
+| Error statements     | `sententia/error.fab`    | 1     | Complete                   |
+| Block/program        | `sententia/massa.fab`    | 1     | Complete                   |
+| Variable decls       | `sententia/varia.fab`    | 1     | Complete                   |
+| Expression entry     | `expressia/index.fab`    | 1     | Complete                   |
+| Binary operators     | `expressia/binaria.fab`  | 1     | Complete                   |
+| Unary/postfix        | `expressia/unaria.fab`   | 1     | Complete                   |
+| Primary expressions  | `expressia/primaria.fab` | 1     | Partial (see below)        |
 
 **All 23 fons-fab files compile successfully.**
 
@@ -57,7 +59,7 @@ pactum Resolvitor {
 }
 ```
 
-Parsing functions receive `Resolvitor r` and call `r.expressia()`, `r.sententia()` etc. for cross-module parsing. The concrete `ResolvitorImpl` (not yet implemented) will wire up the actual functions.
+Parsing functions receive `Resolvitor r` and call `r.expressia()`, `r.sententia()` etc. for cross-module parsing. The concrete `Parsator` genus in `parser/index.fab` implements this interface and wires up all parsing functions.
 
 ### Discretio Variant Construction
 
@@ -78,29 +80,34 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 
 ### Remaining Parser Work
 
-**Fully implemented with Resolvitor:**
+**Fully implemented:**
 
-- `typus.fab` - Type annotations with generics, nullable, array shorthand
-- `sententia/actio.fab` - redde, rumpe, perge, iace, scribe
-- `sententia/error.fab` - tempta/cape/demum, fac, adfirma
+- `parser/index.fab` - Parsator (Resolvitor implementation), entry point
+- `parser/typus.fab` - Type annotations with generics, nullable, array shorthand
+- `expressia/binaria.fab` - Full precedence chain (assignment → ternary → logical → comparison → arithmetic)
+- `expressia/unaria.fab` - Prefix operators (non, -, ~, cede, novum), postfix (call, member, qua)
+- `expressia/primaria.fab` - Literals, identifiers, ego, arrays, grouped expressions
+- `sententia/index.fab` - Statement dispatcher routing to all parsers
+- `sententia/declara.fab` - functio, genus, pactum, ordo, discretio, typus, importa
+- `sententia/imperium.fab` - si/sin/secus, dum, ex...pro, de...pro
+- `sententia/actio.fab` - redde, rumpe, perge, iace, scribe/vide/mone
+- `sententia/error.fab` - tempta/cape/demum, fac...dum, adfirma
 - `sententia/massa.fab` - Block parsing, program parsing
 - `sententia/varia.fab` - Variable declarations, destructuring
 
-**Stubbed (compile but need implementation):**
+**Partially implemented (stubs):**
 
-- Expression parsers (`binaria.fab`, `unaria.fab`, `primaria.fab`)
-- Statement dispatcher (`sententia/index.fab`)
-- Parser entry with ResolvitorImpl (`parser/index.fab`)
+- `expressia/primaria.fab`:
+    - `parseObiectumExpressia()` - object literals (just returns empty object)
+    - `parseLambdaExpressia()` - lambdas (just returns placeholder)
 
-**Statement parsers with TODO stubs:**
+**Not yet implemented:**
 
-- Import declarations (`ex ... importa`)
-- Function declarations (`functio`)
-- Type declarations (`typus`, `ordo`, `genus`, `pactum`, `discretio`)
-- Control flow (`si`, `dum`, `ex...pro`, `de...pro`, `in`, `fac...dum`)
-- Pattern matching (`elige`, `discerne`, `custodi`)
-- Tests (`probandum`, `proba`, `praepara`)
-- Entry points (`incipit`, `incipiet`, `cura`, `ad`)
+- Pattern matching: `elige`, `discerne`, `custodi`
+- Testing: `probandum`, `proba`, `praepara`
+- Entry points: `incipit`, `incipiet`
+- Resource management: `cura...fit`
+- Scoped blocks: `ad`
 
 ### Remaining Modules
 
@@ -113,14 +120,16 @@ functio parseBinaria(Resolvitor r) -> Expressia {
 
 ## Bootstrap Strategy
 
-### Phase 1: Parser (`fons-fab/parser/`) — 70% COMPLETE
+### Phase 1: Parser (`fons-fab/parser/`) — 90% COMPLETE
 
 1. ✅ Create `genus Parser` with token stream state
 2. ✅ Create `pactum Resolvitor` for mutual recursion
-3. ✅ Port parsing functions to use Resolvitor
+3. ✅ Implement `Parsator` (Resolvitor implementation)
 4. ✅ Restructure AST as `discretio` variants with `finge`
-5. ⏳ Implement `ResolvitorImpl`
-6. ⏳ Complete remaining statement parsers
+5. ✅ Expression parsers (binary, unary, postfix, primary)
+6. ✅ Statement dispatcher and most statement parsers
+7. ⏳ Complete object literal and lambda expression parsers
+8. ⏳ Add remaining statements (elige, discerne, custodi, probandum, incipit, cura, ad)
 
 ### Phase 2: Semantic Analyzer (`fons-fab/semantic/`)
 
@@ -232,22 +241,24 @@ genus Parser {
 
 ```
 parser/
-├── index.fab              # Public API, ResolvitorImpl
+├── index.fab              # Public API, Parsator (Resolvitor impl)
 ├── nucleus.fab            # Core Parser genus
 ├── errores.fab            # Error codes
 ├── resolvitor.fab         # Resolvitor pactum
 ├── typus.fab              # Type annotation parser
 ├── sententia/             # Statement parsers
-│   ├── index.fab          # Dispatcher (stubbed)
-│   ├── actio.fab          # Actions (complete)
-│   ├── error.fab          # Error handling (complete)
-│   ├── massa.fab          # Blocks (complete)
-│   └── varia.fab          # Variables (complete)
+│   ├── index.fab          # Dispatcher
+│   ├── actio.fab          # redde, rumpe, perge, iace, scribe
+│   ├── declara.fab        # functio, genus, pactum, ordo, discretio, typus, importa
+│   ├── error.fab          # tempta/cape/demum, fac, adfirma
+│   ├── imperium.fab       # si, dum, ex...pro, de...pro
+│   ├── massa.fab          # Blocks, program
+│   └── varia.fab          # Variable declarations
 └── expressia/             # Expression parsers
     ├── index.fab          # Entry point
-    ├── binaria.fab        # Binary ops (stubbed)
-    ├── unaria.fab         # Unary/postfix (stubbed)
-    └── primaria.fab       # Primaries (stubbed)
+    ├── binaria.fab        # Full precedence chain
+    ├── unaria.fab         # Prefix and postfix
+    └── primaria.fab       # Terminals (partial: object/lambda stubbed)
 ```
 
 ## Lessons Learned
@@ -306,18 +317,23 @@ diff -r opus/ opus2/  # Should be identical
 
 ## Timeline
 
-| Phase       | Scope          | Est. Days      | Status        |
-| ----------- | -------------- | -------------- | ------------- |
-| Parser      | ~5,000 lines   | 5-7            | ~60% complete |
-| Semantic    | ~2,600 lines   | 3-4            | Not started   |
-| Codegen     | ~2,000 lines   | 3-4            | Not started   |
-| CLI         | ~600 lines     | 1              | Not started   |
-| Integration | Debug, iterate | 2-3            | Not started   |
-| **Total**   |                | **14-19 days** |               |
+| Phase       | Scope        | Est. Days      | Status        |
+| ----------- | ------------ | -------------- | ------------- |
+| Parser      | ~2,000 lines | 5-7            | ~90% complete |
+| Semantic    | ~2,600 lines | 3-4            | Not started   |
+| Codegen     | ~2,000 lines | 3-4            | Not started   |
+| CLI         | ~600 lines   | 1              | Not started   |
+| Integration | Debug, iter  | 2-3            | Not started   |
+| **Total**   |              | **14-19 days** |               |
 
 ## Next Steps
 
-1. **Implement ResolvitorImpl** — Wire up parsing functions in `parser/index.fab`
-2. **Complete expression parsers** — Finish `binaria.fab`, `unaria.fab`, expand `primaria.fab`
-3. **Complete statement dispatcher** — Full implementation in `sententia/index.fab`
-4. **Remaining statement parsers** — Control flow, type declarations, imports
+1. **Complete `parseObiectumExpressia()`** — Object literals with properties, shorthand, computed keys
+2. **Complete `parseLambdaExpressia()`** — `pro x: expr` and `pro x { stmts }` forms
+3. **Add remaining statements**:
+    - `elige` (switch), `discerne` (pattern match), `custodi` (guard)
+    - `probandum`/`proba`/`praepara` (testing)
+    - `incipit`/`incipiet` (entry points)
+    - `cura...fit` (resource management)
+    - `ad` (scoped blocks)
+4. **Begin Phase 2: Semantic Analyzer**

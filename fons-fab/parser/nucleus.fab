@@ -1,17 +1,17 @@
 # Parser Nucleus - Core State and Navigation Primitives
-///
+#
 # The Parser genus maintains all state for recursive descent parsing:
 # - Token stream and current position
 # - Comment accumulator for AST attachment
 # - Error accumulator for diagnostics
 # - Unique ID generator for synthetic bindings
-///
+#
 # INVARIANTS:
 # - Token stream always ends with Finis token
 # - Position never advances past Finis
 # - Never throws - all errors collected in errores
 # - Comments collected and attached to next AST node
-///
+#
 # LATIN VOCABULARY:
 # - nucleus = core/kernel
 # - symbola = tokens
@@ -31,7 +31,7 @@ ex "../ast/positio" importa Locus
 ex "./errores" importa ParserError, ParserErrorCodice, error
 
 # Parser state machine
-///
+#
 # Maintains token stream position, accumulated errors, and pending comments.
 # All parsing methods operate on this shared state.
 genus Parser {

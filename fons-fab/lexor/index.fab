@@ -1,13 +1,13 @@
 # Lexor - Lexical Analyzer
-///
+#
 # Transforms raw Latin source text into a stream of typed tokens.
 # Single-pass scanner operating as a finite state machine.
-///
+#
 # INVARIANTS:
 # - Token stream always ends with exactly one Finis token
 # - Position tracking never goes backwards
 # - Never throws - all errors collected in resultatum.errores
-///
+#
 # LATIN VOCABULARY:
 # - lexor = lexer (one who reads)
 # - symbolum = token (a sign/symbol)
@@ -39,7 +39,7 @@ genus LexorResultatum {
 }
 
 # Lexical scanner state machine
-///
+#
 # The Lexor maintains all state needed to scan source text:
 # - Current position (index) and line tracking
 # - Output accumulator for tokens (symbola)
@@ -739,14 +739,14 @@ genus Lexor {
 # =============================================================================
 
 # lexare = "to tokenize" - main entry point for lexical analysis
-///
+#
 # Takes source text, returns token stream + errors.
 # Never throws - all errors collected in resultatum.errores.
-///
+#
 # Usage:
 #   fixum result = lexare("si verum { scribe 42 }")
 #   ex result.symbola pro sym { ... }
-///
+#
 functio lexare(textus fons) -> LexorResultatum {
     # Initialize scanner state
     varia lexor = Lexor.init({

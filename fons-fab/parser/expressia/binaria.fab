@@ -1,14 +1,14 @@
 # Binary Expression Parsers
-///
+#
 # Operators: assignment, ternary, logical, comparison, bitwise, arithmetic.
 # Uses precedence climbing with left-to-right associativity (except assignment/ternary).
-///
+#
 # GRAMMAR:
 #   assignment := ternary (('=' | '+=' | '-=' | ...) assignment)?
 #   ternary := or (('?' expr ':' | 'sic' expr 'secus') ternary)?
 #   or := and (('||' | 'aut' | 'vel') and)*
 #   ... etc
-///
+#
 # LATIN VOCABULARY:
 # - assignatio = assignment
 # - condicio = condition
@@ -24,9 +24,9 @@ ex "../errores" importa ParserErrorCodice
 ex "./unaria" importa parseUnaria
 
 # Parse assignment expression
-///
+#
 # GRAMMAR: assignment := ternary (('=' | '+=' | '-=' | ...) assignment)?
-///
+#
 # Assignment is right-associative: a = b = c parses as a = (b = c)
 functio parseAssignatio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -54,9 +54,9 @@ functio parseAssignatio(Resolvitor r) -> Expressia {
 }
 
 # Parse ternary conditional expression
-///
+#
 # GRAMMAR: ternary := or (('sic' expr 'secus' | '?' expr ':') ternary)?
-///
+#
 # Latin: condicio sic consequens secus alternans
 # JS:    condicio ? consequens : alternans
 functio parseCondicio(Resolvitor r) -> Expressia {
@@ -97,7 +97,7 @@ functio parseCondicio(Resolvitor r) -> Expressia {
 }
 
 # Parse logical OR expression
-///
+#
 # GRAMMAR: or := and (('||' | 'aut' | '??') and)*
 functio parseAut(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -121,7 +121,7 @@ functio parseAut(Resolvitor r) -> Expressia {
 }
 
 # Parse logical AND expression
-///
+#
 # GRAMMAR: and := equality (('&&' | 'et') equality)*
 functio parseEt(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -145,7 +145,7 @@ functio parseEt(Resolvitor r) -> Expressia {
 }
 
 # Parse equality expression
-///
+#
 # GRAMMAR: equality := comparison (('==' | '!=' | '===' | '!==' | 'est') comparison)*
 functio parseAequale(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -181,7 +181,7 @@ functio parseAequale(Resolvitor r) -> Expressia {
 }
 
 # Parse comparison expression
-///
+#
 # GRAMMAR: comparison := additive (('<' | '>' | '<=' | '>=') additive)*
 functio parseComparatio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -205,7 +205,7 @@ functio parseComparatio(Resolvitor r) -> Expressia {
 }
 
 # Parse additive expression
-///
+#
 # GRAMMAR: additive := multiplicative (('+' | '-') multiplicative)*
 functio parseAdditio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -229,7 +229,7 @@ functio parseAdditio(Resolvitor r) -> Expressia {
 }
 
 # Parse multiplicative expression
-///
+#
 # GRAMMAR: multiplicative := unary (('*' | '/' | '%') unary)*
 functio parseMultiplicatio(Resolvitor r) -> Expressia {
     fixum p = r.parser()

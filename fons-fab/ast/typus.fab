@@ -28,9 +28,9 @@ discretio TypusParametrum {
 }
 
 # Type annotation
-///
+#
 # Represents a type reference with optional generics, nullable, and union.
-///
+#
 # EXAMPLES:
 #   textus                    -> nomen="textus"
 #   lista<numerus>            -> nomen="lista", typusParametra=[numerus]

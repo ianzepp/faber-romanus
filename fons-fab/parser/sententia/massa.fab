@@ -1,12 +1,12 @@
 # Block and Program Parsers
-///
+#
 # Top-level program parsing and block statement handling.
-///
+#
 # GRAMMAR:
 #   program := statement*
 #   blockStmt := '{' statement* '}'
 #   exprStmt := expression
-///
+#
 # LATIN VOCABULARY:
 # - programma = program
 # - massa = block/mass (a body of statements)
@@ -28,9 +28,9 @@ genus Programma {
 }
 
 # Parse a block statement
-///
+#
 # GRAMMAR: blockStmt := '{' statement* '}'
-///
+#
 # Consumes opening brace, parses statements until closing brace.
 # Handles optional semicolons between statements.
 functio parseMassaSententia(Resolvitor r) -> Sententia {
@@ -68,9 +68,9 @@ functio parseMassaSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse an expression statement
-///
+#
 # GRAMMAR: exprStmt := expression
-///
+#
 # Wraps a standalone expression as a statement.
 functio parseExpressiaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
@@ -84,9 +84,9 @@ functio parseExpressiaSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse top-level program
-///
+#
 # GRAMMAR: program := statement*
-///
+#
 # Parses statements until end of input.
 # Uses error recovery to handle malformed statements.
 functio parseProgramma(Resolvitor r) -> Programma {

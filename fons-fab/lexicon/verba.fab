@@ -1,10 +1,10 @@
 # Verba - Latin reserved words
-///
+#
 # Keyword recognition for the lexer.
 # Uses switch-based lookup (no heap allocation).
 
 # Check if a word is a reserved keyword
-///
+#
 # NOTE: This list must stay synchronized with fons/lexicon/keywords.ts
 functio estVerbum(textus v) -> bivalens {
     elige v {

@@ -1,13 +1,13 @@
 # Statement Dispatcher
-///
+#
 # Central dispatcher for parsing statements based on leading keyword.
 # Handles comment attachment and error recovery.
-///
+#
 # GRAMMAR:
 #   statement := importDecl | varDecl | funcDecl | typeAliasDecl | ifStmt
 #              | whileStmt | forStmt | returnStmt | throwStmt | tryStmt
 #              | blockStmt | exprStmt | ...
-///
+#
 # LATIN VOCABULARY:
 # - sententia = statement (sentence/thought)
 # - declara = declare
@@ -29,7 +29,7 @@ ex "./massa" importa parseMassaSententia, parseExpressiaSententia
 ex "./varia" importa parseVariaSententia
 
 # Parse a statement
-///
+#
 # Main dispatcher that routes to appropriate parser based on leading token.
 functio parseSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()

@@ -1,13 +1,13 @@
 # Error Handling Statement Parsers
-///
+#
 # Try-catch-finally and related error handling constructs.
-///
+#
 # GRAMMAR:
 #   tryStmt := 'tempta' blockStmt ('cape' IDENTIFIER blockStmt)? ('demum' blockStmt)?
 #   catchClause := 'cape' IDENTIFIER blockStmt
 #   facBlockStmt := 'fac' blockStmt ('cape' IDENTIFIER blockStmt)? ('dum' expr)?
 #   assertStmt := 'adfirma' expression (',' expression)?
-///
+#
 # LATIN VOCABULARY:
 # - tempta = try/attempt
 # - cape = catch/seize
@@ -23,9 +23,9 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
 # Parse catch clause
-///
+#
 # GRAMMAR: catchClause := 'cape' IDENTIFIER blockStmt
-///
+#
 # Binds the caught error to the identifier.
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
@@ -49,9 +49,9 @@ functio parseCapeClausula(Resolvitor r) -> CapeClausula {
 }
 
 # Parse try-catch-finally statement
-///
+#
 # GRAMMAR: tryStmt := 'tempta' blockStmt ('cape' IDENTIFIER blockStmt)? ('demum' blockStmt)?
-///
+#
 # Both cape and demum are optional, but at least one should be present
 # for the statement to be useful.
 functio parseTemptaSententia(Resolvitor r) -> Sententia {
@@ -87,9 +87,9 @@ functio parseTemptaSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse fac block statement (explicit scope or do-while)
-///
+#
 # GRAMMAR: facBlockStmt := 'fac' blockStmt ('cape' IDENTIFIER blockStmt)? ('dum' expr)?
-///
+#
 # Creates explicit scope boundary with optional error handling.
 # When 'dum' is present, creates a do-while loop.
 functio parseFacSententia(Resolvitor r) -> Sententia {
@@ -125,9 +125,9 @@ functio parseFacSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse assert statement
-///
+#
 # GRAMMAR: assertStmt := 'adfirma' expression (',' expression)?
-///
+#
 # Runtime invariant check. Optional second expression is error message.
 functio parseAdfirmaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()

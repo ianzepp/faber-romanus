@@ -1,14 +1,14 @@
 # Primary Expression Parsers
-///
+#
 # Terminals and grouping: literals, identifiers, parenthesized expressions,
 # arrays, objects, lambdas.
-///
+#
 # GRAMMAR:
 #   primary := IDENTIFIER | NUMBER | STRING | TEMPLATE_STRING
 #            | 'ego' | 'verum' | 'falsum' | 'nihil'
 #            | '(' expression ')' | arrayLiteral | objectLiteral
 #            | lambdaExpression
-///
+#
 # LATIN VOCABULARY:
 # - primaria = primary
 # - littera = literal
@@ -25,7 +25,7 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
 # Parse primary expression
-///
+#
 # Handles terminals: literals, identifiers, ego, grouped expressions.
 # Currently a partial implementation - covers the most common cases.
 functio parsePrimaria(Resolvitor r) -> Expressia {
@@ -142,7 +142,7 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
 }
 
 # Parse array literal
-///
+#
 # GRAMMAR: arrayLiteral := '[' (expression (',' expression)*)? ']'
 functio parseSeriesExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -173,7 +173,7 @@ functio parseSeriesExpressia(Resolvitor r) -> Expressia {
 }
 
 # Parse object literal
-///
+#
 # GRAMMAR: objectLiteral := '{' (property (',' property)*)? '}'
 #          property := (IDENTIFIER | STRING | '[' expr ']') ':' expression
 #                    | IDENTIFIER  # shorthand
@@ -193,7 +193,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
 }
 
 # Parse lambda expression
-///
+#
 # GRAMMAR: lambdaExpr := 'pro' params? (':' expression | blockStmt)
 #          params := IDENTIFIER (',' IDENTIFIER)*
 functio parseLambdaExpressia(Resolvitor r) -> Expressia {

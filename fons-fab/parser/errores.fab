@@ -1,14 +1,14 @@
 # Parser Error Catalog
-///
+#
 # Centralized error definitions for syntactic analysis phase.
 # Each error has a unique P-prefixed code, descriptive text, and help.
-///
+#
 # Error code ranges:
 # - P001-P099: Token expectation (missing delimiters, keywords)
 # - P100-P199: Invalid syntax (assignment targets, expressions)
 # - P200-P299: Declaration errors (missing names, types)
 # - P300-P399: Statement structure (incomplete constructs)
-///
+#
 # INVARIANTS:
 # - Every ParserErrorCodice has entry in nuntiumErroris()
 # - Error codes are P-prefixed and sequentially numbered

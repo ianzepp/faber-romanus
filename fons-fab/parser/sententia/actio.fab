@@ -1,15 +1,15 @@
 # Action Statement Parsers
-///
+#
 # Simple action statements: redde, rumpe, perge, iace, scribe.
 # These are the smallest, most self-contained statement parsers.
-///
+#
 # GRAMMAR:
 #   returnStmt := 'redde' expression?
 #   breakStmt := 'rumpe'
 #   continueStmt := 'perge'
 #   throwStmt := ('iace' | 'mori') expression
 #   outputStmt := ('scribe' | 'vide' | 'mone') expression (',' expression)*
-///
+#
 # LATIN VOCABULARY:
 # - redde = return (give back)
 # - rumpe = break
@@ -28,9 +28,9 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
 # Parse return statement
-///
+#
 # GRAMMAR: returnStmt := 'redde' expression?
-///
+#
 # Return value is optional - bare 'redde' returns void.
 # Doesn't consume expression if next token is closing brace.
 functio parseReddeSententia(Resolvitor r) -> Sententia {
@@ -55,9 +55,9 @@ functio parseReddeSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse break statement
-///
+#
 # GRAMMAR: breakStmt := 'rumpe'
-///
+#
 # Exits the innermost loop.
 functio parseRumpeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
@@ -72,9 +72,9 @@ functio parseRumpeSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse continue statement
-///
+#
 # GRAMMAR: continueStmt := 'perge'
-///
+#
 # Skips to next loop iteration.
 functio parsePergeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
@@ -89,9 +89,9 @@ functio parsePergeSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse throw/panic statement
-///
+#
 # GRAMMAR: throwStmt := ('iace' | 'mori') expression
-///
+#
 # Two severity levels:
 # - iace (throw): recoverable, can be caught
 # - mori (die): fatal/panic, unrecoverable
@@ -113,9 +113,9 @@ functio parseIaceSententia(Resolvitor r, bivalens fatale) -> Sententia {
 }
 
 # Parse output statement (scribe/vide/mone)
-///
+#
 # GRAMMAR: outputStmt := ('scribe' | 'vide' | 'mone') expression (',' expression)*
-///
+#
 # Maps to console output:
 # - scribe → console.log
 # - vide → console.debug

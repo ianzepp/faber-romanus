@@ -1,8 +1,8 @@
 # Expression Parser Entry Point
-///
+#
 # Top-level expression parsing using precedence climbing.
 # Entry point delegates to assignment (lowest precedence).
-///
+#
 # PRECEDENCE HIERARCHY (lowest to highest):
 # 1. Assignment (=, +=, -=, etc.)
 # 2. Ternary (? : or sic/secus)
@@ -21,7 +21,7 @@
 # 15. Cast (qua)
 # 16. Call/Member (., [], ())
 # 17. Primary (literals, identifiers, grouping)
-///
+#
 # LATIN VOCABULARY:
 # - expressia = expression
 # - assignatio = assignment
@@ -37,7 +37,7 @@ ex "../../ast/expressia" importa Expressia
 ex "./binaria" importa parseAssignatio
 
 # Parse an expression (entry point)
-///
+#
 # Top-level expression delegates to assignment (lowest precedence).
 # All expression parsing flows through this function.
 functio parseExpressia(Resolvitor r) -> Expressia {

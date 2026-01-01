@@ -1,16 +1,16 @@
 # Parser - Recursive Descent Parser for Latin Source Code
-///
+#
 # COMPILER PHASE: Syntactic
-///
+#
 # Transforms token stream from lexical analyzer into Abstract Syntax Tree.
 # Uses predictive parsing with one token of lookahead.
-///
+#
 # INVARIANTS:
 # - Never throws exceptions - collects errors and continues
 # - Synchronizes at statement boundaries after errors
 # - All AST nodes include position for error reporting
 # - Empty input produces valid Program with empty body
-///
+#
 # LATIN VOCABULARY:
 # - parse = resolvere (to resolve/analyze)
 # - resultatum = result
@@ -39,10 +39,10 @@ genus ParserResultatum {
 }
 
 # Parsator - concrete implementation of pactum Resolvitor
-///
+#
 # Wires up all parsing functions so they can call each other
 # through the Resolvitor interface without circular imports.
-///
+#
 # LATIN: parsator = "one who parses" (agent noun)
 genus Parsator implet Resolvitor {
     Parser p
@@ -78,7 +78,7 @@ functio novumParsator(Parser p) -> Parsator {
 }
 
 # Parse a token stream into an AST
-///
+#
 # Main entry point for the parser.
 # Creates a Parser instance and parses the program.
 functio resolvere(lista<Symbolum> symbola) -> ParserResultatum {
