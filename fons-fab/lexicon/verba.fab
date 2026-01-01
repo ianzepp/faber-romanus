@@ -49,6 +49,7 @@ functio estVerbum(textus v) -> bivalens {
         si "vide" { redde verum }
         si "mone" { redde verum }
         si "lege" { redde verum }
+        si "lineam" { redde verum }
         si "scriptum" { redde verum }
         si "cede" { redde verum }
 
