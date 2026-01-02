@@ -89,7 +89,7 @@ genus Lexor {
     # Returns the consumed character
     functio procede() -> textus {
         fixum c = ego.fons[ego.index]
-        ego.index = ego.index + 1
+        ego.index += 1
         redde c
     }
 
@@ -183,7 +183,7 @@ genus Lexor {
             # Handle newline - update line tracking
             sin c == "\n" {
                 ego.procede()
-                ego.linea = ego.linea + 1
+                ego.linea += 1
                 ego.columnaInitium = ego.index
             }
             # Single-line comment: # ... until newline
@@ -217,7 +217,7 @@ genus Lexor {
                 dum non ego.estFinis() et non (ego.specta(0) == "*" et ego.specta(1) == "/") {
                     # Track newlines inside multi-line comments
                     si ego.specta(0) == "\n" {
-                        ego.linea = ego.linea + 1
+                        ego.linea += 1
                         ego.columnaInitium = ego.index + 1
                     }
                     nota = nota + ego.procede()
@@ -419,7 +419,7 @@ genus Lexor {
                         varia numerus i = 0
                         dum i < 4 et ego.estDigitusHex(ego.specta(0)) {
                             valor = valor + ego.procede()
-                            i = i + 1
+                            i += 1
                         }
                     }
                     # Other escapes: \n, \t, \", etc. - just consume the char
@@ -457,7 +457,7 @@ genus Lexor {
         dum non ego.estFinis() et ego.specta(0) != "`" {
             # Template strings CAN span lines (unlike regular strings)
             si ego.specta(0) == "\n" {
-                ego.linea = ego.linea + 1
+                ego.linea += 1
                 ego.columnaInitium = ego.index + 1
                 valor = valor + ego.procede()
             }
@@ -476,10 +476,10 @@ genus Lexor {
 
                 dum non ego.estFinis() et depth > 0 {
                     si ego.specta(0) == "{" {
-                        depth = depth + 1
+                        depth += 1
                     }
                     si ego.specta(0) == "}" {
-                        depth = depth - 1
+                        depth -= 1
                     }
                     valor = valor + ego.procede()
                 }

@@ -234,7 +234,7 @@ functio genLitteraExemplar(lista<textus> partes, lista<Expressia> expressiae, Ts
         si i < expressiae.longitudo() {
             result = result + "${" + genExpressia(expressiae[i], g) + "}"
         }
-        i = i + 1
+        i += 1
     }
     result = result + "`"
     redde result
@@ -282,12 +282,12 @@ functio genScriptum(textus exemplar, lista<Expressia> argumenta, TsGenerator g) 
             # Found {} placeholder
             si argIndex < argumenta.longitudo() {
                 result = result + "${" + genExpressia(argumenta[argIndex], g) + "}"
-                argIndex = argIndex + 1
+                argIndex += 1
             }
             i = i + 2
         } secus {
             result = result + c
-            i = i + 1
+            i += 1
         }
     }
 

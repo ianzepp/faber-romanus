@@ -264,7 +264,7 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
                         si non typiAequales(t, gb.parametri[i]) {
                             redde falsum
                         }
-                        i = i + 1
+                        i += 1
                     }
                     redde verum
                 }
@@ -290,7 +290,7 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
                         si non typiAequales(t, fb.parametriTypi[i]) {
                             redde falsum
                         }
-                        i = i + 1
+                        i += 1
                     }
                     redde verum
                 }
@@ -309,7 +309,7 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
                         si non typiAequales(t, ub.typi[i]) {
                             redde falsum
                         }
-                        i = i + 1
+                        i += 1
                     }
                     redde verum
                 }

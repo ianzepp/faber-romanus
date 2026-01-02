@@ -55,7 +55,7 @@ genus TsGenerator {
         varia i = 0
         dum i < ego.depth {
             result = result + ego.indentum
-            i = i + 1
+            i += 1
         }
         redde result
     }
@@ -63,13 +63,13 @@ genus TsGenerator {
     # Increment depth
     @ publica
     functio intraProfundum() {
-        ego.depth = ego.depth + 1
+        ego.depth += 1
     }
 
     # Decrement depth
     @ publica
     functio exiProfundum() {
-        ego.depth = ego.depth - 1
+        ego.depth -= 1
     }
 }
 

@@ -53,7 +53,7 @@ genus Parser {
     # Returns: _prefix_N where N is incremented each call
     functio generaId(textus prae) -> textus {
         fixum id = scriptum("_{}_{}", prae, ego.idUnicum)
-        ego.idUnicum = ego.idUnicum + 1
+        ego.idUnicum += 1
         redde id
     }
 
@@ -93,7 +93,7 @@ genus Parser {
 
             # Convert and buffer the comment
             ego.notaePendentes.adde(ego.symbolumAdNotam(s))
-            ego.index = ego.index + 1
+            ego.index += 1
         }
     }
 
@@ -123,7 +123,7 @@ genus Parser {
         fixum estNota = s.species === SymbolumGenus.NotaLinea aut s.species === SymbolumGenus.NotaMassa aut s.species === SymbolumGenus.NotaDocens
 
         si estNota et s.locus.linea === lineaNodi {
-            ego.index = ego.index + 1
+            ego.index += 1
             redde [ego.symbolumAdNotam(s)]
         }
 
@@ -149,12 +149,12 @@ genus Parser {
             si s.species !== SymbolumGenus.NotaLinea et s.species !== SymbolumGenus.NotaMassa et s.species !== SymbolumGenus.NotaDocens {
                 rumpe
             }
-            pos = pos + 1
+            pos += 1
         }
 
         # Skip 'distantia' non-comment tokens
         dum skipped < distantia et pos < ego.symbola.longitudo() {
-            pos = pos + 1
+            pos += 1
 
             # Skip any comments after advancing
             dum pos < ego.symbola.longitudo() {
@@ -162,10 +162,10 @@ genus Parser {
                 si s.species !== SymbolumGenus.NotaLinea et s.species !== SymbolumGenus.NotaMassa et s.species !== SymbolumGenus.NotaDocens {
                     rumpe
                 }
-                pos = pos + 1
+                pos += 1
             }
 
-            skipped = skipped + 1
+            skipped += 1
         }
 
         # Return token at position, or last token (Finis) if past end
@@ -213,7 +213,7 @@ genus Parser {
 
         # Return current and advance
         fixum s = ego.symbola[ego.index]
-        ego.index = ego.index + 1
+        ego.index += 1
         redde s
     }
 
@@ -429,7 +429,6 @@ genus Parser {
 
     # Check if token is an assignment operator
     # Includes = and compound assignments (+=, -=, *=, /=, %=, &=, |=)
-    # TODO: Add compound assignment tokens to lexer (PlusAequum, etc.)
     functio estAssignatioSignum(Symbolum s) -> bivalens {
         # For now, only simple assignment is supported
         redde s.species === SymbolumGenus.Aequum
