@@ -64,8 +64,10 @@ equality := comparison (('==' | '!=' | '===' | '!==' | 'est' | 'non' 'est') comp
 ### Comparison
 
 ```ebnf
-comparison := bitwiseOr (('<' | '>' | '<=' | '>=') bitwiseOr)*
+comparison := bitwiseOr (('<' | '>' | '<=' | '>=' | 'intra' | 'inter') bitwiseOr)*
 ```
+
+> intra/inter at comparison level - same precedence as relational operators
 
 ### Range
 
