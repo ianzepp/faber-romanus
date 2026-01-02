@@ -484,3 +484,97 @@
           - '}'
           - 'redde input'
           - '}'
+
+# =============================================================================
+# Reddit and Ergo One-Liners
+# =============================================================================
+
+# Guard with reddit (early return shorthand)
+- name: guard with reddit
+  faber: |
+      custodi {
+        si x == nihil reddit nihil
+        si y == nihil reddit nihil
+      }
+  expect:
+      ts:
+          - 'if ((x == null))'
+          - 'return null;'
+          - 'if ((y == null))'
+          - 'return null;'
+      py:
+          - 'if (x == None):'
+          - 'return None'
+          - 'if (y == None):'
+          - 'return None'
+      fab:
+          - 'custodi {'
+          - 'si x == nihil'
+          - 'redde nihil'
+          - 'si y == nihil'
+          - 'redde nihil'
+          - '}'
+
+# Guard with ergo (one-liner action)
+- name: guard with ergo
+  faber: |
+      custodi {
+        si count < 0 ergo iace "Invalid count"
+        si name == "" ergo iace "Name required"
+      }
+  expect:
+      ts:
+          - 'if ((count < 0))'
+          - 'throw "Invalid count";'
+          - 'if ((name == ""))'
+          - 'throw "Name required";'
+      py:
+          - 'if (count < 0):'
+          - 'raise Exception("Invalid count")'
+          - 'if (name == ""):'
+          - 'raise Exception("Name required")'
+      fab:
+          - 'custodi {'
+          - 'si count < 0'
+          - 'iace "Invalid count"'
+          - 'si name == ""'
+          - 'iace "Name required"'
+          - '}'
+
+# Guard mixing reddit, ergo, and blocks
+- name: guard with mixed styles
+  faber: |
+      custodi {
+        si a == nihil reddit nihil
+        si b < 0 ergo iace "Invalid b"
+        si c == "" {
+          mone "c is empty"
+          redde nihil
+        }
+      }
+  expect:
+      ts:
+          - 'if ((a == null))'
+          - 'return null;'
+          - 'if ((b < 0))'
+          - 'throw "Invalid b";'
+          - 'if ((c == ""))'
+          - 'console.warn("c is empty");'
+          - 'return null;'
+      py:
+          - 'if (a == None):'
+          - 'return None'
+          - 'if (b < 0):'
+          - 'raise Exception("Invalid b")'
+          - 'if (c == ""):'
+          - 'return None'
+      fab:
+          - 'custodi {'
+          - 'si a == nihil'
+          - 'redde nihil'
+          - 'si b < 0'
+          - 'iace "Invalid b"'
+          - 'si c == ""'
+          - 'mone "c is empty"'
+          - 'redde nihil'
+          - '}'

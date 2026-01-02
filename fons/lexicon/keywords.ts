@@ -95,6 +95,9 @@ export const keywords: KeywordEntry[] = [
     { latin: 'rumpe', meaning: 'break', category: 'control' },
     { latin: 'perge', meaning: 'continue', category: 'control' },
     { latin: 'redde', meaning: 'return', category: 'control' },
+    // WHY: "reddit" (it returns) is syntactic sugar for "ergo redde"
+    //      3rd person present indicative of reddere - matches fit/fiet pattern
+    { latin: 'reddit', meaning: 'then return', category: 'control' },
     { latin: 'custodi', meaning: 'guard', category: 'control' },
     { latin: 'adfirma', meaning: 'assert', category: 'control' },
 

@@ -26,6 +26,7 @@ functio estVerbum(textus v) -> bivalens {
         casu "rumpe" { redde verum }
         casu "perge" { redde verum }
         casu "redde" { redde verum }
+        casu "reddit" { redde verum }
         casu "custodi" { redde verum }
         casu "adfirma" { redde verum }
         casu "discerne" { redde verum }

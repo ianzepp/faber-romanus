@@ -119,32 +119,33 @@ returnClause := ('->' | 'fit' | 'fiet' | 'fiunt' | 'fient') typeAnnotation
 > 'futura' marks async functions (future/promise-based).
 > 'cursor' marks generator functions (yield-based).
 > 'curata NAME' marks managed functions (receives allocator as NAME).
-> 
+>
 > TYPE PARAMETERS: 'prae typus T' declares compile-time type parameters.
 > functio max(prae typus T, T a, T b) -> T { ... }
 > Maps to: <T> (TS/Rust), TypeVar (Py), comptime T: type (Zig)
-> 
+>
 > RETURN TYPE VERBS: Latin verb forms encode async/generator semantics directly:
-> '->'    neutral arrow (semantics from modifier only)
-> 'fit'   "it becomes" - sync, returns single value
-> 'fiet'  "it will become" - async, returns Promise<T>
+> '->' neutral arrow (semantics from modifier only)
+> 'fit' "it becomes" - sync, returns single value
+> 'fiet' "it will become" - async, returns Promise<T>
 > 'fiunt' "they become" - sync generator, yields multiple values
 > 'fient' "they will become" - async generator, yields Promise values
-> 
+>
 > When using verb forms, the futura/cursor modifier is NOT required - the verb
 > itself carries the semantic information. The modifier becomes redundant:
-> functio compute() -> numerus { ... }         // arrow: sync by default
-> functio compute() fit numerus { ... }        // verb: explicitly sync
-> functio fetch() futura -> textus { ... }     // modifier: async
-> functio fetch() fiet textus { ... }          // verb implies async
-> functio items() cursor -> numerus { ... }    // modifier: generator
-> functio items() fiunt numerus { ... }        // verb implies generator
-> functio stream() fient datum { ... }         // verb implies async generator
+> functio compute() -> numerus { ... } // arrow: sync by default
+> functio compute() fit numerus { ... } // verb: explicitly sync
+> functio fetch() futura -> textus { ... } // modifier: async
+> functio fetch() fiet textus { ... } // verb implies async
+> functio items() cursor -> numerus { ... } // modifier: generator
+> functio items() fiunt numerus { ... } // verb implies generator
+> functio stream() fient datum { ... } // verb implies async generator
 > functio alloc(textus s) curata a -> T { ... } // managed, allocator bound as 'a'
-> 
+>
 > Modifier is still allowed for emphasis, but verb/modifier conflicts are errors.
-> 
+>
 > NOT SUPPORTED (will produce parser errors):
+>
 > - TS-style param annotation: functio f(x: textus) (use: functio f(textus x))
 > - TS-style return type: functio f(): textus (use: functio f() -> textus)
 > - Trailing comma in params: functio f(a, b,)
@@ -230,26 +231,28 @@ Quit                            -> unit variant (no payload)
 ### Si Statement
 
 ```ebnf
-ifStmt := 'si' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)? (elseClause | 'sin' ifStmt)?
-elseClause := ('secus' | 'secus') (ifStmt | blockStmt | statement)
+ifStmt := 'si' expression (blockStmt | 'ergo' statement | 'reddit' expression) ('cape' IDENTIFIER blockStmt)? (elseClause | 'sin' ifStmt)?
+elseClause := ('secus' | 'secus') (ifStmt | blockStmt | 'reddit' expression | statement)
 ```
 
 > 'cape' (catch/seize) clause allows error handling within conditionals.
 > 'ergo' (therefore) for one-liner consequents.
-> 
+> 'reddit' (it returns) for early return one-liners - syntactic sugar for 'ergo redde'.
+>
 > TWO STYLE OPTIONS (both supported, can be mixed within the same chain):
-> 
+>
 > Literal style: si / sin / secus
 > si x > 0 { positive() }
 > sin x < 0 { negative() }
 > secus { zero() }
-> 
+>
 > Poetic style: si / sin / secus
 > si x > 0 { positive() }
-> sin x < 0 { negative() }    // "sin" = "but if" (classical Latin)
-> secus { zero() }            // "secus" = "otherwise"
-> 
+> sin x < 0 { negative() } // "sin" = "but if" (classical Latin)
+> secus { zero() } // "secus" = "otherwise"
+>
 > Keywords are interchangeable at each branch point:
+>
 > - 'sin' ≡ 'sin' (else-if)
 > - 'secus' ≡ 'secus' (else)
 > - Mixed: si ... sin ... secus { } is valid
@@ -265,23 +268,25 @@ si x < 0 { ... } sin x == 0 { ... } secus { ... }
 ### Dum Statement
 
 ```ebnf
-whileStmt := 'dum' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)?
+whileStmt := 'dum' expression (blockStmt | 'ergo' statement | 'reddit' expression) ('cape' IDENTIFIER blockStmt)?
 ```
 
 > 'dum' (while/until) for while loops.
+> 'reddit' for early return from within the loop.
 
 **Examples:**
 
 ```fab
 dum x > 0 { x = x - 1 }
 dum x > 0 ergo x = x - 1
+dum x > 0 reddit x
 ```
 
 ### Ex Statement
 
 ```ebnf
 exStmt := 'ex' expression (forBinding | destructBinding | arrayDestructBinding)
-forBinding := ('pro' | 'fit' | 'fiet') IDENTIFIER (blockStmt | 'ergo' statement) catchClause?
+forBinding := ('pro' | 'fit' | 'fiet') IDENTIFIER (blockStmt | 'ergo' statement | 'reddit' expression) catchClause?
 destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') specifierList
 arrayDestructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') arrayPattern
 specifierList := specifier (',' specifier)*
@@ -289,12 +294,14 @@ specifier := 'ceteri'? IDENTIFIER ('ut' IDENTIFIER)?
 ```
 
 > 'ex' (from/out of) introduces both iteration and extraction:
+>
 > - Iteration: ex items pro item { ... } (for each item from items)
 > - Object destructuring: ex persona fixum nomen, aetas (extract properties)
 > - Array destructuring: ex coords fixum [x, y, z] (extract by position)
 > - Async destructuring: ex promise figendum result (await + extract)
-> 
+>
 > The binding keywords encode mutability and async semantics:
+>
 > - fixum: immutable binding (const)
 > - varia: mutable binding (let)
 > - figendum: immutable + await (const with await)
@@ -398,17 +405,19 @@ sed "^start" im      // multiple flags
 
 ```ebnf
 deStmt := 'de' expression ('pro' | 'fit' | 'fiet') IDENTIFIER
-(blockStmt | 'ergo' statement) catchClause?
+(blockStmt | 'ergo' statement | 'reddit' expression) catchClause?
 ```
 
 > 'de' (from/concerning) for extracting keys from an object.
 > Semantically read-only - contrasts with 'in' for mutation.
+> 'reddit' for early return from within the iteration.
 
 **Examples:**
 
 ```fab
 de tabula pro clavis { ... }  // from table, for each key
 de object pro k ergo scribe k // one-liner form
+de object pro k reddit k      // return first key
 ```
 
 ### In Statement
@@ -430,21 +439,22 @@ in user { nomen = "Marcus" }  // mutation block
 
 ```ebnf
 eligeStmt := 'elige' expression '{' eligeCase* defaultCase? '}' catchClause?
-eligeCase := 'casu' expression (blockStmt | 'ergo' expression)
-defaultCase := 'ceterum' (blockStmt | statement)
+eligeCase := 'casu' expression (blockStmt | 'ergo' statement | 'reddit' expression)
+defaultCase := 'ceterum' (blockStmt | 'reddit' expression | statement)
 ```
 
 > 'elige' (choose) for value-based switch.
 > 'ergo' (therefore) for one-liners, 'ceterum' (otherwise) for default.
+> 'reddit' (it returns) for early return one-liners.
 > For variant matching on discretio types, use 'discerne' instead.
 
 **Examples:**
 
 ```fab
 elige status {
-    casu "pending" ergo scribe("waiting")
+    casu "pending" reddit 1
     casu "active" { processActive() }
-    ceterum iace "Unknown status"
+    ceterum reddit 0
 }
 ```
 
@@ -452,19 +462,20 @@ elige status {
 
 ```ebnf
 discerneStmt := 'discerne' expression '{' variantCase* '}'
-variantCase := 'casu' IDENTIFIER (('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*))? blockStmt
+variantCase := 'casu' IDENTIFIER (('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*))? (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'discerne' (distinguish!) pairs with 'discretio' (the tagged union type).
 > Uses 'casu' for match arms, 'ut' to bind whole variants, and 'pro' to introduce positional bindings.
+> 'ergo' for one-liners, 'reddit' for early return one-liners.
 
 **Examples:**
 
 ```fab
 discerne event {
     casu Click pro x, y { scribe "clicked at " + x + ", " + y }
-    casu Keypress pro key { scribe "pressed " + key }
-    casu Quit { mori "goodbye" }
+    casu Keypress pro key reddit key
+    casu Quit ergo mori "goodbye"
 }
 ```
 
@@ -472,17 +483,19 @@ discerne event {
 
 ```ebnf
 guardStmt := 'custodi' '{' guardClause+ '}'
-guardClause := 'si' expression blockStmt
+guardClause := 'si' expression (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'custodi' (guard!) groups early-exit conditions.
+> 'ergo' for one-liner actions, 'reddit' for early return one-liners.
 
 **Examples:**
 
 ```fab
 custodi {
-    si user == nihil { redde nihil }
-    si useri age < 0 { iace "Invalid age" }
+    si user == nihil reddit nihil
+    si user.age < 0 ergo iace "Invalid age"
+    si user.name == "" { redde defaultUser() }
 }
 ```
 
@@ -533,7 +546,7 @@ throwStmt := ('iace' | 'mori') expression
 
 > Two error severity levels:
 > iace (throw!) → recoverable, can be caught
-> mori (die!)   → fatal/panic, unrecoverable
+> mori (die!) → fatal/panic, unrecoverable
 
 ### Scribe Statement
 
@@ -543,8 +556,8 @@ outputStmt := ('scribe' | 'vide' | 'mone') expression (',' expression)*
 
 > Latin output keywords as statement forms:
 > scribe (write!) → console.log
-> vide (see!)     → console.debug
-> mone (warn!)    → console.warn
+> vide (see!) → console.debug
+> mone (warn!) → console.warn
 
 **Examples:**
 
@@ -615,11 +628,13 @@ argumentList := (expression (',' expression)*)?
 ```
 
 > Latin 'ad' (to/toward) dispatches to named endpoints:
+>
 > - Stdlib syscalls: "fasciculus:lege", "console:log"
 > - External packages: "hono/Hono"
 > - Remote services: "https://api.example.com/users"
-> 
+>
 > Binding verbs encode sync/async and single/plural:
+>
 > - fit: sync, single ("it becomes")
 > - fiet: async, single ("it will become")
 > - fiunt: sync, plural ("they become")
@@ -662,11 +677,12 @@ curatorKind := 'arena' | 'page'
 ```
 
 > Latin "cura" (care) + binding verb for scoped resources.
+>
 > - pro: neutral binding ("for")
 > - fit: sync binding ("it becomes")
 > - fiet: async binding ("it will become")
-> Curator kinds declare explicit allocator types (arena, page).
-> Guarantees cleanup via solve() on scope exit.
+>   Curator kinds declare explicit allocator types (arena, page).
+>   Guarantees cleanup via solve() on scope exit.
 
 **Examples:**
 
@@ -680,15 +696,16 @@ cura connect(url) fiet conn { ... }          // async resource
 ### Incipit Statement
 
 ```ebnf
-incipitStmt := 'incipit' (blockStmt | 'ergo' statement)
+incipitStmt := 'incipit' (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'incipit' (it begins) marks the program entry point.
 > This is a pure structural marker with no magic injection.
 > The source is responsible for any setup (allocators via cura, etc.).
-> 
+>
 > The 'ergo' (therefore) form chains to a single statement, typically
 > a cura block for allocator setup. This avoids extra nesting.
+> The 'reddit' form returns an exit code directly.
 
 **Examples:**
 
@@ -697,19 +714,22 @@ incipit {
     scribe "Hello"
 }
 
-incipit ergo cura arena {
+incipit ergo cura arena { }
+
+incipit reddit 0  # return exit code
 ```
 
 ### Incipiet Statement
 
 ```ebnf
-incipietStmt := 'incipiet' (blockStmt | 'ergo' statement)
+incipietStmt := 'incipiet' (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'incipiet' (it will begin) marks the async program entry point.
 > Mirrors the fit/fiet pattern: present for sync, future for async.
-> 
+>
 > The 'ergo' form chains to a single statement for concise setup.
+> The 'reddit' form returns an exit code directly.
 
 **Examples:**
 
@@ -722,6 +742,8 @@ incipiet {
 incipiet ergo cura arena {
     fixum data = cede fetchData()
 }
+
+incipiet reddit 0
 ```
 
 ### Block Statement
@@ -780,12 +802,12 @@ praefixumExpr := 'praefixum' (blockStmt | '(' expression ')')
 > Latin 'praefixum' (pre-fixed) extends fixum vocabulary.
 > Block form: praefixum { ... } for multi-statement computation
 > Expression form: praefixum(expr) for simple expressions
-> 
+>
 > TARGET SUPPORT:
-> Zig:    comptime { } or comptime (expr)
-> C++:    constexpr
-> Rust:   const (in const context)
-> TS/Py:  Semantic error - not supported
+> Zig: comptime { } or comptime (expr)
+> C++: constexpr
+> Rust: const (in const context)
+> TS/Py: Semantic error - not supported
 
 **Examples:**
 
@@ -806,7 +828,7 @@ scriptumExpr := 'scriptum' '(' STRING (',' expression)* ')'
 
 > "scriptum" (that which has been written) is the perfect passive participle
 > of scribere. While scribe outputs to console, scriptum returns a formatted string.
-> 
+>
 > Format string is passed through verbatim to target. User must use target-appropriate
 > placeholders ({} for Zig/Rust, %s/%d for C++, etc.). Faber does not translate.
 
@@ -831,6 +853,7 @@ castExpr := call ('qua' typeAnnotation)*
 
 > Latin 'qua' (as, in the capacity of) for type assertions.
 > Compile-time only — no runtime checking. Maps to:
+>
 > - TypeScript: x as T
 > - Python: x (ignored, dynamic typing)
 > - Zig: @as(T, x)
@@ -844,9 +867,10 @@ newExpr := 'novum' IDENTIFIER ('(' argumentList ')')? (objectLiteral | 'de' expr
 ```
 
 > Two forms for property overrides:
+>
 > - Inline literal: `novum Persona { nomen: "Marcus" }`
 > - From expression: `novum Persona de props` (props is variable/call/etc.)
-> 
+>
 > The `de` (from) form allows dynamic overrides from variables or function results.
 
 ### Finge Expression
@@ -886,4 +910,4 @@ identifierOrKeyword := IDENTIFIER | KEYWORD
 
 ---
 
-*Generated from `fons/parser/index.ts` — do not edit directly.*
+_Generated from `fons/parser/index.ts` — do not edit directly._
