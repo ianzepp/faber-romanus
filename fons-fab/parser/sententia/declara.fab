@@ -42,7 +42,7 @@ ex "./massa" importa parseMassaSententia
 @ publica
 functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus # TODO this is used EVERYWHERE
+    fixum locus = p.locusActualis()
 
     # Consume 'functio'
     p.expectaVerbum("functio", ParserErrorCodice.ExpectaturFunctio)
@@ -123,7 +123,7 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
 @ publica
 functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'genus'
     p.expectaVerbum("genus", ParserErrorCodice.ExpectaturGenus)
@@ -181,7 +181,7 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
         si p.probaVerbum("functio") {
             # Method - backtrack and parse as full function
             # For now, simplified: just parse the function
-            fixum methodLocus = p.specta(0).locus
+            fixum methodLocus = p.locusActualis()
             fixum methodNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
             fixum methodNomen = methodNomenSym.valor
 
@@ -212,7 +212,7 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
             } qua Sententia)
         } secus {
             # Field: type name or name: default
-            fixum campusLocus = p.specta(0).locus
+            fixum campusLocus = p.locusActualis()
             fixum typusAnnotatio = r.adnotatio()
             fixum campusNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
             fixum campusNomen = campusNomenSym.valor
@@ -263,7 +263,7 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
 @ publica
 functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'pactum'
     p.expectaVerbum("pactum", ParserErrorCodice.ExpectaturPactum)
@@ -347,7 +347,7 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
 @ publica
 functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'ordo'
     p.expectaVerbum("ordo", ParserErrorCodice.ExpectaturOrdo)
@@ -362,7 +362,7 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
     varia membra = [] qua lista<OrdoMembrum>
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
-        fixum membrumLocus = p.specta(0).locus
+        fixum membrumLocus = p.locusActualis()
         fixum membrumNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
         fixum membrumNomen = membrumNomenSym.valor
 
@@ -402,7 +402,7 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
 @ publica
 functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'discretio'
     p.expectaVerbum("discretio", ParserErrorCodice.ExpectaturDiscretio)
@@ -423,7 +423,7 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
     varia variantes = [] qua lista<VariansDeclaratio>
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
-        fixum variansLocus = p.specta(0).locus
+        fixum variansLocus = p.locusActualis()
         fixum variansNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
         fixum variansNomen = variansNomenSym.valor
 
@@ -432,7 +432,7 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
         # Optional fields in braces
         si p.congruet(SymbolumGenus.UncusSin) {
             dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
-                fixum campusLocus = p.specta(0).locus
+                fixum campusLocus = p.locusActualis()
                 fixum campusTypus = r.adnotatio()
                 fixum campusNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
                 fixum campusNomen = campusNomenSym.valor
@@ -478,7 +478,7 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
 @ publica
 functio parseTypusAliasDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'typus'
     p.expectaVerbum("typus", ParserErrorCodice.ExpectaturTypus)
@@ -516,7 +516,7 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
     }
 
     fac {
-        fixum paramLocus = p.specta(0).locus
+        fixum paramLocus = p.locusActualis()
 
         # Check for rest parameter
         varia residuum = falsum
@@ -583,7 +583,7 @@ functio parseTypusParametra(Resolvitor r) -> lista<TypusParametrum> {
     p.expectaVerbum("typus", ParserErrorCodice.ExpectaturTypus)
 
     fac {
-        fixum paramLocus = p.specta(0).locus
+        fixum paramLocus = p.locusActualis()
         fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
 
         parametra.adde({
@@ -628,7 +628,7 @@ functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
 @ publica
 functio parseImportaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'ex'
     p.expectaVerbum("ex", ParserErrorCodice.ExpectaturEx)
@@ -660,7 +660,7 @@ functio parseImportaSententia(Resolvitor r) -> Sententia {
     } secus {
         # Parse named specifiers
         fac {
-            fixum specLocus = p.specta(0).locus
+            fixum specLocus = p.locusActualis()
 
             # Check for rest: ceteri name
             varia residuum = falsum

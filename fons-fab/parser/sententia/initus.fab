@@ -35,7 +35,7 @@ ex "./massa" importa parseMassaSententia
 @ publica
 functio parseIncipitSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'incipit'
     p.expectaVerbum("incipit", ParserErrorCodice.ExpectaturIncipit)
@@ -72,7 +72,7 @@ functio parseIncipitSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseIncipietSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'incipiet'
     p.expectaVerbum("incipiet", ParserErrorCodice.ExpectaturIncipiet)
@@ -111,7 +111,7 @@ functio parseIncipietSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseCuraSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'cura'
     p.expectaVerbum("cura", ParserErrorCodice.ExpectaturCura)
@@ -200,7 +200,7 @@ functio parseCuraSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseAdSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'ad'
     p.expectaVerbum("ad", ParserErrorCodice.ExpectaturAd)
@@ -224,7 +224,7 @@ functio parseAdSententia(Resolvitor r) -> Sententia {
     # Parse optional binding clause
     varia vinculum = nihil qua AdVinculum?
     si p.probaVerbum("fit") aut p.probaVerbum("fiet") aut p.probaVerbum("fiunt") aut p.probaVerbum("fient") aut p.probaVerbum("pro") {
-        fixum vincLocus = p.specta(0).locus
+        fixum vincLocus = p.locusActualis()
 
         # Parse verb (default to fit)
         varia verbum = AdVerbumVinculandi.Fit
@@ -298,7 +298,7 @@ functio parseAdSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # 'cape' already checked, consume it
     p.procede()

@@ -31,7 +31,7 @@ ex "./primaria" importa parsePrimaria
 @ publica
 functio parseUnaria(Resolvitor r) -> Expressia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Check for prefix operators
     si p.congruetVerbum("non") aut p.congruet(SymbolumGenus.Non) {
@@ -103,7 +103,7 @@ functio parsePostfix(Resolvitor r) -> Expressia {
 
     # Loop to handle chained postfix operations
     dum verum {
-        fixum locus = p.specta(0).locus
+        fixum locus = p.locusActualis()
 
         # Function call: expr(args)
         si p.congruet(SymbolumGenus.ParensSin) {

@@ -199,6 +199,13 @@ genus Parser {
         redde ego.symbola[0]
     }
 
+    # Get the source position of the current token
+    # WHY: Almost every parse function starts with `fixum locus = p.locusActualis()`
+    #      This helper reduces boilerplate and clarifies intent.
+    functio locusActualis() -> Locus {
+        redde ego.specta(0).locus
+    }
+
     # Consume and return current token, collecting comments first
     # Never advances past Finis token
     functio procede() -> Symbolum {

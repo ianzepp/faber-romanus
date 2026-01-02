@@ -41,7 +41,7 @@ ex "./massa" importa parseMassaSententia
 @ publica
 functio parseSiSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'si'
     p.expectaVerbum("si", ParserErrorCodice.ExpectaturSi)
@@ -73,7 +73,7 @@ functio parseSiSententia(Resolvitor r) -> Sententia {
     # Also check for 'sin' (else if shorthand)
     si p.probaVerbum("sin") {
         # Parse the rest as another si statement
-        fixum siLocus = p.specta(0).locus
+        fixum siLocus = p.locusActualis()
         fixum siCondicio = r.expressia()
         fixum siConsequens = parseMassaSententia(r)
 
@@ -114,7 +114,7 @@ functio parseSiSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseDumSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'dum'
     p.expectaVerbum("dum", ParserErrorCodice.ExpectaturDum)
@@ -149,7 +149,7 @@ functio parseDumSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseExSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'ex'
     p.expectaVerbum("ex", ParserErrorCodice.ExpectaturEx)
@@ -193,7 +193,7 @@ functio parseExSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseDeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'de'
     p.expectaVerbum("de", ParserErrorCodice.ExpectaturDe)

@@ -30,7 +30,7 @@ ex "../errores" importa ParserErrorCodice
 @ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'cape' keyword
     p.expectaVerbum("cape", ParserErrorCodice.ExpectaturCape)
@@ -58,7 +58,7 @@ functio parseCapeClausula(Resolvitor r) -> CapeClausula {
 @ publica
 functio parseTemptaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'tempta' keyword
     p.expectaVerbum("tempta", ParserErrorCodice.ExpectaturTempta)
@@ -97,7 +97,7 @@ functio parseTemptaSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseFacSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'fac' keyword
     p.expectaVerbum("fac", ParserErrorCodice.ExpectaturFac)
@@ -135,7 +135,7 @@ functio parseFacSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseAdfirmaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'adfirma' keyword
     p.expectaVerbum("adfirma", ParserErrorCodice.ExpectaturAdfirma)

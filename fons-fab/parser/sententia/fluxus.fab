@@ -38,7 +38,7 @@ ex "./massa" importa parseMassaSententia
 @ publica
 functio parseEligeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'elige'
     p.expectaVerbum("elige", ParserErrorCodice.ExpectaturElige)
@@ -56,7 +56,7 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         # Check for 'casu' case
         si p.probaVerbum("casu") {
-            fixum casusLocus = p.specta(0).locus
+            fixum casusLocus = p.locusActualis()
             p.procede()
 
             # Parse condition expression
@@ -85,7 +85,7 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
         }
         secus {
             # Invalid case start
-            p.renuncia(ParserErrorCodice.InvalidumEligeCasusInitium, p.specta(0).locus)
+            p.renuncia(ParserErrorCodice.InvalidumEligeCasusInitium, p.locusActualis())
             rumpe
         }
     }
@@ -122,7 +122,7 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseDiscerneSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'discerne'
     p.expectaVerbum("discerne", ParserErrorCodice.ExpectaturDiscerne)
@@ -138,7 +138,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
     # Parse variant cases
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         si p.probaVerbum("casu") {
-            fixum casusLocus = p.specta(0).locus
+            fixum casusLocus = p.locusActualis()
             p.procede()  # Consume 'casu'
 
             # Parse variant name
@@ -165,7 +165,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
                 consequens: consequens
             } qua VariansCasus)
         } secus {
-            p.renuncia(ParserErrorCodice.InvalidumDiscerneCasusInitium, p.specta(0).locus)
+            p.renuncia(ParserErrorCodice.InvalidumDiscerneCasusInitium, p.locusActualis())
             rumpe
         }
     }
@@ -193,7 +193,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseCustodiSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'custodi'
     p.expectaVerbum("custodi", ParserErrorCodice.ExpectaturCustodi)
@@ -206,7 +206,7 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
     # Parse guard clauses
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         si p.probaVerbum("si") {
-            fixum clausulaLocus = p.specta(0).locus
+            fixum clausulaLocus = p.locusActualis()
             p.procede()  # Consume 'si'
 
             fixum condicio = r.expressia()
@@ -218,7 +218,7 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
                 consequens: consequens
             } qua CustodiClausula)
         } secus {
-            p.renuncia(ParserErrorCodice.ExpectaturSi, p.specta(0).locus)
+            p.renuncia(ParserErrorCodice.ExpectaturSi, p.locusActualis())
             rumpe
         }
     }
@@ -235,7 +235,7 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # 'cape' already consumed by caller checking probaVerbum
     p.procede()

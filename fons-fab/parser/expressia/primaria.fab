@@ -149,7 +149,7 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
 @ publica
 functio parseSeriesExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     p.expecta(SymbolumGenus.AngulusSin, ParserErrorCodice.ExpectaturAngulusSin)
 
@@ -193,7 +193,7 @@ functio parseSeriesExpressia(Resolvitor r) -> Expressia {
 @ publica
 functio parseObiectumExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
@@ -202,7 +202,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
     # Parse properties until closing brace
     si non p.proba(SymbolumGenus.UncusDex) {
         fac {
-            fixum propLocus = p.specta(0).locus
+            fixum propLocus = p.locusActualis()
 
             # Check for spread: sparge expr
             si p.probaVerbum("sparge") {
@@ -300,7 +300,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
 @ publica
 functio parseLambdaExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'pro'
     p.expectaVerbum("pro", ParserErrorCodice.ExpectaturPro)
@@ -311,7 +311,7 @@ functio parseLambdaExpressia(Resolvitor r) -> Expressia {
     si non p.proba(SymbolumGenus.Colon) et non p.proba(SymbolumGenus.Sagitta) {
         # Parse parameters until we hit : or ->
         fac {
-            fixum paramLocus = p.specta(0).locus
+            fixum paramLocus = p.locusActualis()
             fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
 
             parametra.adde({

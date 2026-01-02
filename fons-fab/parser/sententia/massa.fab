@@ -37,7 +37,7 @@ genus Programma {
 @ publica
 functio parseMassaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Expect opening brace
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
@@ -77,7 +77,7 @@ functio parseMassaSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseExpressiaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
     fixum expressia = r.expressia()
 
     redde finge ExpressiaSententia {
@@ -95,7 +95,7 @@ functio parseExpressiaSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseProgramma(Resolvitor r) -> Programma {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
     varia corpus = [] qua lista<Sententia>
 
     # Parse statements until end of input

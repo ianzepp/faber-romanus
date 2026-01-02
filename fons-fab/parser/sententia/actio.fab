@@ -36,8 +36,7 @@ ex "../errores" importa ParserErrorCodice
 @ publica
 functio parseReddeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus # TODO perhaps there needs to be a single method that does 
-                                    # the `p.specta(0).locus` as a single call? 
+    fixum locus = p.locusActualis() 
 
     # Consume 'redde' keyword
     p.expectaVerbum("redde", ParserErrorCodice.ExpectaturRedde)
@@ -64,7 +63,7 @@ functio parseReddeSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseRumpeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'rumpe' keyword (already validated by caller)
     p.procede()
@@ -82,7 +81,7 @@ functio parseRumpeSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parsePergeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume 'perge' keyword (already validated by caller)
     p.procede()
@@ -102,7 +101,7 @@ functio parsePergeSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseIaceSententia(Resolvitor r, bivalens fatale) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume keyword (iace or mori, already validated by caller)
     p.procede()
@@ -128,7 +127,7 @@ functio parseIaceSententia(Resolvitor r, bivalens fatale) -> Sententia {
 @ publica
 functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Consume keyword (already validated by caller)
     p.procede()

@@ -31,7 +31,7 @@ ex "./unaria" importa parseUnaria
 @ publica
 functio parseAssignatio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Parse left side (could be ternary or lower)
     varia sinister = parseCondicio(r)
@@ -63,7 +63,7 @@ functio parseAssignatio(Resolvitor r) -> Expressia {
 @ publica
 functio parseCondicio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Parse condition
     varia condicio = parseAut(r)

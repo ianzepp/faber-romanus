@@ -34,7 +34,7 @@ ex "./errores" importa ParserErrorCodice
 @ publica
 functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # -------------------------------------------------------------------------
     # Check for borrow preposition (de/in for ownership semantics)

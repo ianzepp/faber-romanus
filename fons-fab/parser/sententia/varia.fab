@@ -60,7 +60,7 @@ functio parseNomenVelVerbum(Resolvitor r) -> textus {
 @ publica
 functio parseVariaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.locusActualis()
 
     # Get declaration kind from keyword
     fixum verbum = p.specta(0).verbum
