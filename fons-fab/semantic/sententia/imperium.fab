@@ -69,7 +69,7 @@ functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
             discerne sourceTypus {
                 casu Genericum ut g {
                     si g.nomen == "lista" et g.parametri.longitudo() > 0 {
-                        elemTypus = g.parametri[0]
+                        elemTypus = g.parametri.primus()
                     }
                 }
             }

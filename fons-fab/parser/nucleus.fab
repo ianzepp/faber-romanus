@@ -176,7 +176,7 @@ genus Parser {
             redde ego.symbola[pos]
         }
         
-        redde ego.symbola[ego.symbola.longitudo() - 1]
+        redde ego.symbola.ultimus()
     }
 
     # Check if at end of token stream (current token is Finis)
@@ -189,14 +189,11 @@ genus Parser {
     #      position or value. This avoids needing specta(-1).
     # EDGE: Returns first token if called before any advance (index=0)
     functio praevius() -> Symbolum {
-        # TODO: si positivum ego.index
         si ego.index > 0 {
-            # TODO: need a syntax for "get last item!", eg `redde ego.symbola.ultima()`
             redde ego.symbola[ego.index - 1]
         }
         
-        # TODO same here: `ego.symbola.prima()` or in this case `ultima()` points to the same thing.
-        redde ego.symbola[0]
+        redde ego.symbola.primus()
     }
 
     # Get the source position of the current token

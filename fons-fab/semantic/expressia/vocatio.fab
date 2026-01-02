@@ -69,7 +69,7 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
                                 # lista.primus, lista.ultimus -> element type
                                 si n.nomen inter ["primus", "ultimus"] {
                                     si g.parametri.longitudo() > 0 {
-                                        redde g.parametri[0]
+                                        redde g.parametri.primus()
                                     }
                                 }
                                 # lista.vacua -> bivalens
@@ -81,7 +81,7 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
 
                         # Indexed access: lista[i] -> element type
                         si m.computatum et g.parametri.longitudo() > 0 {
-                            redde g.parametri[0]
+                            redde g.parametri.primus()
                         }
                     }
                 }

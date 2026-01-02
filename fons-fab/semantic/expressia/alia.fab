@@ -107,7 +107,7 @@ functio resolveCedeExpr(Resolvitor r, Expressia cedeExpr) -> SemanticTypus {
             discerne promissumTypus {
                 casu Genericum ut g {
                     si g.nomen == "promissum" et g.parametri.longitudo() > 0 {
-                        redde g.parametri[0]
+                        redde g.parametri.primus()
                     }
                 }
             }

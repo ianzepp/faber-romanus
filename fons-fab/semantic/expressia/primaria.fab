@@ -98,7 +98,7 @@ functio resolveSeries(Resolvitor r, Expressia seriesExpr) -> SemanticTypus {
             }
 
             # Resolve first element to infer type
-            fixum primumTypus = r.expressia(s.elementa[0])
+            fixum primumTypus = r.expressia(s.elementa.primus())
 
             # Resolve all other elements
             ex s.elementa pro elem {
