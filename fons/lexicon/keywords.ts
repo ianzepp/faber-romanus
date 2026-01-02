@@ -287,6 +287,12 @@ export const keywords: KeywordEntry[] = [
     //      usque = inclusive (0 usque 10 = 0-10)
     { latin: 'ante', meaning: 'before (exclusive)', category: 'operator' },
     { latin: 'usque', meaning: 'up to (inclusive)', category: 'operator' },
+    // WHY: "intra" (within) for range containment checks
+    //      intra = value within range (x intra 0..100)
+    { latin: 'intra', meaning: 'within (range)', category: 'operator' },
+    // WHY: "inter" (among) for set membership checks
+    //      inter = value among set (x inter [1, 2, 3])
+    { latin: 'inter', meaning: 'among (set)', category: 'operator' },
 
     // ---------------------------------------------------------------------------
     // Spread/Rest Operators

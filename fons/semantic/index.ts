@@ -1039,6 +1039,42 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             return BIVALENS;
         }
 
+        // Range containment: intra
+        // WHY: x intra range checks if x is within the range bounds
+        if (node.operator === 'intra') {
+            // Right side should be a range expression
+            if (node.right.type !== 'RangeExpression') {
+                error(`intra operator requires a range expression on the right side, got ${node.right.type}`, node.position);
+            }
+            // Left side should be numeric
+            if (leftType.kind === 'primitive' && !['numerus', 'fractus', 'decimus', 'magnus'].includes(leftType.name)) {
+                error(`intra operator left operand must be numeric, got ${formatType(leftType)}`, node.position);
+            }
+
+            node.resolvedType = BIVALENS;
+            return BIVALENS;
+        }
+
+        // Set membership: inter
+        // WHY: x inter [a, b, c] checks if x equals any element in the array
+        if (node.operator === 'inter') {
+            // Right side should be an array (lista<T>)
+            if (rightType.kind === 'generic' && rightType.name === 'lista') {
+                // Type compatibility check: left type should match array element type
+                const elementType = rightType.typeParameters[0];
+                if (elementType && leftType.kind !== 'unknown' && elementType.kind !== 'unknown') {
+                    if (!isAssignableTo(leftType, elementType)) {
+                        error(`inter operator type mismatch: ${formatType(leftType)} inter ${formatType(rightType)}`, node.position);
+                    }
+                }
+            } else if (rightType.kind !== 'unknown') {
+                error(`inter operator requires an array on the right side, got ${formatType(rightType)}`, node.position);
+            }
+
+            node.resolvedType = BIVALENS;
+            return BIVALENS;
+        }
+
         node.resolvedType = UNKNOWN;
 
         return UNKNOWN;

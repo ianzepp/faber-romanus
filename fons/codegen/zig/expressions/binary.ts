@@ -2,19 +2,21 @@
  * Zig Code Generator - Binary Expression
  *
  * TRANSFORMS:
- *   x + y -> (x + y) for numbers
- *   "a" + "b" -> (a ++ b) for comptime strings
- *   a && b -> (a and b)
- *   a || b -> (a or b)
- *   s == "foo" -> std.mem.eql(u8, s, "foo")
- *   s != "foo" -> !std.mem.eql(u8, s, "foo")
+ *   x + y           -> (x + y) for numbers
+ *   "a" + "b"       -> (a ++ b) for comptime strings
+ *   a && b          -> (a and b)
+ *   a || b          -> (a or b)
+ *   s == "foo"      -> std.mem.eql(u8, s, "foo")
+ *   s != "foo"      -> !std.mem.eql(u8, s, "foo")
+ *   x intra 0..100  -> (x >= 0 and x < 100)
+ *   x inter [1,2,3] -> std.mem.indexOfScalar(i64, &.{1,2,3}, x) != null
  *
  * TARGET: Zig uses 'and'/'or' keywords not &&/|| operators.
  *         String concatenation requires ++ operator (comptime only).
  *         String comparison requires std.mem.eql, not ==.
  */
 
-import type { BinaryExpression } from '../../../parser/ast';
+import type { BinaryExpression, RangeExpression } from '../../../parser/ast';
 import type { ZigGenerator } from '../generator';
 
 export function genBinaryExpression(node: BinaryExpression, g: ZigGenerator): string {
@@ -51,6 +53,26 @@ export function genBinaryExpression(node: BinaryExpression, g: ZigGenerator): st
     // Handle modulo - Zig requires @mod or @rem for signed integers
     if (node.operator === '%') {
         return `@mod(${left}, ${right})`;
+    }
+
+    // Range containment: x intra range
+    // TRANSFORMS: x intra 0..100 -> (x >= 0 and x < 100)
+    if (node.operator === 'intra') {
+        if (node.right.type === 'RangeExpression') {
+            const range = node.right as RangeExpression;
+            const start = g.genExpression(range.start);
+            const end = g.genExpression(range.end);
+            const endOp = range.inclusive ? '<=' : '<';
+            return `(${left} >= ${start} and ${left} ${endOp} ${end})`;
+        }
+        return `(${left} intra ${right})`;
+    }
+
+    // Set membership: x inter array
+    // TRANSFORMS: x inter [1, 2, 3] -> std.mem.indexOfScalar(i64, &.{1,2,3}, x) != null
+    // WHY: Zig doesn't have a direct contains function, use indexOfScalar
+    if (node.operator === 'inter') {
+        return `(std.mem.indexOfScalar(i64, ${right}, ${left}) != null)`;
     }
 
     const op = mapOperator(node.operator);

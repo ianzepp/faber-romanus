@@ -3893,14 +3893,16 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse comparison expression.
      *
      * GRAMMAR:
-     *   comparison := bitwiseOr (('<' | '>' | '<=' | '>=') bitwiseOr)*
+     *   comparison := bitwiseOr (('<' | '>' | '<=' | '>=' | 'intra' | 'inter') bitwiseOr)*
      *
      * PRECEDENCE: Lower than bitwise OR, higher than equality.
+     *
+     * WHY: intra/inter at comparison level - same precedence as relational operators
      */
     function parseComparison(): Expression {
         let left = parseBitwiseOr();
 
-        while (match('LESS', 'LESS_EQUAL', 'GREATER', 'GREATER_EQUAL')) {
+        while (match('LESS', 'LESS_EQUAL', 'GREATER', 'GREATER_EQUAL') || matchKeyword('intra') || matchKeyword('inter')) {
             const operator = tokens[current - 1]!.value;
             const position = tokens[current - 1]!.position;
             const right = parseBitwiseOr();

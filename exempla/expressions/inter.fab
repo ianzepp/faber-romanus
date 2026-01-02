@@ -1,0 +1,18 @@
+# Set membership operator: inter
+
+fixum status = "active"
+fixum age = 21
+
+# Basic inter with string array
+si status inter ["pending", "active", "paused"] {
+    scribe "valid status"
+}
+
+# inter with numeric array
+si age inter [18, 21, 65] {
+    scribe "milestone age"
+}
+
+incipit {
+    scribe "inter operator examples"
+}
