@@ -252,3 +252,73 @@
           - '(value orelse defaultValue)'
       fab:
           - 'value ?? defaultValue'
+
+- name: range containment with intra (exclusive end)
+  faber: x intra 0..100
+  expect:
+      ts: '(x >= 0 && x < 100);'
+      py: '(x >= 0 and x < 100)'
+      rs:
+          - '(x >= 0 && x < 100);'
+      cpp:
+          - '(x >= 0 && x < 100)'
+      zig:
+          - '(x >= 0 and x < 100)'
+      fab:
+          - 'x intra 0..100'
+
+- name: range containment with intra (inclusive end with usque)
+  faber: age intra 18 usque 65
+  expect:
+      ts: '(age >= 18 && age <= 65);'
+      py: '(age >= 18 and age <= 65)'
+      rs:
+          - '(age >= 18 && age <= 65);'
+      cpp:
+          - '(age >= 18 && age <= 65)'
+      zig:
+          - '(age >= 18 and age <= 65)'
+      fab:
+          - 'age intra 18 usque 65'
+
+- name: range containment with intra (explicit exclusive with ante)
+  faber: x intra 0 ante 10
+  expect:
+      ts: '(x >= 0 && x < 10);'
+      py: '(x >= 0 and x < 10)'
+      rs:
+          - '(x >= 0 && x < 10);'
+      cpp:
+          - '(x >= 0 && x < 10)'
+      zig:
+          - '(x >= 0 and x < 10)'
+      fab:
+          - 'x intra 0 ante 10'
+
+- name: set membership with inter (numeric array)
+  faber: age inter [18, 21, 65]
+  expect:
+      ts: '[18, 21, 65].includes(age);'
+      py: 'age in [18, 21, 65]'
+      rs:
+          - '[18, 21, 65].contains(&age);'
+      cpp:
+          - 'std::ranges::contains(std::vector{18, 21, 65}, age)'
+      zig:
+          - '(std.mem.indexOfScalar(i64, .{ 18, 21, 65 }, age) != null)'
+      fab:
+          - 'age inter [18, 21, 65]'
+
+- name: set membership with inter (string array)
+  faber: status inter ["pending", "active", "paused"]
+  expect:
+      ts: '["pending", "active", "paused"].includes(status);'
+      py: 'status in ["pending", "active", "paused"]'
+      rs:
+          - '[String::from("pending"), String::from("active"), String::from("paused")].contains(&status);'
+      cpp:
+          - 'std::ranges::contains(std::vector{std::string("pending"), std::string("active"), std::string("paused")}, status)'
+      zig:
+          - '(std.mem.indexOfScalar(i64, .{ "pending", "active", "paused" }, status) != null)'
+      fab:
+          - 'status inter ["pending", "active", "paused"]'
