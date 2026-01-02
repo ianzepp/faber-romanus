@@ -96,7 +96,6 @@ ordo ParserErrorCodice {
 
 # Error message with help text
 @ publicum
-@ publicum
 genus ParserErrorNuntius {
     textus textus       # Brief error message
     textus auxilium     # Extended help text
@@ -105,6 +104,7 @@ genus ParserErrorNuntius {
 # Get error message for a given error code
 @ publica
 functio nuntiumErroris(ParserErrorCodice codice) -> ParserErrorNuntius {
+    # TODO everything in here appears to be returning `qua ParserErrorNuntius`.. seems verbose.
     elige codice {
         # Token expectation errors
         casu ParserErrorCodice.ExpectaturParensDex {
@@ -315,7 +315,6 @@ functio nuntiumErroris(ParserErrorCodice codice) -> ParserErrorNuntius {
 }
 
 # Structured parser error with source location
-@ publicum
 @ publicum
 genus ParserError {
     ParserErrorCodice codice    # Error code for programmatic handling

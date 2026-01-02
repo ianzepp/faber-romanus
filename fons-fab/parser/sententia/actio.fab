@@ -36,7 +36,8 @@ ex "../errores" importa ParserErrorCodice
 @ publica
 functio parseReddeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.specta(0).locus # TODO perhaps there needs to be a single method that does 
+                                    # the `p.specta(0).locus` as a single call? 
 
     # Consume 'redde' keyword
     p.expectaVerbum("redde", ParserErrorCodice.ExpectaturRedde)
@@ -133,7 +134,9 @@ functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> Sententia {
     p.procede()
 
     # Parse first argument (required)
-    varia argumenta = [] qua lista<Expressia>
+    # TODO: does this compile if `varia lista<Expressia> argumenta = []`?
+    # TODO: or better yet as `varia Expressia[] argumenta = []`?
+    varia argumenta = [] qua lista<Expressia>   
     argumenta.adde(r.expressia())
 
     # Parse additional comma-separated arguments

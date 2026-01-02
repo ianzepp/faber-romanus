@@ -322,3 +322,45 @@
           - '(std.mem.indexOfScalar(i64, .{ "pending", "active", "paused" }, status) != null)'
       fab:
           - 'status inter ["pending", "active", "paused"]'
+
+- name: character range containment with intra (exclusive)
+  faber: c intra "a".."z"
+  expect:
+      ts: '(c >= "a" && c < "z");'
+      py: '(c >= "a" and c < "z")'
+      rs:
+          - '(c >= String::from("a") && c < String::from("z"));'
+      cpp:
+          - '(c >= std::string("a") && c < std::string("z"))'
+      zig:
+          - '(c >= "a" and c < "z")'
+      fab:
+          - 'c intra "a".."z"'
+
+- name: character range containment with intra (inclusive)
+  faber: c intra "a" usque "z"
+  expect:
+      ts: '(c >= "a" && c <= "z");'
+      py: '(c >= "a" and c <= "z")'
+      rs:
+          - '(c >= String::from("a") && c <= String::from("z"));'
+      cpp:
+          - '(c >= std::string("a") && c <= std::string("z"))'
+      zig:
+          - '(c >= "a" and c <= "z")'
+      fab:
+          - 'c intra "a" usque "z"'
+
+- name: character range containment for hex digits
+  faber: c intra "0".."9" aut c intra "a".."f" aut c intra "A".."F"
+  expect:
+      ts: '(((c >= "0" && c < "9") || (c >= "a" && c < "f")) || (c >= "A" && c < "F"));'
+      py: '(((c >= "0" and c < "9") or (c >= "a" and c < "f")) or (c >= "A" and c < "F"))'
+      rs:
+          - '(((c >= String::from("0") && c < String::from("9")) || (c >= String::from("a") && c < String::from("f"))) || (c >= String::from("A") && c < String::from("F")));'
+      cpp:
+          - '(((c >= std::string("0") && c < std::string("9")) || (c >= std::string("a") && c < std::string("f"))) || (c >= std::string("A") && c < std::string("F")))'
+      zig:
+          - '(((c >= "0" and c < "9") or (c >= "a" and c < "f")) or (c >= "A" and c < "F"))'
+      fab:
+          - 'c intra "0".."9" || c intra "a".."f" || c intra "A".."F"'

@@ -34,7 +34,6 @@ ex "./typus" importa parseTypusAnnotatio
 
 # Result of parsing
 @ publicum
-@ publicum
 genus ParserResultatum {
     Programma? programma        # AST root (nil on catastrophic failure)
     lista<ParserError> errores  # Parse errors encountered
@@ -46,7 +45,6 @@ genus ParserResultatum {
 # through the Resolvitor interface without circular imports.
 #
 # LATIN: parsator = "one who parses" (agent noun)
-@ publicum
 @ publicum
 genus Parsator implet Resolvitor {
     Parser p

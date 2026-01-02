@@ -917,15 +917,24 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
     }
 
     function resolveRange(node: Expression & { type: 'RangeExpression' }): SemanticType {
-        resolveExpression(node.start);
-        resolveExpression(node.end);
+        const startType = resolveExpression(node.start);
+        const endType = resolveExpression(node.end);
 
         if (node.step) {
             resolveExpression(node.step);
         }
 
-        // Range produces an iterable of numbers
-        const rangeType = genericType('lista', [NUMERUS]);
+        // Determine element type from range endpoints
+        // WHY: Ranges can be numeric (0..10) or character ("a".."z")
+        // For character ranges used with intra, the range type is lista<textus>
+        let elementType: SemanticType = NUMERUS;
+        if (startType.kind === 'primitive' && startType.name === 'textus') {
+            elementType = TEXTUS;
+        } else if (endType.kind === 'primitive' && endType.name === 'textus') {
+            elementType = TEXTUS;
+        }
+
+        const rangeType = genericType('lista', [elementType]);
 
         node.resolvedType = rangeType;
 
@@ -1041,14 +1050,16 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
         // Range containment: intra
         // WHY: x intra range checks if x is within the range bounds
+        // Supports both numeric ranges (x intra 0..100) and character ranges (c intra "a".."z")
         if (node.operator === 'intra') {
             // Right side should be a range expression
             if (node.right.type !== 'RangeExpression') {
                 error(`intra operator requires a range expression on the right side, got ${node.right.type}`, node.position);
             }
-            // Left side should be numeric
-            if (leftType.kind === 'primitive' && !['numerus', 'fractus', 'decimus', 'magnus'].includes(leftType.name)) {
-                error(`intra operator left operand must be numeric, got ${formatType(leftType)}`, node.position);
+            // Left side should be numeric or textus (for character range checks)
+            const allowedTypes = ['numerus', 'fractus', 'decimus', 'magnus', 'textus'];
+            if (leftType.kind === 'primitive' && !allowedTypes.includes(leftType.name)) {
+                error(`intra operator left operand must be numeric or textus, got ${formatType(leftType)}`, node.position);
             }
 
             node.resolvedType = BIVALENS;

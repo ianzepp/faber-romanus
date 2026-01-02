@@ -658,12 +658,13 @@ Quit                            -> unit variant (no payload)
 ### Si Statement
 
 ```ebnf
-ifStmt := 'si' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)? (elseClause | 'sin' ifStmt)?
+ifStmt := 'si' expression (blockStmt | 'ergo' statement | 'reddit' expression) ('cape' IDENTIFIER blockStmt)? (elseClause | 'sin' ifStmt)?
 elseClause := ('secus' | 'secus') (ifStmt | blockStmt | statement)
 ```
 
 > 'cape' (catch/seize) clause allows error handling within conditionals.
 > 'ergo' (therefore) for one-liner consequents.
+> 'reddit' (it returns) for early return one-liners.
 > 
 > TWO STYLE OPTIONS (both supported, can be mixed within the same chain):
 > 
@@ -686,6 +687,7 @@ elseClause := ('secus' | 'secus') (ifStmt | blockStmt | statement)
 
 ```fab
 si x > 5 ergo scribe("big")
+si x > 5 reddit verum            // early return
 si x > 5 { scribe("big") } secus scribe("small")
 si x < 0 { ... } sin x == 0 { ... } secus { ... }
 ```
@@ -693,7 +695,7 @@ si x < 0 { ... } sin x == 0 { ... } secus { ... }
 ### Dum Statement
 
 ```ebnf
-whileStmt := 'dum' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER blockStmt)?
+whileStmt := 'dum' expression (blockStmt | 'ergo' statement | 'reddit' expression) ('cape' IDENTIFIER blockStmt)?
 ```
 
 > 'dum' (while/until) for while loops.
@@ -703,13 +705,14 @@ whileStmt := 'dum' expression (blockStmt | 'ergo' statement) ('cape' IDENTIFIER 
 ```fab
 dum x > 0 { x = x - 1 }
 dum x > 0 ergo x = x - 1
+dum x > 0 reddit x
 ```
 
 ### Ex Statement
 
 ```ebnf
 exStmt := 'ex' expression (forBinding | destructBinding | arrayDestructBinding)
-forBinding := ('pro' | 'fit' | 'fiet') IDENTIFIER (blockStmt | 'ergo' statement) catchClause?
+forBinding := ('pro' | 'fit' | 'fiet') IDENTIFIER (blockStmt | 'ergo' statement | 'reddit' expression) catchClause?
 destructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') specifierList
 arrayDestructBinding := ('fixum' | 'varia' | 'figendum' | 'variandum') arrayPattern
 specifierList := specifier (',' specifier)*
@@ -826,7 +829,7 @@ sed "^start" im      // multiple flags
 
 ```ebnf
 deStmt := 'de' expression ('pro' | 'fit' | 'fiet') IDENTIFIER
-(blockStmt | 'ergo' statement) catchClause?
+(blockStmt | 'ergo' statement | 'reddit' expression) catchClause?
 ```
 
 > 'de' (from/concerning) for extracting keys from an object.
@@ -837,6 +840,7 @@ deStmt := 'de' expression ('pro' | 'fit' | 'fiet') IDENTIFIER
 ```fab
 de tabula pro clavis { ... }  // from table, for each key
 de object pro k ergo scribe k // one-liner form
+de object pro k reddit k      // return first key
 ```
 
 ### In Statement
@@ -858,12 +862,13 @@ in user { nomen = "Marcus" }  // mutation block
 
 ```ebnf
 eligeStmt := 'elige' expression '{' eligeCase* defaultCase? '}' catchClause?
-eligeCase := 'casu' expression (blockStmt | 'ergo' expression)
+eligeCase := 'casu' expression (blockStmt | 'ergo' statement | 'reddit' expression)
 defaultCase := 'ceterum' (blockStmt | statement)
 ```
 
 > 'elige' (choose) for value-based switch.
 > 'ergo' (therefore) for one-liners, 'ceterum' (otherwise) for default.
+> 'reddit' (it returns) for early return one-liners.
 > For variant matching on discretio types, use 'discerne' instead.
 
 **Examples:**
@@ -871,7 +876,7 @@ defaultCase := 'ceterum' (blockStmt | statement)
 ```fab
 elige status {
     casu "pending" ergo scribe("waiting")
-    casu "active" { processActive() }
+    casu "active" reddit verum
     ceterum iace "Unknown status"
 }
 ```
@@ -880,19 +885,20 @@ elige status {
 
 ```ebnf
 discerneStmt := 'discerne' expression '{' variantCase* '}'
-variantCase := 'casu' IDENTIFIER (('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*))? blockStmt
+variantCase := 'casu' IDENTIFIER (('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*))? (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'discerne' (distinguish!) pairs with 'discretio' (the tagged union type).
 > Uses 'casu' for match arms, 'ut' to bind whole variants, and 'pro' to introduce positional bindings.
+> 'ergo' for one-liners, 'reddit' for early return one-liners.
 
 **Examples:**
 
 ```fab
 discerne event {
     casu Click pro x, y { scribe "clicked at " + x + ", " + y }
-    casu Keypress pro key { scribe "pressed " + key }
-    casu Quit { mori "goodbye" }
+    casu Keypress pro key reddit key
+    casu Quit ergo mori "goodbye"
 }
 ```
 
@@ -900,17 +906,19 @@ discerne event {
 
 ```ebnf
 guardStmt := 'custodi' '{' guardClause+ '}'
-guardClause := 'si' expression blockStmt
+guardClause := 'si' expression (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'custodi' (guard!) groups early-exit conditions.
+> 'ergo' for one-liner actions, 'reddit' for early return one-liners.
 
 **Examples:**
 
 ```fab
 custodi {
-    si user == nihil { redde nihil }
-    si useri age < 0 { iace "Invalid age" }
+    si user == nihil reddit nihil
+    si user.age < 0 ergo iace "Invalid age"
+    si user.name == "" { redde defaultUser() }
 }
 ```
 
@@ -1108,7 +1116,7 @@ cura connect(url) fiet conn { ... }          // async resource
 ### Incipit Statement
 
 ```ebnf
-incipitStmt := 'incipit' (blockStmt | 'ergo' statement)
+incipitStmt := 'incipit' (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'incipit' (it begins) marks the program entry point.
@@ -1117,6 +1125,7 @@ incipitStmt := 'incipit' (blockStmt | 'ergo' statement)
 > 
 > The 'ergo' (therefore) form chains to a single statement, typically
 > a cura block for allocator setup. This avoids extra nesting.
+> The 'reddit' form returns an exit code directly.
 
 **Examples:**
 
@@ -1131,13 +1140,14 @@ incipit ergo cura arena {
 ### Incipiet Statement
 
 ```ebnf
-incipietStmt := 'incipiet' (blockStmt | 'ergo' statement)
+incipietStmt := 'incipiet' (blockStmt | 'ergo' statement | 'reddit' expression)
 ```
 
 > 'incipiet' (it will begin) marks the async program entry point.
 > Mirrors the fit/fiet pattern: present for sync, future for async.
 > 
 > The 'ergo' form chains to a single statement for concise setup.
+> The 'reddit' form returns an exit code directly.
 
 **Examples:**
 
@@ -1150,6 +1160,8 @@ incipiet {
 incipiet ergo cura arena {
     fixum data = cede fetchData()
 }
+
+incipiet reddit 0
 ```
 
 ### Block Statement

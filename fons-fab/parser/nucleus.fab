@@ -93,7 +93,10 @@ genus Parser {
 
             # Convert and buffer the comment
             ego.notaePendentes.adde(ego.symbolumAdNotam(s))
-            ego.index = ego.index + 1
+            ego.index = ego.index + 1       # `incrum ego.index` as a possible syntax? 
+                                            # I want ++ support but don't want to deal with prefix/postfix
+                                            # return syntax. So `incrum` or `incr` is the same thing, but
+                                            # without the C baggage. Same for `decr`/`decrum`.
         }
     }
 
@@ -172,6 +175,7 @@ genus Parser {
         si pos < ego.symbola.longitudo() {
             redde ego.symbola[pos]
         }
+        
         redde ego.symbola[ego.symbola.longitudo() - 1]
     }
 
@@ -185,9 +189,13 @@ genus Parser {
     #      position or value. This avoids needing specta(-1).
     # EDGE: Returns first token if called before any advance (index=0)
     functio praevius() -> Symbolum {
+        # TODO: si positivum ego.index
         si ego.index > 0 {
+            # TODO: need a syntax for "get last item!", eg `redde ego.symbola.ultima()`
             redde ego.symbola[ego.index - 1]
         }
+        
+        # TODO same here: `ego.symbola.prima()` or in this case `ultima()` points to the same thing.
         redde ego.symbola[0]
     }
 
@@ -204,7 +212,7 @@ genus Parser {
 
         # Return current and advance
         fixum s = ego.symbola[ego.index]
-        ego.index = ego.index + 1
+        ego.index = ego.index + 1 # TODO, again `incrum` as an operator, eg `ego.index incrum` (syntactic for `++`)
         redde s
     }
 
@@ -223,6 +231,11 @@ genus Parser {
     functio probaVerbum(textus verbum) -> bivalens {
         fixum s = ego.specta(0)
         redde s.species === SymbolumGenus.Verbum et s.verbum === verbum
+
+        # # TODO Would prefer clear exit clauses
+        # si non s.species et SymbolumGenus.Verbum reddit falsum
+        # si non s.verbum et verbum reddit falsum
+        # redde vertum        
     }
 
     # Match and consume token if type matches
@@ -356,6 +369,7 @@ genus Parser {
 
         dum non ego.estFinis() {
             # Stop at closing brace (end of genus)
+            # TODO si .. reddit
             si ego.proba(SymbolumGenus.UncusDex) {
                 redde
             }
@@ -378,6 +392,7 @@ genus Parser {
     # Check if token is a builtin type name
     # Used to distinguish "fixum textus nomen" from "fixum nomen"
     functio estTypusNomen(Symbolum s) -> bivalens {
+        # TODO si .. reddit falsum
         si s.species !== SymbolumGenus.Nomen {
             redde falsum
         }
@@ -385,7 +400,7 @@ genus Parser {
         # Check against builtin type names
         # TODO: This should use a proper type registry
         elige s.valor {
-            casu "textus" { redde verum }
+            casu "textus" { redde verum }       # TODO: casu "textus" reddit verum
             casu "numerus" { redde verum }
             casu "fractus" { redde verum }
             casu "decimus" { redde verum }
@@ -415,10 +430,10 @@ genus Parser {
         }
 
         elige s.verbum {
-            casu "de" { redde verum }
+            casu "de" { redde verum }       # TODO casu "de" reddit verum
             casu "in" { redde verum }
             casu "ex" { redde verum }
-            ceterum { redde falsum }
+            ceterum { redde falsum }        # TODO ceterum reddit falsum
         }
     }
 

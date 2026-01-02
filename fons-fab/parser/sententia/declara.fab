@@ -42,7 +42,7 @@ ex "./massa" importa parseMassaSententia
 @ publica
 functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
-    fixum locus = p.specta(0).locus
+    fixum locus = p.specta(0).locus # TODO this is used EVERYWHERE
 
     # Consume 'functio'
     p.expectaVerbum("functio", ParserErrorCodice.ExpectaturFunctio)
