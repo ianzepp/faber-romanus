@@ -26,14 +26,14 @@ ex "./massa" importa parseMassaSententia
 # Parse elige (switch) statement
 #
 # GRAMMAR:
-#   eligeStmt := 'elige' expr '{' eligeCase* ('secus' block)? '}' ('cape' IDENT block)?
-#   eligeCase := 'si' expr ('ergo' stmt | block)
+#   eligeStmt := 'elige' expr '{' eligeCase* ('ceterum' block)? '}' ('cape' IDENT block)?
+#   eligeCase := 'casu' expr ('ergo' stmt | block)
 #
 # Examples:
 #   elige status {
-#       si "pending" { scribe "waiting" }
-#       si "done" { scribe "finished" }
-#       secus { scribe "unknown" }
+#       casu "pending" { scribe "waiting" }
+#       casu "done" { scribe "finished" }
+#       ceterum { scribe "unknown" }
 #   }
 @ publica
 functio parseEligeSententia(Resolvitor r) -> Sententia {
@@ -54,8 +54,8 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
 
     # Parse cases until closing brace
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
-        # Check for 'si' case
-        si p.probaVerbum("si") {
+        # Check for 'casu' case
+        si p.probaVerbum("casu") {
             fixum casusLocus = p.specta(0).locus
             p.procede()
 
@@ -77,15 +77,15 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
                 consequens: consequens
             } qua EligeCasus)
         }
-        # Check for 'secus' (default case)
-        sin p.probaVerbum("secus") {
+        # Check for 'ceterum' (default case)
+        sin p.probaVerbum("ceterum") {
             p.procede()
             praedefinitum = parseMassaSententia(r)
             rumpe  # Default must be last
         }
         secus {
             # Invalid case start
-            p.renuncia(ParserErrorCodice.ExpectaturSiAutSecus, p.specta(0).locus)
+            p.renuncia(ParserErrorCodice.InvalidumEligeCasusInitium, p.specta(0).locus)
             rumpe
         }
     }
@@ -111,13 +111,13 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
 #
 # GRAMMAR:
 #   discerneStmt := 'discerne' expr '{' variantCase* '}'
-#   variantCase := 'si' IDENT ('pro' IDENT (',' IDENT)*)? block
+#   variantCase := 'casu' IDENT ('pro' IDENT (',' IDENT)*)? block
 #
 # Examples:
 #   discerne event {
-#       si Click pro x, y { scribe scriptum("clicked at {}, {}", x, y) }
-#       si Keypress ut key { scribe scriptum("pressed {}", key) }
-#       si Quit { mori "goodbye" }
+#       casu Click pro x, y { scribe scriptum("clicked at {}, {}", x, y) }
+#       casu Keypress ut key { scribe scriptum("pressed {}", key) }
+#       casu Quit { mori "goodbye" }
 #   }
 @ publica
 functio parseDiscerneSententia(Resolvitor r) -> Sententia {
@@ -137,9 +137,9 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
 
     # Parse variant cases
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
-        si p.probaVerbum("si") {
+        si p.probaVerbum("casu") {
             fixum casusLocus = p.specta(0).locus
-            p.procede()  # Consume 'si'
+            p.procede()  # Consume 'casu'
 
             # Parse variant name
             fixum variansNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
@@ -165,7 +165,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
                 consequens: consequens
             } qua VariansCasus)
         } secus {
-            p.renuncia(ParserErrorCodice.ExpectaturSi, p.specta(0).locus)
+            p.renuncia(ParserErrorCodice.InvalidumDiscerneCasusInitium, p.specta(0).locus)
             rumpe
         }
     }

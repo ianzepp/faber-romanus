@@ -21,7 +21,7 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne variaStmt {
-        si VariaDeclaratio pro v {
+        casu VariaDeclaratio pro v {
             # Determine type from annotation or initializer
             varia resolvedTypus = IGNOTUM qua SemanticTypus
 
@@ -70,7 +70,7 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
     fixum a = r.analyzator()
 
     discerne functioStmt {
-        si FunctioDeclaratio pro f {
+        casu FunctioDeclaratio pro f {
             # Build parameter types
             varia paramTypi = [] qua lista<SemanticTypus>
             ex f.parametra pro param {
@@ -152,7 +152,7 @@ functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne genusStmt {
-        si GenusDeclaratio pro g {
+        casu GenusDeclaratio pro g {
             # Create genus type with empty maps (filled during body analysis)
             fixum genTypus = genusTypus(
                 g.nomen,
@@ -184,7 +184,7 @@ functio analyzePactumDeclaratio(Resolvitor r, Sententia pactumStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne pactumStmt {
-        si PactumDeclaratio pro p {
+        casu PactumDeclaratio pro p {
             # Create pactum type
             fixum pacTypus = pactumTypus(
                 p.nomen,
@@ -213,7 +213,7 @@ functio analyzeOrdoDeclaratio(Resolvitor r, Sententia ordoStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne ordoStmt {
-        si OrdoDeclaratio pro o {
+        casu OrdoDeclaratio pro o {
             # Create ordo type
             fixum ordTypus = ordoTypus(
                 o.nomen,
@@ -242,7 +242,7 @@ functio analyzeDiscretioDeclaratio(Resolvitor r, Sententia discretioStmt) -> vac
     fixum a = r.analyzator()
 
     discerne discretioStmt {
-        si DiscretioDeclaratio pro d {
+        casu DiscretioDeclaratio pro d {
             # Create user type for discretio
             fixum discTypus = usitatumTypus(d.nomen, falsum)
 
@@ -267,7 +267,7 @@ functio analyzeTypusAlias(Resolvitor r, Sententia typusStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne typusStmt {
-        si TypusAlias pro t {
+        casu TypusAlias pro t {
             # TODO: resolve type annotation
             fixum aliasTypus = IGNOTUM
 

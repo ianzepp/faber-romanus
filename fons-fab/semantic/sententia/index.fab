@@ -24,116 +24,116 @@ ex "./error" importa analyzeTempta, analyzeFac, analyzeCura
 functio analyzeSententia(Resolvitor r, Sententia stmt) -> vacuum {
     discerne stmt {
         # Declarations
-        si VariaDeclaratio {
+        casu VariaDeclaratio {
             analyzeVariaDeclaratio(r, stmt)
         }
 
-        si FunctioDeclaratio {
+        casu FunctioDeclaratio {
             analyzeFunctioDeclaratio(r, stmt)
         }
 
-        si GenusDeclaratio {
+        casu GenusDeclaratio {
             analyzeGenusDeclaratio(r, stmt)
         }
 
-        si PactumDeclaratio {
+        casu PactumDeclaratio {
             analyzePactumDeclaratio(r, stmt)
         }
 
-        si OrdoDeclaratio {
+        casu OrdoDeclaratio {
             analyzeOrdoDeclaratio(r, stmt)
         }
 
-        si DiscretioDeclaratio {
+        casu DiscretioDeclaratio {
             analyzeDiscretioDeclaratio(r, stmt)
         }
 
-        si TypusAlias {
+        casu TypusAlias {
             analyzeTypusAlias(r, stmt)
         }
 
         # Control flow
-        si Si {
+        casu Si {
             analyzeSi(r, stmt)
         }
 
-        si Dum {
+        casu Dum {
             analyzeDum(r, stmt)
         }
 
-        si Iteratio {
+        casu Iteratio {
             analyzeIteratio(r, stmt)
         }
 
-        si In {
+        casu In {
             analyzeIn(r, stmt)
         }
 
-        si Elige {
+        casu Elige {
             analyzeElige(r, stmt)
         }
 
-        si Discerne {
+        casu Discerne {
             analyzeDiscerne(r, stmt)
         }
 
-        si Custodi {
+        casu Custodi {
             analyzeCustodi(r, stmt)
         }
 
         # Action statements
-        si Redde {
+        casu Redde {
             analyzeRedde(r, stmt)
         }
 
-        si Iace {
+        casu Iace {
             analyzeIace(r, stmt)
         }
 
-        si Scribe {
+        casu Scribe {
             analyzeScribe(r, stmt)
         }
 
-        si Adfirma {
+        casu Adfirma {
             analyzeAdfirma(r, stmt)
         }
 
         # Error handling
-        si Tempta {
+        casu Tempta {
             analyzeTempta(r, stmt)
         }
 
-        si Fac {
+        casu Fac {
             analyzeFac(r, stmt)
         }
 
-        si Cura {
+        casu Cura {
             analyzeCura(r, stmt)
         }
 
         # Block
-        si Massa ut m {
+        casu Massa ut m {
             ex m.corpus pro s {
                 r.sententia(s)
             }
         }
 
         # Expression statement
-        si Expressia ut e {
+        casu Expressia ut e {
             r.expressia(e.expressia)
         }
 
         # Rumpe/Perge - no analysis needed
-        si Rumpe {
+        casu Rumpe {
             # break - no semantic analysis needed
         }
 
-        si Perge {
+        casu Perge {
             # continue - no semantic analysis needed
         }
 
         # Imports - handled separately during predeclaration
-        si Importa {
+        casu Importa {
             # Imports are processed in predeclaration phase
         }
     }

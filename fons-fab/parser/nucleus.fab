@@ -385,25 +385,25 @@ genus Parser {
         # Check against builtin type names
         # TODO: This should use a proper type registry
         elige s.valor {
-            si "textus" { redde verum }
-            si "numerus" { redde verum }
-            si "fractus" { redde verum }
-            si "decimus" { redde verum }
-            si "magnus" { redde verum }
-            si "bivalens" { redde verum }
-            si "nihil" { redde verum }
-            si "vacuum" { redde verum }
-            si "numquam" { redde verum }
-            si "ignotum" { redde verum }
-            si "octeti" { redde verum }
-            si "objectum" { redde verum }
-            si "lista" { redde verum }
-            si "tabula" { redde verum }
-            si "copia" { redde verum }
-            si "promissum" { redde verum }
-            si "cursor" { redde verum }
-            si "unio" { redde verum }
-            secus { redde falsum }
+            casu "textus" { redde verum }
+            casu "numerus" { redde verum }
+            casu "fractus" { redde verum }
+            casu "decimus" { redde verum }
+            casu "magnus" { redde verum }
+            casu "bivalens" { redde verum }
+            casu "nihil" { redde verum }
+            casu "vacuum" { redde verum }
+            casu "numquam" { redde verum }
+            casu "ignotum" { redde verum }
+            casu "octeti" { redde verum }
+            casu "objectum" { redde verum }
+            casu "lista" { redde verum }
+            casu "tabula" { redde verum }
+            casu "copia" { redde verum }
+            casu "promissum" { redde verum }
+            casu "cursor" { redde verum }
+            casu "unio" { redde verum }
+            ceterum { redde falsum }
         }
     }
 
@@ -415,10 +415,10 @@ genus Parser {
         }
 
         elige s.verbum {
-            si "de" { redde verum }
-            si "in" { redde verum }
-            si "ex" { redde verum }
-            secus { redde falsum }
+            casu "de" { redde verum }
+            casu "in" { redde verum }
+            casu "ex" { redde verum }
+            ceterum { redde falsum }
         }
     }
 

@@ -18,70 +18,70 @@ ex "../typus" importa genTypus
 functio genExpressia(Expressia expr, TsGenerator g) -> textus {
     discerne expr {
         # Identifiers
-        si Nomen ut e {
+        casu Nomen ut e {
             redde e.valor qua textus
         }
 
-        si EgoExpressia {
+        casu EgoExpressia {
             redde "this"
         }
 
         # Literals
-        si Littera ut e {
+        casu Littera ut e {
             redde genLittera(e.species qua LitteraGenus, e.crudus qua textus)
         }
 
-        si LitteraExemplar ut e {
+        casu LitteraExemplar ut e {
             redde genLitteraExemplar(e.partes qua lista<textus>, e.expressiae qua lista<Expressia>, g)
         }
 
-        si LitteraRegex ut e {
+        casu LitteraRegex ut e {
             g.features.usesRegex = verum
             redde scriptum("/{}/{}", e.forma, e.vexilla)
         }
 
         # Binary and unary
-        si BinariaExpressia ut e {
+        casu BinariaExpressia ut e {
             redde scriptum("({} {} {})", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
         }
 
-        si UnariaExpressia ut e {
+        casu UnariaExpressia ut e {
             redde scriptum("{}{}", e.signum, genExpressia(e.argumentum, g))
         }
 
-        si AssignatioExpressia ut e {
+        casu AssignatioExpressia ut e {
             redde scriptum("{} {} {}", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
         }
 
-        si CondicioExpressia ut e {
+        casu CondicioExpressia ut e {
             redde scriptum("{} ? {} : {}", genExpressia(e.condicio, g), genExpressia(e.consequens, g), genExpressia(e.alternans, g))
         }
 
-        si AmbitusExpressia ut e {
+        casu AmbitusExpressia ut e {
             # Range expressions become array generation
             redde scriptum("[{}, {}]", genExpressia(e.initium, g), genExpressia(e.finis, g))
         }
 
-        si QuaExpressia ut e {
+        casu QuaExpressia ut e {
             redde scriptum("{} as {}", genExpressia(e.expressia, g), genTypus(e.scopus qua TypusAnnotatio, g))
         }
 
-        si EstExpressia ut e {
+        casu EstExpressia ut e {
             redde genEstExpressia(e.expressia, e.scopus qua TypusAnnotatio, g)
         }
 
-        si CatenaExpressia ut e {
+        casu CatenaExpressia ut e {
             # Collection DSL chains - TODO: implement properly
             redde genExpressia(e.fons, g)
         }
 
-        si PraefixumExpressia ut e {
+        casu PraefixumExpressia ut e {
             # Compile-time evaluation - in TS, just evaluate the expression
             redde genExpressia(e.corpus, g)
         }
 
         # Calls and member access
-        si VocatioExpressia ut e {
+        casu VocatioExpressia ut e {
             varia args = [] qua lista<textus>
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
@@ -90,7 +90,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             redde scriptum("{}{}({})", genExpressia(e.vocatum, g), optMark, args.coniunge(", "))
         }
 
-        si MembrumExpressia ut e {
+        casu MembrumExpressia ut e {
             fixum obj = genExpressia(e.obiectum, g)
             si e.computatum qua bivalens {
                 fixum idx = genExpressia(e.proprietas, g)
@@ -110,7 +110,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             redde scriptum("{}.{}", obj, prop)
         }
 
-        si NovumExpressia ut e {
+        casu NovumExpressia ut e {
             varia args = [] qua lista<textus>
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
@@ -122,7 +122,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             redde result
         }
 
-        si CedeExpressia ut e {
+        casu CedeExpressia ut e {
             # cede maps to yield in generators, await in async functions
             si g.inFiunt {
                 redde scriptum("yield respond.item({})", genExpressia(e.argumentum, g))
@@ -136,23 +136,23 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             redde scriptum("await {}", genExpressia(e.argumentum, g))
         }
 
-        si ScriptumExpressia ut e {
+        casu ScriptumExpressia ut e {
             redde genScriptum(e.exemplar qua textus, e.argumenta qua lista<Expressia>, g)
         }
 
-        si LegeExpressia ut e {
+        casu LegeExpressia ut e {
             si (e.modus qua textus) == "line" {
                 redde "await _readline()"
             }
             redde "await _read()"
         }
 
-        si AbExpressia ut e {
+        casu AbExpressia ut e {
             redde scriptum("{}.{}", genExpressia(e.fons, g), genExpressia(e.transformatio, g))
         }
 
         # Collections
-        si SeriesExpressia ut e {
+        casu SeriesExpressia ut e {
             varia items = [] qua lista<textus>
             ex (e.elementa qua lista<Expressia>) pro elem {
                 items.adde(genExpressia(elem, g))
@@ -160,16 +160,16 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             redde scriptum("[{}]", items.coniunge(", "))
         }
 
-        si ObiectumExpressia ut e {
+        casu ObiectumExpressia ut e {
             redde genObiectum(e.proprietates qua lista<ObiectumProprietas>, g)
         }
 
-        si DispersioElementum ut e {
+        casu DispersioElementum ut e {
             redde scriptum("...{}", genExpressia(e.argumentum, g))
         }
 
         # Lambda
-        si LambdaExpressia ut e {
+        casu LambdaExpressia ut e {
             ex "../../../ast/expressia" importa LambdaParametrum
             varia params = [] qua lista<textus>
             ex (e.parametra qua lista<LambdaParametrum>) pro p {
@@ -187,7 +187,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         # Discretio construction
-        si FingeExpressia ut e {
+        casu FingeExpressia ut e {
             # finge Click { x: 10 } qua Event -> { tag: 'Click', x: 10 }
             varia props = [] qua lista<textus>
             props.adde(scriptum("tag: '{}'", e.variansNomen))

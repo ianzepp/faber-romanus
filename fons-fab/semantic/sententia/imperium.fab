@@ -16,7 +16,7 @@ ex "../../ast/sententia" importa Sententia
 @ publica
 functio analyzeSi(Resolvitor r, Sententia siStmt) -> vacuum {
     discerne siStmt {
-        si Si ut s {
+        casu Si ut s {
             # Analyze condition
             r.expressia(s.conditio)
 
@@ -40,7 +40,7 @@ functio analyzeSi(Resolvitor r, Sententia siStmt) -> vacuum {
 @ publica
 functio analyzeDum(Resolvitor r, Sententia dumStmt) -> vacuum {
     discerne dumStmt {
-        si Dum ut d {
+        casu Dum ut d {
             # Analyze condition
             r.expressia(d.conditio)
 
@@ -57,7 +57,7 @@ functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne iteratioStmt {
-        si Iteratio ut i {
+        casu Iteratio ut i {
             # Analyze source expression
             fixum sourceTypus = r.expressia(i.fons)
 
@@ -67,7 +67,7 @@ functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
             # Infer loop variable type from source
             varia elemTypus = IGNOTUM qua SemanticTypus
             discerne sourceTypus {
-                si Genericum ut g {
+                casu Genericum ut g {
                     si g.nomen == "lista" et g.parametri.longitudo() > 0 {
                         elemTypus = g.parametri[0]
                     }
@@ -111,7 +111,7 @@ functio analyzeIn(Resolvitor r, Sententia inStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne inStmt {
-        si In ut i {
+        casu In ut i {
             # Analyze source expression
             r.expressia(i.fons)
 
@@ -146,7 +146,7 @@ functio analyzeIn(Resolvitor r, Sententia inStmt) -> vacuum {
 @ publica
 functio analyzeElige(Resolvitor r, Sententia eligeStmt) -> vacuum {
     discerne eligeStmt {
-        si Elige ut e {
+        casu Elige ut e {
             # Analyze discriminant
             r.expressia(e.discriminans)
 
@@ -178,7 +178,7 @@ functio analyzeDiscerne(Resolvitor r, Sententia discerneStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne discerneStmt {
-        si Discerne ut d {
+        casu Discerne ut d {
             # Analyze discriminant
             fixum discTypus = r.expressia(d.discriminans)
 
@@ -214,7 +214,7 @@ functio analyzeDiscerne(Resolvitor r, Sententia discerneStmt) -> vacuum {
 @ publica
 functio analyzeCustodi(Resolvitor r, Sententia custodiStmt) -> vacuum {
     discerne custodiStmt {
-        si Custodi ut c {
+        casu Custodi ut c {
             # Analyze each guard clause
             ex c.clausulae pro clausula {
                 # Analyze condition

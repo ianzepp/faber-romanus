@@ -20,7 +20,7 @@ functio resolveNomen(Resolvitor r, Expressia nomenExpr) -> SemanticTypus {
     fixum a = r.analyzator()
 
     discerne nomenExpr {
-        si Nomen ut n {
+        casu Nomen ut n {
             # Handle Latin boolean/null keywords
             si n.nomen == "verum" aut n.nomen == "falsum" {
                 redde BIVALENS
@@ -55,24 +55,24 @@ functio resolveNomen(Resolvitor r, Expressia nomenExpr) -> SemanticTypus {
 @ publica
 functio resolveLittera(Resolvitor r, Expressia litteraExpr) -> SemanticTypus {
     discerne litteraExpr {
-        si Littera ut l {
+        casu Littera ut l {
             elige l.species {
-                si LitteraGenus.Numerus {
+                casu LitteraGenus.Numerus {
                     redde NUMERUS
                 }
-                si LitteraGenus.Fractus {
+                casu LitteraGenus.Fractus {
                     redde FRACTUS
                 }
-                si LitteraGenus.Textus {
+                casu LitteraGenus.Textus {
                     redde TEXTUS
                 }
-                si LitteraGenus.Verum {
+                casu LitteraGenus.Verum {
                     redde BIVALENS
                 }
-                si LitteraGenus.Falsum {
+                casu LitteraGenus.Falsum {
                     redde BIVALENS
                 }
-                si LitteraGenus.Nihil {
+                casu LitteraGenus.Nihil {
                     redde NIHIL
                 }
             }
@@ -91,7 +91,7 @@ functio resolveLittera(Resolvitor r, Expressia litteraExpr) -> SemanticTypus {
 @ publica
 functio resolveSeries(Resolvitor r, Expressia seriesExpr) -> SemanticTypus {
     discerne seriesExpr {
-        si Series ut s {
+        casu Series ut s {
             # Empty array: lista<ignotum>
             si s.elementa.longitudo() == 0 {
                 redde genericumTypus("lista", [IGNOTUM], falsum)
@@ -121,7 +121,7 @@ functio resolveSeries(Resolvitor r, Expressia seriesExpr) -> SemanticTypus {
 @ publica
 functio resolveObiectum(Resolvitor r, Expressia obiectumExpr) -> SemanticTypus {
     discerne obiectumExpr {
-        si Obiectum ut o {
+        casu Obiectum ut o {
             # Resolve each property value
             ex o.proprietates pro prop {
                 r.expressia(prop.valor)

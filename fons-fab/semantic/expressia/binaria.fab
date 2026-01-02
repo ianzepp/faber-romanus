@@ -18,7 +18,7 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
     fixum a = r.analyzator()
 
     discerne binariaExpr {
-        si Binaria ut b {
+        casu Binaria ut b {
             fixum sinisterTypus = r.expressia(b.sinister)
             fixum dexterTypus = r.expressia(b.dexter)
 
@@ -26,8 +26,8 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
             si estArithmeticum(b.signum) {
                 # String concatenation with +
                 si b.signum == "+" {
-                    discerne sinisterTypus {
-                        si Primitivum ut p {
+                discerne sinisterTypus {
+                    casu Primitivum ut p {
                             si p.nomen == "textus" {
                                 redde TEXTUS
                             }
@@ -37,9 +37,9 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
 
                 # Numeric arithmetic - preserve type when both operands match
                 discerne sinisterTypus {
-                    si Primitivum ut ps {
+                    casu Primitivum ut ps {
                         discerne dexterTypus {
-                            si Primitivum ut pd {
+                            casu Primitivum ut pd {
                                 si estNumericum(ps.nomen) et estNumericum(pd.nomen) {
                                     # Same type: preserve it
                                     si ps.nomen == pd.nomen {
@@ -61,9 +61,9 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
             si estComparatio(b.signum) {
                 # Check for incompatible comparison
                 discerne sinisterTypus {
-                    si Primitivum ut ps {
+                    casu Primitivum ut ps {
                         discerne dexterTypus {
-                            si Primitivum ut pd {
+                            casu Primitivum ut pd {
                                 si ps.nomen != pd.nomen {
                                     fixum err = incompatibleComparisonError(
                                         formaTypum(sinisterTypus),

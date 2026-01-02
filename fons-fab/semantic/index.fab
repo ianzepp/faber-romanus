@@ -90,7 +90,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
 
     discerne stmt {
         # Function declaration - register name with function type
-        si FunctioDeclaratio pro f {
+        casu FunctioDeclaratio pro f {
             # Build placeholder function type
             varia paramTypi = [] qua lista<SemanticTypus>
             ex f.parametra pro param {
@@ -108,7 +108,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Genus declaration - register name with user type
-        si GenusDeclaratio pro g {
+        casu GenusDeclaratio pro g {
             a.scopus.symbola[g.nomen] = {
                 nomen: g.nomen,
                 semanticTypus: usitatumTypus(g.nomen, falsum),
@@ -119,7 +119,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Pactum declaration - register name with user type
-        si PactumDeclaratio pro p {
+        casu PactumDeclaratio pro p {
             a.scopus.symbola[p.nomen] = {
                 nomen: p.nomen,
                 semanticTypus: usitatumTypus(p.nomen, falsum),
@@ -130,7 +130,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Ordo declaration - register name with user type
-        si OrdoDeclaratio pro o {
+        casu OrdoDeclaratio pro o {
             a.scopus.symbola[o.nomen] = {
                 nomen: o.nomen,
                 semanticTypus: usitatumTypus(o.nomen, falsum),
@@ -141,7 +141,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Discretio declaration - register name with user type
-        si DiscretioDeclaratio pro d {
+        casu DiscretioDeclaratio pro d {
             a.scopus.symbola[d.nomen] = {
                 nomen: d.nomen,
                 semanticTypus: usitatumTypus(d.nomen, falsum),
@@ -152,7 +152,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Typus alias - register name with user type
-        si TypusAlias pro t {
+        casu TypusAlias pro t {
             a.scopus.symbola[t.nomen] = {
                 nomen: t.nomen,
                 semanticTypus: usitatumTypus(t.nomen, falsum),

@@ -67,10 +67,10 @@ functio parseVariaSententia(Resolvitor r) -> Sententia {
     varia species = VariaGenus.Varia
 
     elige verbum {
-        si "varia" { species = VariaGenus.Varia }
-        si "fixum" { species = VariaGenus.Fixum }
-        si "figendum" { species = VariaGenus.Figendum }
-        si "variandum" { species = VariaGenus.Variandum }
+        casu "varia" { species = VariaGenus.Varia }
+        casu "fixum" { species = VariaGenus.Fixum }
+        casu "figendum" { species = VariaGenus.Figendum }
+        casu "variandum" { species = VariaGenus.Variandum }
     }
 
     # Consume the keyword

@@ -18,7 +18,7 @@ functio analyzeRedde(Resolvitor r, Sententia reddeStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne reddeStmt {
-        si Redde ut rd {
+        casu Redde ut rd {
             # Resolve return value if present
             si nonnihil rd.valor {
                 fixum valorTypus = r.expressia(rd.valor)
@@ -47,7 +47,7 @@ functio analyzeRedde(Resolvitor r, Sententia reddeStmt) -> vacuum {
 @ publica
 functio analyzeIace(Resolvitor r, Sententia iaceStmt) -> vacuum {
     discerne iaceStmt {
-        si Iace ut i {
+        casu Iace ut i {
             # Resolve thrown expression
             r.expressia(i.valor)
         }
@@ -63,7 +63,7 @@ functio analyzeIace(Resolvitor r, Sententia iaceStmt) -> vacuum {
 @ publica
 functio analyzeScribe(Resolvitor r, Sententia scribeStmt) -> vacuum {
     discerne scribeStmt {
-        si Scribe ut s {
+        casu Scribe ut s {
             # Resolve all arguments
             ex s.argumenta pro arg {
                 r.expressia(arg)
@@ -81,7 +81,7 @@ functio analyzeScribe(Resolvitor r, Sententia scribeStmt) -> vacuum {
 @ publica
 functio analyzeAdfirma(Resolvitor r, Sententia adfirmaStmt) -> vacuum {
     discerne adfirmaStmt {
-        si Adfirma ut adf {
+        casu Adfirma ut adf {
             # Resolve condition
             r.expressia(adf.conditio)
 

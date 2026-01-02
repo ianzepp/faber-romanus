@@ -240,18 +240,18 @@ fixum IGNOTUM = ignotumTypus(nihil)
 functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
     # Compare by variant tag and key fields
     discerne a {
-        si Primitivum ut pa {
+        casu Primitivum ut pa {
             discerne b {
-                si Primitivum ut pb {
+                casu Primitivum ut pb {
                     redde pa.nomen == pb.nomen
                 }
             }
             redde falsum
         }
 
-        si Genericum ut ga {
+        casu Genericum ut ga {
             discerne b {
-                si Genericum ut gb {
+                casu Genericum ut gb {
                     si ga.nomen != gb.nomen {
                         redde falsum
                     }
@@ -272,9 +272,9 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
             redde falsum
         }
 
-        si Functio ut fa {
+        casu Functio ut fa {
             discerne b {
-                si Functio ut fb {
+                casu Functio ut fb {
                     si fa.asyncronum != fb.asyncronum {
                         redde falsum
                     }
@@ -298,9 +298,9 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
             redde falsum
         }
 
-        si Unio ut ua {
+        casu Unio ut ua {
             discerne b {
-                si Unio ut ub {
+                casu Unio ut ub {
                     si ua.typi.longitudo() != ub.typi.longitudo() {
                         redde falsum
                     }
@@ -317,45 +317,45 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
             redde falsum
         }
 
-        si Ignotum {
+        casu Ignotum {
             discerne b {
-                si Ignotum {
+                casu Ignotum {
                     redde verum
                 }
             }
             redde falsum
         }
 
-        si Usitatum ut usa {
+        casu Usitatum ut usa {
             discerne b {
-                si Usitatum ut usb {
+                casu Usitatum ut usb {
                     redde usa.nomen == usb.nomen
                 }
             }
             redde falsum
         }
 
-        si Ordo ut oa {
+        casu Ordo ut oa {
             discerne b {
-                si Ordo ut ob {
+                casu Ordo ut ob {
                     redde oa.nomen == ob.nomen
                 }
             }
             redde falsum
         }
 
-        si Genus ut gea {
+        casu Genus ut gea {
             discerne b {
-                si Genus ut geb {
+                casu Genus ut geb {
                     redde gea.nomen == geb.nomen
                 }
             }
             redde falsum
         }
 
-        si Pactum ut paa {
+        casu Pactum ut paa {
             discerne b {
-                si Pactum ut pab {
+                casu Pactum ut pab {
                     redde paa.nomen == pab.nomen
                 }
             }
@@ -372,38 +372,38 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
 functio assignabileAd(SemanticTypus fons, SemanticTypus scopus) -> bivalens {
     # Unknown is assignable to anything
     discerne fons {
-        si Ignotum {
+        casu Ignotum {
             redde verum
         }
     }
 
     discerne scopus {
-        si Ignotum {
+        casu Ignotum {
             redde verum
         }
     }
 
     # nihil is assignable to nullable types
     discerne fons {
-        si Primitivum ut p {
+        casu Primitivum ut p {
             si p.nomen == "nihil" {
                 discerne scopus {
-                    si Primitivum ut sp {
+                    casu Primitivum ut sp {
                         redde sp.nullabilis
                     }
-                    si Genericum ut sg {
+                    casu Genericum ut sg {
                         redde sg.nullabilis
                     }
-                    si Usitatum ut su {
+                    casu Usitatum ut su {
                         redde su.nullabilis
                     }
-                    si Ordo ut so {
+                    casu Ordo ut so {
                         redde so.nullabilis
                     }
-                    si Genus ut sge {
+                    casu Genus ut sge {
                         redde sge.nullabilis
                     }
-                    si Pactum ut spa {
+                    casu Pactum ut spa {
                         redde spa.nullabilis
                     }
                 }
@@ -414,9 +414,9 @@ functio assignabileAd(SemanticTypus fons, SemanticTypus scopus) -> bivalens {
 
     # Numeric type promotion: numerus -> fractus, numerus -> decimus
     discerne fons {
-        si Primitivum ut pf {
+        casu Primitivum ut pf {
             discerne scopus {
-                si Primitivum ut ps {
+                casu Primitivum ut ps {
                     si estNumericum(pf.nomen) et estNumericum(ps.nomen) {
                         redde verum
                     }
@@ -427,7 +427,7 @@ functio assignabileAd(SemanticTypus fons, SemanticTypus scopus) -> bivalens {
 
     # Check if source is in target union
     discerne scopus {
-        si Unio ut u {
+        casu Unio ut u {
             ex u.typi pro t {
                 si assignabileAd(fons, t) {
                     redde verum
@@ -439,7 +439,7 @@ functio assignabileAd(SemanticTypus fons, SemanticTypus scopus) -> bivalens {
 
     # Source union must have all types assignable to target
     discerne fons {
-        si Unio ut u {
+        casu Unio ut u {
             ex u.typi pro t {
                 si non assignabileAd(t, scopus) {
                     redde falsum
@@ -464,7 +464,7 @@ functio estNumericum(textus nomen) -> bivalens {
 @ publica
 functio formaTypum(SemanticTypus t) -> textus {
     discerne t {
-        si Primitivum ut p {
+        casu Primitivum ut p {
             varia resultatum = p.nomen
             si p.amplitudo != nihil {
                 resultatum = scriptum("{}<{}>", resultatum, p.amplitudo)
@@ -475,7 +475,7 @@ functio formaTypum(SemanticTypus t) -> textus {
             redde resultatum
         }
 
-        si Genericum ut g {
+        casu Genericum ut g {
             # Build parameter list
             varia params = [] qua lista<textus>
             ex g.parametri pro typ {
@@ -488,7 +488,7 @@ functio formaTypum(SemanticTypus t) -> textus {
             redde resultatum
         }
 
-        si Functio ut f {
+        casu Functio ut f {
             # Build parameter list
             varia params = [] qua lista<textus>
             ex f.parametriTypi pro typ {
@@ -498,7 +498,7 @@ functio formaTypum(SemanticTypus t) -> textus {
             redde scriptum("{}({}) -> {}", asyncPraefix, params.coniunge(", "), formaTypum(f.reditusTypus))
         }
 
-        si Unio ut u {
+        casu Unio ut u {
             varia parts = [] qua lista<textus>
             ex u.typi pro typ {
                 parts.adde(formaTypum(typ))
@@ -506,35 +506,35 @@ functio formaTypum(SemanticTypus t) -> textus {
             redde parts.coniunge(" | ")
         }
 
-        si Ignotum ut ig {
+        casu Ignotum ut ig {
             si ig.ratio != nihil {
                 redde scriptum("ignotum({})", ig.ratio)
             }
             redde "ignotum"
         }
 
-        si Usitatum ut u {
+        casu Usitatum ut u {
             si u.nullabilis {
                 redde scriptum("{}?", u.nomen)
             }
             redde u.nomen
         }
 
-        si Ordo ut o {
+        casu Ordo ut o {
             si o.nullabilis {
                 redde scriptum("ordo {}?", o.nomen)
             }
             redde scriptum("ordo {}", o.nomen)
         }
 
-        si Genus ut g {
+        casu Genus ut g {
             si g.nullabilis {
                 redde scriptum("genus {}?", g.nomen)
             }
             redde scriptum("genus {}", g.nomen)
         }
 
-        si Pactum ut p {
+        casu Pactum ut p {
             si p.nullabilis {
                 redde scriptum("pactum {}?", p.nomen)
             }

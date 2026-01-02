@@ -24,144 +24,144 @@ ex "../expressia/index" importa genExpressia
 functio genSententia(Sententia stmt, TsGenerator g) -> textus {
     discerne stmt {
         # Block
-        si MassaSententia ut s {
+        casu MassaSententia ut s {
             redde genMassa(s.corpus qua lista<Sententia>, g)
         }
 
         # Variable declarations
-        si VariaSententia ut s {
+        casu VariaSententia ut s {
             redde genVaria(s.species qua VariaGenus, s.nomen qua textus, s.typus, s.valor, g)
         }
 
-        si ImportaSententia ut s {
+        casu ImportaSententia ut s {
             redde genImporta(s.fons qua textus, s.specificatores qua lista<ImportaSpecificator>, s.totum qua bivalens, s.totumAlias, g)
         }
 
-        si DestructuraSententia ut s {
+        casu DestructuraSententia ut s {
             redde genDestructura(s.fons, s.species qua VariaGenus, s.specificatores qua lista<ImportaSpecificator>, g)
         }
 
         # Function declaration
-        si FunctioDeclaratio ut f {
+        casu FunctioDeclaratio ut f {
             redde genFunctio(f.nomen qua textus, f.generaParametra, f.parametra qua lista<Parametrum>, f.typusReditus, f.corpus, f.asynca qua bivalens, f.generator qua bivalens, f.structor qua bivalens, g)
         }
 
         # Type declarations
-        si GenusDeclaratio ut s {
+        casu GenusDeclaratio ut s {
             redde genGenus(s.nomen qua textus, s.generaParametra, s.extendit, s.implet, s.abstractum qua bivalens, s.campi qua lista<CampusDeclaratio>, s.structor, s.methodi qua lista<Sententia>, g)
         }
 
-        si PactumDeclaratio ut s {
+        casu PactumDeclaratio ut s {
             redde genPactum(s.nomen qua textus, s.generaParametra, s.methodi qua lista<PactumMethodus>, g)
         }
 
-        si TypusAliasDeclaratio ut s {
+        casu TypusAliasDeclaratio ut s {
             redde genTypusAlias(s.nomen qua textus, s.typus qua TypusAnnotatio, s.scopusNomen, g)
         }
 
-        si OrdoDeclaratio ut s {
+        casu OrdoDeclaratio ut s {
             redde genOrdo(s.nomen qua textus, s.membra qua lista<OrdoMembrum>, g)
         }
 
-        si DiscretioDeclaratio ut s {
+        casu DiscretioDeclaratio ut s {
             redde genDiscretio(s.nomen qua textus, s.generaParametra, s.variantes qua lista<VariansDeclaratio>, g)
         }
 
         # Control flow
-        si SiSententia ut s {
+        casu SiSententia ut s {
             redde genSi(s.condicio, s.consequens qua Sententia, s.alternans, g)
         }
 
-        si DumSententia ut s {
+        casu DumSententia ut s {
             redde genDum(s.condicio, s.corpus qua Sententia, g)
         }
 
-        si IteratioSententia ut s {
+        casu IteratioSententia ut s {
             redde genIteratio(s.species qua IteratioGenus, s.variabilis qua textus, s.iterabile, s.corpus qua Sententia, s.asynca qua bivalens, g)
         }
 
-        si InSententia ut s {
+        casu InSententia ut s {
             fixum obj = genExpressia(s.obiectum, g)
             fixum block = genSententia(s.corpus qua Sententia, g)
             redde scriptum("{}// in {}\n{}", g.ind(), obj, block)
         }
 
-        si EligeSententia ut s {
+        casu EligeSententia ut s {
             redde genElige(s.discriminans, s.casus qua lista<EligeCasus>, s.praedefinitum, g)
         }
 
-        si DiscerneSententia ut s {
+        casu DiscerneSententia ut s {
             redde genDiscerne(s.discriminans, s.casus qua lista<VariansCasus>, g)
         }
 
-        si CustodiSententia ut s {
+        casu CustodiSententia ut s {
             redde genCustodi(s.clausulae qua lista<CustodiClausula>, g)
         }
 
         # Error handling
-        si TemptaSententia ut s {
+        casu TemptaSententia ut s {
             redde genTempta(s.corpus qua Sententia, s.cape, s.demum, g)
         }
 
-        si IaceSententia ut s {
+        casu IaceSententia ut s {
             redde genIace(s.fatale qua bivalens, s.argumentum, g)
         }
 
-        si FacSententia ut s {
+        casu FacSententia ut s {
             redde genFac(s.corpus qua Sententia, s.condicio, g)
         }
 
-        si AdfirmaSententia ut s {
+        casu AdfirmaSententia ut s {
             redde genAdfirma(s.condicio, s.nuntius, g)
         }
 
         # Actions
-        si ScribeSententia ut s {
+        casu ScribeSententia ut s {
             redde genScribe(s.gradus qua ScribeGradus, s.argumenta qua lista<Expressia>, g)
         }
 
-        si ReddeSententia ut s {
+        casu ReddeSententia ut s {
             redde genRedde(s.valor, g)
         }
 
-        si RumpeSententia {
+        casu RumpeSententia {
             redde scriptum("{}break;", g.ind())
         }
 
-        si PergeSententia {
+        casu PergeSententia {
             redde scriptum("{}continue;", g.ind())
         }
 
-        si ExpressiaSententia ut s {
+        casu ExpressiaSententia ut s {
             redde scriptum("{}{};", g.ind(), genExpressia(s.expressia, g))
         }
 
-        si IncipitSententia ut s {
+        casu IncipitSententia ut s {
             redde genIncipit(s.corpus, s.ergo, g)
         }
 
-        si IncipietSententia ut s {
+        casu IncipietSententia ut s {
             redde genIncipiet(s.corpus, s.ergo, g)
         }
 
-        si CuraSententia ut s {
+        casu CuraSententia ut s {
             redde genCura(s.res, s.vinculum qua textus, s.corpus qua Sententia, s.asynca qua bivalens, g)
         }
 
-        si AdSententia {
+        casu AdSententia {
             redde scriptum("{}/* ad statement not implemented for TS */", g.ind())
         }
 
         # Tests
-        si ProbandumSententia ut s {
+        casu ProbandumSententia ut s {
             redde genProbandum(s.nomen qua textus, s.corpus qua lista<Sententia>, g)
         }
 
-        si ProbaSententia ut s {
+        casu ProbaSententia ut s {
             redde genProba(s.nomen qua textus, s.modificator, s.corpus qua Sententia, g)
         }
 
-        si PraeparaMassa ut s {
+        casu PraeparaMassa ut s {
             redde genPraepara(s.tempus qua PraeparaTempus, s.asynca qua bivalens, s.omnia qua bivalens, s.corpus qua Sententia, g)
         }
     }

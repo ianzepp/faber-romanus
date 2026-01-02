@@ -15,39 +15,39 @@ ex "./nucleus" importa TsGenerator
 functio mappaNomenTypi(textus nomen) -> textus {
     elige nomen {
         # Primitives
-        si "textus" { redde "string" }
-        si "numerus" { redde "number" }
-        si "fractus" { redde "number" }
-        si "decimus" { redde "Decimal" }
-        si "magnus" { redde "bigint" }
-        si "bivalens" { redde "boolean" }
-        si "nihil" { redde "null" }
-        si "vacuum" { redde "void" }
-        si "numquam" { redde "never" }
+        casu "textus" { redde "string" }
+        casu "numerus" { redde "number" }
+        casu "fractus" { redde "number" }
+        casu "decimus" { redde "Decimal" }
+        casu "magnus" { redde "bigint" }
+        casu "bivalens" { redde "boolean" }
+        casu "nihil" { redde "null" }
+        casu "vacuum" { redde "void" }
+        casu "numquam" { redde "never" }
 
         # Binary
-        si "octeti" { redde "Uint8Array" }
+        casu "octeti" { redde "Uint8Array" }
 
         # Collections
-        si "lista" { redde "Array" }
-        si "tabula" { redde "Map" }
-        si "copia" { redde "Set" }
+        casu "lista" { redde "Array" }
+        casu "tabula" { redde "Map" }
+        casu "copia" { redde "Set" }
 
         # Async
-        si "promissum" { redde "Promise" }
+        casu "promissum" { redde "Promise" }
 
         # Error
-        si "erratum" { redde "Error" }
+        casu "erratum" { redde "Error" }
 
         # Iterator
-        si "cursor" { redde "Iterator" }
+        casu "cursor" { redde "Iterator" }
 
         # Object
-        si "objectum" { redde "object" }
-        si "object" { redde "object" }
+        casu "objectum" { redde "object" }
+        casu "object" { redde "object" }
 
         # Unknown
-        si "ignotum" { redde "unknown" }
+        casu "ignotum" { redde "unknown" }
     }
 
     # User-defined type: pass through unchanged
@@ -114,10 +114,10 @@ functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
 @ publica
 functio genTypusParametrum(TypusParametrum param, TsGenerator g) -> textus? {
     discerne param {
-        si Typus ut p {
+        casu Typus ut p {
             redde genTypus(p.adnotatio, g)
         }
-        si Littera {
+        casu Littera {
             # Ignore numeric parameters (e.g., numerus<32>)
             redde nihil
         }

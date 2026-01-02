@@ -15,7 +15,7 @@ ex "../../ast/expressia" importa Expressia
 @ publica
 functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
     discerne vocatioExpr {
-        si Vocatio ut v {
+        casu Vocatio ut v {
             fixum vocatusTypus = r.expressia(v.vocatus)
 
             # Resolve all arguments
@@ -25,7 +25,7 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
 
             # If callee is a function type, return its return type
             discerne vocatusTypus {
-                si Functio ut f {
+                casu Functio ut f {
                     redde f.reditusTypus
                 }
             }
@@ -47,7 +47,7 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
 @ publica
 functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
     discerne membrumExpr {
-        si Membrum ut m {
+        casu Membrum ut m {
             fixum obiectumTypus = r.expressia(m.obiectum)
 
             # If computed access (obj[key]), resolve the key
@@ -57,11 +57,11 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
 
             # Handle known collection methods
             discerne obiectumTypus {
-                si Genericum ut g {
+                casu Genericum ut g {
                     # lista methods
                     si g.nomen == "lista" {
                         discerne m.proprietas {
-                            si Nomen ut n {
+                            casu Nomen ut n {
                                 # lista.longitudo -> numerus
                                 si n.nomen == "longitudo" {
                                     redde NUMERUS
@@ -86,10 +86,10 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
                     }
                 }
 
-                si Primitivum ut p {
+                casu Primitivum ut p {
                     si p.nomen == "textus" {
                         discerne m.proprietas {
-                            si Nomen ut n {
+                            casu Nomen ut n {
                                 si n.nomen == "longitudo" {
                                     redde NUMERUS
                                 }
@@ -103,9 +103,9 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
                 }
 
                 # Genus type - look up field/method
-                si Genus ut ge {
-                    discerne m.proprietas {
-                        si Nomen ut n {
+                casu Genus ut ge {
+                        discerne m.proprietas {
+                            casu Nomen ut n {
                             # Check fields
                             si ge.agri.habet(n.nomen) {
                                 redde ge.agri[n.nomen]
