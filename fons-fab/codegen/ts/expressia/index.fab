@@ -14,6 +14,7 @@ ex "../typus" importa genTypus
 
 # Generate TypeScript code for an expression
 @ publica
+@ publica
 functio genExpressia(Expressia expr, TsGenerator g) -> textus {
     discerne expr {
         # Identifiers
@@ -86,7 +87,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                 args.adde(genExpressia(arg, g))
             }
             fixum optMark = (e.optivum qua bivalens) sic "?." secus ""
-            redde scriptum("{}{}({})", genExpressia(e.vocatum, g), optMark, args.iunge(", "))
+            redde scriptum("{}{}({})", genExpressia(e.vocatum, g), optMark, args.coniunge(", "))
         }
 
         si MembrumExpressia ut e {
@@ -114,7 +115,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
             }
-            varia result = scriptum("new {}({})", genExpressia(e.vocatum, g), args.iunge(", "))
+            varia result = scriptum("new {}({})", genExpressia(e.vocatum, g), args.coniunge(", "))
             si nonnihil e.initor {
                 result = scriptum("{} /* initor: {} */", result, genExpressia(e.initor, g))
             }
@@ -156,7 +157,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             ex (e.elementa qua lista<Expressia>) pro elem {
                 items.adde(genExpressia(elem, g))
             }
-            redde scriptum("[{}]", items.iunge(", "))
+            redde scriptum("[{}]", items.coniunge(", "))
         }
 
         si ObiectumExpressia ut e {
@@ -182,7 +183,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             si nonnihil e.typusReditus {
                 retType = scriptum(": {}", genTypus(e.typusReditus qua TypusAnnotatio, g))
             }
-            redde scriptum("({}){} => {}", params.iunge(", "), retType, genExpressia(e.corpus, g))
+            redde scriptum("({}){} => {}", params.coniunge(", "), retType, genExpressia(e.corpus, g))
         }
 
         # Discretio construction
@@ -195,7 +196,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                 fixum val = genExpressia(campo.valor, g)
                 props.adde(scriptum("{}: {}", key, val))
             }
-            redde scriptum("{{ {} }}", props.iunge(", "))
+            redde scriptum("{{ {} }}", props.coniunge(", "))
         }
     }
 
@@ -208,6 +209,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 # =============================================================================
 
 # Generate literal value
+@ publica
 functio genLittera(LitteraGenus species, textus crudus) -> textus {
     si species == LitteraGenus.Verum {
         redde "true"
@@ -223,18 +225,18 @@ functio genLittera(LitteraGenus species, textus crudus) -> textus {
 }
 
 # Generate template literal
+@ publica
 functio genLitteraExemplar(lista<textus> partes, lista<Expressia> expressiae, TsGenerator g) -> textus {
     varia result = "`"
     varia i = 0
     ex partes pro pars {
-        result = scriptum("{}{}", result, pars)
-        si i < expressiae.numerus() {
-            # Use ${{}} - the {{ and }} escape to literal { and }
-            result = scriptum("{}${{{}}}", result, genExpressia(expressiae[i], g))
+        result = result + pars
+        si i < expressiae.longitudo() {
+            result = result + "${" + genExpressia(expressiae[i], g) + "}"
         }
         i = i + 1
     }
-    result = scriptum("{}`", result)
+    result = result + "`"
     redde result
 }
 
@@ -243,6 +245,7 @@ functio genLitteraExemplar(lista<textus> partes, lista<Expressia> expressiae, Ts
 # =============================================================================
 
 # Generate est (type check) expression
+@ publica
 functio genEstExpressia(Expressia expr, TypusAnnotatio scopus, TsGenerator g) -> textus {
     fixum val = genExpressia(expr, g)
 
@@ -265,6 +268,7 @@ functio genEstExpressia(Expressia expr, TypusAnnotatio scopus, TsGenerator g) ->
 }
 
 # Generate scriptum (format string) expression
+@ publica
 functio genScriptum(textus exemplar, lista<Expressia> argumenta, TsGenerator g) -> textus {
     # Convert scriptum("Hello, {}!", name) to template literal
     # Simple approach: replace {} with ${arg} in sequence
@@ -276,24 +280,25 @@ functio genScriptum(textus exemplar, lista<Expressia> argumenta, TsGenerator g) 
         fixum c = exemplar[i]
         si c == "{" et i + 1 < exemplar.longitudo() et exemplar[i + 1] == "}" {
             # Found {} placeholder
-            si argIndex < argumenta.numerus() {
-                result = scriptum("{}${{{}}}", result, genExpressia(argumenta[argIndex], g))
+            si argIndex < argumenta.longitudo() {
+                result = result + "${" + genExpressia(argumenta[argIndex], g) + "}"
                 argIndex = argIndex + 1
             }
             i = i + 2
         } secus {
-            result = scriptum("{}{}", result, c)
+            result = result + c
             i = i + 1
         }
     }
 
-    result = scriptum("{}`", result)
+    result = result + "`"
     redde result
 }
 
 # Generate object literal
+@ publica
 functio genObiectum(lista<ObiectumProprietas> proprietates, TsGenerator g) -> textus {
-    si proprietates.numerus() == 0 {
+    si proprietates.longitudo() == 0 {
         redde "{}"
     }
 
@@ -311,5 +316,5 @@ functio genObiectum(lista<ObiectumProprietas> proprietates, TsGenerator g) -> te
         }
     }
 
-    redde scriptum("{{ {} }}", props.iunge(", "))
+    redde scriptum("{{ {} }}", props.coniunge(", "))
 }

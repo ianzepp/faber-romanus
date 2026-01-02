@@ -40,6 +40,8 @@ ordo ScopusSpecies {
 
 # A symbol binding in the symbol table
 @ publicum
+@ publicum
+@ publicum
 genus Symbolum {
     textus nomen
     SemanticTypus semanticTypus
@@ -49,6 +51,8 @@ genus Symbolum {
 }
 
 # A lexical scope containing symbol bindings
+@ publicum
+@ publicum
 @ publicum
 genus Scopus {
     tabula<textus, Symbolum> symbola
@@ -62,6 +66,7 @@ genus Scopus {
 
 # Create the global scope
 @ publica
+@ publica
 functio creaScopumGlobalem() -> Scopus {
     redde {
         symbola: {} qua tabula<textus, Symbolum>,
@@ -71,6 +76,7 @@ functio creaScopumGlobalem() -> Scopus {
 }
 
 # Create a child scope
+@ publica
 @ publica
 functio creaScopum(Scopus parentScopus, ScopusSpecies scopusSpecies) -> Scopus {
     redde {
@@ -82,6 +88,7 @@ functio creaScopum(Scopus parentScopus, ScopusSpecies scopusSpecies) -> Scopus {
 
 # Define a symbol in the current scope.
 # Returns error message if symbol already defined in this scope, nihil otherwise
+@ publica
 @ publica
 functio definieSymbolum(Scopus scopus, Symbolum symbolum) -> textus? {
     si scopus.symbola.habet(symbolum.nomen) {
@@ -95,6 +102,7 @@ functio definieSymbolum(Scopus scopus, Symbolum symbolum) -> textus? {
 
 # Look up a symbol by name, walking up the scope chain.
 # Returns the symbol if found, nihil otherwise
+@ publica
 @ publica
 functio quaereSymbolum(Scopus scopus, textus nomen) -> Symbolum? {
     si scopus.symbola.habet(nomen) {
@@ -112,6 +120,7 @@ functio quaereSymbolum(Scopus scopus, textus nomen) -> Symbolum? {
 # Look up a symbol only in the current scope (no parent traversal).
 # Used to check for redefinition in the same scope.
 @ publica
+@ publica
 functio quaereSymbolumLocale(Scopus scopus, textus nomen) -> Symbolum? {
     si scopus.symbola.habet(nomen) {
         redde scopus.symbola[nomen]
@@ -123,6 +132,7 @@ functio quaereSymbolumLocale(Scopus scopus, textus nomen) -> Symbolum? {
 # Two-pass analysis predeclares symbols with placeholder types,
 # then refines them with real types in a second pass.
 # Returns verum if symbol was updated, falsum if not found
+@ publica
 @ publica
 functio renovaSymbolumTypum(Scopus scopus, textus nomen, SemanticTypus novusTypus) -> bivalens {
     si scopus.symbola.habet(nomen) {
@@ -136,6 +146,7 @@ functio renovaSymbolumTypum(Scopus scopus, textus nomen, SemanticTypus novusTypu
 
 # Find the enclosing function scope.
 # Needed for return type checking.
+@ publica
 @ publica
 functio inveniScopumFunctionis(Scopus scopus) -> Scopus? {
     si scopus.species == ScopusSpecies.Functio {

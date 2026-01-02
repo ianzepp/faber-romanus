@@ -15,11 +15,12 @@ ex "../../ast/expressia" importa Expressia, LitteraGenus
 
 # Resolve an identifier (variable reference)
 @ publica
+@ publica
 functio resolveNomen(Resolvitor r, Expressia nomenExpr) -> SemanticTypus {
     fixum a = r.analyzator()
 
     discerne nomenExpr {
-        si Nomen pro n {
+        si Nomen ut n {
             # Handle Latin boolean/null keywords
             si n.nomen == "verum" aut n.nomen == "falsum" {
                 redde BIVALENS
@@ -51,9 +52,10 @@ functio resolveNomen(Resolvitor r, Expressia nomenExpr) -> SemanticTypus {
 
 # Resolve a literal value
 @ publica
+@ publica
 functio resolveLittera(Resolvitor r, Expressia litteraExpr) -> SemanticTypus {
     discerne litteraExpr {
-        si Littera pro l {
+        si Littera ut l {
             elige l.species {
                 si LitteraGenus.Numerus {
                     redde NUMERUS
@@ -86,11 +88,12 @@ functio resolveLittera(Resolvitor r, Expressia litteraExpr) -> SemanticTypus {
 
 # Resolve an array literal [1, 2, 3]
 @ publica
+@ publica
 functio resolveSeries(Resolvitor r, Expressia seriesExpr) -> SemanticTypus {
     discerne seriesExpr {
-        si Series pro s {
+        si Series ut s {
             # Empty array: lista<ignotum>
-            si s.elementa.longitudo == 0 {
+            si s.elementa.longitudo() == 0 {
                 redde genericumTypus("lista", [IGNOTUM], falsum)
             }
 
@@ -115,9 +118,10 @@ functio resolveSeries(Resolvitor r, Expressia seriesExpr) -> SemanticTypus {
 
 # Resolve an object literal { key: value }
 @ publica
+@ publica
 functio resolveObiectum(Resolvitor r, Expressia obiectumExpr) -> SemanticTypus {
     discerne obiectumExpr {
-        si Obiectum pro o {
+        si Obiectum ut o {
             # Resolve each property value
             ex o.proprietates pro prop {
                 r.expressia(prop.valor)

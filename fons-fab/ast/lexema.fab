@@ -6,6 +6,7 @@
 ex "./positio" importa Locus
 
 # Token type enumeration
+@ publicum
 ordo SymbolumGenus {
     # Literals
     Numerus       # integer literal: 42
@@ -86,6 +87,7 @@ ordo SymbolumGenus {
 }
 
 # A single token from the source
+@ publicum
 genus Symbolum {
     SymbolumGenus species
     textus valor       # raw text of the token
@@ -94,11 +96,13 @@ genus Symbolum {
 }
 
 # Create a token
+@ publica
 functio symbolum(SymbolumGenus species, textus valor, Locus locus) -> Symbolum {
     redde { species: species, valor: valor, locus: locus, verbum: nihil } qua Symbolum
 }
 
 # Create a keyword token
+@ publica
 functio symbolumVerbum(textus verbum, Locus locus) -> Symbolum {
     redde {
         species: SymbolumGenus.Verbum,
@@ -109,11 +113,13 @@ functio symbolumVerbum(textus verbum, Locus locus) -> Symbolum {
 }
 
 # Check if token is a specific keyword
+@ publica
 functio estVerbum(Symbolum sym, textus verbum) -> bivalens {
     redde sym.species == SymbolumGenus.Verbum && sym.verbum == verbum
 }
 
 # Check if token is EOF
+@ publica
 functio estFinis(Symbolum sym) -> bivalens {
     redde sym.species == SymbolumGenus.Finis
 }

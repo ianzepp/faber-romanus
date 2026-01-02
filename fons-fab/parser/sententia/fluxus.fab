@@ -35,6 +35,7 @@ ex "./massa" importa parseMassaSententia
 #       si "done" { scribe "finished" }
 #       secus { scribe "unknown" }
 #   }
+@ publica
 functio parseEligeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -115,9 +116,10 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
 # Examples:
 #   discerne event {
 #       si Click pro x, y { scribe scriptum("clicked at {}, {}", x, y) }
-#       si Keypress pro key { scribe scriptum("pressed {}", key) }
+#       si Keypress ut key { scribe scriptum("pressed {}", key) }
 #       si Quit { mori "goodbye" }
 #   }
+@ publica
 functio parseDiscerneSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -188,6 +190,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
 #       si user == nihil { redde nihil }
 #       si user.aetas < 0 { iace "Invalid age" }
 #   }
+@ publica
 functio parseCustodiSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -229,6 +232,7 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse catch clause (helper)
+@ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus

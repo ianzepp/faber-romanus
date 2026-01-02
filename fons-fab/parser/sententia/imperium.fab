@@ -38,6 +38,7 @@ ex "./massa" importa parseMassaSententia
 #   si x > 0 { ... } secus { ... }
 #   si x > 0 { ... } sin x < 0 { ... } secus { ... }
 #   si fetch() cape err { handle(err) }
+@ publica
 functio parseSiSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -110,6 +111,7 @@ functio parseSiSententia(Resolvitor r) -> Sententia {
 # Examples:
 #   dum x > 0 { x = x - 1 }
 #   dum iter.sequens() cape err { handle(err) }
+@ publica
 functio parseDumSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -144,6 +146,7 @@ functio parseDumSententia(Resolvitor r) -> Sententia {
 # Examples:
 #   ex items pro item { scribe item }
 #   ex 0 ante 10 pro i { scribe i }
+@ publica
 functio parseExSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -187,6 +190,7 @@ functio parseExSententia(Resolvitor r) -> Sententia {
 #
 # Examples:
 #   de obiectum pro clavis { scribe clavis }
+@ publica
 functio parseDeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -229,6 +233,7 @@ functio parseDeSententia(Resolvitor r) -> Sententia {
 # GRAMMAR: capeClause := 'cape' IDENT blockStmt
 #
 # Example: cape err { handle(err) }
+@ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
     fixum locus = p.praevius().locus  # 'cape' already consumed

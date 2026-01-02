@@ -33,6 +33,7 @@ ex "../errores" importa ParserErrorCodice
 #
 # Return value is optional - bare 'redde' returns void.
 # Doesn't consume expression if next token is closing brace.
+@ publica
 functio parseReddeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -59,6 +60,7 @@ functio parseReddeSententia(Resolvitor r) -> Sententia {
 # GRAMMAR: breakStmt := 'rumpe'
 #
 # Exits the innermost loop.
+@ publica
 functio parseRumpeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -76,6 +78,7 @@ functio parseRumpeSententia(Resolvitor r) -> Sententia {
 # GRAMMAR: continueStmt := 'perge'
 #
 # Skips to next loop iteration.
+@ publica
 functio parsePergeSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -95,6 +98,7 @@ functio parsePergeSententia(Resolvitor r) -> Sententia {
 # Two severity levels:
 # - iace (throw): recoverable, can be caught
 # - mori (die): fatal/panic, unrecoverable
+@ publica
 functio parseIaceSententia(Resolvitor r, bivalens fatale) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -120,6 +124,7 @@ functio parseIaceSententia(Resolvitor r, bivalens fatale) -> Sententia {
 # - scribe → console.log
 # - vide → console.debug
 # - mone → console.warn
+@ publica
 functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus

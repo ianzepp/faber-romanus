@@ -16,6 +16,7 @@ ex "./positio" importa Locus
 
 # Type parameter in generic types
 # Can be a type annotation or a literal value (for numeric params like numerus<32>)
+@ publicum
 discretio TypusParametrum {
     # Type annotation parameter: lista<textus>
     Typus {
@@ -38,6 +39,7 @@ discretio TypusParametrum {
 #   numerus[]                 -> nomen="lista", typusParametra=[numerus], compendiumSeries=true
 #   unio<A, B>                -> nomen="union", unio=[A, B]
 #   de textus                 -> nomen="textus", praepositio="de"
+@ publicum
 genus TypusAnnotatio {
     Locus locus
     textus nomen                            # Type name (textus, lista, Persona, etc.)
@@ -49,6 +51,7 @@ genus TypusAnnotatio {
 }
 
 # Factory: create simple type annotation
+@ publica
 functio typusSimplicis(textus nomen, Locus locus) -> TypusAnnotatio {
     redde {
         locus: locus,
@@ -62,6 +65,7 @@ functio typusSimplicis(textus nomen, Locus locus) -> TypusAnnotatio {
 }
 
 # Factory: create nullable type annotation
+@ publica
 functio typusNullabilis(textus nomen, Locus locus) -> TypusAnnotatio {
     redde {
         locus: locus,
@@ -75,6 +79,7 @@ functio typusNullabilis(textus nomen, Locus locus) -> TypusAnnotatio {
 }
 
 # Factory: create generic type annotation
+@ publica
 functio typusGenericus(textus nomen, lista<TypusParametrum> parametra, Locus locus) -> TypusAnnotatio {
     redde {
         locus: locus,

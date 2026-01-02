@@ -21,6 +21,8 @@ ex "../ast/sententia" importa Sententia
 # =============================================================================
 
 # Concrete implementation of the Resolvitor pactum
+@ publicum
+@ publicum
 genus Resolvitor implet Resolvitor {
     Analyzator a
 
@@ -38,6 +40,7 @@ genus Resolvitor implet Resolvitor {
 }
 
 # Create a new Resolvitor
+@ publica
 functio novumResolvitor(Analyzator a) -> Resolvitor {
     redde { a: a } qua Resolvitor
 }
@@ -47,6 +50,7 @@ functio novumResolvitor(Analyzator a) -> Resolvitor {
 # =============================================================================
 
 # Perform semantic analysis on a program
+@ publica
 @ publica
 functio analyze(Programma programma) -> SemanticResultatum {
     # Create analyzer state
@@ -77,6 +81,7 @@ functio analyze(Programma programma) -> SemanticResultatum {
 
 # Predeclare a top-level statement (Phase 1)
 # Registers names with placeholder types for forward reference support
+@ publica
 functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
     ex "./typi" importa IGNOTUM, VACUUM, functioTypus, usitatumTypus
     ex "./scopus" importa SymbolumSpecies

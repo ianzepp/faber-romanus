@@ -17,12 +17,14 @@ ordo LexorErrorCodice {
 }
 
 # Structured error message
+@ publicum
 genus LexorErrorNuntius {
     textus textus             # Brief error message
     textus auxilium           # Detailed help text
 }
 
 # Get error message for a code
+@ publica
 functio nuntiumErroris(LexorErrorCodice codice) -> LexorErrorNuntius {
     elige codice {
         si LexorErrorCodice.TextusNonClausa {
@@ -71,6 +73,7 @@ functio nuntiumErroris(LexorErrorCodice codice) -> LexorErrorNuntius {
 }
 
 # A lexical error with position
+@ publicum
 genus LexorError {
     LexorErrorCodice codice
     textus textus
@@ -79,6 +82,7 @@ genus LexorError {
 }
 
 # Create an error at a position
+@ publica
 functio error(LexorErrorCodice codice, Locus locus) -> LexorError {
     fixum nuntius = nuntiumErroris(codice)
     redde {

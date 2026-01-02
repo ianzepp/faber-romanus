@@ -33,6 +33,7 @@ ex "./varia" importa parseVariaSententia
 # Parse a statement
 #
 # Main dispatcher that routes to appropriate parser based on leading token.
+@ publica
 functio parseSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum sym = p.specta(0)

@@ -23,6 +23,7 @@ ex "./alia" importa resolveLambda, resolveFingeExpr, resolveCedeExpr, resolveNov
 
 # Resolve any expression and return its semantic type
 @ publica
+@ publica
 functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
     discerne expr {
         # Identifiers (variable references)
@@ -61,7 +62,7 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
         }
 
         # Assignment (x = value)
-        si Assignatio pro as {
+        si Assignatio ut as {
             redde resolveAssignatio(r, as)
         }
 
@@ -112,7 +113,7 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
         }
 
         # Type cast (expr qua Type)
-        si Qua pro q {
+        si Qua ut q {
             r.expressia(q.expressia)
             # TODO: resolve type annotation
             redde IGNOTUM
@@ -124,7 +125,7 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
         }
 
         # Format string (scriptum)
-        si Scriptum pro s {
+        si Scriptum ut s {
             ex s.argumenta pro arg {
                 r.expressia(arg)
             }
@@ -150,6 +151,7 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
 # =============================================================================
 
 # Resolve assignment expression
+@ publica
 functio resolveAssignatio(Resolvitor r, Expressia assignatioExpr) -> SemanticTypus {
     # TODO: Check mutability, resolve target and value
     redde IGNOTUM

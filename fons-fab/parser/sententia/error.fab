@@ -27,6 +27,7 @@ ex "../errores" importa ParserErrorCodice
 # GRAMMAR: catchClause := 'cape' IDENTIFIER blockStmt
 #
 # Binds the caught error to the identifier.
+@ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -54,6 +55,7 @@ functio parseCapeClausula(Resolvitor r) -> CapeClausula {
 #
 # Both cape and demum are optional, but at least one should be present
 # for the statement to be useful.
+@ publica
 functio parseTemptaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -92,6 +94,7 @@ functio parseTemptaSententia(Resolvitor r) -> Sententia {
 #
 # Creates explicit scope boundary with optional error handling.
 # When 'dum' is present, creates a do-while loop.
+@ publica
 functio parseFacSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -129,6 +132,7 @@ functio parseFacSententia(Resolvitor r) -> Sententia {
 # GRAMMAR: assertStmt := 'adfirma' expression (',' expression)?
 #
 # Runtime invariant check. Optional second expression is error message.
+@ publica
 functio parseAdfirmaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus

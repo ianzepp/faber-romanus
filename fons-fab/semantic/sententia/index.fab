@@ -20,6 +20,7 @@ ex "./error" importa analyzeTempta, analyzeFac, analyzeCura
 
 # Analyze any statement
 @ publica
+@ publica
 functio analyzeSententia(Resolvitor r, Sententia stmt) -> vacuum {
     discerne stmt {
         # Declarations
@@ -111,14 +112,14 @@ functio analyzeSententia(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Block
-        si Massa pro m {
+        si Massa ut m {
             ex m.corpus pro s {
                 r.sententia(s)
             }
         }
 
         # Expression statement
-        si Expressia pro e {
+        si Expressia ut e {
             r.expressia(e.expressia)
         }
 

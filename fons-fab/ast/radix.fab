@@ -14,6 +14,7 @@ ordo NotaGenus {
 }
 
 # A source code comment
+@ publicum
 genus Nota {
     NotaGenus species
     textus valor
@@ -23,6 +24,7 @@ genus Nota {
 # Base fields present on all AST nodes
 # WHY: Every node tracks position for error messages,
 #      and may have leading/trailing comments for formatting.
+@ publicum
 genus NodusRadix {
     Locus locus
     lista<Nota>? notaePrae      # leading comments
@@ -30,6 +32,7 @@ genus NodusRadix {
 }
 
 # Root node of the AST - represents an entire source file
+@ publicum
 genus Programma {
     Locus locus
     lista<Nota>? notaePrae

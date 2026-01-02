@@ -22,6 +22,7 @@ ex "../errores" importa ParserErrorCodice
 
 # Programma - top-level program AST node
 # NOTE: This is separate from Sententia since it's the root
+@ publicum
 genus Programma {
     Locus locus
     lista<Sententia> corpus
@@ -33,6 +34,7 @@ genus Programma {
 #
 # Consumes opening brace, parses statements until closing brace.
 # Handles optional semicolons between statements.
+@ publica
 functio parseMassaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -45,7 +47,7 @@ functio parseMassaSententia(Resolvitor r) -> Sententia {
     # Parse statements until closing brace or end
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         # Skip optional semicolons between statements
-        dum p.congruet(SymbolumGenus.Semicolon) {
+        dum p.congruet(SymbolumGenus.PunctumColon) {
             # Continue skipping
         }
 
@@ -72,6 +74,7 @@ functio parseMassaSententia(Resolvitor r) -> Sententia {
 # GRAMMAR: exprStmt := expression
 #
 # Wraps a standalone expression as a statement.
+@ publica
 functio parseExpressiaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -89,6 +92,7 @@ functio parseExpressiaSententia(Resolvitor r) -> Sententia {
 #
 # Parses statements until end of input.
 # Uses error recovery to handle malformed statements.
+@ publica
 functio parseProgramma(Resolvitor r) -> Programma {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -97,7 +101,7 @@ functio parseProgramma(Resolvitor r) -> Programma {
     # Parse statements until end of input
     dum non p.estFinis() {
         # Skip optional semicolons between statements
-        dum p.congruet(SymbolumGenus.Semicolon) {
+        dum p.congruet(SymbolumGenus.PunctumColon) {
             # Continue skipping
         }
 

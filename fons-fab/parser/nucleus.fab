@@ -35,6 +35,8 @@ ex "../lexicon/verba" importa estVerbumSententiae, estVerbumGeneris
 #
 # Maintains token stream position, accumulated errors, and pending comments.
 # All parsing methods operate on this shared state.
+@ publicum
+@ publicum
 genus Parser {
     lista<Symbolum> symbola       # Token stream from lexer
     numerus index                 # Current position in token stream
@@ -81,7 +83,7 @@ genus Parser {
     # Called before parsing statements/expressions to collect leading comments
     functio colligeNotas() -> vacuum {
         # Keep consuming while current token is a comment
-        dum ego.index < ego.symbola.longitudo {
+        dum ego.index < ego.symbola.longitudo() {
             fixum s = ego.symbola[ego.index]
 
             # Check if this is a comment token
@@ -98,7 +100,7 @@ genus Parser {
     # Consume pending comments buffer and return them
     # Called when creating AST node to attach as leading comments
     functio consumeNotas() -> lista<Nota>? {
-        si ego.notaePendentes.longitudo === 0 {
+        si ego.notaePendentes.longitudo() === 0 {
             redde nihil
         }
 
@@ -111,7 +113,7 @@ genus Parser {
     # Check for trailing comment on same line after current position
     # Returns comment if found on same line as node, nil otherwise
     functio colligeNotamTrahentem(numerus lineaNodi) -> lista<Nota>? {
-        si ego.index >= ego.symbola.longitudo {
+        si ego.index >= ego.symbola.longitudo() {
             redde nihil
         }
 
@@ -142,7 +144,7 @@ genus Parser {
         varia skipped = 0
 
         # Skip initial comment tokens
-        dum pos < ego.symbola.longitudo {
+        dum pos < ego.symbola.longitudo() {
             fixum s = ego.symbola[pos]
             si s.species !== SymbolumGenus.NotaLinea et s.species !== SymbolumGenus.NotaMassa et s.species !== SymbolumGenus.NotaDocens {
                 rumpe
@@ -151,11 +153,11 @@ genus Parser {
         }
 
         # Skip 'distantia' non-comment tokens
-        dum skipped < distantia et pos < ego.symbola.longitudo {
+        dum skipped < distantia et pos < ego.symbola.longitudo() {
             pos = pos + 1
 
             # Skip any comments after advancing
-            dum pos < ego.symbola.longitudo {
+            dum pos < ego.symbola.longitudo() {
                 fixum s = ego.symbola[pos]
                 si s.species !== SymbolumGenus.NotaLinea et s.species !== SymbolumGenus.NotaMassa et s.species !== SymbolumGenus.NotaDocens {
                     rumpe
@@ -167,10 +169,10 @@ genus Parser {
         }
 
         # Return token at position, or last token (Finis) if past end
-        si pos < ego.symbola.longitudo {
+        si pos < ego.symbola.longitudo() {
             redde ego.symbola[pos]
         }
-        redde ego.symbola[ego.symbola.longitudo - 1]
+        redde ego.symbola[ego.symbola.longitudo() - 1]
     }
 
     # Check if at end of token stream (current token is Finis)
@@ -430,6 +432,7 @@ genus Parser {
 }
 
 # Create a new parser for the given token stream
+@ publica
 functio novumParser(lista<Symbolum> symbola) -> Parser {
     redde {
         symbola: symbola,

@@ -11,6 +11,7 @@ ex "./typus" importa TypusAnnotatio
 # ============================================================================
 
 # Literal value type - what kind of constant this is
+@ publicum
 ordo LitteraGenus {
     Numerus    # integer: 42
     Fractus    # float: 3.14
@@ -22,6 +23,7 @@ ordo LitteraGenus {
 
 # Object property in object literal
 # Example: name: "Alice", or shorthand: name
+@ publicum
 genus ObiectumProprietas {
     Locus locus
     Expressia clavis         # key - usually Nomen or Littera
@@ -32,6 +34,7 @@ genus ObiectumProprietas {
 
 # Lambda parameter (simplified vs full Parametrum)
 # Example: pro x, y: x + y
+@ publicum
 genus LambdaParametrum {
     Locus locus
     textus nomen
@@ -40,6 +43,7 @@ genus LambdaParametrum {
 
 # Chain step for collection DSL
 # Examples: prima 5, ultima 3, summa, ordina per nomen
+@ publicum
 genus CatenaGradus {
     Locus locus
     textus verbum            # prima, ultima, summa, ordina, collige, grupa
@@ -55,6 +59,7 @@ genus CatenaGradus {
 # Each variant contains its fields directly. Use `finge` to construct:
 #   finge Nomen { locus: loc, valor: "x" } qua Expressia
 #   finge Littera { locus: loc, species: LitteraGenus.Numerus, crudus: "42" } qua Expressia
+@ publicum
 discretio Expressia {
     # -------------------------------------------------------------------------
     # Identifiers

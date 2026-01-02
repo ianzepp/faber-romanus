@@ -39,6 +39,7 @@ ex "./massa" importa parseMassaSententia
 #   functio salve() { scribe "hello" }
 #   functio add(numerus a, numerus b) -> numerus { redde a + b }
 #   functio greet(textus name) fit textus { redde scriptum("Hello, {}!", name) }
+@ publica
 functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -119,6 +120,7 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
 #   genus Persona { textus nomen, numerus aetas }
 #   genus Cursor<T> { varia index = 0 }
 #   genus Admin sub Persona implet Serializable { ... }
+@ publica
 functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -233,7 +235,7 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
 
         # Optional comma/semicolon between members
         p.congruet(SymbolumGenus.Virgula)
-        p.congruet(SymbolumGenus.Semicolon)
+        p.congruet(SymbolumGenus.PunctumColon)
     }
 
     p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
@@ -258,6 +260,7 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
 # Examples:
 #   pactum Iterabilis { functio sequens() fit T? }
 #   pactum Comparabilis<T> { functio compara(T alius) fit numerus }
+@ publica
 functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -321,7 +324,7 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
 
         # Optional separator
         p.congruet(SymbolumGenus.Virgula)
-        p.congruet(SymbolumGenus.Semicolon)
+        p.congruet(SymbolumGenus.PunctumColon)
     }
 
     p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
@@ -341,6 +344,7 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
 # Examples:
 #   ordo Color { Rubrum, Viridis, Caeruleum }
 #   ordo Status { Pendens = 0, Actum = 1, Completum = 2 }
+@ publica
 functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -363,7 +367,7 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
         fixum membrumNomen = membrumNomenSym.valor
 
         varia valor = nihil qua textus?
-        si p.congruet(SymbolumGenus.Aequale) {
+        si p.congruet(SymbolumGenus.Aequum) {
             # Parse value (number or string)
             fixum valorSym = p.procede()
             valor = valorSym.valor
@@ -395,6 +399,7 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
 # Examples:
 #   discretio Option<T> { Aliquid { T valor }, Nihil }
 #   discretio Event { Click { numerus x, numerus y }, Quit }
+@ publica
 functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -470,6 +475,7 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
 # Examples:
 #   typus ID = textus
 #   typus Callback = functio(numerus) -> vacuum
+@ publica
 functio parseTypusAliasDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -482,7 +488,7 @@ functio parseTypusAliasDeclaratio(Resolvitor r) -> Sententia {
     fixum nomen = nomenSym.valor
 
     # Expect '='
-    p.expecta(SymbolumGenus.Aequale, ParserErrorCodice.ExpectaturAequale)
+    p.expecta(SymbolumGenus.Aequum, ParserErrorCodice.ExpectaturAequale)
 
     # Parse type
     fixum typus = r.adnotatio()
@@ -500,6 +506,7 @@ functio parseTypusAliasDeclaratio(Resolvitor r) -> Sententia {
 # ============================================================================
 
 # Parse function parameters
+@ publica
 functio parseParametra(Resolvitor r) -> lista<Parametrum> {
     fixum p = r.parser()
     varia parametra = [] qua lista<Parametrum>
@@ -567,6 +574,7 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
 }
 
 # Parse compile-time type parameters (prae typus T, U)
+@ publica
 functio parseTypusParametra(Resolvitor r) -> lista<TypusParametrum> {
     fixum p = r.parser()
     varia parametra = [] qua lista<TypusParametrum>
@@ -588,6 +596,7 @@ functio parseTypusParametra(Resolvitor r) -> lista<TypusParametrum> {
 }
 
 # Parse generic type names in angle brackets: <T, U>
+@ publica
 functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
     fixum p = r.parser()
     varia nomina = [] qua lista<textus>
@@ -616,6 +625,7 @@ functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
 #   ex "norma/mathesis" importa sinus, cosinus
 #   ex norma importa scribe ut s
 #   ex "./utils" importa * ut utils
+@ publica
 functio parseImportaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -641,7 +651,7 @@ functio parseImportaSententia(Resolvitor r) -> Sententia {
     varia totumAlias = nihil qua textus?
     varia specificatores = [] qua lista<ImportaSpecificator>
 
-    si p.congruet(SymbolumGenus.Asteriscum) {
+    si p.congruet(SymbolumGenus.Stella) {
         totum = verum
         si p.probaVerbum("ut") {
             fixum aliasSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)

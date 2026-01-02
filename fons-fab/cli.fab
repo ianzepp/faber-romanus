@@ -16,14 +16,14 @@ ex "./ast/radix" importa Programma
 # MAIN ENTRY POINT
 # =============================================================================
 
-incipit {
+incipiet {
     # Read source from stdin
     fixum source = lege
 
     # Lexical analysis
     fixum lexResult = lexare(source)
 
-    si lexResult.errores.longitudo > 0 {
+    si lexResult.errores.longitudo() > 0 {
         mone "Lexor errors:"
         ex lexResult.errores pro err {
             mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.nuntius)
@@ -35,7 +35,7 @@ incipit {
     # Parsing
     fixum parseResult = resolvere(lexResult.symbola)
 
-    si parseResult.errores.longitudo > 0 {
+    si parseResult.errores.longitudo() > 0 {
         mone "Parser errors:"
         ex parseResult.errores pro err {
             mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.nuntius)
@@ -51,7 +51,7 @@ incipit {
     # Semantic analysis
     fixum semResult = analyze(parseResult.programma qua Programma)
 
-    si semResult.errores.longitudo > 0 {
+    si semResult.errores.longitudo() > 0 {
         mone "Semantic errors:"
         ex semResult.errores pro err {
             mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.nuntius)

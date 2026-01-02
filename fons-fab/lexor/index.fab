@@ -33,6 +33,7 @@ ex "../ast/lexema" importa Symbolum, SymbolumGenus
 ex "./errores" importa LexorError, LexorErrorCodice
 
 # Result of lexical analysis
+@ publicum
 genus LexorResultatum {
     lista<Symbolum> symbola       # Token stream (ends with Finis)
     lista<LexorError> errores     # Errors encountered
@@ -44,6 +45,7 @@ genus LexorResultatum {
 # - Current position (index) and line tracking
 # - Output accumulator for tokens (symbola)
 # - Error accumulator for malformed input (errores)
+@ publicum
 genus Lexor {
     textus fons                   # fons = "source" - the input text
     numerus index                 # Current byte offset in fons
@@ -77,7 +79,7 @@ genus Lexor {
     # Returns empty string if past end of input
     functio specta(numerus distantia) -> textus {
         fixum pos = ego.index + distantia
-        si pos >= ego.fons.longitudo {
+        si pos >= ego.fons.longitudo() {
             redde ""
         }
         redde ego.fons[pos]
@@ -747,6 +749,7 @@ genus Lexor {
 #   fixum result = lexare("si verum { scribe 42 }")
 #   ex result.symbola pro sym { ... }
 #
+@ publica
 functio lexare(textus fons) -> LexorResultatum {
     # Initialize scanner state
     varia lexor = Lexor.init({

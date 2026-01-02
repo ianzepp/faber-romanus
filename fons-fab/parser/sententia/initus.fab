@@ -32,6 +32,7 @@ ex "./massa" importa parseMassaSententia
 #   incipit { scribe "Hello" }
 #   incipit ergo cura arena { ... }
 #   incipit ergo runMain()
+@ publica
 functio parseIncipitSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -68,6 +69,7 @@ functio parseIncipitSententia(Resolvitor r) -> Sententia {
 # Examples:
 #   incipiet { cede fetchData() }
 #   incipiet ergo cura arena { cede fetch() }
+@ publica
 functio parseIncipietSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -106,6 +108,7 @@ functio parseIncipietSententia(Resolvitor r) -> Sententia {
 #   cura arena fit mem { ... }
 #   cura aperi("file.txt") fit fd { lege(fd) }
 #   cura connect(url) fiet conn { ... }
+@ publica
 functio parseCuraSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -194,6 +197,7 @@ functio parseCuraSententia(Resolvitor r) -> Sententia {
 # Examples:
 #   ad "fasciculus:lege" ("file.txt") fit textus pro content { scribe content }
 #   ad "http:pete" (url) fiet Response pro resp { ... }
+@ publica
 functio parseAdSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -291,6 +295,7 @@ functio parseAdSententia(Resolvitor r) -> Sententia {
 }
 
 # Parse catch clause (helper)
+@ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus

@@ -31,6 +31,7 @@ ex "./errores" importa ParserErrorCodice
 
 # Parse a type annotation
 # Handles generics, nullable, array shorthand, and union types
+@ publica
 functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -108,7 +109,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
     # Handle unio<A, B> -> union type
     # Union types use type parameters as union members
     # -------------------------------------------------------------------------
-    si nomen === "unio" et nonnihil typusParametra et typusParametra!.longitudo > 0 {
+    si nomen === "unio" et nonnihil typusParametra et typusParametra!.longitudo() > 0 {
         redde {
             locus: locus,
             nomen: "union",

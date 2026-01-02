@@ -21,7 +21,7 @@
 import type { GenusDeclaration, FunctioDeclaration, FieldDeclaration } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
 import { genBlockStatement, genMethodDeclaration } from './functio';
-import { getVisibilityFromAnnotations, isAbstractFromAnnotations, isStaticFromAnnotations } from '../../types';
+import { getVisibilityFromAnnotations, isAbstractFromAnnotations, isStaticFromAnnotations, type Visibility } from '../../types';
 
 export function genGenusDeclaration(node: GenusDeclaration, g: TsGenerator, semi: boolean): string {
     const name = node.name.name;
@@ -31,8 +31,8 @@ export function genGenusDeclaration(node: GenusDeclaration, g: TsGenerator, semi
     const abstractMod = isAbstractFromAnnotations(node.annotations) ? 'abstract ' : '';
 
     // Module-level: export when public
-    const visibility = getVisibilityFromAnnotations(node.annotations);
-    const exportMod = !g.inClass && visibility === 'public' ? 'export ' : '';
+    const classVisibility = getVisibilityFromAnnotations(node.annotations);
+    const exportMod = !g.inClass && classVisibility === 'public' ? 'export ' : '';
 
     const lines: string[] = [];
     lines.push(`${g.ind()}${exportMod}${abstractMod}class ${name}${typeParams}${ext}${impl} {`);
@@ -43,7 +43,8 @@ export function genGenusDeclaration(node: GenusDeclaration, g: TsGenerator, semi
     const sections: string[][] = [];
 
     if (node.fields.length > 0) {
-        sections.push(node.fields.map(f => genFieldDeclaration(f, g, semi)));
+        // WHY: Public class = public fields (unless field has explicit visibility)
+        sections.push(node.fields.map(f => genFieldDeclaration(f, g, semi, classVisibility)));
     }
 
     // Always generate constructor for auto-merge
@@ -133,8 +134,11 @@ function genCreoMethod(node: FunctioDeclaration, g: TsGenerator): string {
  *
  * WHY: Reactive (nexum) fields emit getter/setter with invalidation hook.
  *      This allows libraries to track changes without special proxy magic.
+ *
+ * WHY: classVisibility parameter allows fields to inherit visibility from parent.
+ *      Public class = public fields by default.
  */
-function genFieldDeclaration(node: FieldDeclaration, g: TsGenerator, semi: boolean): string {
+function genFieldDeclaration(node: FieldDeclaration, g: TsGenerator, semi: boolean, classVisibility: Visibility = 'private'): string {
     const name = node.name.name;
     const type = g.genType(node.fieldType);
 
@@ -155,9 +159,19 @@ function genFieldDeclaration(node: FieldDeclaration, g: TsGenerator, semi: boole
         return lines.join('\n');
     }
 
-    // Regular fields - private by default
-    const visibility = getVisibilityFromAnnotations(node.annotations);
-    const visibilityMod = visibility === 'private' ? 'private ' : visibility === 'protected' ? 'protected ' : '';
+    // Field visibility: use field's own annotation if present, else inherit from class
+    const fieldVisibility = getVisibilityFromAnnotations(node.annotations);
+    // WHY: If field has no annotation, getVisibilityFromAnnotations returns 'private'.
+    //      But we want to inherit from class. Check if field has any annotations.
+    const hasFieldVisibility = node.annotations?.some(ann =>
+        ann.modifiers.some(m =>
+            ['publicum', 'publica', 'publicus', 'privatum', 'privata', 'privatus', 'protectum', 'protecta', 'protectus'].includes(m),
+        ),
+    );
+    const effectiveVisibility = hasFieldVisibility ? fieldVisibility : classVisibility;
+
+    // Only emit modifier if private or protected (public is default in TS)
+    const visibilityMod = effectiveVisibility === 'private' ? 'private ' : effectiveVisibility === 'protected' ? 'protected ' : '';
     const isStatic = node.isStatic || isStaticFromAnnotations(node.annotations);
     const staticMod = isStatic ? 'static ' : '';
     const init = node.init ? ` = ${g.genExpression(node.init)}` : '';

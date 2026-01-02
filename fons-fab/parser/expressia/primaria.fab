@@ -29,6 +29,7 @@ ex "../errores" importa ParserErrorCodice
 #
 # Handles terminals: literals, identifiers, ego, grouped expressions.
 # Currently a partial implementation - covers the most common cases.
+@ publica
 functio parsePrimaria(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum sym = p.specta(0)
@@ -145,6 +146,7 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
 # Parse array literal
 #
 # GRAMMAR: arrayLiteral := '[' (expression (',' expression)*)? ']'
+@ publica
 functio parseSeriesExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -188,6 +190,7 @@ functio parseSeriesExpressia(Resolvitor r) -> Expressia {
 #   { name }                      # shorthand
 #   { [key]: value }              # computed
 #   { sparge base, extra: 1 }    # spread
+@ publica
 functio parseObiectumExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -294,6 +297,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
 #
 # Note: Block form (pro x { ... }) requires Sententia in corpus,
 #       which this AST doesn't support yet. Expression form only.
+@ publica
 functio parseLambdaExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus

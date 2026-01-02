@@ -13,11 +13,12 @@ ex "../../ast/sententia" importa Sententia
 
 # Analyze tempta (try) statement
 @ publica
+@ publica
 functio analyzeTempta(Resolvitor r, Sententia temptaStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne temptaStmt {
-        si Tempta pro t {
+        si Tempta ut t {
             # Analyze try block
             r.sententia(t.corpus)
 
@@ -55,9 +56,10 @@ functio analyzeTempta(Resolvitor r, Sententia temptaStmt) -> vacuum {
 
 # Analyze fac...dum (do-while) statement
 @ publica
+@ publica
 functio analyzeFac(Resolvitor r, Sententia facStmt) -> vacuum {
     discerne facStmt {
-        si Fac pro f {
+        si Fac ut f {
             # Analyze body first (executed at least once)
             r.sententia(f.corpus)
 
@@ -94,11 +96,12 @@ functio analyzeFac(Resolvitor r, Sententia facStmt) -> vacuum {
 
 # Analyze cura (resource scope) statement
 @ publica
+@ publica
 functio analyzeCura(Resolvitor r, Sententia curaStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne curaStmt {
-        si Cura pro c {
+        si Cura ut c {
             # Analyze resource expression
             fixum resourceTypus = r.expressia(c.fons)
 

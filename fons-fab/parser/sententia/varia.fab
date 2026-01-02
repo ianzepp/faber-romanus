@@ -24,6 +24,7 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
 # Parse an identifier (simple name reference)
+@ publica
 functio parseNomen(Resolvitor r) -> textus {
     fixum p = r.parser()
     fixum symbolum = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
@@ -32,6 +33,7 @@ functio parseNomen(Resolvitor r) -> textus {
 
 # Parse identifier or keyword (for import specifiers, property names)
 # Keywords like 'scribe' can be valid identifiers in some contexts
+@ publica
 functio parseNomenVelVerbum(Resolvitor r) -> textus {
     fixum p = r.parser()
     fixum s = p.specta(0)
@@ -55,6 +57,7 @@ functio parseNomenVelVerbum(Resolvitor r) -> textus {
 # - Type inference: fixum x = 42
 # - Type-first: fixum numerus x = 42
 # - Array destructuring: fixum [a, b] = coords (TODO)
+@ publica
 functio parseVariaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -100,7 +103,7 @@ functio parseVariaSententia(Resolvitor r) -> Sententia {
     # -------------------------------------------------------------------------
     varia valor = nihil qua Expressia?
 
-    si p.congruet(SymbolumGenus.Aequale) {
+    si p.congruet(SymbolumGenus.Aequum) {
         valor = r.expressia()
     }
 

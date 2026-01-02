@@ -13,11 +13,12 @@ ex "../../ast/expressia" importa Expressia
 
 # Resolve a binary expression
 @ publica
+@ publica
 functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
     fixum a = r.analyzator()
 
     discerne binariaExpr {
-        si Binaria pro b {
+        si Binaria ut b {
             fixum sinisterTypus = r.expressia(b.sinister)
             fixum dexterTypus = r.expressia(b.dexter)
 
@@ -26,7 +27,7 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
                 # String concatenation with +
                 si b.signum == "+" {
                     discerne sinisterTypus {
-                        si Primitivum pro p {
+                        si Primitivum ut p {
                             si p.nomen == "textus" {
                                 redde TEXTUS
                             }
@@ -36,9 +37,9 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
 
                 # Numeric arithmetic - preserve type when both operands match
                 discerne sinisterTypus {
-                    si Primitivum pro ps {
+                    si Primitivum ut ps {
                         discerne dexterTypus {
-                            si Primitivum pro pd {
+                            si Primitivum ut pd {
                                 si estNumericum(ps.nomen) et estNumericum(pd.nomen) {
                                     # Same type: preserve it
                                     si ps.nomen == pd.nomen {
@@ -60,9 +61,9 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
             si estComparatio(b.signum) {
                 # Check for incompatible comparison
                 discerne sinisterTypus {
-                    si Primitivum pro ps {
+                    si Primitivum ut ps {
                         discerne dexterTypus {
-                            si Primitivum pro pd {
+                            si Primitivum ut pd {
                                 si ps.nomen != pd.nomen {
                                     fixum err = incompatibleComparisonError(
                                         formaTypum(sinisterTypus),
@@ -98,18 +99,22 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
 # HELPERS
 # =============================================================================
 
+@ publica
 functio estArithmeticum(textus signum) -> bivalens {
     redde signum == "+" aut signum == "-" aut signum == "*" aut signum == "/" aut signum == "%"
 }
 
+@ publica
 functio estComparatio(textus signum) -> bivalens {
     redde signum == "<" aut signum == ">" aut signum == "<=" aut signum == ">="
 }
 
+@ publica
 functio estLogicum(textus signum) -> bivalens {
     redde signum == "&&" aut signum == "||" aut signum == "et" aut signum == "aut"
 }
 
+@ publica
 functio estNumericum(textus nomen) -> bivalens {
     redde nomen == "numerus" aut nomen == "fractus" aut nomen == "decimus" aut nomen == "magnus"
 }

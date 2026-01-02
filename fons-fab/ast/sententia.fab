@@ -12,6 +12,7 @@ ex "./expressia" importa Expressia
 # ============================================================================
 
 # Variable declaration kind
+@ publicum
 ordo VariaGenus {
     Varia       # mutable: let
     Fixum       # immutable: const
@@ -20,6 +21,7 @@ ordo VariaGenus {
 }
 
 # Visibility level for members
+@ publicum
 ordo Visibilitas {
     Publica       # public (default)
     Protecta      # protected
@@ -27,6 +29,7 @@ ordo Visibilitas {
 }
 
 # Return type verb
+@ publicum
 ordo ReddeVerbum {
     Sagitta       # -> (arrow)
     Fit           # sync single
@@ -36,6 +39,7 @@ ordo ReddeVerbum {
 }
 
 # Output level for scribe/vide/mone
+@ publicum
 ordo ScribeGradus {
     Scribe     # console.log
     Vide       # console.debug
@@ -43,18 +47,21 @@ ordo ScribeGradus {
 }
 
 # Iteration kind
+@ publicum
 ordo IteratioGenus {
     Ex      # iterate values (for...of)
     De      # iterate keys (for...in)
 }
 
 # Curator kind for cura statements
+@ publicum
 ordo CuratorGenus {
     Arena      # arena allocator
     Pagina     # page allocator
 }
 
 # Ad binding verb
+@ publicum
 ordo AdVerbumVinculandi {
     Fit        # sync single
     Fiet       # async single
@@ -63,12 +70,14 @@ ordo AdVerbumVinculandi {
 }
 
 # Praepara/postpara timing
+@ publicum
 ordo PraeparaTempus {
     Praepara    # before (setup)
     Postpara    # after (teardown)
 }
 
 # Proba modifier
+@ publicum
 ordo ProbaModificator {
     Omitte     # skip
     Futurum    # todo
@@ -80,6 +89,7 @@ ordo ProbaModificator {
 
 # Import specifier with optional alias
 # Example: scribe, scribe ut s
+@ publicum
 genus ImportaSpecificator {
     Locus locus
     textus importatum         # imported name
@@ -89,6 +99,7 @@ genus ImportaSpecificator {
 
 # Function parameter
 # Example: textus nomen, de lista<T> items, ceteri args
+@ publicum
 genus Parametrum {
     Locus locus
     textus nomen
@@ -101,6 +112,7 @@ genus Parametrum {
 
 # Compile-time type parameter
 # Example: prae typus T
+@ publicum
 genus TypusParametrum {
     Locus locus
     textus nomen
@@ -108,6 +120,7 @@ genus TypusParametrum {
 
 # Field declaration within genus
 # Example: textus nomen, privatus numerus aetas: 0
+@ publicum
 genus CampusDeclaratio {
     Locus locus
     textus nomen
@@ -119,6 +132,7 @@ genus CampusDeclaratio {
 }
 
 # Pactum method signature (interface method)
+@ publicum
 genus PactumMethodus {
     Locus locus
     textus nomen
@@ -130,6 +144,7 @@ genus PactumMethodus {
 
 # Ordo (enum) member
 # Example: Rubrum, Actum = 1, Septentrio = "north"
+@ publicum
 genus OrdoMembrum {
     Locus locus
     textus nomen
@@ -138,6 +153,7 @@ genus OrdoMembrum {
 
 # Variant field in discretio
 # Example: numerus x, textus key
+@ publicum
 genus VariansCampus {
     Locus locus
     textus nomen
@@ -146,6 +162,7 @@ genus VariansCampus {
 
 # Variant declaration within discretio
 # Example: Click { numerus x, numerus y }, Quit
+@ publicum
 genus VariansDeclaratio {
     Locus locus
     textus nomen
@@ -153,6 +170,7 @@ genus VariansDeclaratio {
 }
 
 # Elige (switch) case
+@ publicum
 genus EligeCasus {
     Locus locus
     Expressia condicio
@@ -161,6 +179,7 @@ genus EligeCasus {
 
 # Variant case for discerne (pattern matching)
 # Example: si Click pro x, y { ... }
+@ publicum
 genus VariansCasus {
     Locus locus
     textus variansNomen
@@ -170,6 +189,7 @@ genus VariansCasus {
 
 # Guard clause
 # Example: si x == nihil { redde nihil }
+@ publicum
 genus CustodiClausula {
     Locus locus
     Expressia condicio
@@ -178,6 +198,7 @@ genus CustodiClausula {
 
 # Catch clause
 # Example: cape err { handleError(err) }
+@ publicum
 genus CapeClausula {
     Locus locus
     textus param
@@ -186,6 +207,7 @@ genus CapeClausula {
 
 # Ad binding clause
 # Example: fit textus pro content
+@ publicum
 genus AdVinculum {
     Locus locus
     AdVerbumVinculandi verbum
@@ -203,6 +225,7 @@ genus AdVinculum {
 # Each variant contains its fields directly. Use `finge` to construct:
 #   finge MassaSententia { locus: loc, corpus: stmts } qua Sententia
 #   finge VariaSententia { ... } qua Sententia
+@ publicum
 discretio Sententia {
     # -------------------------------------------------------------------------
     # Block

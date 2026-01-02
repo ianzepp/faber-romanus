@@ -173,6 +173,9 @@ export interface CodegenOptions {
 
 import type { Comment, BaseNode, Annotation, Visibility } from '../parser/ast';
 
+// Re-export for use by statement generators
+export type { Visibility };
+
 // =============================================================================
 // ANNOTATION UTILITIES
 // =============================================================================

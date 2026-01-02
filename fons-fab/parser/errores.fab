@@ -95,12 +95,15 @@ ordo ParserErrorCodice {
 }
 
 # Error message with help text
+@ publicum
+@ publicum
 genus ParserErrorNuntius {
     textus textus       # Brief error message
     textus auxilium     # Extended help text
 }
 
 # Get error message for a given error code
+@ publica
 functio nuntiumErroris(ParserErrorCodice codice) -> ParserErrorNuntius {
     elige codice {
         # Token expectation errors
@@ -312,6 +315,8 @@ functio nuntiumErroris(ParserErrorCodice codice) -> ParserErrorNuntius {
 }
 
 # Structured parser error with source location
+@ publicum
+@ publicum
 genus ParserError {
     ParserErrorCodice codice    # Error code for programmatic handling
     textus nuntius              # Human-readable message
@@ -319,6 +324,7 @@ genus ParserError {
 }
 
 # Create a parser error at given location
+@ publica
 functio error(ParserErrorCodice codice, Locus locus, si textus contextus) -> ParserError {
     fixum nuntium = nuntiumErroris(codice)
     varia msg = nuntium.textus

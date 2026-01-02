@@ -9,6 +9,7 @@
 # Check if a word is a reserved keyword
 #
 # NOTE: This list must stay synchronized with fons/lexicon/keywords.ts
+@ publica
 functio estVerbum(textus v) -> bivalens {
     elige v {
         # Imperium - control flow
@@ -142,6 +143,7 @@ functio estVerbum(textus v) -> bivalens {
 # WHY: Parser error recovery skips tokens until hitting a statement boundary.
 #      This list defines where the parser can safely resume after an error.
 #      Keeping it here ensures sync points stay aligned with the grammar.
+@ publica
 functio estVerbumSententiae(textus v) -> bivalens {
     elige v {
         # Declarations
@@ -201,6 +203,7 @@ functio estVerbumSententiae(textus v) -> bivalens {
 #
 # WHY: When parsing a genus body fails, we need to skip to the next
 #      field or method declaration. This defines those boundaries.
+@ publica
 functio estVerbumGeneris(textus v) -> bivalens {
     elige v {
         # Method declaration

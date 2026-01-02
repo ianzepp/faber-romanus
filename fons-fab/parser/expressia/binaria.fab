@@ -28,6 +28,7 @@ ex "./unaria" importa parseUnaria
 # GRAMMAR: assignment := ternary (('=' | '+=' | '-=' | ...) assignment)?
 #
 # Assignment is right-associative: a = b = c parses as a = (b = c)
+@ publica
 functio parseAssignatio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -59,6 +60,7 @@ functio parseAssignatio(Resolvitor r) -> Expressia {
 #
 # Latin: condicio sic consequens secus alternans
 # JS:    condicio ? consequens : alternans
+@ publica
 functio parseCondicio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.specta(0).locus
@@ -99,6 +101,7 @@ functio parseCondicio(Resolvitor r) -> Expressia {
 # Parse logical OR expression
 #
 # GRAMMAR: or := and (('||' | 'aut' | '??') and)*
+@ publica
 functio parseAut(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     varia sinister = parseEt(r)
@@ -123,6 +126,7 @@ functio parseAut(Resolvitor r) -> Expressia {
 # Parse logical AND expression
 #
 # GRAMMAR: and := equality (('&&' | 'et') equality)*
+@ publica
 functio parseEt(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     varia sinister = parseAequale(r)
@@ -147,6 +151,7 @@ functio parseEt(Resolvitor r) -> Expressia {
 # Parse equality expression
 #
 # GRAMMAR: equality := comparison (('==' | '!=' | '===' | '!==' | 'est') comparison)*
+@ publica
 functio parseAequale(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     varia sinister = parseComparatio(r)
@@ -183,6 +188,7 @@ functio parseAequale(Resolvitor r) -> Expressia {
 # Parse comparison expression
 #
 # GRAMMAR: comparison := additive (('<' | '>' | '<=' | '>=') additive)*
+@ publica
 functio parseComparatio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     varia sinister = parseAdditio(r)
@@ -207,6 +213,7 @@ functio parseComparatio(Resolvitor r) -> Expressia {
 # Parse additive expression
 #
 # GRAMMAR: additive := multiplicative (('+' | '-') multiplicative)*
+@ publica
 functio parseAdditio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     varia sinister = parseMultiplicatio(r)
@@ -231,6 +238,7 @@ functio parseAdditio(Resolvitor r) -> Expressia {
 # Parse multiplicative expression
 #
 # GRAMMAR: multiplicative := unary (('*' | '/' | '%') unary)*
+@ publica
 functio parseMultiplicatio(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     varia sinister = parseUnaria(r)

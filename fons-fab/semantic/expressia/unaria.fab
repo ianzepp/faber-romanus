@@ -12,9 +12,10 @@ ex "../../ast/expressia" importa Expressia
 
 # Resolve a unary expression
 @ publica
+@ publica
 functio resolveUnaria(Resolvitor r, Expressia unariaExpr) -> SemanticTypus {
     discerne unariaExpr {
-        si Unaria pro u {
+        si Unaria ut u {
             fixum argTypus = r.expressia(u.argumentum)
 
             # Logical negation: !, non
@@ -35,7 +36,7 @@ functio resolveUnaria(Resolvitor r, Expressia unariaExpr) -> SemanticTypus {
             # Numeric negation - preserve the numeric type
             si u.signum == "-" {
                 discerne argTypus {
-                    si Primitivum pro p {
+                    si Primitivum ut p {
                         si estNumericum(p.nomen) {
                             redde argTypus
                         }
@@ -61,6 +62,7 @@ functio resolveUnaria(Resolvitor r, Expressia unariaExpr) -> SemanticTypus {
 # HELPERS
 # =============================================================================
 
+@ publica
 functio estNumericum(textus nomen) -> bivalens {
     redde nomen == "numerus" aut nomen == "fractus" aut nomen == "decimus" aut nomen == "magnus"
 }
