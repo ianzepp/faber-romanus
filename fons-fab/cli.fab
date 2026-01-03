@@ -26,7 +26,7 @@ incipiet {
     si lexResult.errores.longitudo() > 0 {
         mone "Lexor errors:"
         ex lexResult.errores pro err {
-            mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.nuntius)
+            mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.textus)
         }
         # Exit with error (no explicit exit in Faber yet)
         redde

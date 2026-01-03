@@ -536,7 +536,7 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
 
         # Parse type (optional if no type annotation)
         varia paramTypus = nihil qua TypusAnnotatio?
-        si p.proba(SymbolumGenus.Nomen) et p.proba(SymbolumGenus.Nomen, 1) {
+        si p.proba(SymbolumGenus.Nomen) et p.specta(1).species == SymbolumGenus.Nomen {
             # Two identifiers: first is type
             paramTypus = r.adnotatio()
         }
@@ -607,7 +607,7 @@ functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
         nomina.adde(nomenSym.valor)
     } dum p.congruet(SymbolumGenus.Virgula)
 
-    p.expecta(SymbolumGenus.Maior, ParserErrorCodice.ExpectaturMaior)
+    p.expecta(SymbolumGenus.Maior, ParserErrorCodice.ExpectaturAngulusDex)
 
     redde nomina
 }

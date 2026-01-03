@@ -25,7 +25,7 @@
 
 ex "./resolvitor" importa Resolvitor
 ex "../ast/positio" importa Locus
-ex "../ast/typus" importa TypusAnnotatio
+ex "../ast/typus" importa TypusAnnotatio, TypusParametrum
 ex "../ast/lexema" importa SymbolumGenus
 ex "./errores" importa ParserErrorCodice
 
@@ -66,29 +66,40 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
     # -------------------------------------------------------------------------
     # Parse optional type parameters: <T, U, ...>
     # -------------------------------------------------------------------------
-    varia typusParametra = nihil qua lista<TypusAnnotatio>?
+    varia typusParametra = nihil qua lista<TypusParametrum>?
 
     si p.congruet(SymbolumGenus.Minor) {
-        typusParametra = [] qua lista<TypusAnnotatio>
+        typusParametra = [] qua lista<TypusParametrum>
+        fixum parametra = typusParametra qua lista<TypusParametrum>
 
         # Parse first type parameter
         si p.proba(SymbolumGenus.Numerus) {
             # Numeric literal parameter (e.g., numerus<32>)
             # TODO: Handle numeric type params properly
-            p.procede()
+            fixum litSym = p.procede()
+            parametra.adde(finge Littera {
+                valor: litSym.valor
+            } qua TypusParametrum)
         } secus {
             # Recursive type annotation parameter - use Resolvitor
             fixum param = r.adnotatio()
-            typusParametra!.adde(param)
+            parametra.adde(finge Typus {
+                adnotatio: param
+            } qua TypusParametrum)
         }
 
         # Parse remaining comma-separated type parameters
         dum p.congruet(SymbolumGenus.Virgula) {
             si p.proba(SymbolumGenus.Numerus) {
-                p.procede()
+                fixum litSym = p.procede()
+                parametra.adde(finge Littera {
+                    valor: litSym.valor
+                } qua TypusParametrum)
             } secus {
                 fixum param = r.adnotatio()
-                typusParametra!.adde(param)
+                parametra.adde(finge Typus {
+                    adnotatio: param
+                } qua TypusParametrum)
             }
         }
 
@@ -101,7 +112,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
     # -------------------------------------------------------------------------
     varia nullabilis = falsum
 
-    si p.congruet(SymbolumGenus.Interrogatio) {
+    si p.congruet(SymbolumGenus.Rogatio) {
         nullabilis = verum
     }
 
@@ -109,13 +120,33 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
     # Handle unio<A, B> -> union type
     # Union types use type parameters as union members
     # -------------------------------------------------------------------------
-    si nomen === "unio" et nonnihil typusParametra et typusParametra!.longitudo() > 0 {
+    si nomen === "unio" et nonnihil typusParametra {
+        fixum parametra = typusParametra qua lista<TypusParametrum>
+        si parametra.longitudo() == 0 {
+            redde {
+                locus: locus,
+                nomen: "union",
+                typusParametra: nihil,
+                nullabilis: nullabilis,
+                unio: [] qua lista<TypusAnnotatio>,
+                compendiumSeries: falsum,
+                praepositio: praepositio
+            } qua TypusAnnotatio
+        }
+        varia unioParametra = [] qua lista<TypusAnnotatio>
+        ex parametra pro param {
+            discerne param {
+                casu Typus ut t {
+                    unioParametra.adde(t.adnotatio)
+                }
+            }
+        }
         redde {
             locus: locus,
             nomen: "union",
             typusParametra: nihil,
             nullabilis: nullabilis,
-            unio: typusParametra,
+            unio: unioParametra,
             compendiumSeries: falsum,
             praepositio: praepositio
         } qua TypusAnnotatio
@@ -144,7 +175,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
 
         # Check for nullable array: []?
         varia arrayNullabilis = falsum
-        si p.congruet(SymbolumGenus.Interrogatio) {
+        si p.congruet(SymbolumGenus.Rogatio) {
             arrayNullabilis = verum
         }
 
@@ -152,7 +183,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
         resultatum = {
             locus: locus,
             nomen: "lista",
-            typusParametra: [resultatum],
+            typusParametra: [finge Typus { adnotatio: resultatum } qua TypusParametrum],
             nullabilis: arrayNullabilis,
             unio: nihil,
             compendiumSeries: verum,

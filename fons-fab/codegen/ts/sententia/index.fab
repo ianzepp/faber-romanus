@@ -197,7 +197,7 @@ functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignot
     }
 
     si nonnihil valor {
-        result = scriptum("{} = {}{}", result, asyncPrefix, genExpressia(valor, g))
+        result = scriptum("{} = {}{}", result, asyncPrefix, genExpressia(valor qua Expressia, g))
     }
 
     redde scriptum("{};", result)
@@ -661,7 +661,7 @@ functio genFac(Sententia corpus, ignotum condicio, TsGenerator g) -> textus {
 
     si nonnihil condicio {
         # do-while loop
-        redde scriptum("{}do {{\n{}\n{}}} while ({});", g.ind(), body, g.ind(), genExpressia(condicio, g))
+        redde scriptum("{}do {{\n{}\n{}}} while ({});", g.ind(), body, g.ind(), genExpressia(condicio qua Expressia, g))
     }
 
     # Plain block
@@ -671,7 +671,7 @@ functio genFac(Sententia corpus, ignotum condicio, TsGenerator g) -> textus {
 @ publica
 functio genAdfirma(Expressia condicio, ignotum nuntius, TsGenerator g) -> textus {
     si nonnihil nuntius {
-        redde scriptum("{}console.assert({}, {});", g.ind(), genExpressia(condicio, g), genExpressia(nuntius, g))
+        redde scriptum("{}console.assert({}, {});", g.ind(), genExpressia(condicio, g), genExpressia(nuntius qua Expressia, g))
     }
     redde scriptum("{}console.assert({});", g.ind(), genExpressia(condicio, g))
 }
@@ -700,7 +700,7 @@ functio genScribe(ScribeGradus gradus, lista<Expressia> argumenta, TsGenerator g
 @ publica
 functio genRedde(ignotum valor, TsGenerator g) -> textus {
     si nonnihil valor {
-        redde scriptum("{}return {};", g.ind(), genExpressia(valor, g))
+        redde scriptum("{}return {};", g.ind(), genExpressia(valor qua Expressia, g))
     }
     redde scriptum("{}return;", g.ind())
 }
@@ -745,7 +745,7 @@ functio genCura(ignotum res, textus vinculum, Sententia corpus, bivalens asynca,
     g.intraProfundum()
 
     si nonnihil res {
-        result = scriptum("{}{}const {} = {};\n", result, g.ind(), vinculum, genExpressia(res, g))
+        result = scriptum("{}{}const {} = {};\n", result, g.ind(), vinculum, genExpressia(res qua Expressia, g))
     }
 
     g.intraProfundum()

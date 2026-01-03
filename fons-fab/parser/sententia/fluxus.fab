@@ -85,7 +85,7 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
         }
         secus {
             # Invalid case start
-            p.renuncia(ParserErrorCodice.InvalidumEligeCasusInitium, p.locusActualis())
+            p.renuncia(ParserErrorCodice.InvalidumEligeCasusInitium, scriptum("got '{}'", p.specta(0).valor))
             rumpe
         }
     }
@@ -165,7 +165,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
                 consequens: consequens
             } qua VariansCasus)
         } secus {
-            p.renuncia(ParserErrorCodice.InvalidumDiscerneCasusInitium, p.locusActualis())
+            p.renuncia(ParserErrorCodice.InvalidumDiscerneCasusInitium, scriptum("got '{}'", p.specta(0).valor))
             rumpe
         }
     }
@@ -218,7 +218,7 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
                 consequens: consequens
             } qua CustodiClausula)
         } secus {
-            p.renuncia(ParserErrorCodice.ExpectaturSi, p.locusActualis())
+            p.renuncia(ParserErrorCodice.ExpectaturSi, scriptum("got '{}'", p.specta(0).valor))
             rumpe
         }
     }

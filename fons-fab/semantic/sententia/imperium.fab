@@ -17,7 +17,7 @@ functio analyzeSi(Resolvitor r, Sententia siStmt) -> vacuum {
     discerne siStmt {
         casu SiSententia ut s {
             # Analyze condition
-            r.expressia(s.conditio)
+            r.expressia(s.condicio)
 
             # Analyze consequent
             r.sententia(s.consequens)
@@ -40,7 +40,7 @@ functio analyzeDum(Resolvitor r, Sententia dumStmt) -> vacuum {
     discerne dumStmt {
         casu DumSententia ut d {
             # Analyze condition
-            r.expressia(d.conditio)
+            r.expressia(d.condicio)
 
             # Analyze body
             r.sententia(d.corpus)
@@ -56,7 +56,7 @@ functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
     discerne iteratioStmt {
         casu IteratioSententia ut i {
             # Analyze source expression
-            fixum sourceTypus = r.expressia(i.fons)
+            fixum sourceTypus = r.expressia(i.iterabile)
 
             # Enter block scope for loop variable
             a.intraScopum(ScopusSpecies.Massa)
@@ -72,24 +72,12 @@ functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
             }
 
             # Define loop variable
-            a.scopus.symbola[i.variaNomen] = {
-                nomen: i.variaNomen,
+            a.scopus.symbola[i.variabilis] = {
+                nomen: i.variabilis,
                 semanticTypus: elemTypus,
                 species: SymbolumSpecies.Variabilis,
                 mutabilis: falsum,
                 locus: i.locus
-            }
-
-            # Define index variable if present
-            si nonnihil i.indexNomen {
-                ex "../typi" importa NUMERUS
-                a.scopus.symbola[i.indexNomen qua textus] = {
-                    nomen: i.indexNomen qua textus,
-                    semanticTypus: NUMERUS,
-                    species: SymbolumSpecies.Variabilis,
-                    mutabilis: falsum,
-                    locus: i.locus
-                }
             }
 
             # Analyze body
@@ -101,7 +89,7 @@ functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
     }
 }
 
-# Analyze in (for-in keys) statement
+# Analyze in (context block) statement
 @ publica
 functio analyzeIn(Resolvitor r, Sententia inStmt) -> vacuum {
     fixum a = r.analyzator()
@@ -109,20 +97,10 @@ functio analyzeIn(Resolvitor r, Sententia inStmt) -> vacuum {
     discerne inStmt {
         casu InSententia ut i {
             # Analyze source expression
-            r.expressia(i.fons)
+            r.expressia(i.obiectum)
 
-            # Enter block scope
+            # Enter scope for body
             a.intraScopum(ScopusSpecies.Massa)
-
-            # Define key variable (always textus for object keys)
-            ex "../typi" importa TEXTUS
-            a.scopus.symbola[i.variaNomen] = {
-                nomen: i.variaNomen,
-                semanticTypus: TEXTUS,
-                species: SymbolumSpecies.Variabilis,
-                mutabilis: falsum,
-                locus: i.locus
-            }
 
             # Analyze body
             r.sententia(i.corpus)
@@ -148,19 +126,15 @@ functio analyzeElige(Resolvitor r, Sententia eligeStmt) -> vacuum {
             # Analyze each case
             ex e.casus pro casus {
                 # Analyze case test
-                r.expressia(casus.proba)
+                r.expressia(casus.condicio)
 
                 # Analyze case body
-                ex casus.corpus pro stmt {
-                    r.sententia(stmt)
-                }
+                r.sententia(casus.consequens)
             }
 
             # Analyze default (aliter) if present
-            si nonnihil e.aliter {
-                ex e.aliter qua lista<Sententia> pro stmt {
-                    r.sententia(stmt)
-                }
+            si nonnihil e.praedefinitum {
+                r.sententia(e.praedefinitum qua Sententia)
             }
         }
     }
@@ -182,9 +156,9 @@ functio analyzeDiscerne(Resolvitor r, Sententia discerneStmt) -> vacuum {
                 a.intraScopum(ScopusSpecies.Massa)
 
                 # Define bound variable if present
-                si nonnihil casus.vinculumNomen {
-                    a.scopus.symbola[casus.vinculumNomen qua textus] = {
-                        nomen: casus.vinculumNomen qua textus,
+                ex casus.vincula pro vinculum {
+                    a.scopus.symbola[vinculum] = {
+                        nomen: vinculum,
                         semanticTypus: IGNOTUM,  # TODO: infer from variant
                         species: SymbolumSpecies.Variabilis,
                         mutabilis: falsum,
@@ -193,9 +167,7 @@ functio analyzeDiscerne(Resolvitor r, Sententia discerneStmt) -> vacuum {
                 }
 
                 # Analyze case body
-                ex casus.corpus pro stmt {
-                    r.sententia(stmt)
-                }
+                r.sententia(casus.consequens)
 
                 a.exiScopum()
             }
@@ -211,12 +183,10 @@ functio analyzeCustodi(Resolvitor r, Sententia custodiStmt) -> vacuum {
             # Analyze each guard clause
             ex c.clausulae pro clausula {
                 # Analyze condition
-                r.expressia(clausula.conditio)
+                r.expressia(clausula.condicio)
 
                 # Analyze body
-                ex clausula.corpus pro stmt {
-                    r.sententia(stmt)
-                }
+                r.sententia(clausula.consequens)
             }
         }
     }

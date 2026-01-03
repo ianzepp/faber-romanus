@@ -122,7 +122,7 @@ functio parsePostfix(Resolvitor r) -> Expressia {
         # Member access: expr.property
         si p.congruet(SymbolumGenus.Punctum) {
             fixum propSymbolum = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
-            fixum proprietas = finge Nomen {
+            fixum Expressia proprietas = finge Nomen {
                 locus: propSymbolum.locus,
                 valor: propSymbolum.valor
             } qua Expressia
@@ -139,9 +139,9 @@ functio parsePostfix(Resolvitor r) -> Expressia {
         }
 
         # Computed member access: expr[index]
-        si p.congruet(SymbolumGenus.AngulusSin) {
+        si p.congruet(SymbolumGenus.QuadratusSin) {
             fixum proprietas = r.expressia()
-            p.expecta(SymbolumGenus.AngulusDex, ParserErrorCodice.ExpectaturAngulusDex)
+            p.expecta(SymbolumGenus.QuadratusDex, ParserErrorCodice.ExpectaturQuadratusDex)
 
             expressia = finge MembrumExpressia {
                 locus: locus,

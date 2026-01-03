@@ -8,7 +8,7 @@ ex "../typi" importa functioTypus, usitatumTypus, genusTypus, pactumTypus, ordoT
 ex "../typi" importa formaTypum, assignabileAd
 ex "../scopus" importa SymbolumSpecies, ScopusSpecies, quaereSymbolumLocale
 ex "../errores" importa noTypeOrInitializerError, typeMismatchError
-ex "../../ast/sententia" importa Sententia
+ex "../../ast/sententia" importa Sententia, VariaGenus
 
 # =============================================================================
 # VARIABLE DECLARATION
@@ -20,16 +20,16 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne variaStmt {
-        casu VariaSententia pro v {
+        casu VariaSententia ut v {
             # Determine type from annotation or initializer
             varia resolvedTypus = IGNOTUM qua SemanticTypus
 
-            si nonnihil v.typusAnnotatio {
+            si nonnihil v.typus {
                 # TODO: resolve type annotation
                 resolvedTypus = IGNOTUM
             }
-            sin nonnihil v.init {
-                resolvedTypus = r.expressia(v.init)
+            sin nonnihil v.valor {
+                resolvedTypus = r.expressia(v.valor)
             }
             secus {
                 fixum err = noTypeOrInitializerError(v.nomen)
@@ -37,8 +37,8 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
             }
 
             # Check initializer type compatibility
-            si nonnihil v.typusAnnotatio et nonnihil v.init {
-                fixum initTypus = r.expressia(v.init)
+            si nonnihil v.typus et nonnihil v.valor {
+                fixum initTypus = r.expressia(v.valor)
                 si non assignabileAd(initTypus, resolvedTypus) {
                     fixum err = typeMismatchError(formaTypum(initTypus), formaTypum(resolvedTypus))
                     a.error(err.textus, v.locus)
@@ -46,7 +46,7 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
             }
 
             # Define in symbol table
-            fixum mutabilis = v.species == "varia"
+            fixum mutabilis = v.species == VariaGenus.Varia aut v.species == VariaGenus.Variandum
             a.scopus.symbola[v.nomen] = {
                 nomen: v.nomen,
                 semanticTypus: resolvedTypus,
@@ -68,7 +68,7 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
     fixum a = r.analyzator()
 
     discerne functioStmt {
-        casu FunctioDeclaratio pro f {
+        casu FunctioDeclaratio ut f {
             # Build parameter types
             varia paramTypi = [] qua lista<SemanticTypus>
             ex f.parametra pro param {
@@ -84,13 +84,13 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
             }
 
             # Build function type
-            fixum functioTypus = functioTypus(paramTypi, reditusTypus, f.asyncronum, falsum)
+            fixum fnTypus = functioTypus(paramTypi, reditusTypus, f.asynca, falsum)
 
             # Define in symbol table if not predeclared
             si nihil quaereSymbolumLocale(a.scopus, f.nomen) {
                 a.scopus.symbola[f.nomen] = {
                     nomen: f.nomen,
-                    semanticTypus: functioTypus,
+                    semanticTypus: fnTypus,
                     species: SymbolumSpecies.Functio,
                     mutabilis: falsum,
                     locus: f.locus
@@ -105,7 +105,7 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
                 fixum prevGenerator = a.currentFunctioGenerator
 
                 a.currentFunctioReditus = reditusTypus
-                a.currentFunctioAsync = f.asyncronum
+                a.currentFunctioAsync = f.asynca
                 a.currentFunctioGenerator = f.generator
 
                 # Enter function scope
@@ -124,10 +124,8 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
                     i += 1
                 }
 
-                # Analyze body statements
-                ex f.corpus.corpus pro stmt {
-                    r.sententia(stmt)
-                }
+                # Analyze body
+                r.sententia(f.corpus qua Sententia)
 
                 # Exit scope and restore context
                 a.exiScopum()
@@ -149,7 +147,7 @@ functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne genusStmt {
-        casu GenusDeclaratio pro g {
+        casu GenusDeclaratio ut g {
             # Create genus type with empty maps (filled during body analysis)
             fixum genTypus = genusTypus(
                 g.nomen,
@@ -180,7 +178,7 @@ functio analyzePactumDeclaratio(Resolvitor r, Sententia pactumStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne pactumStmt {
-        casu PactumDeclaratio pro p {
+        casu PactumDeclaratio ut p {
             # Create pactum type
             fixum pacTypus = pactumTypus(
                 p.nomen,
@@ -208,7 +206,7 @@ functio analyzeOrdoDeclaratio(Resolvitor r, Sententia ordoStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne ordoStmt {
-        casu OrdoDeclaratio pro o {
+        casu OrdoDeclaratio ut o {
             # Create ordo type
             fixum ordTypus = ordoTypus(
                 o.nomen,
@@ -236,7 +234,7 @@ functio analyzeDiscretioDeclaratio(Resolvitor r, Sententia discretioStmt) -> vac
     fixum a = r.analyzator()
 
     discerne discretioStmt {
-        casu DiscretioDeclaratio pro d {
+        casu DiscretioDeclaratio ut d {
             # Create user type for discretio
             fixum discTypus = usitatumTypus(d.nomen, falsum)
 
@@ -260,7 +258,7 @@ functio analyzeTypusAlias(Resolvitor r, Sententia typusStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne typusStmt {
-        casu TypusAliasDeclaratio pro t {
+        casu TypusAliasDeclaratio ut t {
             # TODO: resolve type annotation
             fixum aliasTypus = IGNOTUM
 

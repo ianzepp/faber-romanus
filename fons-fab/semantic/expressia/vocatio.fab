@@ -104,10 +104,10 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
                 casu Genus ut ge {
                     discerne m.proprietas {
                         casu Nomen ut n {
-                            si ge.agri.habet(n.valor) {
+                            si nonnihil ge.agri[n.valor] {
                                 redde ge.agri[n.valor]
                             }
-                            si ge.methodi.habet(n.valor) {
+                            si nonnihil ge.methodi[n.valor] {
                                 redde ge.methodi[n.valor]
                             }
                         }

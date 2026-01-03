@@ -30,7 +30,8 @@
 
 ex "../ast/positio" importa Locus
 ex "../ast/lexema" importa Symbolum, SymbolumGenus
-ex "./errores" importa LexorError, LexorErrorCodice
+ex "../lexicon/verba" importa estVerbum
+ex "./errores" importa LexorError, LexorErrorCodice, error
 
 # Result of lexical analysis
 @ publicum
@@ -95,7 +96,7 @@ genus Lexor {
 
     # estFinis = "is it the end?" - check if all input consumed
     functio estFinis() -> bivalens {
-        redde ego.index >= ego.fons.longitudo
+        redde ego.index >= ego.fons.longitudo()
     }
 
     # =========================================================================
@@ -579,8 +580,8 @@ genus Lexor {
             casu ")" { ego.addeSymbolum(SymbolumGenus.ParensDex, c, loc) }    # right paren
             casu "{" { ego.addeSymbolum(SymbolumGenus.UncusSin, c, loc) }     # left brace (uncus = hook)
             casu "}" { ego.addeSymbolum(SymbolumGenus.UncusDex, c, loc) }     # right brace
-            casu "[" { ego.addeSymbolum(SymbolumGenus.AngulusSin, c, loc) }   # left bracket (angulus = angle)
-            casu "]" { ego.addeSymbolum(SymbolumGenus.AngulusDex, c, loc) }   # right bracket
+            casu "[" { ego.addeSymbolum(SymbolumGenus.QuadratusSin, c, loc) }   # left bracket (quadratus = square)
+            casu "]" { ego.addeSymbolum(SymbolumGenus.QuadratusDex, c, loc) }   # right bracket
 
             # ---- Punctuation ----
             casu "," { ego.addeSymbolum(SymbolumGenus.Coma, c, loc) }         # comma
@@ -719,6 +720,7 @@ genus Lexor {
 
     # scanOmnia = "scan all" - main loop: tokenize entire input
     # Returns LexorResultatum with token stream and any errors
+    @ publica
     functio scanOmnia() -> LexorResultatum {
         # Scan tokens until end of input
         dum non ego.estFinis() {
@@ -752,14 +754,14 @@ genus Lexor {
 @ publica
 functio lexare(textus fons) -> LexorResultatum {
     # Initialize scanner state
-    varia lexor = Lexor.init({
+    varia lexor = {
         fons: fons,             # Source text to tokenize
         index: 0,               # Start at beginning
         linea: 1,               # Lines are 1-based
         columnaInitium: 0,      # First line starts at offset 0
         symbola: [] qua lista<Symbolum>,    # Empty token list
         errores: [] qua lista<LexorError>   # Empty error list
-    })
+    } qua Lexor
 
     # Run the scanner and return results
     redde lexor.scanOmnia()

@@ -74,7 +74,7 @@ genus Parser {
         }
 
         redde {
-            genus: notaGenus,
+            species: notaGenus,
             valor: s.valor,
             locus: s.locus
         } qua Nota

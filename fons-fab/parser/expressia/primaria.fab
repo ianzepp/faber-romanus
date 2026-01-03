@@ -121,7 +121,7 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
     }
 
     # Array literal: [ ... ]
-    si sym.species == SymbolumGenus.AngulusSin {
+    si sym.species == SymbolumGenus.QuadratusSin {
         redde parseSeriesExpressia(r)
     }
 
@@ -136,7 +136,7 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
     }
 
     # Fallback: report error and return placeholder
-    p.renuncia(ParserErrorCodice.ExpectaturExpressia, locus)
+    p.renuncia(ParserErrorCodice.ExpectaturExpressia, scriptum("got '{}'", sym.valor))
     redde finge Nomen {
         locus: locus,
         valor: ""
@@ -151,23 +151,23 @@ functio parseSeriesExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
     fixum locus = p.locusActualis()
 
-    p.expecta(SymbolumGenus.AngulusSin, ParserErrorCodice.ExpectaturAngulusSin)
+    p.expecta(SymbolumGenus.QuadratusSin, ParserErrorCodice.ExpectaturQuadratusSin)
 
     varia elementa = [] qua lista<Expressia>
 
-    si non p.proba(SymbolumGenus.AngulusDex) {
+    si non p.proba(SymbolumGenus.QuadratusDex) {
         elementa.adde(r.expressia())
 
         dum p.congruet(SymbolumGenus.Virgula) {
             # Allow trailing comma
-            si p.proba(SymbolumGenus.AngulusDex) {
+            si p.proba(SymbolumGenus.QuadratusDex) {
                 rumpe
             }
             elementa.adde(r.expressia())
         }
     }
 
-    p.expecta(SymbolumGenus.AngulusDex, ParserErrorCodice.ExpectaturAngulusDex)
+    p.expecta(SymbolumGenus.QuadratusDex, ParserErrorCodice.ExpectaturQuadratusDex)
 
     redde finge SeriesExpressia {
         locus: locus,
@@ -225,9 +225,9 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
                 varia computatum = falsum
 
                 # Computed property: [expr]
-                si p.congruet(SymbolumGenus.AngulusSin) {
+                si p.congruet(SymbolumGenus.QuadratusSin) {
                     clavis = r.expressia()
-                    p.expecta(SymbolumGenus.AngulusDex, ParserErrorCodice.ExpectaturAngulusDex)
+                    p.expecta(SymbolumGenus.QuadratusDex, ParserErrorCodice.ExpectaturQuadratusDex)
                     computatum = verum
                 }
                 # String key: "name"

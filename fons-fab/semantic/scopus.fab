@@ -84,8 +84,8 @@ functio creaScopum(Scopus parentScopus, ScopusSpecies scopusSpecies) -> Scopus {
 # Returns error message if symbol already defined in this scope, nihil otherwise
 @ publica
 functio definieSymbolum(Scopus scopus, Symbolum symbolum) -> textus? {
-    si scopus.symbola.habet(symbolum.nomen) {
-        fixum existens = scopus.symbola[symbolum.nomen]
+    fixum existens = scopus.symbola[symbolum.nomen]
+    si nonnihil existens {
         redde scriptum("'{}' is already defined at line {}", symbolum.nomen, existens.locus.linea)
     }
 
@@ -97,7 +97,7 @@ functio definieSymbolum(Scopus scopus, Symbolum symbolum) -> textus? {
 # Returns the symbol if found, nihil otherwise
 @ publica
 functio quaereSymbolum(Scopus scopus, textus nomen) -> Symbolum? {
-    si scopus.symbola.habet(nomen) {
+    si nonnihil scopus.symbola[nomen] {
         redde scopus.symbola[nomen]
     }
 
@@ -113,7 +113,7 @@ functio quaereSymbolum(Scopus scopus, textus nomen) -> Symbolum? {
 # Used to check for redefinition in the same scope.
 @ publica
 functio quaereSymbolumLocale(Scopus scopus, textus nomen) -> Symbolum? {
-    si scopus.symbola.habet(nomen) {
+    si nonnihil scopus.symbola[nomen] {
         redde scopus.symbola[nomen]
     }
 
@@ -126,7 +126,7 @@ functio quaereSymbolumLocale(Scopus scopus, textus nomen) -> Symbolum? {
 # Returns verum if symbol was updated, falsum if not found
 @ publica
 functio renovaSymbolumTypum(Scopus scopus, textus nomen, SemanticTypus novusTypus) -> bivalens {
-    si non scopus.symbola.habet(nomen) {
+    si nihil scopus.symbola[nomen] {
         redde falsum
     }
 

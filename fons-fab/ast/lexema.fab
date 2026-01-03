@@ -27,8 +27,8 @@ ordo SymbolumGenus {
     ParensDex     # )
     UncusSin      # {
     UncusDex      # }
-    AngulusSin    # [
-    AngulusDex    # ]
+    QuadratusSin  # [
+    QuadratusDex  # ]
 
     # Operators - arithmetic
     Plus          # +

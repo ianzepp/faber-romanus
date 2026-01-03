@@ -9,7 +9,8 @@
 
 ex "./resolvitor" importa Resolvitor
 ex "./nucleus" importa Analyzator, SemanticResultatum, novumAnalyzator
-ex "./typi" importa SemanticTypus
+ex "./typi" importa SemanticTypus, IGNOTUM, VACUUM, functioTypus, usitatumTypus
+ex "./scopus" importa SymbolumSpecies
 ex "./expressia/index" importa resolveExpressia
 ex "./sententia/index" importa analyzeSententia
 ex "../ast/radix" importa Programma
@@ -22,17 +23,20 @@ ex "../ast/sententia" importa Sententia
 
 # Concrete implementation of the Resolvitor pactum
 @ publicum
-genus Resolvitor implet Resolvitor {
+genus ResolvitorImpl implet Resolvitor {
     Analyzator a
 
+    @ publica
     functio analyzator() -> Analyzator {
         redde ego.a
     }
 
+    @ publica
     functio expressia(Expressia expr) -> SemanticTypus {
         redde resolveExpressia(ego qua Resolvitor, expr)
     }
 
+    @ publica
     functio sententia(Sententia stmt) -> vacuum {
         analyzeSententia(ego qua Resolvitor, stmt)
     }
@@ -41,7 +45,7 @@ genus Resolvitor implet Resolvitor {
 # Create a new Resolvitor
 @ publica
 functio novumResolvitor(Analyzator a) -> Resolvitor {
-    redde { a: a } qua Resolvitor
+    redde { a: a } qua ignotum qua Resolvitor
 }
 
 # =============================================================================
@@ -81,20 +85,17 @@ functio analyze(Programma programma) -> SemanticResultatum {
 # Registers names with placeholder types for forward reference support
 @ publica
 functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
-    ex "./typi" importa IGNOTUM, VACUUM, functioTypus, usitatumTypus
-    ex "./scopus" importa SymbolumSpecies
-
     fixum a = r.analyzator()
 
     discerne stmt {
         # Function declaration - register name with function type
-        casu FunctioDeclaratio pro f {
+        casu FunctioDeclaratio ut f {
             # Build placeholder function type
             varia paramTypi = [] qua lista<SemanticTypus>
             ex f.parametra pro param {
                 paramTypi.adde(IGNOTUM)
             }
-            fixum fnTypus = functioTypus(paramTypi, VACUUM, f.asyncronum, falsum)
+            fixum fnTypus = functioTypus(paramTypi, VACUUM, f.asynca, falsum)
 
             a.scopus.symbola[f.nomen] = {
                 nomen: f.nomen,
@@ -106,7 +107,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Genus declaration - register name with user type
-        casu GenusDeclaratio pro g {
+        casu GenusDeclaratio ut g {
             a.scopus.symbola[g.nomen] = {
                 nomen: g.nomen,
                 semanticTypus: usitatumTypus(g.nomen, falsum),
@@ -117,7 +118,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Pactum declaration - register name with user type
-        casu PactumDeclaratio pro p {
+        casu PactumDeclaratio ut p {
             a.scopus.symbola[p.nomen] = {
                 nomen: p.nomen,
                 semanticTypus: usitatumTypus(p.nomen, falsum),
@@ -128,7 +129,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Ordo declaration - register name with user type
-        casu OrdoDeclaratio pro o {
+        casu OrdoDeclaratio ut o {
             a.scopus.symbola[o.nomen] = {
                 nomen: o.nomen,
                 semanticTypus: usitatumTypus(o.nomen, falsum),
@@ -139,7 +140,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Discretio declaration - register name with user type
-        casu DiscretioDeclaratio pro d {
+        casu DiscretioDeclaratio ut d {
             a.scopus.symbola[d.nomen] = {
                 nomen: d.nomen,
                 semanticTypus: usitatumTypus(d.nomen, falsum),
@@ -150,7 +151,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Typus alias - register name with user type
-        casu TypusAliasDeclaratio pro t {
+        casu TypusAliasDeclaratio ut t {
             a.scopus.symbola[t.nomen] = {
                 nomen: t.nomen,
                 semanticTypus: usitatumTypus(t.nomen, falsum),

@@ -47,7 +47,7 @@ functio analyzeIace(Resolvitor r, Sententia iaceStmt) -> vacuum {
     discerne iaceStmt {
         casu IaceSententia ut i {
             # Resolve thrown expression
-            r.expressia(i.valor)
+            r.expressia(i.argumentum)
         }
     }
 }
@@ -79,7 +79,7 @@ functio analyzeAdfirma(Resolvitor r, Sententia adfirmaStmt) -> vacuum {
     discerne adfirmaStmt {
         casu AdfirmaSententia ut adf {
             # Resolve condition
-            r.expressia(adf.conditio)
+            r.expressia(adf.condicio)
 
             # Resolve message if present
             si nonnihil adf.nuntius {
