@@ -105,6 +105,7 @@ export class TsGenerator {
     inFiet = false; // WHY: Track if we're inside a fiet function body for async Responsum protocol
     inFient = false; // WHY: Track if we're inside a fient function body for async flow() protocol
     inClass = false; // WHY: Track if we're inside a class body (for visibility handling)
+    genusNames = new Set<string>(); // WHY: Track genus type names for proper instantiation
     features: RequiredFeatures;
     semi: boolean;
 
@@ -114,6 +115,16 @@ export class TsGenerator {
     ) {
         this.features = createRequiredFeatures();
         this.semi = semi;
+    }
+
+    /**
+     * Check if a type name is a genus (class with methods).
+     *
+     * WHY: Object literals cast to genus types need `new` instantiation,
+     *      not just type assertion, to get the class methods.
+     */
+    isGenus(typeName: string): boolean {
+        return this.genusNames.has(typeName);
     }
 
     /**

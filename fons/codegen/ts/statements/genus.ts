@@ -30,6 +30,9 @@ export function genGenusDeclaration(node: GenusDeclaration, g: TsGenerator, semi
     const impl = node.implements ? ` implements ${node.implements.map(i => i.name).join(', ')}` : '';
     const abstractMod = isAbstractFromAnnotations(node.annotations) ? 'abstract ' : '';
 
+    // WHY: Register genus name so qua expressions can use `new` instead of `as`
+    g.genusNames.add(name);
+
     // Module-level: export when public
     const classVisibility = getVisibilityFromAnnotations(node.annotations);
     const exportMod = !g.inClass && classVisibility === 'public' ? 'export ' : '';
