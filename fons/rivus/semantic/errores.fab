@@ -46,7 +46,7 @@ genus SemanticErrorNuntius {
 @ publica
 functio undefinedVariableError(textus nomen) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Undefined variable '{}'", nomen),
+        textus: scriptum("Undefined variable '§'", nomen),
         auxilium: "Variables must be declared with 'varia' or 'fixum' before use"
     } qua SemanticErrorNuntius
 }
@@ -55,7 +55,7 @@ functio undefinedVariableError(textus nomen) -> SemanticErrorNuntius {
 @ publica
 functio alreadyDefinedError(textus nomen, numerus linea) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("'{}' is already defined at line {}", nomen, linea),
+        textus: scriptum("'§' is already defined at line §", nomen, linea),
         auxilium: "Each name can only be defined once in the same scope. Use a different name or assign to the existing variable."
     } qua SemanticErrorNuntius
 }
@@ -64,7 +64,7 @@ functio alreadyDefinedError(textus nomen, numerus linea) -> SemanticErrorNuntius
 @ publica
 functio immutableAssignmentError(textus nomen) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Cannot assign to immutable variable '{}'", nomen),
+        textus: scriptum("Cannot assign to immutable variable '§'", nomen),
         auxilium: "Variables declared with 'fixum' cannot be reassigned. Use 'varia' for mutable variables."
     } qua SemanticErrorNuntius
 }
@@ -73,7 +73,7 @@ functio immutableAssignmentError(textus nomen) -> SemanticErrorNuntius {
 @ publica
 functio typeMismatchError(textus sourceType, textus targetType) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Type '{}' is not assignable to type '{}'", sourceType, targetType),
+        textus: scriptum("Type '§' is not assignable to type '§'", sourceType, targetType),
         auxilium: "Ensure the types are compatible. You may need a type conversion or to change the variable type."
     } qua SemanticErrorNuntius
 }
@@ -82,7 +82,7 @@ functio typeMismatchError(textus sourceType, textus targetType) -> SemanticError
 @ publica
 functio returnTypeMismatchError(textus returnType, textus functionType) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Return type '{}' is not assignable to function return type '{}'", returnType, functionType),
+        textus: scriptum("Return type '§' is not assignable to function return type '§'", returnType, functionType),
         auxilium: "The returned value must match the function return type annotation."
     } qua SemanticErrorNuntius
 }
@@ -91,7 +91,7 @@ functio returnTypeMismatchError(textus returnType, textus functionType) -> Seman
 @ publica
 functio noTypeOrInitializerError(textus nomen) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Variable '{}' has no type annotation or initializer", nomen),
+        textus: scriptum("Variable '§' has no type annotation or initializer", nomen),
         auxilium: "Variables must have either a type annotation (e.g., 'numerus x') or an initializer (e.g., 'varia x = 5')."
     } qua SemanticErrorNuntius
 }
@@ -100,7 +100,7 @@ functio noTypeOrInitializerError(textus nomen) -> SemanticErrorNuntius {
 @ publica
 functio notExportedFromModuleError(textus nomen, textus modulus) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("'{}' is not exported from '{}'", nomen, modulus),
+        textus: scriptum("'§' is not exported from '§'", nomen, modulus),
         auxilium: "Check the module documentation for available exports. You may have a typo in the import name."
     } qua SemanticErrorNuntius
 }
@@ -109,7 +109,7 @@ functio notExportedFromModuleError(textus nomen, textus modulus) -> SemanticErro
 @ publica
 functio incompatibleComparisonError(textus leftType, textus rightType, textus operator) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Cannot compare '{}' with '{}' using '{}'", leftType, rightType, operator),
+        textus: scriptum("Cannot compare '§' with '§' using '§'", leftType, rightType, operator),
         auxilium: "Comparison operators require operands of the same type. Both sides must be numbers or both must be strings."
     } qua SemanticErrorNuntius
 }
@@ -127,7 +127,7 @@ functio cedeOutsideAsyncError() -> SemanticErrorNuntius {
 @ publica
 functio awaitOutsideAsyncError(textus keyword) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("'{}' requires an async function context", keyword),
+        textus: scriptum("'§' requires an async function context", keyword),
         auxilium: "Use 'fiet' or 'fient' to declare an async function."
     } qua SemanticErrorNuntius
 }
@@ -136,7 +136,7 @@ functio awaitOutsideAsyncError(textus keyword) -> SemanticErrorNuntius {
 @ publica
 functio defaultWithBorrowedParamError(textus preposition) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Cannot use default value with '{}' (borrowed) parameter", preposition),
+        textus: scriptum("Cannot use default value with '§' (borrowed) parameter", preposition),
         auxilium: "Default values require owned parameters. Remove the 'de' or 'in' preposition, or remove the default value."
     } qua SemanticErrorNuntius
 }
@@ -145,7 +145,7 @@ functio defaultWithBorrowedParamError(textus preposition) -> SemanticErrorNuntiu
 @ publica
 functio moduleNotFoundError(textus path) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Cannot find module '{}'", path),
+        textus: scriptum("Cannot find module '§'", path),
         auxilium: "Verify the file path is correct and the file exists. Relative paths are resolved from the importing file."
     } qua SemanticErrorNuntius
 }
@@ -154,7 +154,7 @@ functio moduleNotFoundError(textus path) -> SemanticErrorNuntius {
 @ publica
 functio circularImportError(textus path, textus cycle) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Circular import detected: {}", cycle),
+        textus: scriptum("Circular import detected: §", cycle),
         auxilium: "Break the cycle by restructuring your modules or using forward declarations for types."
     } qua SemanticErrorNuntius
 }
@@ -163,7 +163,7 @@ functio circularImportError(textus path, textus cycle) -> SemanticErrorNuntius {
 @ publica
 functio moduleParseError(textus path) -> SemanticErrorNuntius {
     redde {
-        textus: scriptum("Failed to parse module '{}'", path),
+        textus: scriptum("Failed to parse module '§'", path),
         auxilium: "Fix the syntax errors in the imported module before importing it."
     } qua SemanticErrorNuntius
 }

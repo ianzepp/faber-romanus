@@ -28,12 +28,12 @@ pactum RadixGenerator {
 functio genAdd(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
     si flagga.mutare {
         si flagga.async
-            reddit scriptum("await (async () => {{ {}.push({}); }})()", obj, args[0])
-        redde scriptum("{}.push({})", obj, args[0])
+            reddit scriptum("await (async () => {{ §.push(§); }})()", obj, args[0])
+        redde scriptum("§.push(§)", obj, args[0])
     } secus {
         si flagga.async
-            reddit scriptum("await Promise.resolve([...{}, {}])", obj, args[0])
-        redde scriptum("[...{}, {}]", obj, args[0])
+            reddit scriptum("await Promise.resolve([...§, §])", obj, args[0])
+        redde scriptum("[...§, §]", obj, args[0])
     }
 }
 
@@ -43,9 +43,9 @@ functio genAdd(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit tex
 @ publica
 functio genPraepon(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
     si flagga.mutare {
-        redde scriptum("{}.unshift({})", obj, args[0])
+        redde scriptum("§.unshift(§)", obj, args[0])
     } secus {
-        redde scriptum("[{}, ...{}]", args[0], obj)
+        redde scriptum("[§, ...§]", args[0], obj)
     }
 }
 
@@ -55,9 +55,9 @@ functio genPraepon(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit
 @ publica
 functio genRemov(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
     si flagga.mutare {
-        redde scriptum("{}.pop()", obj)
+        redde scriptum("§.pop()", obj)
     } secus {
-        redde scriptum("{}.slice(0, -1)", obj)
+        redde scriptum("§.slice(0, -1)", obj)
     }
 }
 
@@ -67,9 +67,9 @@ functio genRemov(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit t
 @ publica
 functio genDecapit(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
     si flagga.mutare {
-        redde scriptum("{}.shift()", obj)
+        redde scriptum("§.shift()", obj)
     } secus {
-        redde scriptum("{}.slice(1)", obj)
+        redde scriptum("§.slice(1)", obj)
     }
 }
 
@@ -81,17 +81,17 @@ functio genFiltr(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit t
     si flagga.mutare {
         si flagga.async {
             # filtrabit - async in-place filter
-            redde scriptum("await (async () => {{ for (let i = {}.length - 1; i >= 0; i--) {{ if (!(await ({})({}[i]))) {}.splice(i, 1); }} }})()", obj, args[0], obj, obj)
+            redde scriptum("await (async () => {{ for (let i = §.length - 1; i >= 0; i--) {{ if (!(await (§)(§[i]))) §.splice(i, 1); }} }})()", obj, args[0], obj, obj)
         }
         # filtra - sync in-place filter
-        redde scriptum("(() => {{ for (let i = {}.length - 1; i >= 0; i--) {{ if (!({})({}[i])) {}.splice(i, 1); }} }})()", obj, args[0], obj, obj)
+        redde scriptum("(() => {{ for (let i = §.length - 1; i >= 0; i--) {{ if (!(§)(§[i])) §.splice(i, 1); }} }})()", obj, args[0], obj, obj)
     } secus {
         si flagga.async {
             # filtratura - async filter returns new
-            redde scriptum("await Promise.all({}.map(async x => ({{ x, keep: await ({})(x) }}))).then(r => r.filter(o => o.keep).map(o => o.x))", obj, args[0])
+            redde scriptum("await Promise.all(§.map(async x => ({{ x, keep: await (§)(x) }}))).then(r => r.filter(o => o.keep).map(o => o.x))", obj, args[0])
         }
         # filtrata - sync filter returns new
-        redde scriptum("{}.filter({})", obj, args[0])
+        redde scriptum("§.filter(§)", obj, args[0])
     }
 }
 
@@ -102,10 +102,10 @@ functio genFiltr(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit t
 functio genMapp(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
     si flagga.async {
         # mappatura - async map
-        redde scriptum("await Promise.all({}.map({}))", obj, args[0])
+        redde scriptum("await Promise.all(§.map(§))", obj, args[0])
     }
     # mappata - sync map (mappa would be unusual but supported)
-    redde scriptum("{}.map({})", obj, args[0])
+    redde scriptum("§.map(§)", obj, args[0])
 }
 
 # Sort elements
@@ -117,14 +117,14 @@ functio genOrdin(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit t
 
     si flagga.mutare {
         si hasComparator {
-            redde scriptum("{}.sort({})", obj, args[0])
+            redde scriptum("§.sort(§)", obj, args[0])
         }
-        redde scriptum("{}.sort()", obj)
+        redde scriptum("§.sort()", obj)
     } secus {
         si hasComparator {
-            redde scriptum("[...{}].sort({})", obj, args[0])
+            redde scriptum("[...§].sort(§)", obj, args[0])
         }
-        redde scriptum("[...{}].sort()", obj)
+        redde scriptum("[...§].sort()", obj)
     }
 }
 
@@ -134,9 +134,9 @@ functio genOrdin(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit t
 @ publica
 functio genInvert(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
     si flagga.mutare {
-        redde scriptum("{}.reverse()", obj)
+        redde scriptum("§.reverse()", obj)
     } secus {
-        redde scriptum("[...{}].reverse()", obj)
+        redde scriptum("[...§].reverse()", obj)
     }
 }
 

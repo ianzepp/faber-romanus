@@ -38,33 +38,33 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 
         casu LitteraRegex ut e {
             g.features.usesRegex = verum
-            redde scriptum("/{}/{}", e.forma, e.vexilla)
+            redde scriptum("/§/§", e.forma, e.vexilla)
         }
 
         # Binary and unary
         casu BinariaExpressia ut e {
-            redde scriptum("({} {} {})", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
+            redde scriptum("(§ § §)", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
         }
 
         casu UnariaExpressia ut e {
-            redde scriptum("{}{}", e.signum, genExpressia(e.argumentum, g))
+            redde scriptum("§§", e.signum, genExpressia(e.argumentum, g))
         }
 
         casu AssignatioExpressia ut e {
-            redde scriptum("{} {} {}", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
+            redde scriptum("§ § §", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
         }
 
         casu CondicioExpressia ut e {
-            redde scriptum("{} ? {} : {}", genExpressia(e.condicio, g), genExpressia(e.consequens, g), genExpressia(e.alternans, g))
+            redde scriptum("§ ? § : §", genExpressia(e.condicio, g), genExpressia(e.consequens, g), genExpressia(e.alternans, g))
         }
 
         casu AmbitusExpressia ut e {
             # Range expressions become array generation
-            redde scriptum("[{}, {}]", genExpressia(e.initium, g), genExpressia(e.finis, g))
+            redde scriptum("[§, §]", genExpressia(e.initium, g), genExpressia(e.finis, g))
         }
 
         casu QuaExpressia ut e {
-            redde scriptum("{} as {}", genExpressia(e.expressia, g), genTypus(e.scopus qua TypusAnnotatio, g))
+            redde scriptum("§ as §", genExpressia(e.expressia, g), genTypus(e.scopus qua TypusAnnotatio, g))
         }
 
         casu EstExpressia ut e {
@@ -117,7 +117,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 
             # Default: pass through as-is
             fixum optMark = (e.optivum qua bivalens) sic "?." secus ""
-            redde scriptum("{}{}({})", genExpressia(e.vocatum, g), optMark, args.coniunge(", "))
+            redde scriptum("§§(§)", genExpressia(e.vocatum, g), optMark, args.coniunge(", "))
         }
 
         casu MembrumExpressia ut e {
@@ -125,19 +125,19 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             si e.computatum qua bivalens {
                 fixum idx = genExpressia(e.proprietas, g)
                 si e.optivum qua bivalens {
-                    redde scriptum("{}?.[{}]", obj, idx)
+                    redde scriptum("§?.[§]", obj, idx)
                 }
-                redde scriptum("{}[{}]", obj, idx)
+                redde scriptum("§[§]", obj, idx)
             }
             # Dot access
             fixum prop = genExpressia(e.proprietas, g)
             si e.optivum qua bivalens {
-                redde scriptum("{}?.{}", obj, prop)
+                redde scriptum("§?.§", obj, prop)
             }
             si e.nonNullum qua bivalens {
-                redde scriptum("{}!.{}", obj, prop)
+                redde scriptum("§!.§", obj, prop)
             }
-            redde scriptum("{}.{}", obj, prop)
+            redde scriptum("§.§", obj, prop)
         }
 
         casu NovumExpressia ut e {
@@ -145,9 +145,9 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
             }
-            varia result = scriptum("new {}({})", genExpressia(e.vocatum, g), args.coniunge(", "))
+            varia result = scriptum("new §(§)", genExpressia(e.vocatum, g), args.coniunge(", "))
             si nonnihil e.initor {
-                result = scriptum("{} /* initor: {} */", result, genExpressia(e.initor, g))
+                result = scriptum("§ /* initor: § */", result, genExpressia(e.initor, g))
             }
             redde result
         }
@@ -155,15 +155,15 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         casu CedeExpressia ut e {
             # cede maps to yield in generators, await in async functions
             si g.inFiunt {
-                redde scriptum("yield respond.item({})", genExpressia(e.argumentum, g))
+                redde scriptum("yield respond.item(§)", genExpressia(e.argumentum, g))
             }
             si g.inFient {
-                redde scriptum("yield respond.item(await {})", genExpressia(e.argumentum, g))
+                redde scriptum("yield respond.item(await §)", genExpressia(e.argumentum, g))
             }
             si g.inGenerator {
-                redde scriptum("yield {}", genExpressia(e.argumentum, g))
+                redde scriptum("yield §", genExpressia(e.argumentum, g))
             }
-            redde scriptum("await {}", genExpressia(e.argumentum, g))
+            redde scriptum("await §", genExpressia(e.argumentum, g))
         }
 
         casu ScriptumExpressia ut e {
@@ -178,7 +178,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu AbExpressia ut e {
-            redde scriptum("{}.{}", genExpressia(e.fons, g), genExpressia(e.transformatio, g))
+            redde scriptum("§.§", genExpressia(e.fons, g), genExpressia(e.transformatio, g))
         }
 
         # Collections
@@ -187,7 +187,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             ex (e.elementa qua lista<Expressia>) pro elem {
                 items.adde(genExpressia(elem, g))
             }
-            redde scriptum("[{}]", items.coniunge(", "))
+            redde scriptum("[§]", items.coniunge(", "))
         }
 
         casu ObiectumExpressia ut e {
@@ -195,7 +195,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu DispersioElementum ut e {
-            redde scriptum("...{}", genExpressia(e.argumentum, g))
+            redde scriptum("...§", genExpressia(e.argumentum, g))
         }
 
         # Lambda
@@ -203,29 +203,29 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             varia params = [] qua lista<textus>
             ex (e.parametra qua lista<LambdaParametrum>) pro p {
                 si nonnihil p.typus {
-                    params.adde(scriptum("{}: {}", p.nomen, genTypus(p.typus qua TypusAnnotatio, g)))
+                    params.adde(scriptum("§: §", p.nomen, genTypus(p.typus qua TypusAnnotatio, g)))
                 } secus {
                     params.adde(p.nomen)
                 }
             }
             varia retType = ""
             si nonnihil e.typusReditus {
-                retType = scriptum(": {}", genTypus(e.typusReditus qua TypusAnnotatio, g))
+                retType = scriptum(": §", genTypus(e.typusReditus qua TypusAnnotatio, g))
             }
-            redde scriptum("({}){} => {}", params.coniunge(", "), retType, genExpressia(e.corpus, g))
+            redde scriptum("(§)§ => §", params.coniunge(", "), retType, genExpressia(e.corpus, g))
         }
 
         # Discretio construction
         casu FingeExpressia ut e {
             # finge Click { x: 10 } qua Event -> { tag: 'Click', x: 10 }
             varia props = [] qua lista<textus>
-            props.adde(scriptum("tag: '{}'", e.variansNomen))
+            props.adde(scriptum("tag: '§'", e.variansNomen))
             ex (e.campi qua lista<ObiectumProprietas>) pro campo {
                 fixum key = genExpressia(campo.clavis, g)
                 fixum val = genExpressia(campo.valor, g)
-                props.adde(scriptum("{}: {}", key, val))
+                props.adde(scriptum("§: §", key, val))
             }
-            redde scriptum("{{ {} }}", props.coniunge(", "))
+            redde scriptum("{{ § }}", props.coniunge(", "))
         }
     }
 
@@ -280,27 +280,27 @@ functio genEstExpressia(Expressia expr, TypusAnnotatio scopus, TsGenerator g) ->
 
     # Primitive type checks use typeof
     si scopus.nomen == "textus" {
-        redde scriptum("typeof {} === 'string'", val)
+        redde scriptum("typeof § === 'string'", val)
     }
     si scopus.nomen == "numerus" aut scopus.nomen == "fractus" {
-        redde scriptum("typeof {} === 'number'", val)
+        redde scriptum("typeof § === 'number'", val)
     }
     si scopus.nomen == "bivalens" {
-        redde scriptum("typeof {} === 'boolean'", val)
+        redde scriptum("typeof § === 'boolean'", val)
     }
     si scopus.nomen == "nihil" {
-        redde scriptum("{} === null", val)
+        redde scriptum("§ === null", val)
     }
 
     # User-defined types use instanceof
-    redde scriptum("{} instanceof {}", val, scopus.nomen)
+    redde scriptum("§ instanceof §", val, scopus.nomen)
 }
 
 # Generate scriptum (format string) expression
 # Recognizes both {} (traditional) and § (section sign, preferred) as placeholders
 @ publica
 functio genScriptum(textus exemplar, lista<Expressia> argumenta, TsGenerator g) -> textus {
-    # Convert scriptum("Hello, {}!", name) or scriptum("Hello, §!", name) to template literal
+    # Convert scriptum("Hello, §!", name) or scriptum("Hello, §!", name) to template literal
     varia result = "`"
     varia argIndex = 0
     varia i = 0
@@ -345,12 +345,12 @@ functio genObiectum(lista<ObiectumProprietas> proprietates, TsGenerator g) -> te
             props.adde(genExpressia(prop.clavis, g))
         } sin prop.computatum {
             # Computed: { [expr]: value }
-            props.adde(scriptum("[{}]: {}", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
+            props.adde(scriptum("[§]: §", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
         } secus {
             # Normal: { key: value }
-            props.adde(scriptum("{}: {}", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
+            props.adde(scriptum("§: §", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
         }
     }
 
-    redde scriptum("{{ {} }}", props.coniunge(", "))
+    redde scriptum("{{ § }}", props.coniunge(", "))
 }

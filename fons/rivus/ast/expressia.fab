@@ -226,7 +226,7 @@ discretio Expressia {
     }
 
     # Scriptum (format string) expression
-    # Example: scriptum("Hello, {}!", name)
+    # Example: scriptum("Hello, §!", name)
     ScriptumExpressia {
         Locus locus
         textus exemplar          # format template

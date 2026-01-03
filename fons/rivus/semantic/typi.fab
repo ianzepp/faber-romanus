@@ -454,10 +454,10 @@ functio formaTypum(SemanticTypus t) -> textus {
         casu Primitivum ut p {
             varia resultatum = p.nomen
             si p.amplitudo != nihil {
-                resultatum = scriptum("{}<{}>", resultatum, p.amplitudo)
+                resultatum = scriptum("§<§>", resultatum, p.amplitudo)
             }
             si p.nullabilis {
-                resultatum = scriptum("{}?", resultatum)
+                resultatum = scriptum("§?", resultatum)
             }
             redde resultatum
         }
@@ -468,9 +468,9 @@ functio formaTypum(SemanticTypus t) -> textus {
             ex g.parametri pro typ {
                 params.adde(formaTypum(typ))
             }
-            varia resultatum = scriptum("{}<{}>", g.nomen, params.coniunge(", "))
+            varia resultatum = scriptum("§<§>", g.nomen, params.coniunge(", "))
             si g.nullabilis {
-                resultatum = scriptum("{}?", resultatum)
+                resultatum = scriptum("§?", resultatum)
             }
             redde resultatum
         }
@@ -482,7 +482,7 @@ functio formaTypum(SemanticTypus t) -> textus {
                 params.adde(formaTypum(typ))
             }
             fixum asyncPraefix = f.asyncronum sic "futura " secus ""
-            redde scriptum("{}({}) -> {}", asyncPraefix, params.coniunge(", "), formaTypum(f.reditusTypus))
+            redde scriptum("§(§) -> §", asyncPraefix, params.coniunge(", "), formaTypum(f.reditusTypus))
         }
 
         casu Unio ut u {
@@ -495,37 +495,37 @@ functio formaTypum(SemanticTypus t) -> textus {
 
         casu Ignotum ut ig {
             si ig.ratio != nihil {
-                redde scriptum("ignotum({})", ig.ratio)
+                redde scriptum("ignotum(§)", ig.ratio)
             }
             redde "ignotum"
         }
 
         casu Usitatum ut u {
             si u.nullabilis {
-                redde scriptum("{}?", u.nomen)
+                redde scriptum("§?", u.nomen)
             }
             redde u.nomen
         }
 
         casu Ordo ut o {
             si o.nullabilis {
-                redde scriptum("ordo {}?", o.nomen)
+                redde scriptum("ordo §?", o.nomen)
             }
-            redde scriptum("ordo {}", o.nomen)
+            redde scriptum("ordo §", o.nomen)
         }
 
         casu Genus ut g {
             si g.nullabilis {
-                redde scriptum("genus {}?", g.nomen)
+                redde scriptum("genus §?", g.nomen)
             }
-            redde scriptum("genus {}", g.nomen)
+            redde scriptum("genus §", g.nomen)
         }
 
         casu Pactum ut p {
             si p.nullabilis {
-                redde scriptum("pactum {}?", p.nomen)
+                redde scriptum("pactum §?", p.nomen)
             }
-            redde scriptum("pactum {}", p.nomen)
+            redde scriptum("pactum §", p.nomen)
         }
     }
 

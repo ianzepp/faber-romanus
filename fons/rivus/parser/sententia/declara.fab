@@ -38,7 +38,7 @@ ex "./massa" importa parseMassaSententia
 # Examples:
 #   functio salve() { scribe "hello" }
 #   functio add(numerus a, numerus b) -> numerus { redde a + b }
-#   functio greet(textus name) fit textus { redde scriptum("Hello, {}!", name) }
+#   functio greet(textus name) fit textus { redde scriptum("Hello, §!", name) }
 @ publica
 functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
     fixum p = r.parser()

@@ -26,7 +26,7 @@ incipiet {
     si lexResult.errores.longitudo() > 0 {
         mone "Lexor errors:"
         ex lexResult.errores pro err {
-            mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.textus)
+            mone scriptum("  §:§ - §", err.locus.linea, err.locus.columna, err.textus)
         }
         # Exit with error (no explicit exit in Faber yet)
         redde
@@ -38,7 +38,7 @@ incipiet {
     si parseResult.errores.longitudo() > 0 {
         mone "Parser errors:"
         ex parseResult.errores pro err {
-            mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.nuntius)
+            mone scriptum("  §:§ - §", err.locus.linea, err.locus.columna, err.nuntius)
         }
         redde
     }
@@ -54,7 +54,7 @@ incipiet {
     si semResult.errores.longitudo() > 0 {
         mone "Semantic errors:"
         ex semResult.errores pro err {
-            mone scriptum("  {}:{} - {}", err.locus.linea, err.locus.columna, err.nuntius)
+            mone scriptum("  §:§ - §", err.locus.linea, err.locus.columna, err.nuntius)
         }
         redde
     }

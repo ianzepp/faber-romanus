@@ -52,7 +52,7 @@ genus Parser {
     # Returns: _prefix_N where N is incremented each call
     @ publica
     functio generaId(textus prae) -> textus {
-        fixum id = scriptum("_{}_{}", prae, ego.idUnicum)
+        fixum id = scriptum("_§_§", prae, ego.idUnicum)
         ego.idUnicum += 1
         redde id
     }
@@ -305,7 +305,7 @@ genus Parser {
 
         # Record error with context
         fixum s = ego.specta(0)
-        ego.renuncia(codice, scriptum("got '{}'", s.valor))
+        ego.renuncia(codice, scriptum("got '§'", s.valor))
 
         # Advance past unexpected token (unless at end)
         si non ego.estFinis() {
@@ -331,7 +331,7 @@ genus Parser {
 
         # Record error with context
         fixum s = ego.specta(0)
-        ego.renuncia(codice, scriptum("got '{}'", s.valor))
+        ego.renuncia(codice, scriptum("got '§'", s.valor))
 
         # Advance past unexpected token
         si non ego.estFinis() {

@@ -335,7 +335,7 @@ functio error(ParserErrorCodice codice, Locus locus, si textus contextus) -> Par
 
     # Append context if provided
     si nonnihil contextus {
-        msg = scriptum("{}: {}", msg, contextus)
+        msg = scriptum("§: §", msg, contextus)
     }
 
     redde {

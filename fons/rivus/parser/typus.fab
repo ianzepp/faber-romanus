@@ -58,7 +58,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
         nomen = p.procede().valor
     } secus {
         # Error: expected type name
-        p.renuncia(ParserErrorCodice.ExpectaturTypusNomen, scriptum("got '{}'", p.specta(0).valor))
+        p.renuncia(ParserErrorCodice.ExpectaturTypusNomen, scriptum("got '§'", p.specta(0).valor))
         nomen = p.specta(0).valor
         p.procede()  # Skip to avoid infinite loop
     }

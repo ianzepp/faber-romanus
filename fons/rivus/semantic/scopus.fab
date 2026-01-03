@@ -86,7 +86,7 @@ functio creaScopum(Scopus parentScopus, ScopusSpecies scopusSpecies) -> Scopus {
 functio definieSymbolum(Scopus scopus, Symbolum symbolum) -> textus? {
     fixum existens = scopus.symbola[symbolum.nomen]
     si nonnihil existens {
-        redde scriptum("'{}' is already defined at line {}", symbolum.nomen, existens.locus.linea)
+        redde scriptum("'§' is already defined at line §", symbolum.nomen, existens.locus.linea)
     }
 
     scopus.symbola[symbolum.nomen] = symbolum

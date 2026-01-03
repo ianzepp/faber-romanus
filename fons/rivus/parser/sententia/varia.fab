@@ -44,7 +44,7 @@ functio parseNomenVelVerbum(Resolvitor r) -> textus {
     }
 
     # Error: expected identifier
-    p.renuncia(ParserErrorCodice.ExpectaturNomen, scriptum("got '{}'", s.valor))
+    p.renuncia(ParserErrorCodice.ExpectaturNomen, scriptum("got '§'", s.valor))
     p.procede()
     redde s.valor
 }

@@ -28,7 +28,7 @@ functio genSententia(Sententia stmt, TsGenerator g) -> textus {
     fixum leading = g.notaePrae(stmt)
     fixum trailing = g.notaePost(stmt)
     fixum content = genSententiaContent(stmt, g)
-    redde scriptum("{}{}{}", leading, content, trailing)
+    redde scriptum("§§§", leading, content, trailing)
 }
 
 # Generate statement content without comments
@@ -94,7 +94,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         casu InSententia ut s {
             fixum obj = genExpressia(s.obiectum, g)
             fixum block = genSententia(s.corpus qua Sententia, g)
-            redde scriptum("{}// in {}\n{}", g.ind(), obj, block)
+            redde scriptum("§// in §\n§", g.ind(), obj, block)
         }
 
         casu EligeSententia ut s {
@@ -136,15 +136,15 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         }
 
         casu RumpeSententia {
-            redde scriptum("{}break;", g.ind())
+            redde scriptum("§break;", g.ind())
         }
 
         casu PergeSententia {
-            redde scriptum("{}continue;", g.ind())
+            redde scriptum("§continue;", g.ind())
         }
 
         casu ExpressiaSententia ut s {
-            redde scriptum("{}{};", g.ind(), genExpressia(s.expressia, g))
+            redde scriptum("§§;", g.ind(), genExpressia(s.expressia, g))
         }
 
         casu IncipitSententia ut s {
@@ -160,7 +160,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         }
 
         casu AdSententia {
-            redde scriptum("{}/* ad statement not implemented for TS */", g.ind())
+            redde scriptum("§/* ad statement not implemented for TS */", g.ind())
         }
 
         # Tests
@@ -177,7 +177,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         }
     }
 
-    redde scriptum("{}/* unknown statement */", g.ind())
+    redde scriptum("§/* unknown statement */", g.ind())
 }
 
 # =============================================================================
@@ -202,26 +202,26 @@ functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignot
     fixum keyword = species == VariaGenus.Fixum aut species == VariaGenus.Figendum sic "const" secus "let"
     fixum asyncPrefix = species == VariaGenus.Figendum aut species == VariaGenus.Variandum sic "await " secus ""
 
-    varia result = scriptum("{}{} {}", g.ind(), keyword, nomen)
+    varia result = scriptum("§§ §", g.ind(), keyword, nomen)
 
     si nonnihil adnotatioTypus {
-        result = scriptum("{}: {}", result, genTypus(adnotatioTypus qua TypusAnnotatio, g))
+        result = scriptum("§: §", result, genTypus(adnotatioTypus qua TypusAnnotatio, g))
     }
 
     si nonnihil valor {
-        result = scriptum("{} = {}{}", result, asyncPrefix, genExpressia(valor qua Expressia, g))
+        result = scriptum("§ = §§", result, asyncPrefix, genExpressia(valor qua Expressia, g))
     }
 
-    redde scriptum("{};", result)
+    redde scriptum("§;", result)
 }
 
 @ publica
 functio genImporta(textus fons, lista<ImportaSpecificator> specificatores, bivalens totum, ignotum totumAlias, TsGenerator g) -> textus {
     si totum {
         si nonnihil totumAlias {
-            redde scriptum("{}import * as {} from '{}';", g.ind(), totumAlias qua textus, fons)
+            redde scriptum("§import * as § from '§';", g.ind(), totumAlias qua textus, fons)
         }
-        redde scriptum("{}import * from '{}';", g.ind(), fons)
+        redde scriptum("§import * from '§';", g.ind(), fons)
     }
 
     varia specs = [] qua lista<textus>
@@ -229,11 +229,11 @@ functio genImporta(textus fons, lista<ImportaSpecificator> specificatores, bival
         si spec.importatum == spec.locale {
             specs.adde(spec.importatum)
         } secus {
-            specs.adde(scriptum("{} as {}", spec.importatum, spec.locale))
+            specs.adde(scriptum("§ as §", spec.importatum, spec.locale))
         }
     }
 
-    redde scriptum("{}import {{ {} }} from '{}';", g.ind(), specs.coniunge(", "), fons)
+    redde scriptum("§import {{ § }} from '§';", g.ind(), specs.coniunge(", "), fons)
 }
 
 @ publica
@@ -245,11 +245,11 @@ functio genDestructura(Expressia fons, VariaGenus species, lista<ImportaSpecific
         si spec.importatum == spec.locale {
             specs.adde(spec.importatum)
         } secus {
-            specs.adde(scriptum("{}: {}", spec.importatum, spec.locale))
+            specs.adde(scriptum("§: §", spec.importatum, spec.locale))
         }
     }
 
-    redde scriptum("{}{} {{ {} }} = {};", g.ind(), keyword, specs.coniunge(", "), genExpressia(fons, g))
+    redde scriptum("§§ {{ § }} = §;", g.ind(), keyword, specs.coniunge(", "), genExpressia(fons, g))
 }
 
 # =============================================================================
@@ -262,17 +262,17 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
 
     # Async prefix
     si asynca {
-        result = scriptum("{}async ", result)
+        result = scriptum("§async ", result)
     }
 
     # Function keyword (or constructor)
     si structor {
-        result = scriptum("{}constructor", result)
+        result = scriptum("§constructor", result)
     } secus {
         si generator {
-            result = scriptum("{}function* {}", result, nomen)
+            result = scriptum("§function* §", result, nomen)
         } secus {
-            result = scriptum("{}function {}", result, nomen)
+            result = scriptum("§function §", result, nomen)
         }
     }
 
@@ -284,7 +284,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
             ex gp pro p {
                 names.adde(p.nomen)
             }
-            result = scriptum("{}<{}>", result, names.coniunge(", "))
+            result = scriptum("§<§>", result, names.coniunge(", "))
         }
     }
 
@@ -293,11 +293,11 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
     ex parametra pro param {
         params.adde(genParametrum(param, g))
     }
-    result = scriptum("{}({})", result, params.coniunge(", "))
+    result = scriptum("§(§)", result, params.coniunge(", "))
 
     # Return type
     si nonnihil typusReditus et non structor {
-        result = scriptum("{}: {}", result, genTypus(typusReditus qua TypusAnnotatio, g))
+        result = scriptum("§: §", result, genTypus(typusReditus qua TypusAnnotatio, g))
     }
 
     # Body
@@ -305,9 +305,9 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         g.intraProfundum()
         fixum body = genSententia(corpus qua Sententia, g)
         g.exiProfundum()
-        result = scriptum("{} {{\n{}\n{}}}", result, body, g.ind())
+        result = scriptum("§ {{\n§\n§}}", result, body, g.ind())
     } secus {
-        result = scriptum("{};", result)
+        result = scriptum("§;", result)
     }
 
     redde result
@@ -323,19 +323,19 @@ functio genParametrum(Parametrum param, TsGenerator g) -> textus {
 
     # Use alias if present
     si nonnihil param.alias {
-        result = scriptum("{}{}", result, param.alias qua textus)
+        result = scriptum("§§", result, param.alias qua textus)
     } secus {
-        result = scriptum("{}{}", result, param.nomen)
+        result = scriptum("§§", result, param.nomen)
     }
 
     # Type
     si nonnihil param.typus {
-        result = scriptum("{}: {}", result, genTypus(param.typus qua TypusAnnotatio, g))
+        result = scriptum("§: §", result, genTypus(param.typus qua TypusAnnotatio, g))
     }
 
     # Default value
     si nonnihil param.praedefinitum {
-        result = scriptum("{} = {}", result, genExpressia(param.praedefinitum, g))
+        result = scriptum("§ = §", result, genExpressia(param.praedefinitum, g))
     }
 
     redde result
@@ -350,54 +350,54 @@ functio genGenus(textus nomen, ignotum generaParametra, ignotum extendit, ignotu
     varia result = g.ind()
 
     si abstractum {
-        result = scriptum("{}abstract ", result)
+        result = scriptum("§abstract ", result)
     }
 
-    result = scriptum("{}class {}", result, nomen)
+    result = scriptum("§class §", result, nomen)
 
     # Generics
     si nonnihil generaParametra {
         fixum gp = generaParametra qua lista<textus>
         si gp.longitudo() > 0 {
-            result = scriptum("{}<{}>", result, gp.coniunge(", "))
+            result = scriptum("§<§>", result, gp.coniunge(", "))
         }
     }
 
     # Extends
     si nonnihil extendit {
-        result = scriptum("{} extends {}", result, extendit qua textus)
+        result = scriptum("§ extends §", result, extendit qua textus)
     }
 
     # Implements
     si nonnihil implet {
         fixum impl = implet qua lista<textus>
         si impl.longitudo() > 0 {
-            result = scriptum("{} implements {}", result, impl.coniunge(", "))
+            result = scriptum("§ implements §", result, impl.coniunge(", "))
         }
     }
 
-    result = scriptum("{} {{\n", result)
+    result = scriptum("§ {{\n", result)
     g.intraProfundum()
     g.inClass = verum
 
     # Fields
     ex campi pro campus {
-        result = scriptum("{}{}\n", result, genCampus(campus, g))
+        result = scriptum("§§\n", result, genCampus(campus, g))
     }
 
     # Constructor
     si nonnihil structor {
-        result = scriptum("{}{}\n", result, genSententia(structor qua Sententia, g))
+        result = scriptum("§§\n", result, genSententia(structor qua Sententia, g))
     }
 
     # Methods
     ex methodi pro methodus {
-        result = scriptum("{}{}\n", result, genSententia(methodus, g))
+        result = scriptum("§§\n", result, genSententia(methodus, g))
     }
 
     g.inClass = falsum
     g.exiProfundum()
-    result = scriptum("{}{}}}", result, g.ind())
+    result = scriptum("§§}}", result, g.ind())
 
     redde result
 }
@@ -408,38 +408,38 @@ functio genCampus(CampusDeclaratio campus, TsGenerator g) -> textus {
 
     # Visibility
     si campus.visibilitas == Visibilitas.Publica {
-        result = scriptum("{}public ", result)
+        result = scriptum("§public ", result)
     } sin campus.visibilitas == Visibilitas.Protecta {
-        result = scriptum("{}protected ", result)
+        result = scriptum("§protected ", result)
     } secus {
-        result = scriptum("{}private ", result)
+        result = scriptum("§private ", result)
     }
 
     si campus.staticum {
-        result = scriptum("{}static ", result)
+        result = scriptum("§static ", result)
     }
 
-    result = scriptum("{}{}: {}", result, campus.nomen, genTypus(campus.typus, g))
+    result = scriptum("§§: §", result, campus.nomen, genTypus(campus.typus, g))
 
     si nonnihil campus.valor {
-        result = scriptum("{} = {}", result, genExpressia(campus.valor, g))
+        result = scriptum("§ = §", result, genExpressia(campus.valor, g))
     }
 
-    redde scriptum("{};", result)
+    redde scriptum("§;", result)
 }
 
 @ publica
 functio genPactum(textus nomen, ignotum generaParametra, lista<PactumMethodus> methodi, TsGenerator g) -> textus {
-    varia result = scriptum("{}interface {}", g.ind(), nomen)
+    varia result = scriptum("§interface §", g.ind(), nomen)
 
     si nonnihil generaParametra {
         fixum gp = generaParametra qua lista<textus>
         si gp.longitudo() > 0 {
-            result = scriptum("{}<{}>", result, gp.coniunge(", "))
+            result = scriptum("§<§>", result, gp.coniunge(", "))
         }
     }
 
-    result = scriptum("{} {{\n", result)
+    result = scriptum("§ {{\n", result)
     g.intraProfundum()
 
     ex methodi pro methodus {
@@ -448,17 +448,17 @@ functio genPactum(textus nomen, ignotum generaParametra, lista<PactumMethodus> m
             params.adde(genParametrum(param, g))
         }
 
-        varia line = scriptum("{}{}({})", g.ind(), methodus.nomen, params.coniunge(", "))
+        varia line = scriptum("§§(§)", g.ind(), methodus.nomen, params.coniunge(", "))
 
         si nonnihil methodus.typusReditus {
-            line = scriptum("{}: {}", line, genTypus(methodus.typusReditus qua TypusAnnotatio, g))
+            line = scriptum("§: §", line, genTypus(methodus.typusReditus qua TypusAnnotatio, g))
         }
 
-        result = scriptum("{}{};\n", result, line)
+        result = scriptum("§§;\n", result, line)
     }
 
     g.exiProfundum()
-    result = scriptum("{}{}}}", result, g.ind())
+    result = scriptum("§§}}", result, g.ind())
 
     redde result
 }
@@ -466,26 +466,26 @@ functio genPactum(textus nomen, ignotum generaParametra, lista<PactumMethodus> m
 @ publica
 functio genTypusAlias(textus nomen, TypusAnnotatio adnotatioTypus, ignotum scopusNomen, TsGenerator g) -> textus {
     si nonnihil scopusNomen {
-        redde scriptum("{}type {} = typeof {};", g.ind(), nomen, scopusNomen qua textus)
+        redde scriptum("§type § = typeof §;", g.ind(), nomen, scopusNomen qua textus)
     }
-    redde scriptum("{}type {} = {};", g.ind(), nomen, genTypus(adnotatioTypus, g))
+    redde scriptum("§type § = §;", g.ind(), nomen, genTypus(adnotatioTypus, g))
 }
 
 @ publica
 functio genOrdo(textus nomen, lista<OrdoMembrum> membra, TsGenerator g) -> textus {
-    varia result = scriptum("{}enum {} {{\n", g.ind(), nomen)
+    varia result = scriptum("§enum § {{\n", g.ind(), nomen)
     g.intraProfundum()
 
     ex membra pro membrum {
         si nonnihil membrum.valor {
-            result = scriptum("{}{}{} = {},\n", result, g.ind(), membrum.nomen, membrum.valor qua textus)
+            result = scriptum("§§§ = §,\n", result, g.ind(), membrum.nomen, membrum.valor qua textus)
         } secus {
-            result = scriptum("{}{}{},\n", result, g.ind(), membrum.nomen)
+            result = scriptum("§§§,\n", result, g.ind(), membrum.nomen)
         }
     }
 
     g.exiProfundum()
-    result = scriptum("{}{}}}", result, g.ind())
+    result = scriptum("§§}}", result, g.ind())
 
     redde result
 }
@@ -496,25 +496,25 @@ functio genDiscretio(textus nomen, ignotum generaParametra, lista<VariansDeclara
 
     # Generate each variant interface
     ex variantes pro varians {
-        result = scriptum("{}{}interface {}{} {{\n", result, g.ind(), nomen, varians.nomen)
+        result = scriptum("§§interface §§ {{\n", result, g.ind(), nomen, varians.nomen)
         g.intraProfundum()
-        result = scriptum("{}{}tag: '{}';\n", result, g.ind(), varians.nomen)
+        result = scriptum("§§tag: '§';\n", result, g.ind(), varians.nomen)
 
         ex varians.campi pro campus {
-            result = scriptum("{}{}{}: {};\n", result, g.ind(), campus.nomen, genTypus(campus.typus, g))
+            result = scriptum("§§§: §;\n", result, g.ind(), campus.nomen, genTypus(campus.typus, g))
         }
 
         g.exiProfundum()
-        result = scriptum("{}{}}}\n\n", result, g.ind())
+        result = scriptum("§§}}\n\n", result, g.ind())
     }
 
     # Generate union type alias
     varia variantNames = [] qua lista<textus>
     ex variantes pro varians {
-        variantNames.adde(scriptum("{}{}", nomen, varians.nomen))
+        variantNames.adde(scriptum("§§", nomen, varians.nomen))
     }
 
-    result = scriptum("{}{}type {} = {};", result, g.ind(), nomen, variantNames.coniunge(" | "))
+    result = scriptum("§§type § = §;", result, g.ind(), nomen, variantNames.coniunge(" | "))
 
     redde result
 }
@@ -529,13 +529,13 @@ functio genSi(Expressia condicio, Sententia consequens, ignotum alternans, TsGen
     fixum consBody = genSententia(consequens, g)
     g.exiProfundum()
 
-    varia result = scriptum("{}if ({}) {{\n{}\n{}}}", g.ind(), genExpressia(condicio, g), consBody, g.ind())
+    varia result = scriptum("§if (§) {{\n§\n§}}", g.ind(), genExpressia(condicio, g), consBody, g.ind())
 
     si nonnihil alternans {
         g.intraProfundum()
         fixum altBody = genSententia(alternans qua Sententia, g)
         g.exiProfundum()
-        result = scriptum("{}\nelse {{\n{}\n{}}}", result, altBody, g.ind())
+        result = scriptum("§\nelse {{\n§\n§}}", result, altBody, g.ind())
     }
 
     redde result
@@ -546,7 +546,7 @@ functio genDum(Expressia condicio, Sententia corpus, TsGenerator g) -> textus {
     g.intraProfundum()
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
-    redde scriptum("{}while ({}) {{\n{}\n{}}}", g.ind(), genExpressia(condicio, g), body, g.ind())
+    redde scriptum("§while (§) {{\n§\n§}}", g.ind(), genExpressia(condicio, g), body, g.ind())
 }
 
 @ publica
@@ -558,57 +558,57 @@ functio genIteratio(IteratioGenus species, textus variabilis, Expressia iterabil
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
 
-    redde scriptum("{}for {}(const {} {} {}) {{\n{}\n{}}}", g.ind(), asyncPrefix, variabilis, keyword, genExpressia(iterabile, g), body, g.ind())
+    redde scriptum("§for §(const § § §) {{\n§\n§}}", g.ind(), asyncPrefix, variabilis, keyword, genExpressia(iterabile, g), body, g.ind())
 }
 
 @ publica
 functio genElige(Expressia discriminans, lista<EligeCasus> casus, ignotum praedefinitum, TsGenerator g) -> textus {
-    varia result = scriptum("{}switch ({}) {{\n", g.ind(), genExpressia(discriminans, g))
+    varia result = scriptum("§switch (§) {{\n", g.ind(), genExpressia(discriminans, g))
     g.intraProfundum()
 
     ex casus pro c {
         g.intraProfundum()
         fixum caseBody = genSententia(c.consequens, g)
         g.exiProfundum()
-        result = scriptum("{}{}case {}: {{\n{}\n{}break;\n{}}}\n", result, g.ind(), genExpressia(c.condicio, g), caseBody, g.ind(), g.ind())
+        result = scriptum("§§case §: {{\n§\n§break;\n§}}\n", result, g.ind(), genExpressia(c.condicio, g), caseBody, g.ind(), g.ind())
     }
 
     si nonnihil praedefinitum {
         g.intraProfundum()
         fixum defBody = genSententia(praedefinitum qua Sententia, g)
         g.exiProfundum()
-        result = scriptum("{}{}default: {{\n{}\n{}}}\n", result, g.ind(), defBody, g.ind())
+        result = scriptum("§§default: {{\n§\n§}}\n", result, g.ind(), defBody, g.ind())
     }
 
     g.exiProfundum()
-    result = scriptum("{}{}}}", result, g.ind())
+    result = scriptum("§§}}", result, g.ind())
     redde result
 }
 
 @ publica
 functio genDiscerne(Expressia discriminans, lista<VariansCasus> casus, TsGenerator g) -> textus {
     fixum disc = genExpressia(discriminans, g)
-    varia result = scriptum("{}// discerne {}\n", g.ind(), disc)
+    varia result = scriptum("§// discerne §\n", g.ind(), disc)
 
     varia first = verum
     ex casus pro c {
         si first {
-            result = scriptum("{}{}if ({}.tag === '{}') {{\n", result, g.ind(), disc, c.variansNomen)
+            result = scriptum("§§if (§.tag === '§') {{\n", result, g.ind(), disc, c.variansNomen)
             first = falsum
         } secus {
-            result = scriptum("{}{}else if ({}.tag === '{}') {{\n", result, g.ind(), disc, c.variansNomen)
+            result = scriptum("§§else if (§.tag === '§') {{\n", result, g.ind(), disc, c.variansNomen)
         }
 
         g.intraProfundum()
 
         # Bind fields
         si c.vincula.longitudo() > 0 {
-            result = scriptum("{}{}const {{ {} }} = {};\n", result, g.ind(), c.vincula.coniunge(", "), disc)
+            result = scriptum("§§const {{ § }} = §;\n", result, g.ind(), c.vincula.coniunge(", "), disc)
         }
 
-        result = scriptum("{}{}\n", result, genSententia(c.consequens, g))
+        result = scriptum("§§\n", result, genSententia(c.consequens, g))
         g.exiProfundum()
-        result = scriptum("{}{}}}\n", result, g.ind())
+        result = scriptum("§§}}\n", result, g.ind())
     }
 
     redde result
@@ -621,7 +621,7 @@ functio genCustodi(lista<CustodiClausula> clausulae, TsGenerator g) -> textus {
         g.intraProfundum()
         fixum body = genSententia(clausula.consequens, g)
         g.exiProfundum()
-        result = scriptum("{}{}if ({}) {{\n{}\n{}}}\n", result, g.ind(), genExpressia(clausula.condicio, g), body, g.ind())
+        result = scriptum("§§if (§) {{\n§\n§}}\n", result, g.ind(), genExpressia(clausula.condicio, g), body, g.ind())
     }
     redde result
 }
@@ -636,21 +636,21 @@ functio genTempta(Sententia corpus, ignotum cape, ignotum demum, TsGenerator g) 
     fixum tryBody = genSententia(corpus, g)
     g.exiProfundum()
 
-    varia result = scriptum("{}try {{\n{}\n{}}}", g.ind(), tryBody, g.ind())
+    varia result = scriptum("§try {{\n§\n§}}", g.ind(), tryBody, g.ind())
 
     si nonnihil cape {
         fixum capeClausula = cape qua CapeClausula
         g.intraProfundum()
         fixum catchBody = genSententia(capeClausula.corpus, g)
         g.exiProfundum()
-        result = scriptum("{}\ncatch ({}) {{\n{}\n{}}}", result, capeClausula.param, catchBody, g.ind())
+        result = scriptum("§\ncatch (§) {{\n§\n§}}", result, capeClausula.param, catchBody, g.ind())
     }
 
     si nonnihil demum {
         g.intraProfundum()
         fixum finallyBody = genSententia(demum qua Sententia, g)
         g.exiProfundum()
-        result = scriptum("{}\nfinally {{\n{}\n{}}}", result, finallyBody, g.ind())
+        result = scriptum("§\nfinally {{\n§\n§}}", result, finallyBody, g.ind())
     }
 
     redde result
@@ -660,9 +660,9 @@ functio genTempta(Sententia corpus, ignotum cape, ignotum demum, TsGenerator g) 
 functio genIace(bivalens fatale, Expressia argumentum, TsGenerator g) -> textus {
     si fatale {
         g.features.panic = verum
-        redde scriptum("{}throw new Panic({});", g.ind(), genExpressia(argumentum, g))
+        redde scriptum("§throw new Panic(§);", g.ind(), genExpressia(argumentum, g))
     }
-    redde scriptum("{}throw {};", g.ind(), genExpressia(argumentum, g))
+    redde scriptum("§throw §;", g.ind(), genExpressia(argumentum, g))
 }
 
 @ publica
@@ -673,19 +673,19 @@ functio genFac(Sententia corpus, ignotum condicio, TsGenerator g) -> textus {
 
     si nonnihil condicio {
         # do-while loop
-        redde scriptum("{}do {{\n{}\n{}}} while ({});", g.ind(), body, g.ind(), genExpressia(condicio qua Expressia, g))
+        redde scriptum("§do {{\n§\n§}} while (§);", g.ind(), body, g.ind(), genExpressia(condicio qua Expressia, g))
     }
 
     # Plain block
-    redde scriptum("{}{{\n{}\n{}}}", g.ind(), body, g.ind())
+    redde scriptum("§{{\n§\n§}}", g.ind(), body, g.ind())
 }
 
 @ publica
 functio genAdfirma(Expressia condicio, ignotum nuntius, TsGenerator g) -> textus {
     si nonnihil nuntius {
-        redde scriptum("{}console.assert({}, {});", g.ind(), genExpressia(condicio, g), genExpressia(nuntius qua Expressia, g))
+        redde scriptum("§console.assert(§, §);", g.ind(), genExpressia(condicio, g), genExpressia(nuntius qua Expressia, g))
     }
-    redde scriptum("{}console.assert({});", g.ind(), genExpressia(condicio, g))
+    redde scriptum("§console.assert(§);", g.ind(), genExpressia(condicio, g))
 }
 
 # =============================================================================
@@ -706,15 +706,15 @@ functio genScribe(ScribeGradus gradus, lista<Expressia> argumenta, TsGenerator g
         method = "warn"
     }
 
-    redde scriptum("{}console.{}({});", g.ind(), method, args.coniunge(", "))
+    redde scriptum("§console.§(§);", g.ind(), method, args.coniunge(", "))
 }
 
 @ publica
 functio genRedde(ignotum valor, TsGenerator g) -> textus {
     si nonnihil valor {
-        redde scriptum("{}return {};", g.ind(), genExpressia(valor qua Expressia, g))
+        redde scriptum("§return §;", g.ind(), genExpressia(valor qua Expressia, g))
     }
-    redde scriptum("{}return;", g.ind())
+    redde scriptum("§return;", g.ind())
 }
 
 # =============================================================================
@@ -726,7 +726,7 @@ functio genIncipit(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
     si nonnihil corpus {
         varia result = genSententia(corpus qua Sententia, g)
         si nonnihil ergo {
-            result = scriptum("{}\n{}", result, genSententia(ergo qua Sententia, g))
+            result = scriptum("§\n§", result, genSententia(ergo qua Sententia, g))
         }
         redde result
     }
@@ -742,10 +742,10 @@ functio genIncipiet(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
     }
     g.exiProfundum()
 
-    varia result = scriptum("{}(async () => {{\n{}\n{}}})();", g.ind(), body, g.ind())
+    varia result = scriptum("§(async () => {{\n§\n§}})();", g.ind(), body, g.ind())
 
     si nonnihil ergo {
-        result = scriptum("{}\n{}", result, genSententia(ergo qua Sententia, g))
+        result = scriptum("§\n§", result, genSententia(ergo qua Sententia, g))
     }
 
     redde result
@@ -753,26 +753,26 @@ functio genIncipiet(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
 
 @ publica
 functio genCura(ignotum res, textus vinculum, Sententia corpus, bivalens asynca, TsGenerator g) -> textus {
-    varia result = scriptum("{}{{\n", g.ind())
+    varia result = scriptum("§{{\n", g.ind())
     g.intraProfundum()
 
     si nonnihil res {
-        result = scriptum("{}{}const {} = {};\n", result, g.ind(), vinculum, genExpressia(res qua Expressia, g))
+        result = scriptum("§§const § = §;\n", result, g.ind(), vinculum, genExpressia(res qua Expressia, g))
     }
 
     g.intraProfundum()
     fixum tryBody = genSententia(corpus, g)
     g.exiProfundum()
 
-    result = scriptum("{}{}try {{\n{}\n{}}}\n", result, g.ind(), tryBody, g.ind())
-    result = scriptum("{}{}finally {{\n", result, g.ind())
+    result = scriptum("§§try {{\n§\n§}}\n", result, g.ind(), tryBody, g.ind())
+    result = scriptum("§§finally {{\n", result, g.ind())
     g.intraProfundum()
-    result = scriptum("{}{}// cleanup {}\n", result, g.ind(), vinculum)
+    result = scriptum("§§// cleanup §\n", result, g.ind(), vinculum)
     g.exiProfundum()
-    result = scriptum("{}{}}}\n", result, g.ind())
+    result = scriptum("§§}}\n", result, g.ind())
 
     g.exiProfundum()
-    result = scriptum("{}{}}}", result, g.ind())
+    result = scriptum("§§}}", result, g.ind())
 
     redde result
 }
@@ -786,11 +786,11 @@ functio genProbandum(textus nomen, lista<Sententia> corpus, TsGenerator g) -> te
     g.intraProfundum()
     varia body = "" qua textus
     ex corpus pro stmt {
-        body = scriptum("{}{}\n", body, genSententia(stmt, g))
+        body = scriptum("§§\n", body, genSententia(stmt, g))
     }
     g.exiProfundum()
 
-    redde scriptum("{}describe('{}', () => {{\n{}{}}});", g.ind(), nomen, body, g.ind())
+    redde scriptum("§describe('§', () => {{\n§§}});", g.ind(), nomen, body, g.ind())
 }
 
 @ publica
@@ -809,7 +809,7 @@ functio genProba(textus nomen, ignotum modificator, Sententia corpus, TsGenerato
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
 
-    redde scriptum("{}{}('{}', () => {{\n{}\n{}}});", g.ind(), testFn, nomen, body, g.ind())
+    redde scriptum("§§('§', () => {{\n§\n§}});", g.ind(), testFn, nomen, body, g.ind())
 }
 
 @ publica
@@ -835,5 +835,5 @@ functio genPraepara(PraeparaTempus tempus, bivalens asynca, bivalens omnia, Sent
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
 
-    redde scriptum("{}{}({}() => {{\n{}\n{}}});", g.ind(), hook, asyncPrefix, body, g.ind())
+    redde scriptum("§§(§() => {{\n§\n§}});", g.ind(), hook, asyncPrefix, body, g.ind())
 }
