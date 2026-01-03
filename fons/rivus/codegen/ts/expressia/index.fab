@@ -297,18 +297,25 @@ functio genEstExpressia(Expressia expr, TypusAnnotatio scopus, TsGenerator g) ->
 }
 
 # Generate scriptum (format string) expression
+# Recognizes both {} (traditional) and § (section sign, preferred) as placeholders
 @ publica
 functio genScriptum(textus exemplar, lista<Expressia> argumenta, TsGenerator g) -> textus {
-    # Convert scriptum("Hello, {}!", name) to template literal
-    # Simple approach: replace {} with ${arg} in sequence
+    # Convert scriptum("Hello, {}!", name) or scriptum("Hello, §!", name) to template literal
     varia result = "`"
     varia argIndex = 0
     varia i = 0
 
     dum i < exemplar.longitudo() {
         fixum c = exemplar[i]
-        si c == "{" et i + 1 < exemplar.longitudo() et exemplar[i + 1] == "}" {
-            # Found {} placeholder
+        si c == "§" {
+            # § placeholder (section sign, preferred)
+            si argIndex < argumenta.longitudo() {
+                result = result + "${" + genExpressia(argumenta[argIndex], g) + "}"
+                argIndex += 1
+            }
+            i += 1
+        } sin c == "{" et i + 1 < exemplar.longitudo() et exemplar[i + 1] == "}" {
+            # {} placeholder (traditional)
             si argIndex < argumenta.longitudo() {
                 result = result + "${" + genExpressia(argumenta[argIndex], g) + "}"
                 argIndex += 1
