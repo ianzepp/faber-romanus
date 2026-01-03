@@ -6,6 +6,9 @@ cd "$(dirname "$0")/.."
 
 echo "Building rivus (bootstrap compiler)..."
 
+# WHY: Enable globstar for ** recursive matching
+shopt -s globstar
+
 # Compile all fons/proprius files to opus/bootstrap
 for f in fons/proprius/**/*.fab; do
     outfile="opus/bootstrap/${f#fons/proprius/}"

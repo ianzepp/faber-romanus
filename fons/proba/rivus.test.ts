@@ -14,13 +14,13 @@ import { parse as parseYaml } from 'yaml';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, basename } from 'path';
 
-import { lexare } from '../opus/bootstrap/lexor/index';
-import { resolvere } from '../opus/bootstrap/parser/index';
-import { analyze } from '../opus/bootstrap/semantic/index';
-import { generateTs } from '../opus/bootstrap/codegen/ts/index';
+import { lexare } from '../../opus/bootstrap/lexor/index';
+import { resolvere } from '../../opus/bootstrap/parser/index';
+import { analyze } from '../../opus/bootstrap/semantic/index';
+import { generateTs } from '../../opus/bootstrap/codegen/ts/index';
 
-import type { Programma } from '../opus/bootstrap/ast/radix';
-import type { Sententia } from '../opus/bootstrap/ast/sententia';
+import type { Programma } from '../../opus/bootstrap/ast/radix';
+import type { Sententia } from '../../opus/bootstrap/ast/sententia';
 
 // =============================================================================
 // TYPES
