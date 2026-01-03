@@ -35,6 +35,7 @@ Must be built first with `bun run build:rivus` before use:
 bun run build:rivus                   # Build bootstrap compiler to opus/bootstrap/
 bun run rivus compile <file.fab>      # Compile using bootstrap (TS only)
 bun run rivus compile <file.fab> -o out.ts
+bun run test:rivus                    # Run tests against bootstrap compiler
 ```
 
 **When to use Rivus:**
@@ -49,12 +50,18 @@ bun run rivus compile <file.fab> -o out.ts
 - Multi-target compilation (py, zig, rs, cpp)
 - Faster iteration (no rebuild needed)
 
+**Known Issues:**
+
+- Parser has infinite loop on some inputs - investigation needed
+- Tests may hang (use Ctrl+C to interrupt)
+
 ### Development
 
 ```
-bun test                              # Run all tests
+bun test                              # Run all tests (primary compiler)
 bun test -t "pattern"                 # Filter tests
 bun test --coverage                   # With coverage
+bun run test:rivus                    # Run tests against bootstrap compiler
 bun run lint                          # Lint TS source (fons/primus)
 bun run lint:fix                      # Lint with auto-fix
 bun run sanity                        # Verify test coverage
