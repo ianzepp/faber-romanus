@@ -4,7 +4,7 @@
 # for TypeScript code generation. Individual gen* functions are in
 # separate files under sententia/ and expressia/.
 
-ex "../typi" importa RequiredFeatures, creaRequiredFeatures
+ex "../typi" importa RequiredFeatures, creaRequiredFeatures, formataNotaePrae, formataNotaePost
 
 # =============================================================================
 # TS GENERATOR
@@ -69,6 +69,26 @@ genus TsGenerator {
     @ publica
     functio exiProfundum() {
         ego.depth -= 1
+    }
+
+    # ==========================================================================
+    # COMMENT FORMATTING (stubbed for bootstrap)
+    # ==========================================================================
+
+    # Format leading comments for a node
+    #
+    # WHY: Stubbed for bootstrap - comment preservation is P3
+    @ publica
+    functio notaePrae(ignotum nodus) -> textus {
+        redde formataNotaePrae(nodus, nihil, ego.ind())
+    }
+
+    # Format trailing comments for a node
+    #
+    # WHY: Stubbed for bootstrap - comment preservation is P3
+    @ publica
+    functio notaePost(ignotum nodus) -> textus {
+        redde formataNotaePost(nodus, nihil)
     }
 }
 

@@ -19,8 +19,20 @@ ex "../expressia/index" importa genExpressia
 # =============================================================================
 
 # Generate TypeScript code for a statement
+#
+# WHY: Wraps statement generation with comment emission. Leading comments
+#      appear before the statement, trailing comments on the same line.
+#      Currently stubbed (returns empty strings) for bootstrap.
 @ publica
 functio genSententia(Sententia stmt, TsGenerator g) -> textus {
+    fixum leading = g.notaePrae(stmt)
+    fixum trailing = g.notaePost(stmt)
+    fixum content = genSententiaContent(stmt, g)
+    redde scriptum("{}{}{}", leading, content, trailing)
+}
+
+# Generate statement content without comments
+functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
     discerne stmt {
         # Block
         casu MassaSententia ut s {

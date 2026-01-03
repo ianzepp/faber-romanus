@@ -127,3 +127,28 @@ functio estCursor(lista<textus> modifiers) -> bivalens {
 functio estGeneris(lista<textus> modifiers) -> bivalens {
     redde modifiers.continet("generis")
 }
+
+# =============================================================================
+# COMMENT FORMATTING
+# =============================================================================
+
+# WHY: Comment formatting is stubbed for bootstrap. The TS compiler in fons/
+#      has full comment support, but the self-hosted compiler doesn't preserve
+#      comments yet. This is P3 (nice-to-have) - not blocking for Phase 1.
+#
+# TODO: Implement comment formatting when needed:
+#   1. Add string methods (contains, split) to textus
+#   2. Implement formataNota to handle line/block comments
+#   3. Wire up formataNotaePrae/formataNotaePost in genSententia
+
+# Stub: Format leading comments (not implemented)
+@ publica
+functio formataNotaePrae(ignotum nodus, ignotum syntax, textus indentum) -> textus {
+    redde ""
+}
+
+# Stub: Format trailing comments (not implemented)
+@ publica
+functio formataNotaePost(ignotum nodus, ignotum syntax) -> textus {
+    redde ""
+}

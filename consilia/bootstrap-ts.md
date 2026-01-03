@@ -39,8 +39,11 @@ cd opus/bootstrap && npx tsc --noEmit --skipLibCheck --target ES2022 --module ES
 
 **P2 - Comment Preservation** (deferred)
 
-- AST has `notaePrae`/`notaePost` fields
-- TS codegen should emit comments for readability (not blocking)
+- ✅ AST has `notaePrae`/`notaePost` fields (fons-fab/ast/radix.fab)
+- ✅ Comment formatting stubs added to fons-fab/codegen/typi.fab
+- ✅ TsGenerator has notaePrae()/notaePost() helper methods
+- ✅ genSententia() wraps output with comment helpers (currently return "")
+- ⏳ Full implementation requires string methods (contains, split, trim) - deferred to post-bootstrap
 
 ### Out of Scope for Bootstrap
 
