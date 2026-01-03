@@ -16,9 +16,9 @@ import { join, basename, relative, dirname } from 'path';
 import { $ } from 'bun';
 
 const ROOT = join(import.meta.dir, '..');
-const EXEMPLA = join(ROOT, 'exempla');
+const EXEMPLA = join(ROOT, 'fons', 'exempla');
 const OUTPUT = join(ROOT, 'opus', 'exempla');
-const FABER = join(ROOT, 'fons', 'cli.ts');
+const FABER = join(ROOT, 'fons', 'primus', 'cli.ts');
 
 type Target = 'ts' | 'zig' | 'py' | 'rs';
 

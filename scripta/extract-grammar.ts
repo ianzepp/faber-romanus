@@ -366,7 +366,7 @@ function functionNameToTitle(name: string): string {
 // ---------------------------------------------------------------------------
 
 const ROOT = join(import.meta.dir, '..');
-const PARSER_PATH = join(ROOT, 'fons/parser/index.ts');
+const PARSER_PATH = join(ROOT, 'fons', 'primus', 'parser', 'index.ts');
 const GRAMMATICA_DIR = join(ROOT, 'grammatica');
 const PREAMBLE_PATH = join(GRAMMATICA_DIR, 'preamble.md');
 
@@ -469,7 +469,7 @@ for (const category of CATEGORY_ORDER) {
     allSections.push('');
 }
 
-allSections.push('*Generated from `fons/parser/index.ts` — do not edit directly.*');
+allSections.push('*Generated from `fons/primus/parser/index.ts` — do not edit directly.*');
 
 const grammarPath = join(ROOT, 'GRAMMAR.md');
 writeFileSync(grammarPath, allSections.join('\n'));

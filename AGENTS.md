@@ -102,6 +102,7 @@ fixum greeting = scriptum("Hello, {}!", name)
 ```
 
 Output varies by target:
+
 - TS: `` `Hello, ${name}!` ``
 - Python: `"Hello, {}!".format(name)`
 - C++/Rust/Zig: `format(...)` family
@@ -115,37 +116,40 @@ bun run faber check <file.fab>  # Validate before committing
 ```
 
 **Common pitfalls:**
+
 - Empty collections need explicit types
 - Use `ignotum` for nullable parameters
-- Browse `exempla/` and `fons-fab/` for patterns
+- Browse `fons/exempla/` and `fons/proprius/` for patterns
 
 ## Primitive Types
 
-| Faber      | TS        | Python  | Zig          | C++            | Rust     |
-| ---------- | --------- | ------- | ------------ | -------------- | -------- |
-| `textus`   | `string`  | `str`   | `[]const u8` | `std::string`  | `String` |
-| `numerus`  | `number`  | `int`   | `i64`        | `int64_t`      | `i64`    |
-| `fractus`  | `number`  | `float` | `f64`        | `double`       | `f64`    |
-| `bivalens` | `boolean` | `bool`  | `bool`       | `bool`         | `bool`   |
-| `nihil`    | `null`    | `None`  | `null`       | `nullopt`      | `None`   |
-| `vacuum`   | `void`    | `None`  | `void`       | `void`         | `()`     |
+| Faber      | TS        | Python  | Zig          | C++           | Rust     |
+| ---------- | --------- | ------- | ------------ | ------------- | -------- |
+| `textus`   | `string`  | `str`   | `[]const u8` | `std::string` | `String` |
+| `numerus`  | `number`  | `int`   | `i64`        | `int64_t`     | `i64`    |
+| `fractus`  | `number`  | `float` | `f64`        | `double`      | `f64`    |
+| `bivalens` | `boolean` | `bool`  | `bool`       | `bool`        | `bool`   |
+| `nihil`    | `null`    | `None`  | `null`       | `nullopt`     | `None`   |
+| `vacuum`   | `void`    | `None`  | `void`       | `void`        | `()`     |
 
 ## Directory Structure
 
 ```
-fons/           # Compiler source (lexicon, tokenizer, parser, semantic, codegen)
-proba/          # Tests mirroring fons/ structure
-exempla/        # Example .fab programs
+fons/
+├── primus/     # TypeScript compiler (lexicon, tokenizer, parser, semantic, codegen)
+├── proprius/   # Faber implementation of compiler (bootstrap)
+├── exempla/    # Example .fab programs
+├── proba/      # Tests mirroring compiler structure
+└── subsidia/   # Helper utilities (e.g., Zig runtime)
 consilia/       # Design documents
 grammatica/     # Auto-generated grammar docs
-fons-fab/       # Faber implementation of compiler
 norma/          # Standard library modules
 ```
 
 ### Codegen Layout
 
 ```
-fons/codegen/
+fons/primus/codegen/
 ├── index.ts              # Router
 ├── types.ts              # Shared types
 └── <target>/             # ts, py, rs, cpp, zig, fab

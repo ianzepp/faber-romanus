@@ -662,8 +662,8 @@ describe('Semantic Analyzer', () => {
     });
 
     describe('Local Module Imports', () => {
-        // These tests use actual files from exempla/statements/importa-local/
-        const testDir = 'exempla/statements/importa-local';
+        // These tests use actual files from fons/exempla/statements/importa-local/
+        const testDir = 'fons/exempla/statements/importa-local';
 
         it('resolves local import and adds symbols to scope', async () => {
             const { resolve } = await import('path');

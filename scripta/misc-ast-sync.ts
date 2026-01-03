@@ -16,7 +16,7 @@ const ROOT = join(import.meta.dir, '..');
 // =============================================================================
 
 function extractAstTypes(): Set<string> {
-    const astPath = join(ROOT, 'fons/parser/ast.ts');
+    const astPath = join(ROOT, 'fons', 'primus', 'parser', 'ast.ts');
     const content = readFileSync(astPath, 'utf-8');
 
     const types = new Set<string>();
@@ -41,7 +41,7 @@ function extractAstTypes(): Set<string> {
 // =============================================================================
 
 function checkPrettierCoverage(astTypes: Set<string>): string[] {
-    const printerPath = join(ROOT, 'fons/prettier/printer.ts');
+    const printerPath = join(ROOT, 'fons', 'primus', 'prettier', 'printer.ts');
 
     if (!existsSync(printerPath)) {
         return ['prettier/printer.ts not found'];
@@ -76,8 +76,7 @@ function checkTreeSitterCoverage(astTypes: Set<string>): string[] {
     const missing: string[] = [];
 
     // Map AST types to likely tree-sitter rule names (snake_case)
-    const toSnakeCase = (s: string) =>
-        s.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+    const toSnakeCase = (s: string) => s.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
 
     for (const nodeType of astTypes) {
         const snakeName = toSnakeCase(nodeType);
@@ -95,7 +94,7 @@ function checkTreeSitterCoverage(astTypes: Set<string>): string[] {
 // Main
 // =============================================================================
 
-console.log('Extracting AST node types from fons/parser/ast.ts...\n');
+console.log('Extracting AST node types from fons/primus/parser/ast.ts...\n');
 
 const astTypes = extractAstTypes();
 console.log(`Found ${astTypes.size} node types:\n`);
@@ -108,13 +107,12 @@ for (const t of sortedTypes) {
 console.log('\n' + '='.repeat(60) + '\n');
 
 // Check prettier
-console.log('Checking fons/prettier/printer.ts...\n');
+console.log('Checking fons/primus/prettier/printer.ts...\n');
 const prettierMissing = checkPrettierCoverage(astTypes);
 
 if (prettierMissing.length === 0) {
     console.log('  ✓ All node types covered\n');
-}
-else {
+} else {
     console.log(`  ✗ Missing ${prettierMissing.length} node types:\n`);
     for (const m of prettierMissing) {
         console.log(`    - ${m}`);
@@ -128,8 +126,7 @@ const treeSitterMissing = checkTreeSitterCoverage(astTypes);
 
 if (treeSitterMissing.length === 0) {
     console.log('  ✓ All node types covered\n');
-}
-else {
+} else {
     console.log(`  ✗ Missing ${treeSitterMissing.length} node types:\n`);
     for (const m of treeSitterMissing) {
         console.log(`    - ${m}`);

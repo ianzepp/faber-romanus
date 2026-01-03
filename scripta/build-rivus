@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Build rivus (bootstrap compiler) from fons-fab source using faber
+# Build rivus (bootstrap compiler) from fons/proprius source using faber
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 echo "Building rivus (bootstrap compiler)..."
 
-# Compile all fons-fab files to opus/bootstrap
-for f in fons-fab/**/*.fab; do
-    outfile="opus/bootstrap/${f#fons-fab/}"
+# Compile all fons/proprius files to opus/bootstrap
+for f in fons/proprius/**/*.fab; do
+    outfile="opus/bootstrap/${f#fons/proprius/}"
     outfile="${outfile%.fab}.ts"
     mkdir -p "$(dirname "$outfile")"
     bun run faber compile "$f" -o "$outfile"
