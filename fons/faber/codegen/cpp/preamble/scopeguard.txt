@@ -1,0 +1,5 @@
+template<typename F>
+struct _ScopeGuard {
+    F fn;
+    ~_ScopeGuard() { fn(); }
+};
