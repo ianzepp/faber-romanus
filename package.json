@@ -23,6 +23,7 @@
         "release": "./scripta/release",
         "sanity": "bun ./scripta/sanity.ts",
         "test": "./scripta/test",
+        "test:faber": "bun test fons/proba/faber.test.ts",
         "test:rivus": "bun test fons/proba/rivus.test.ts --timeout 5000",
         "use": "./scripta/use",
         "verify:exempla": "bun ./scripta/verify-exempla.ts"

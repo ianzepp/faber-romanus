@@ -71,10 +71,10 @@ import { parse as parseYaml } from 'yaml';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, basename, relative } from 'path';
 
-import { tokenize } from '../primus/tokenizer';
-import { parse } from '../primus/parser';
-import { analyze } from '../primus/semantic';
-import { generate } from '../primus/codegen';
+import { tokenize } from '../faber/tokenizer';
+import { parse } from '../faber/parser';
+import { analyze } from '../faber/semantic';
+import { generate } from '../faber/codegen';
 
 // Supported targets
 const TARGETS = ['ts', 'py', 'cpp', 'rs', 'zig'] as const;

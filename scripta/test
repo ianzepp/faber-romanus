@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Run test suite
+# Run test suite (faber only, excludes rivus bootstrap tests)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-bun test "$@"
+bun test fons/faber fons/proba/faber.test.ts "$@"
