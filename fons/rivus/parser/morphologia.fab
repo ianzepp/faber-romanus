@@ -1,0 +1,152 @@
+# Morphologia - Latin Verb Conjugation Parser
+#
+# Parses Latin verb endings to derive semantic flags for collection methods.
+# The morphology determines: mutation, async, allocation.
+#
+# WHY: Latin grammar as semantic machinery. The verb conjugation encodes
+#      behavior that would otherwise require separate method definitions.
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+# Semantic flags derived from verb morphology
+@ publicum
+genus MorphologiaFlagga {
+    bivalens mutare           # Modifies receiver in place
+    bivalens async            # Returns Promise
+    bivalens reddeNovum       # Returns new collection (allocates)
+    bivalens allocatio        # Needs allocator (Zig target)
+}
+
+# Result of parsing a method name
+@ publicum
+genus RadixEtFlagga {
+    textus radix              # Verb stem (e.g., "filtr", "add", "ordin")
+    MorphologiaFlagga flagga
+}
+
+# ============================================================================
+# FLAG CONSTANTS
+# ============================================================================
+
+# Imperative: adde, filtra, ordina - mutates in place, sync
+fixum FLAGGA_IMPERATIVUS = {
+    mutare: verum,
+    async: falsum,
+    reddeNovum: falsum,
+    allocatio: falsum
+} qua MorphologiaFlagga
+
+# Perfect passive participle: addita, filtrata, ordinata - returns new, sync
+fixum FLAGGA_PERFECTUM = {
+    mutare: falsum,
+    async: falsum,
+    reddeNovum: verum,
+    allocatio: verum
+} qua MorphologiaFlagga
+
+# Future active participle: additura, filtratura - returns new, async
+fixum FLAGGA_FUTURUM_ACTIVUM = {
+    mutare: falsum,
+    async: verum,
+    reddeNovum: verum,
+    allocatio: verum
+} qua MorphologiaFlagga
+
+# Future indicative: addet, filtrabit - mutates, async
+fixum FLAGGA_FUTURUM_INDICATIVUM = {
+    mutare: verum,
+    async: verum,
+    reddeNovum: falsum,
+    allocatio: falsum
+} qua MorphologiaFlagga
+
+# ============================================================================
+# MORPHOLOGY PARSER
+# ============================================================================
+
+# Parse a method name to extract verb stem and semantic flags
+#
+# Checks endings longest-first to avoid partial matches:
+#   -atura/-itura (5 chars) - future active participle
+#   -abit/-ebit/-iet (4 chars) - future indicative
+#   -ata/-ita/-ta (3 chars) - perfect passive participle
+#   -a/-e/-i (1 char) - imperative
+#
+# Returns nihil if no recognized morphology.
+@ publica
+functio parseMethodum(textus nomen) fit RadixEtFlagga? {
+    fixum longitudo = nomen.longitudo()
+
+    # Need at least 2 chars (1 stem + 1 ending)
+    si longitudo < 2 {
+        redde nihil
+    }
+
+    # Future active participle: -atura, -itura (async, returns new)
+    si longitudo > 5 {
+        fixum suffix5 = nomen.sectio(longitudo - 5, longitudo)
+        si suffix5 == "atura" aut suffix5 == "itura"
+            reddit { radix: nomen.sectio(0, longitudo - 5), flagga: FLAGGA_FUTURUM_ACTIVUM } qua RadixEtFlagga
+    }
+
+    # Future indicative: -abit, -ebit (async, mutates)
+    si longitudo > 4 {
+        fixum suffix4 = nomen.sectio(longitudo - 4, longitudo)
+        si suffix4 == "abit" aut suffix4 == "ebit"
+            reddit { radix: nomen.sectio(0, longitudo - 4), flagga: FLAGGA_FUTURUM_INDICATIVUM } qua RadixEtFlagga
+    }
+
+    # Also check -iet for 3rd conjugation futures
+    si longitudo > 3 {
+        fixum suffix3 = nomen.sectio(longitudo - 3, longitudo)
+        si suffix3 == "iet"
+            reddit { radix: nomen.sectio(0, longitudo - 3), flagga: FLAGGA_FUTURUM_INDICATIVUM } qua RadixEtFlagga
+    }
+
+    # Perfect passive participle: -ata, -ita, -ta (sync, returns new)
+    si longitudo > 3 {
+        fixum suffix3 = nomen.sectio(longitudo - 3, longitudo)
+        si suffix3 == "ata" aut suffix3 == "ita"
+            reddit { radix: nomen.sectio(0, longitudo - 3), flagga: FLAGGA_PERFECTUM } qua RadixEtFlagga
+    }
+
+    # Check 2-char endings: -ta, -sa (some participles)
+    # WHY: 3rd conjugation verbs like invertere → inversus have -sa participle
+    si longitudo > 2 {
+        fixum suffix2 = nomen.sectio(longitudo - 2, longitudo)
+        si suffix2 == "ta" aut suffix2 == "sa"
+            reddit { radix: nomen.sectio(0, longitudo - 2), flagga: FLAGGA_PERFECTUM } qua RadixEtFlagga
+    }
+
+    # Imperative: -a, -e, -i (sync, mutates)
+    fixum ultimum = nomen.sectio(longitudo - 1, longitudo)
+    si ultimum == "a" aut ultimum == "e" aut ultimum == "i"
+        reddit { radix: nomen.sectio(0, longitudo - 1), flagga: FLAGGA_IMPERATIVUS } qua RadixEtFlagga
+
+    # No recognized morphology
+    redde nihil
+}
+
+# Check if a stem is a known lista verb
+@ publica
+functio estRadixListae(textus radix) fit bivalens {
+    # Core action verbs for lista operations
+    # WHY: Some verbs have different stems for different conjugations.
+    #      e.g., invertere → invert- (present), invers- (perfect participle)
+    elige radix {
+        casu "add" reddit verum       # add element
+        casu "praepon" reddit verum   # prepend
+        casu "praepos" reddit verum   # prepend (participle stem)
+        casu "remov" reddit verum     # remove last
+        casu "decapit" reddit verum   # remove first
+        casu "filtr" reddit verum     # filter
+        casu "mapp" reddit verum      # map/transform
+        casu "ordin" reddit verum     # sort
+        casu "invert" reddit verum    # reverse (present: inverte)
+        casu "invers" reddit verum    # reverse (participle: used by -ita forms)
+        casu "inver" reddit verum     # reverse (participle: inversa with -sa ending)
+        ceterum reddit falsum
+    }
+}

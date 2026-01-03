@@ -55,6 +55,7 @@ The language you are building should feel ancient and inevitable, as if it were 
 
 Before proposing new syntax, consult these authoritative sources:
 
+- **consilia/verba.md** — Complete keyword reference (all 99 reserved words)
 - **GRAMMAR.md** — Complete EBNF grammar extracted from the parser
 - **README.md** — Implementation status tables and feature overview
 - **grammatica/** — Detailed documentation by category:
@@ -67,82 +68,25 @@ Before proposing new syntax, consult these authoritative sources:
   - `errores.md` — Error handling (tempta/cape/iace)
   - `typi.md` — Type annotations and generics
 
-### Primitive Types
+### Quick Reference
 
-| Faber      | Meaning          | TS          | Py      | Zig          |
-|------------|------------------|-------------|---------|--------------|
-| `textus`   | string           | `string`    | `str`   | `[]const u8` |
-| `numerus`  | integer          | `number`    | `int`   | `i64`        |
-| `fractus`  | float            | `number`    | `float` | `f64`        |
-| `bivalens` | boolean          | `boolean`   | `bool`  | `bool`       |
-| `nihil`    | null             | `null`      | `None`  | `null`       |
-| `vacuum`   | void/no return   | `void`      | `None`  | `void`       |
+**Primitive Types:** `textus` (string), `numerus` (int), `fractus` (float), `bivalens` (bool), `nihil` (null), `vacuum` (void)
 
-### Return Type Verbs (fio conjugation)
+**Return Verbs (fio):** `fit` (sync), `fiet` (async), `fiunt` (generator), `fient` (async generator)
 
-| Verb    | Async | Generator | Meaning            |
-|---------|:-----:|:---------:|--------------------|
-| `fit`   |  no   |    no     | "it becomes"       |
-| `fiet`  |  yes  |    no     | "it will become"   |
-| `fiunt` |  no   |   yes     | "they become"      |
-| `fient` |  yes  |   yes     | "they will become" |
+**Bindings:** `fixum` (const), `varia` (let), `figendum` (const await), `variandum` (let await)
 
-The verb alone encodes async/generator semantics—no prefix modifiers needed.
+**Control:** `si/sin/secus` (if/elif/else), `dum` (while), `ex...pro` (for-of), `elige/casu` (switch/case), `discerne` (match)
 
-### Block Syntax Pattern
+**Logical:** `et` (&&), `aut` (||), `non` (!), `vel` (??)
 
-Faber uses consistent `keyword expr VERB name { body }` for scoped constructs:
+**Null/Empty:** `nihil` (== null), `nonnihil` (!= null), `nulla` (empty), `nonnulla` (has content)
 
+**Block Pattern:** `keyword expr VERB name { body }`
 ```
-ex items pro item { ... }      # iterate values
-de object pro key { ... }      # iterate keys
-cura resource fit handle { }   # resource scope (defer cleanup)
-tempta { } cape err { }        # try/catch
-discerne expr { casu T ut x { } }  # pattern match
+ex items pro item { ... }           # iterate values
+cura resource fit handle { ... }    # scoped resource
+discerne expr { casu T ut x { } }   # pattern match
 ```
 
-### Variable Declarations
-
-| Keyword     | Mutability | Async |
-|-------------|------------|-------|
-| `fixum`     | immutable  | no    |
-| `varia`     | mutable    | no    |
-| `figendum`  | immutable  | yes   |
-| `variandum` | mutable    | yes   |
-
-### Control Flow Keywords
-
-| Latin     | English equivalent |
-|-----------|--------------------|
-| `si`      | if                 |
-| `sin`     | else if            |
-| `secus`   | else               |
-| `dum`     | while              |
-| `ex...pro`| for-of             |
-| `de...pro`| for-in             |
-| `elige`   | switch             |
-| `discerne`| pattern match      |
-| `rumpe`   | break              |
-| `perge`   | continue           |
-| `redde`   | return             |
-| `cede`    | await/yield        |
-
-### Logical Operators
-
-| Latin   | Meaning     | Symbol equiv. |
-|---------|-------------|---------------|
-| `et`    | and         | `&&`          |
-| `aut`   | or          | `\|\|`        |
-| `non`   | not         | `!`           |
-| `vel`   | nullish or  | `??`          |
-
-### Type Checking
-
-| Expression     | Meaning              |
-|----------------|----------------------|
-| `x est T`      | instanceof/typeof    |
-| `x qua T`      | type cast            |
-| `nihil x`      | x is null            |
-| `nonnihil x`   | x is not null        |
-| `nulla x`      | x is empty           |
-| `nonnulla x`   | x has content        |
+See `consilia/verba.md` for the complete keyword taxonomy.

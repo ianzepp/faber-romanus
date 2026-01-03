@@ -7,6 +7,8 @@ ex "../../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas,
 ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa TsGenerator
 ex "../typus" importa genTypus
+ex "../../../parser/morphologia" importa parseMethodum, estRadixListae
+ex "../../radices" importa generaListaMethodum
 
 # =============================================================================
 # EXPRESSION DISPATCH
@@ -85,6 +87,35 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
             }
+
+            # WHY: Check for morphology-based collection method dispatch.
+            # If callee is a member expression with a recognized verb conjugation,
+            # dispatch to the stem-based generator instead of literal passthrough.
+            discerne e.vocatum {
+                casu MembrumExpressia ut m {
+                    # Only non-computed member access (dot notation)
+                    si non (m.computatum qua bivalens) {
+                        discerne m.proprietas {
+                            casu Nomen ut prop {
+                                fixum methodNomen = prop.valor qua textus
+                                fixum parsed = parseMethodum(methodNomen)
+
+                                si nonnihil parsed {
+                                    si estRadixListae(parsed.radix) {
+                                        fixum obj = genExpressia(m.obiectum, g)
+                                        fixum result = generaListaMethodum(parsed.radix, obj, args, parsed.flagga)
+                                        si nonnihil result {
+                                            redde result
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Default: pass through as-is
             fixum optMark = (e.optivum qua bivalens) sic "?." secus ""
             redde scriptum("{}{}({})", genExpressia(e.vocatum, g), optMark, args.coniunge(", "))
         }

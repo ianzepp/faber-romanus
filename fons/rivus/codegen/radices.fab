@@ -1,0 +1,166 @@
+# Radices - Latin Verb Stem Dictionary for Collection Methods
+#
+# Maps verb stems to TypeScript code generators. The morphology flags
+# (from morphologia.fab) determine which variant to emit.
+#
+# WHY: One stem entry generates all conjugated forms. The grammar does the work.
+
+ex "../parser/morphologia" importa MorphologiaFlagga
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+# Generator for a verb stem - produces TS code based on flags
+@ publicum
+pactum RadixGenerator {
+    functio genera(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus
+}
+
+# ============================================================================
+# LISTA VERB STEMS
+# ============================================================================
+
+# Add element to collection
+# Imperative: items.adde(x) -> items.push(x)
+# Participle: items.addita(x) -> [...items, x]
+@ publica
+functio genAdd(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    si flagga.mutare {
+        si flagga.async
+            reddit scriptum("await (async () => {{ {}.push({}); }})()", obj, args[0])
+        redde scriptum("{}.push({})", obj, args[0])
+    } secus {
+        si flagga.async
+            reddit scriptum("await Promise.resolve([...{}, {}])", obj, args[0])
+        redde scriptum("[...{}, {}]", obj, args[0])
+    }
+}
+
+# Prepend element to collection
+# Imperative: items.praepone(x) -> items.unshift(x)
+# Participle: items.praeposita(x) -> [x, ...items]
+@ publica
+functio genPraepon(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    si flagga.mutare {
+        redde scriptum("{}.unshift({})", obj, args[0])
+    } secus {
+        redde scriptum("[{}, ...{}]", args[0], obj)
+    }
+}
+
+# Remove last element
+# Imperative: items.remove() -> items.pop()
+# Participle: items.remota() -> items.slice(0, -1)
+@ publica
+functio genRemov(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    si flagga.mutare {
+        redde scriptum("{}.pop()", obj)
+    } secus {
+        redde scriptum("{}.slice(0, -1)", obj)
+    }
+}
+
+# Remove first element
+# Imperative: items.decapita() -> items.shift()
+# Participle: items.decapitata() -> items.slice(1)
+@ publica
+functio genDecapit(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    si flagga.mutare {
+        redde scriptum("{}.shift()", obj)
+    } secus {
+        redde scriptum("{}.slice(1)", obj)
+    }
+}
+
+# Filter elements
+# Imperative: items.filtra(fn) -> in-place filter
+# Participle: items.filtrata(fn) -> items.filter(fn)
+@ publica
+functio genFiltr(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    si flagga.mutare {
+        si flagga.async {
+            # filtrabit - async in-place filter
+            redde scriptum("await (async () => {{ for (let i = {}.length - 1; i >= 0; i--) {{ if (!(await ({})({}[i]))) {}.splice(i, 1); }} }})()", obj, args[0], obj, obj)
+        }
+        # filtra - sync in-place filter
+        redde scriptum("(() => {{ for (let i = {}.length - 1; i >= 0; i--) {{ if (!({})({}[i])) {}.splice(i, 1); }} }})()", obj, args[0], obj, obj)
+    } secus {
+        si flagga.async {
+            # filtratura - async filter returns new
+            redde scriptum("await Promise.all({}.map(async x => ({{ x, keep: await ({})(x) }}))).then(r => r.filter(o => o.keep).map(o => o.x))", obj, args[0])
+        }
+        # filtrata - sync filter returns new
+        redde scriptum("{}.filter({})", obj, args[0])
+    }
+}
+
+# Map/transform elements
+# Always returns new (map is inherently non-mutating)
+# Participle: items.mappata(fn) -> items.map(fn)
+@ publica
+functio genMapp(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    si flagga.async {
+        # mappatura - async map
+        redde scriptum("await Promise.all({}.map({}))", obj, args[0])
+    }
+    # mappata - sync map (mappa would be unusual but supported)
+    redde scriptum("{}.map({})", obj, args[0])
+}
+
+# Sort elements
+# Imperative: items.ordina() -> items.sort()
+# Participle: items.ordinata() -> [...items].sort()
+@ publica
+functio genOrdin(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    fixum hasComparator = args.longitudo() > 0
+
+    si flagga.mutare {
+        si hasComparator {
+            redde scriptum("{}.sort({})", obj, args[0])
+        }
+        redde scriptum("{}.sort()", obj)
+    } secus {
+        si hasComparator {
+            redde scriptum("[...{}].sort({})", obj, args[0])
+        }
+        redde scriptum("[...{}].sort()", obj)
+    }
+}
+
+# Reverse elements
+# Imperative: items.inverte() -> items.reverse()
+# Participle: items.inversa() -> [...items].reverse()
+@ publica
+functio genInvert(textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus {
+    si flagga.mutare {
+        redde scriptum("{}.reverse()", obj)
+    } secus {
+        redde scriptum("[...{}].reverse()", obj)
+    }
+}
+
+# ============================================================================
+# DISPATCH
+# ============================================================================
+
+# Generate TS code for a lista method by stem and flags
+@ publica
+functio generaListaMethodum(textus radix, textus obj, lista<textus> args, MorphologiaFlagga flagga) fit textus? {
+    # WHY: Some verbs have different stems for different conjugations.
+    #      Map alternate stems to the same generator.
+    elige radix {
+        casu "add" reddit genAdd(obj, args, flagga)
+        casu "praepon" reddit genPraepon(obj, args, flagga)
+        casu "praepos" reddit genPraepon(obj, args, flagga)
+        casu "remov" reddit genRemov(obj, args, flagga)
+        casu "decapit" reddit genDecapit(obj, args, flagga)
+        casu "filtr" reddit genFiltr(obj, args, flagga)
+        casu "mapp" reddit genMapp(obj, args, flagga)
+        casu "ordin" reddit genOrdin(obj, args, flagga)
+        casu "invert" reddit genInvert(obj, args, flagga)
+        casu "invers" reddit genInvert(obj, args, flagga)
+        casu "inver" reddit genInvert(obj, args, flagga)
+        ceterum reddit nihil
+    }
+}

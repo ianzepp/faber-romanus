@@ -1,0 +1,73 @@
+# Morphologia - Verb Conjugation Dispatch Demo
+#
+# Demonstrates how Latin verb conjugations determine method semantics:
+# - Imperative (-a, -e, -i): mutates in place
+# - Perfect participle (-ata, -ita, -sa): returns new collection
+#
+# Run with: bun run faber compile exempla/morphologia.fab
+
+incipit {
+    varia items = [1, 2, 3, 4, 5]
+
+    # ==========================================================================
+    # FILTER: filtr-
+    # ==========================================================================
+
+    # filtrata (participle) - returns new filtered list
+    fixum evens = items.filtrata(pro x: x % 2 == 0)
+    scribe "filtrata (returns new):", evens
+
+    # filtra (imperative) - mutates in place
+    varia nums = [1, 2, 3, 4, 5]
+    nums.filtra(pro x: x > 2)
+    scribe "filtra (mutates):", nums
+
+    # ==========================================================================
+    # ADD: add-
+    # ==========================================================================
+
+    # addita (participle) - returns new list with element added
+    fixum extended = items.addita(6)
+    scribe "addita (returns new):", extended
+
+    # adde (imperative) - mutates in place
+    varia list = [1, 2, 3]
+    list.adde(4)
+    scribe "adde (mutates):", list
+
+    # ==========================================================================
+    # REVERSE: invert-/invers-
+    # ==========================================================================
+
+    # inversa (participle) - returns new reversed list
+    fixum reversed = items.inversa()
+    scribe "inversa (returns new):", reversed
+
+    # inverte (imperative) - mutates in place
+    varia toReverse = [1, 2, 3]
+    toReverse.inverte()
+    scribe "inverte (mutates):", toReverse
+
+    # ==========================================================================
+    # SORT: ordin-
+    # ==========================================================================
+
+    # ordinata (participle) - returns new sorted list
+    fixum sorted = items.ordinata()
+    scribe "ordinata (returns new):", sorted
+
+    # NOTE: ordina (imperative) conflicts with keyword - use ordinata for now
+
+    # ==========================================================================
+    # MAP: mapp-
+    # ==========================================================================
+
+    # mappata (participle) - returns new mapped list
+    fixum doubled = items.mappata(pro x: x * 2)
+    scribe "mappata (returns new):", doubled
+
+    # ==========================================================================
+    # Original list unchanged by participle operations
+    # ==========================================================================
+    scribe "original items:", items
+}
