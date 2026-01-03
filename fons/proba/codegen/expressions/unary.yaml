@@ -48,7 +48,7 @@
       si nihil x { scribe "null" }
   expect:
       ts:
-          - '(x === null)'
+          - '(x == null)'
       py:
           - '(x is None)'
       rs:
@@ -66,7 +66,7 @@
       si nonnihil x { scribe "ok" }
   expect:
       ts:
-          - '(x !== null)'
+          - '(x != null)'
       py:
           - '(x is not None)'
       rs:

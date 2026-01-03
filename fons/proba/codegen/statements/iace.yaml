@@ -120,7 +120,7 @@
       si nihil data { iace "Data required" }
   expect:
       ts:
-          - 'if ((data === null)) {'
+          - 'if ((data == null)) {'
           - 'throw "Data required";'
           - '}'
       py:
