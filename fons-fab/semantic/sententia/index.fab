@@ -20,11 +20,10 @@ ex "./error" importa analyzeTempta, analyzeFac, analyzeCura
 
 # Analyze any statement
 @ publica
-@ publica
 functio analyzeSententia(Resolvitor r, Sententia stmt) -> vacuum {
     discerne stmt {
         # Declarations
-        casu VariaDeclaratio {
+        casu VariaSententia {
             analyzeVariaDeclaratio(r, stmt)
         }
 
@@ -48,92 +47,92 @@ functio analyzeSententia(Resolvitor r, Sententia stmt) -> vacuum {
             analyzeDiscretioDeclaratio(r, stmt)
         }
 
-        casu TypusAlias {
+        casu TypusAliasDeclaratio {
             analyzeTypusAlias(r, stmt)
         }
 
         # Control flow
-        casu Si {
+        casu SiSententia {
             analyzeSi(r, stmt)
         }
 
-        casu Dum {
+        casu DumSententia {
             analyzeDum(r, stmt)
         }
 
-        casu Iteratio {
+        casu IteratioSententia {
             analyzeIteratio(r, stmt)
         }
 
-        casu In {
+        casu InSententia {
             analyzeIn(r, stmt)
         }
 
-        casu Elige {
+        casu EligeSententia {
             analyzeElige(r, stmt)
         }
 
-        casu Discerne {
+        casu DiscerneSententia {
             analyzeDiscerne(r, stmt)
         }
 
-        casu Custodi {
+        casu CustodiSententia {
             analyzeCustodi(r, stmt)
         }
 
         # Action statements
-        casu Redde {
+        casu ReddeSententia {
             analyzeRedde(r, stmt)
         }
 
-        casu Iace {
+        casu IaceSententia {
             analyzeIace(r, stmt)
         }
 
-        casu Scribe {
+        casu ScribeSententia {
             analyzeScribe(r, stmt)
         }
 
-        casu Adfirma {
+        casu AdfirmaSententia {
             analyzeAdfirma(r, stmt)
         }
 
         # Error handling
-        casu Tempta {
+        casu TemptaSententia {
             analyzeTempta(r, stmt)
         }
 
-        casu Fac {
+        casu FacSententia {
             analyzeFac(r, stmt)
         }
 
-        casu Cura {
+        casu CuraSententia {
             analyzeCura(r, stmt)
         }
 
         # Block
-        casu Massa ut m {
+        casu MassaSententia ut m {
             ex m.corpus pro s {
                 r.sententia(s)
             }
         }
 
         # Expression statement
-        casu Expressia ut e {
+        casu ExpressiaSententia ut e {
             r.expressia(e.expressia)
         }
 
         # Rumpe/Perge - no analysis needed
-        casu Rumpe {
+        casu RumpeSententia {
             # break - no semantic analysis needed
         }
 
-        casu Perge {
+        casu PergeSententia {
             # continue - no semantic analysis needed
         }
 
         # Imports - handled separately during predeclaration
-        casu Importa {
+        casu ImportaSententia {
             # Imports are processed in predeclaration phase
         }
     }

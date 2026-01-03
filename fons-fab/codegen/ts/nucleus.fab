@@ -15,7 +15,6 @@ ex "../typi" importa RequiredFeatures, creaRequiredFeatures
 # WHY: Holds indentation state, feature tracking, and context flags
 #      that are shared across all statement/expression generators.
 @ publicum
-@ publicum
 genus TsGenerator {
     # Indentation depth (number of levels)
     numerus depth
@@ -79,7 +78,6 @@ genus TsGenerator {
 
 # Create a new TsGenerator with default settings
 @ publica
-@ publica
 functio creaTsGenerator() -> TsGenerator {
     redde {
         depth: 0,
@@ -95,7 +93,6 @@ functio creaTsGenerator() -> TsGenerator {
 }
 
 # Create a TsGenerator with custom indentation
-@ publica
 @ publica
 functio creaTsGeneratorCum(textus indentum) -> TsGenerator {
     redde {

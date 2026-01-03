@@ -81,7 +81,6 @@ discretio SemanticTypus {
 
 # Create a primitive type
 @ publica
-@ publica
 functio primitivumTypus(textus nomen, bivalens nullabilis) -> SemanticTypus {
     redde finge Primitivum {
         nomen: nomen,
@@ -91,7 +90,6 @@ functio primitivumTypus(textus nomen, bivalens nullabilis) -> SemanticTypus {
 }
 
 # Create a primitive type with size
-@ publica
 @ publica
 functio primitivumTypusCumAmplitudine(textus nomen, numerus amplitudo, bivalens nullabilis) -> SemanticTypus {
     redde finge Primitivum {
@@ -103,7 +101,6 @@ functio primitivumTypusCumAmplitudine(textus nomen, numerus amplitudo, bivalens 
 
 # Create a generic type
 @ publica
-@ publica
 functio genericumTypus(textus nomen, lista<SemanticTypus> parametri, bivalens nullabilis) -> SemanticTypus {
     redde finge Genericum {
         nomen: nomen,
@@ -113,7 +110,6 @@ functio genericumTypus(textus nomen, lista<SemanticTypus> parametri, bivalens nu
 }
 
 # Create a function type
-@ publica
 @ publica
 functio functioTypus(
     lista<SemanticTypus> parametriTypi,
@@ -131,20 +127,17 @@ functio functioTypus(
 
 # Create a union type
 @ publica
-@ publica
 functio unioTypus(lista<SemanticTypus> typi) -> SemanticTypus {
     redde finge Unio { typi: typi } qua SemanticTypus
 }
 
 # Create an unknown type
 @ publica
-@ publica
 functio ignotumTypus(si textus ratio) -> SemanticTypus {
     redde finge Ignotum { ratio: ratio } qua SemanticTypus
 }
 
 # Create a user-defined type
-@ publica
 @ publica
 functio usitatumTypus(textus nomen, bivalens nullabilis) -> SemanticTypus {
     redde finge Usitatum {
@@ -155,7 +148,6 @@ functio usitatumTypus(textus nomen, bivalens nullabilis) -> SemanticTypus {
 
 # Create an enum type
 @ publica
-@ publica
 functio ordoTypus(textus nomen, tabula<textus, SemanticTypus> membra, bivalens nullabilis) -> SemanticTypus {
     redde finge Ordo {
         nomen: nomen,
@@ -165,7 +157,6 @@ functio ordoTypus(textus nomen, tabula<textus, SemanticTypus> membra, bivalens n
 }
 
 # Create a genus type
-@ publica
 @ publica
 functio genusTypus(
     textus nomen,
@@ -186,7 +177,6 @@ functio genusTypus(
 }
 
 # Create a pactum type
-@ publica
 @ publica
 functio pactumTypus(textus nomen, tabula<textus, SemanticTypus> methodi, bivalens nullabilis) -> SemanticTypus {
     redde finge Pactum {
@@ -235,7 +225,6 @@ fixum IGNOTUM = ignotumTypus(nihil)
 # =============================================================================
 
 # Check if two types are equal
-@ publica
 @ publica
 functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
     # Compare by variant tag and key fields
@@ -368,7 +357,6 @@ functio typiAequales(SemanticTypus a, SemanticTypus b) -> bivalens {
 
 # Check if a type is assignable to another type
 @ publica
-@ publica
 functio assignabileAd(SemanticTypus fons, SemanticTypus scopus) -> bivalens {
     # Unknown is assignable to anything
     discerne fons {
@@ -460,7 +448,6 @@ functio estNumericum(textus nomen) -> bivalens {
 }
 
 # Format a type for error messages
-@ publica
 @ publica
 functio formaTypum(SemanticTypus t) -> textus {
     discerne t {

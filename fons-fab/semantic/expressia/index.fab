@@ -23,7 +23,6 @@ ex "./alia" importa resolveLambda, resolveFingeExpr, resolveCedeExpr, resolveNov
 
 # Resolve any expression and return its semantic type
 @ publica
-@ publica
 functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
     discerne expr {
         # Identifiers (variable references)
@@ -37,95 +36,95 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
         }
 
         # Template literals (interpolated strings)
-        casu TemplateLittera {
+        casu LitteraExemplar {
             redde TEXTUS
         }
 
         # Binary expressions (+, -, *, /, ==, etc.)
-        casu Binaria {
+        casu BinariaExpressia {
             redde resolveBinaria(r, expr)
         }
 
         # Unary expressions (!, -, non, etc.)
-        casu Unaria {
+        casu UnariaExpressia {
             redde resolveUnaria(r, expr)
         }
 
         # Function calls
-        casu Vocatio {
+        casu VocatioExpressia {
             redde resolveVocatio(r, expr)
         }
 
         # Member access (obj.prop)
-        casu Membrum {
+        casu MembrumExpressia {
             redde resolveMembrum(r, expr)
         }
 
         # Assignment (x = value)
-        casu Assignatio ut as {
+        casu AssignatioExpressia ut as {
             redde resolveAssignatio(r, as)
         }
 
         # Await expression (cede)
-        casu Cede {
+        casu CedeExpressia {
             redde resolveCedeExpr(r, expr)
         }
 
         # New expression (novum)
-        casu Novum {
+        casu NovumExpressia {
             redde resolveNovumExpr(r, expr)
         }
 
         # Tagged union construction (finge)
-        casu Finge {
+        casu FingeExpressia {
             redde resolveFingeExpr(r, expr)
         }
 
         # Ternary conditional
-        casu Condicio {
+        casu CondicioExpressia {
             redde resolveCondicio(r, expr)
         }
 
         # Range expression (1..10)
-        casu Tractus {
+        casu AmbitusExpressia {
             redde genericumTypus("lista", [NUMERUS], falsum)
         }
 
         # Object literal { key: value }
-        casu Obiectum {
+        casu ObiectumExpressia {
             redde resolveObiectum(r, expr)
         }
 
         # Array literal [1, 2, 3]
-        casu Series {
+        casu SeriesExpressia {
             redde resolveSeries(r, expr)
         }
 
         # Lambda expression (pro x: x + 1)
-        casu Lambda {
+        casu LambdaExpressia {
             redde resolveLambda(r, expr)
         }
 
         # Self reference (ego/hoc)
-        casu Ego {
+        casu EgoExpressia {
             # ego type depends on enclosing class context
             redde IGNOTUM
         }
 
         # Type cast (expr qua Type)
-        casu Qua ut q {
+        casu QuaExpressia ut q {
             r.expressia(q.expressia)
             # TODO: resolve type annotation
             redde IGNOTUM
         }
 
         # Type check (expr est Type)
-        casu Est {
+        casu EstExpressia {
             redde BIVALENS
         }
 
         # Format string (scriptum)
-        casu Scriptum ut s {
+        casu ScriptumExpressia ut s {
             ex s.argumenta pro arg {
                 r.expressia(arg)
             }
@@ -133,12 +132,12 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
         }
 
         # Read stdin (lege)
-        casu Lege {
+        casu LegeExpressia {
             redde TEXTUS
         }
 
         # Regex literal
-        casu Regex {
+        casu LitteraRegex {
             redde usitatumTypus("Regex", falsum)
         }
     }

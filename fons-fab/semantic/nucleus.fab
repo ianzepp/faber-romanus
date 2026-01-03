@@ -29,8 +29,6 @@ ex "../ast/expressia" importa Expressia
 
 # A semantic error with source location
 @ publicum
-@ publicum
-@ publicum
 genus SemanticError {
     textus nuntius
     Locus locus
@@ -42,8 +40,6 @@ genus SemanticError {
 
 # Result of semantic analysis
 @ publicum
-@ publicum
-@ publicum
 genus SemanticResultatum {
     Programma programma
     lista<SemanticError> errores
@@ -54,7 +50,6 @@ genus SemanticResultatum {
 # =============================================================================
 
 # Map Latin type name to semantic type
-@ publica
 @ publica
 functio latinTypusAd(textus nomen) -> SemanticTypus {
     elige nomen {
@@ -70,7 +65,6 @@ functio latinTypusAd(textus nomen) -> SemanticTypus {
 
 # Check if a type name is a generic type (lista, tabula, etc.)
 @ publica
-@ publica
 functio estGenericusTypus(textus nomen) -> bivalens {
     redde nomen inter ["lista", "tabula", "copia", "promissum", "cursor", "fluxus"]
 }
@@ -80,8 +74,6 @@ functio estGenericusTypus(textus nomen) -> bivalens {
 # =============================================================================
 
 # The semantic analyzer state
-@ publicum
-@ publicum
 @ publicum
 genus Analyzator {
     # Collected errors
@@ -179,7 +171,6 @@ genus Analyzator {
 # =============================================================================
 
 # Create a new analyzer
-@ publica
 @ publica
 functio novumAnalyzator() -> Analyzator {
     fixum analyzator = {

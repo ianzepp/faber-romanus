@@ -11,7 +11,6 @@ ex "./nucleus" importa TsGenerator
 
 # Map a Latin type name to TypeScript type name
 @ publica
-@ publica
 functio mappaNomenTypi(textus nomen) -> textus {
     elige nomen {
         # Primitives
@@ -59,7 +58,6 @@ functio mappaNomenTypi(textus nomen) -> textus {
 # =============================================================================
 
 # Generate TypeScript type from type annotation
-@ publica
 @ publica
 functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
     # Track feature usage for preamble
@@ -111,7 +109,6 @@ functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
 
 # Generate a single type parameter
 @ publica
-@ publica
 functio genTypusParametrum(TypusParametrum param, TsGenerator g) -> textus? {
     discerne param {
         casu Typus ut p {
@@ -127,7 +124,6 @@ functio genTypusParametrum(TypusParametrum param, TsGenerator g) -> textus? {
 
 # Generate type parameter declarations for generics
 # Example: <T, U, V>
-@ publica
 @ publica
 functio genTypusParametra(lista<textus> parametra) -> textus {
     redde scriptum("<{}>", parametra.coniunge(", "))

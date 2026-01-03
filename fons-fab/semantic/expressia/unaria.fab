@@ -12,10 +12,9 @@ ex "../../ast/expressia" importa Expressia
 
 # Resolve a unary expression
 @ publica
-@ publica
 functio resolveUnaria(Resolvitor r, Expressia unariaExpr) -> SemanticTypus {
     discerne unariaExpr {
-        casu Unaria ut u {
+        casu UnariaExpressia ut u {
             fixum argTypus = r.expressia(u.argumentum)
 
             # Logical negation: !, non

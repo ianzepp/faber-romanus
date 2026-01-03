@@ -16,12 +16,11 @@ ex "../../ast/sententia" importa Sententia
 
 # Analyze varia/fixum declaration
 @ publica
-@ publica
 functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne variaStmt {
-        casu VariaDeclaratio pro v {
+        casu VariaSententia pro v {
             # Determine type from annotation or initializer
             varia resolvedTypus = IGNOTUM qua SemanticTypus
 
@@ -64,7 +63,6 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
 # =============================================================================
 
 # Analyze functio declaration
-@ publica
 @ publica
 functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum {
     fixum a = r.analyzator()
@@ -147,7 +145,6 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
 
 # Analyze genus declaration
 @ publica
-@ publica
 functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
     fixum a = r.analyzator()
 
@@ -179,7 +176,6 @@ functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
 
 # Analyze pactum declaration
 @ publica
-@ publica
 functio analyzePactumDeclaratio(Resolvitor r, Sententia pactumStmt) -> vacuum {
     fixum a = r.analyzator()
 
@@ -207,7 +203,6 @@ functio analyzePactumDeclaratio(Resolvitor r, Sententia pactumStmt) -> vacuum {
 }
 
 # Analyze ordo declaration
-@ publica
 @ publica
 functio analyzeOrdoDeclaratio(Resolvitor r, Sententia ordoStmt) -> vacuum {
     fixum a = r.analyzator()
@@ -237,7 +232,6 @@ functio analyzeOrdoDeclaratio(Resolvitor r, Sententia ordoStmt) -> vacuum {
 
 # Analyze discretio declaration
 @ publica
-@ publica
 functio analyzeDiscretioDeclaratio(Resolvitor r, Sententia discretioStmt) -> vacuum {
     fixum a = r.analyzator()
 
@@ -262,12 +256,11 @@ functio analyzeDiscretioDeclaratio(Resolvitor r, Sententia discretioStmt) -> vac
 
 # Analyze typus alias declaration
 @ publica
-@ publica
 functio analyzeTypusAlias(Resolvitor r, Sententia typusStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne typusStmt {
-        casu TypusAlias pro t {
+        casu TypusAliasDeclaratio pro t {
             # TODO: resolve type annotation
             fixum aliasTypus = IGNOTUM
 

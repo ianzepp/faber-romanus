@@ -13,8 +13,6 @@
 #      definitions) based on which language features are actually used.
 #      Tracking usage allows minimal, tree-shakeable preambles.
 @ publicum
-@ publicum
-@ publicum
 genus RequiredFeatures {
     # Error handling
     bivalens panic           # mori used - needs Panic class
@@ -41,7 +39,6 @@ genus RequiredFeatures {
 
 # Create a RequiredFeatures with all flags false
 @ publica
-@ publica
 functio creaRequiredFeatures() -> RequiredFeatures {
     redde {
         panic: falsum,
@@ -63,8 +60,6 @@ functio creaRequiredFeatures() -> RequiredFeatures {
 
 # Configuration options for code generation
 @ publicum
-@ publicum
-@ publicum
 genus CodegenOptions {
     # Indentation string (default: 2 spaces for TS)
     textus indentum
@@ -74,7 +69,6 @@ genus CodegenOptions {
 }
 
 # Create default codegen options
-@ publica
 @ publica
 functio creaCodegenOptions() -> CodegenOptions {
     redde {
@@ -89,7 +83,6 @@ functio creaCodegenOptions() -> CodegenOptions {
 
 # Extract visibility from annotation modifiers
 # Returns: "public", "private", or "protected"
-@ publica
 @ publica
 functio visibilitasEx(lista<textus> modifiers) -> textus {
     ex modifiers pro mod {
@@ -108,7 +101,6 @@ functio visibilitasEx(lista<textus> modifiers) -> textus {
 
 # Check if modifiers include abstract
 @ publica
-@ publica
 functio estAbstractum(lista<textus> modifiers) -> bivalens {
     ex modifiers pro mod {
         si mod inter ["abstractum", "abstracta", "abstractus"] {
@@ -120,20 +112,17 @@ functio estAbstractum(lista<textus> modifiers) -> bivalens {
 
 # Check if modifiers include async (futura)
 @ publica
-@ publica
 functio estFutura(lista<textus> modifiers) -> bivalens {
     redde modifiers.continet("futura")
 }
 
 # Check if modifiers include generator (cursor)
 @ publica
-@ publica
 functio estCursor(lista<textus> modifiers) -> bivalens {
     redde modifiers.continet("cursor")
 }
 
 # Check if modifiers include static (generis)
-@ publica
 @ publica
 functio estGeneris(lista<textus> modifiers) -> bivalens {
     redde modifiers.continet("generis")

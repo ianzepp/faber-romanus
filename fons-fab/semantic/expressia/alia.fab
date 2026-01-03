@@ -15,12 +15,11 @@ ex "../../ast/expressia" importa Expressia
 
 # Resolve a lambda expression (pro x: x + 1)
 @ publica
-@ publica
 functio resolveLambda(Resolvitor r, Expressia lambdaExpr) -> SemanticTypus {
     fixum a = r.analyzator()
 
     discerne lambdaExpr {
-        casu Lambda ut l {
+        casu LambdaExpressia ut l {
             # Enter function scope for parameters
             a.intraScopum(ScopusSpecies.Functio)
 
@@ -61,18 +60,17 @@ functio resolveLambda(Resolvitor r, Expressia lambdaExpr) -> SemanticTypus {
 
 # Resolve a finge expression (tagged union construction)
 @ publica
-@ publica
 functio resolveFingeExpr(Resolvitor r, Expressia fingeExpr) -> SemanticTypus {
     discerne fingeExpr {
-        casu Finge ut f {
+        casu FingeExpressia ut f {
             # Resolve all field values
-            ex f.agri pro agrum {
-                r.expressia(agrum.valor)
+            ex f.campi pro campo {
+                r.expressia(campo.valor)
             }
 
-            # The type comes from the qua clause
-            si nonnihil f.quaTypus {
-                redde usitatumTypus(f.quaTypus qua textus, falsum)
+            # The type comes from the qua clause (scopus)
+            si nonnihil f.scopus {
+                redde usitatumTypus(f.scopus.nomen, falsum)
             }
 
             # Otherwise use the variant name as the type
@@ -89,13 +87,12 @@ functio resolveFingeExpr(Resolvitor r, Expressia fingeExpr) -> SemanticTypus {
 
 # Resolve a cede (await) expression
 @ publica
-@ publica
 functio resolveCedeExpr(Resolvitor r, Expressia cedeExpr) -> SemanticTypus {
     fixum a = r.analyzator()
 
     discerne cedeExpr {
-        casu Cede ut c {
-            fixum promissumTypus = r.expressia(c.expressia)
+        casu CedeExpressia ut c {
+            fixum promissumTypus = r.expressia(c.argumentum)
 
             # Check we're in an async context
             si non a.currentFunctioAsync et non a.currentFunctioGenerator {
@@ -125,19 +122,18 @@ functio resolveCedeExpr(Resolvitor r, Expressia cedeExpr) -> SemanticTypus {
 
 # Resolve a novum (new) expression
 @ publica
-@ publica
 functio resolveNovumExpr(Resolvitor r, Expressia novumExpr) -> SemanticTypus {
     discerne novumExpr {
-        casu Novum ut n {
+        casu NovumExpressia ut n {
             # Resolve constructor arguments
             ex n.argumenta pro arg {
                 r.expressia(arg)
             }
 
             # The type is the class being instantiated
-            discerne n.vocatus {
+            discerne n.vocatum {
                 casu Nomen ut nom {
-                    redde usitatumTypus(nom.nomen, falsum)
+                    redde usitatumTypus(nom.valor, falsum)
                 }
             }
 
@@ -154,11 +150,10 @@ functio resolveNovumExpr(Resolvitor r, Expressia novumExpr) -> SemanticTypus {
 
 # Resolve a ternary conditional expression
 @ publica
-@ publica
 functio resolveCondicio(Resolvitor r, Expressia condicioExpr) -> SemanticTypus {
     discerne condicioExpr {
-        casu Condicio ut c {
-            r.expressia(c.conditio)
+        casu CondicioExpressia ut c {
+            r.expressia(c.condicio)
             fixum consequensTypus = r.expressia(c.consequens)
             r.expressia(c.alternans)
 

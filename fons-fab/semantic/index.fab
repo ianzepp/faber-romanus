@@ -22,7 +22,6 @@ ex "../ast/sententia" importa Sententia
 
 # Concrete implementation of the Resolvitor pactum
 @ publicum
-@ publicum
 genus Resolvitor implet Resolvitor {
     Analyzator a
 
@@ -50,7 +49,6 @@ functio novumResolvitor(Analyzator a) -> Resolvitor {
 # =============================================================================
 
 # Perform semantic analysis on a program
-@ publica
 @ publica
 functio analyze(Programma programma) -> SemanticResultatum {
     # Create analyzer state
@@ -152,7 +150,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Typus alias - register name with user type
-        casu TypusAlias pro t {
+        casu TypusAliasDeclaratio pro t {
             a.scopus.symbola[t.nomen] = {
                 nomen: t.nomen,
                 semanticTypus: usitatumTypus(t.nomen, falsum),

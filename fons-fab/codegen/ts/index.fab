@@ -17,7 +17,6 @@ ex "./sententia/index" importa genSententia
 
 # Generate TypeScript source code from a list of statements
 @ publica
-@ publica
 functio generateTs(lista<Sententia> corpus) -> textus {
     fixum g = creaTsGenerator()
 

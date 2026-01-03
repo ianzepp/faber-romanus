@@ -33,7 +33,6 @@ ordo SemanticErrorCodice {
 
 # Error message with text and help
 @ publicum
-@ publicum
 genus SemanticErrorNuntius {
     textus textus      # User-facing error message
     textus auxilium    # Helpful guidance
@@ -45,7 +44,6 @@ genus SemanticErrorNuntius {
 
 # Get error message for undefined variable
 @ publica
-@ publica
 functio undefinedVariableError(textus nomen) -> SemanticErrorNuntius {
     redde {
         textus: scriptum("Undefined variable '{}'", nomen),
@@ -54,7 +52,6 @@ functio undefinedVariableError(textus nomen) -> SemanticErrorNuntius {
 }
 
 # Get error message for already defined
-@ publica
 @ publica
 functio alreadyDefinedError(textus nomen, numerus linea) -> SemanticErrorNuntius {
     redde {
@@ -65,7 +62,6 @@ functio alreadyDefinedError(textus nomen, numerus linea) -> SemanticErrorNuntius
 
 # Get error message for immutable assignment
 @ publica
-@ publica
 functio immutableAssignmentError(textus nomen) -> SemanticErrorNuntius {
     redde {
         textus: scriptum("Cannot assign to immutable variable '{}'", nomen),
@@ -74,7 +70,6 @@ functio immutableAssignmentError(textus nomen) -> SemanticErrorNuntius {
 }
 
 # Get error message for type mismatch
-@ publica
 @ publica
 functio typeMismatchError(textus sourceType, textus targetType) -> SemanticErrorNuntius {
     redde {
@@ -85,7 +80,6 @@ functio typeMismatchError(textus sourceType, textus targetType) -> SemanticError
 
 # Get error message for return type mismatch
 @ publica
-@ publica
 functio returnTypeMismatchError(textus returnType, textus functionType) -> SemanticErrorNuntius {
     redde {
         textus: scriptum("Return type '{}' is not assignable to function return type '{}'", returnType, functionType),
@@ -94,7 +88,6 @@ functio returnTypeMismatchError(textus returnType, textus functionType) -> Seman
 }
 
 # Get error message for no type or initializer
-@ publica
 @ publica
 functio noTypeOrInitializerError(textus nomen) -> SemanticErrorNuntius {
     redde {
@@ -105,7 +98,6 @@ functio noTypeOrInitializerError(textus nomen) -> SemanticErrorNuntius {
 
 # Get error message for not exported from module
 @ publica
-@ publica
 functio notExportedFromModuleError(textus nomen, textus modulus) -> SemanticErrorNuntius {
     redde {
         textus: scriptum("'{}' is not exported from '{}'", nomen, modulus),
@@ -114,7 +106,6 @@ functio notExportedFromModuleError(textus nomen, textus modulus) -> SemanticErro
 }
 
 # Get error message for incompatible comparison
-@ publica
 @ publica
 functio incompatibleComparisonError(textus leftType, textus rightType, textus operator) -> SemanticErrorNuntius {
     redde {
@@ -125,7 +116,6 @@ functio incompatibleComparisonError(textus leftType, textus rightType, textus op
 
 # Get error message for cede outside async
 @ publica
-@ publica
 functio cedeOutsideAsyncError() -> SemanticErrorNuntius {
     redde {
         textus: "'cede' requires an async or generator function context",
@@ -134,7 +124,6 @@ functio cedeOutsideAsyncError() -> SemanticErrorNuntius {
 }
 
 # Get error message for await outside async
-@ publica
 @ publica
 functio awaitOutsideAsyncError(textus keyword) -> SemanticErrorNuntius {
     redde {
@@ -145,7 +134,6 @@ functio awaitOutsideAsyncError(textus keyword) -> SemanticErrorNuntius {
 
 # Get error message for default with borrowed param
 @ publica
-@ publica
 functio defaultWithBorrowedParamError(textus preposition) -> SemanticErrorNuntius {
     redde {
         textus: scriptum("Cannot use default value with '{}' (borrowed) parameter", preposition),
@@ -154,7 +142,6 @@ functio defaultWithBorrowedParamError(textus preposition) -> SemanticErrorNuntiu
 }
 
 # Get error message for module not found
-@ publica
 @ publica
 functio moduleNotFoundError(textus path) -> SemanticErrorNuntius {
     redde {
@@ -165,7 +152,6 @@ functio moduleNotFoundError(textus path) -> SemanticErrorNuntius {
 
 # Get error message for circular import
 @ publica
-@ publica
 functio circularImportError(textus path, textus cycle) -> SemanticErrorNuntius {
     redde {
         textus: scriptum("Circular import detected: {}", cycle),
@@ -174,7 +160,6 @@ functio circularImportError(textus path, textus cycle) -> SemanticErrorNuntius {
 }
 
 # Get error message for module parse error
-@ publica
 @ publica
 functio moduleParseError(textus path) -> SemanticErrorNuntius {
     redde {

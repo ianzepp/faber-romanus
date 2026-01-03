@@ -14,7 +14,6 @@ ex "../typus" importa genTypus
 
 # Generate TypeScript code for an expression
 @ publica
-@ publica
 functio genExpressia(Expressia expr, TsGenerator g) -> textus {
     discerne expr {
         # Identifiers

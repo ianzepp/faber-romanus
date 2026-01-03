@@ -13,12 +13,11 @@ ex "../../ast/expressia" importa Expressia
 
 # Resolve a binary expression
 @ publica
-@ publica
 functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
     fixum a = r.analyzator()
 
     discerne binariaExpr {
-        casu Binaria ut b {
+        casu BinariaExpressia ut b {
             fixum sinisterTypus = r.expressia(b.sinister)
             fixum dexterTypus = r.expressia(b.dexter)
 

@@ -13,10 +13,9 @@ ex "../../ast/sententia" importa Sententia
 
 # Analyze si (if) statement
 @ publica
-@ publica
 functio analyzeSi(Resolvitor r, Sententia siStmt) -> vacuum {
     discerne siStmt {
-        casu Si ut s {
+        casu SiSententia ut s {
             # Analyze condition
             r.expressia(s.conditio)
 
@@ -37,10 +36,9 @@ functio analyzeSi(Resolvitor r, Sententia siStmt) -> vacuum {
 
 # Analyze dum (while) statement
 @ publica
-@ publica
 functio analyzeDum(Resolvitor r, Sententia dumStmt) -> vacuum {
     discerne dumStmt {
-        casu Dum ut d {
+        casu DumSententia ut d {
             # Analyze condition
             r.expressia(d.conditio)
 
@@ -52,12 +50,11 @@ functio analyzeDum(Resolvitor r, Sententia dumStmt) -> vacuum {
 
 # Analyze iteratio (ex/de...pro) statement
 @ publica
-@ publica
 functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne iteratioStmt {
-        casu Iteratio ut i {
+        casu IteratioSententia ut i {
             # Analyze source expression
             fixum sourceTypus = r.expressia(i.fons)
 
@@ -106,12 +103,11 @@ functio analyzeIteratio(Resolvitor r, Sententia iteratioStmt) -> vacuum {
 
 # Analyze in (for-in keys) statement
 @ publica
-@ publica
 functio analyzeIn(Resolvitor r, Sententia inStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne inStmt {
-        casu In ut i {
+        casu InSententia ut i {
             # Analyze source expression
             r.expressia(i.fons)
 
@@ -143,10 +139,9 @@ functio analyzeIn(Resolvitor r, Sententia inStmt) -> vacuum {
 
 # Analyze elige (switch) statement
 @ publica
-@ publica
 functio analyzeElige(Resolvitor r, Sententia eligeStmt) -> vacuum {
     discerne eligeStmt {
-        casu Elige ut e {
+        casu EligeSententia ut e {
             # Analyze discriminant
             r.expressia(e.discriminans)
 
@@ -173,12 +168,11 @@ functio analyzeElige(Resolvitor r, Sententia eligeStmt) -> vacuum {
 
 # Analyze discerne (pattern match) statement
 @ publica
-@ publica
 functio analyzeDiscerne(Resolvitor r, Sententia discerneStmt) -> vacuum {
     fixum a = r.analyzator()
 
     discerne discerneStmt {
-        casu Discerne ut d {
+        casu DiscerneSententia ut d {
             # Analyze discriminant
             fixum discTypus = r.expressia(d.discriminans)
 
@@ -211,10 +205,9 @@ functio analyzeDiscerne(Resolvitor r, Sententia discerneStmt) -> vacuum {
 
 # Analyze custodi (guard) statement
 @ publica
-@ publica
 functio analyzeCustodi(Resolvitor r, Sententia custodiStmt) -> vacuum {
     discerne custodiStmt {
-        casu Custodi ut c {
+        casu CustodiSententia ut c {
             # Analyze each guard clause
             ex c.clausulae pro clausula {
                 # Analyze condition
