@@ -128,6 +128,14 @@
       fab:
           - 'obj["property-name"]'
 
+- name: tabula computed access (typed)
+  faber: 'm["a"]'
+  wrap: 'functio f(tabula<textus, numerus> m) { $ }'
+  expect:
+      ts:
+          - 'function f(m: Map<string, number>)'
+          - 'm.get("a");'
+
 - name: member on string literal
   faber: '"hello".length'
   expect:

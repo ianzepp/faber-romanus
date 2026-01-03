@@ -48,6 +48,29 @@ const TS_INTRINSICS: Record<string, (args: string) => string> = {
 };
 
 export function genCallExpression(node: CallExpression, g: TsGenerator): string {
+    // GUARD: Optional computed call on tabula index: m?[k]()
+    // WHY: m?[k]() is an optional call chain; when tabula maps to Map.get(),
+    //      we need `(m?.get(k))?.()` not `m?.get(k)()`.
+    if (node.callee.type === 'MemberExpression' && node.callee.computed && node.callee.optional) {
+        const objType = node.callee.object.resolvedType;
+        const collectionName = objType?.kind === 'generic' ? objType.name : null;
+
+        if (collectionName === 'tabula') {
+            const obj = g.genExpression(node.callee.object);
+            const prop = g.genBareExpression(node.callee.property);
+
+            const argsArray = node.arguments.map(arg => {
+                if (arg.type === 'SpreadElement') {
+                    return `...${g.genExpression(arg.argument)}`;
+                }
+                return g.genExpression(arg);
+            });
+            const args = argsArray.join(', ');
+
+            return `(${obj}?.get(${prop}))?.(${args})`;
+        }
+    }
+
     // WHY: Build args as array first, then join for regular calls.
     // Collection method handlers receive the array to preserve argument
     // boundaries (avoiding comma-in-lambda parsing issues).

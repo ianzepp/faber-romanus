@@ -27,8 +27,23 @@ import type { TsGenerator } from '../generator';
 
 export function genMemberExpression(node: MemberExpression, g: TsGenerator): string {
     const obj = g.genExpression(node.object);
+    const objType = node.object.resolvedType;
+    const collectionName = objType?.kind === 'generic' ? objType.name : null;
 
     if (node.computed) {
+        // GUARD: tabula indexing uses Map.get()
+        // WHY: tabula<K,V> maps to JS Map, which doesn't support bracket indexing.
+        if (collectionName === 'tabula') {
+            const prop = g.genBareExpression(node.property);
+            if (node.optional) {
+                return `${obj}?.get(${prop})`;
+            }
+            if (node.nonNull) {
+                return `${obj}!.get(${prop})`;
+            }
+            return `${obj}.get(${prop})`;
+        }
+
         // Check for slice syntax: arr[1..3] or arr[1 usque 3]
         if (node.property.type === 'RangeExpression') {
             return genSliceExpression(obj, node.property, g, node.optional);

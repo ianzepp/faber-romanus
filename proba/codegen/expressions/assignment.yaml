@@ -127,6 +127,14 @@
       fab:
           - 'arr[i] = newValue'
 
+- name: assignment to tabula index (typed)
+  faber: 'm["a"] = 1'
+  wrap: 'functio f(tabula<textus, numerus> m) { $ }'
+  expect:
+      ts:
+          - 'function f(m: Map<string, number>)'
+          - 'm.set("a", __next)'
+
 - name: assignment with expression index
   faber: arr[i + 1] = value
   expect:
