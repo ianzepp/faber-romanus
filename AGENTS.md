@@ -16,7 +16,7 @@ A Latin programming language compiler ("The Roman Craftsman").
 
 ### Faber CLI (Primary Compiler)
 
-The TypeScript implementation in `fons/primus/` - use this for all daily development:
+The TypeScript implementation in `fons/faber/` - use this for all daily development:
 
 ```
 bun run faber compile <file.fab>      # TS (default)
@@ -28,7 +28,7 @@ bun run faber format <file.fab>       # Format source
 
 ### Rivus CLI (Bootstrap Compiler)
 
-The Faber implementation in `fons/proprius/` - Faber compiler written in Faber itself.
+The Faber implementation in `fons/rivus/` - Faber compiler written in Faber itself.
 Must be built first with `bun run build:rivus` before use:
 
 ```
@@ -62,7 +62,7 @@ bun test                              # Run all tests (primary compiler)
 bun test -t "pattern"                 # Filter tests
 bun test --coverage                   # With coverage
 bun run test:rivus                    # Run tests against bootstrap compiler
-bun run lint                          # Lint TS source (fons/primus)
+bun run lint                          # Lint TS source (fons/faber)
 bun run lint:fix                      # Lint with auto-fix
 bun run sanity                        # Verify test coverage
 bun run grammar                       # Regenerate GRAMMAR.md
@@ -152,7 +152,7 @@ bun run faber check <file.fab>  # Validate before committing
 
 - Empty collections need explicit types
 - Use `ignotum` for nullable parameters
-- Browse `fons/exempla/` and `fons/proprius/` for patterns
+- Browse `fons/exempla/` and `fons/rivus/` for patterns
 
 ## Primitive Types
 
@@ -169,8 +169,8 @@ bun run faber check <file.fab>  # Validate before committing
 
 ```
 fons/
-├── primus/     # TypeScript compiler (lexicon, tokenizer, parser, semantic, codegen)
-├── proprius/   # Faber implementation of compiler (bootstrap)
+├── faber/      # TypeScript compiler (lexicon, tokenizer, parser, semantic, codegen)
+├── rivus/      # Faber implementation of compiler (bootstrap)
 ├── exempla/    # Example .fab programs
 ├── proba/      # Tests mirroring compiler structure
 └── subsidia/   # Helper utilities (e.g., Zig runtime)
@@ -182,7 +182,7 @@ norma/          # Standard library modules
 ### Codegen Layout
 
 ```
-fons/primus/codegen/
+fons/faber/codegen/
 ├── index.ts              # Router
 ├── types.ts              # Shared types
 └── <target>/             # ts, py, rs, cpp, zig, fab

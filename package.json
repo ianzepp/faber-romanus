@@ -5,10 +5,10 @@
     "module": "index.ts",
     "type": "module",
     "bin": {
-        "faber": "./fons/primus/cli.ts"
+        "faber": "./fons/faber/cli.ts"
     },
     "scripts": {
-        "faber": "bun ./fons/primus/cli.ts",
+        "faber": "bun ./fons/faber/cli.ts",
         "rivus": "./scripta/rivus",
         "build": "./scripta/build",
         "build:rivus": "./scripta/build-rivus",
