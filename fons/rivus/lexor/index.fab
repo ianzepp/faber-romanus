@@ -29,8 +29,8 @@
 # - fractus = float (broken number)
 
 ex "../ast/positio" importa Locus
-ex "../ast/lexema" importa Symbolum, SymbolumGenus
-ex "../lexicon/verba" importa estVerbum
+ex "../ast/lexema" importa Symbolum, SymbolumGenus, VerbumId
+ex "../lexicon/verba" importa estVerbum, verbumId
 ex "./errores" importa LexorError, LexorErrorCodice, error
 
 # Result of lexical analysis
@@ -146,18 +146,20 @@ genus Lexor {
             species: species,
             valor: valor,
             locus: locus,
-            verbum: nihil
+            verbum: nihil,
+            verbumId: nihil
         } qua Symbolum)
     }
 
     # addeVerbum = "add a keyword" - special case for reserved words
     # verbum = "word" - the keyword text (e.g., "si", "functio")
-    functio addeVerbum(textus verbum, Locus locus) -> vacuum {
+    functio addeVerbum(textus verbum, Locus locus, si VerbumId id) -> vacuum {
         ego.symbola.adde({
             species: SymbolumGenus.Verbum,
             valor: verbum,
             locus: locus,
-            verbum: verbum
+            verbum: verbum,
+            verbumId: id
         } qua Symbolum)
     }
 
@@ -541,7 +543,7 @@ genus Lexor {
         # Check if the identifier is a reserved keyword
         # estVerbum() is defined in lexicon/verba.fab
         si estVerbum(valor) {
-            ego.addeVerbum(valor, loc)
+            ego.addeVerbum(valor, loc, verbumId(valor))
         } secus {
             # Nomen = identifier token (variable name, function name, etc.)
             ego.addeSymbolum(SymbolumGenus.Nomen, valor, loc)

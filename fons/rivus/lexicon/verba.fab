@@ -6,6 +6,8 @@
 # This is the single source of truth for keyword classification.
 # Parser error recovery uses these predicates to find sync points.
 
+ex "../ast/lexema" importa VerbumId
+
 # Check if a word is a reserved keyword
 #
 # NOTE: This list must stay synchronized with fons/lexicon/keywords.ts
@@ -140,6 +142,21 @@ functio estVerbum(textus v) -> bivalens {
         casu "sed" { redde verum }
 
         ceterum { redde falsum }
+    }
+}
+
+# Map surface keyword spelling to canonical identity
+#
+# WHY: Enables dialect spellings (e.g., English keywords) without changing
+#      downstream parsing/codegen logic.
+@ publica
+functio verbumId(textus v) -> VerbumId? {
+    elige v {
+        casu "fit" { redde VerbumId.Fit }
+        casu "fiet" { redde VerbumId.Fiet }
+        casu "fiunt" { redde VerbumId.Fiunt }
+        casu "fient" { redde VerbumId.Fient }
+        ceterum { redde nihil }
     }
 }
 

@@ -94,19 +94,33 @@ ordo SymbolumGenus {
     Malum         # lexer error token
 }
 
+# Keyword identity (canonical, dialect-independent)
+#
+# WHY: Parsing against raw keyword strings bakes Latin spellings into semantics.
+#      This enum allows multiple surface spellings (dialects) to map to the same
+#      internal meaning.
+@ publicum
+ordo VerbumId {
+    Fit
+    Fiet
+    Fiunt
+    Fient
+}
+
 # A single token from the source
 @ publicum
 genus Symbolum {
     SymbolumGenus species
     textus valor       # raw text of the token
     Locus locus
-    textus? verbum     # if species == Verbum, which keyword
+    textus? verbum     # if species == Verbum, which keyword (surface spelling)
+    VerbumId? verbumId # if species == Verbum, canonical keyword identity
 }
 
 # Create a token
 @ publica
 functio symbolum(SymbolumGenus species, textus valor, Locus locus) -> Symbolum {
-    redde { species: species, valor: valor, locus: locus, verbum: nihil } qua Symbolum
+    redde { species: species, valor: valor, locus: locus, verbum: nihil, verbumId: nihil } qua Symbolum
 }
 
 # Create a keyword token
@@ -116,14 +130,33 @@ functio symbolumVerbum(textus verbum, Locus locus) -> Symbolum {
         species: SymbolumGenus.Verbum,
         valor: verbum,
         locus: locus,
-        verbum: verbum
+        verbum: verbum,
+        verbumId: nihil
     } qua Symbolum
 }
 
-# Check if token is a specific keyword
+# Create a keyword token with canonical identity
+@ publica
+functio symbolumVerbumId(textus verbum, VerbumId verbumId, Locus locus) -> Symbolum {
+    redde {
+        species: SymbolumGenus.Verbum,
+        valor: verbum,
+        locus: locus,
+        verbum: verbum,
+        verbumId: verbumId
+    } qua Symbolum
+}
+
+# Check if token is a specific keyword (surface spelling)
 @ publica
 functio estVerbum(Symbolum sym, textus verbum) -> bivalens {
     redde sym.species == SymbolumGenus.Verbum && sym.verbum == verbum
+}
+
+# Check if token is a specific keyword (canonical identity)
+@ publica
+functio estVerbumId(Symbolum sym, VerbumId verbumId) -> bivalens {
+    redde sym.species == SymbolumGenus.Verbum && sym.verbumId == verbumId
 }
 
 # Check if token is EOF

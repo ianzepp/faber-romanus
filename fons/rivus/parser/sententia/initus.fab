@@ -19,7 +19,7 @@ ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia
 ex "../../ast/sententia" importa Sententia, CapeClausula, CuratorGenus, AdVinculum, AdVerbumVinculandi
 ex "../../ast/typus" importa TypusAnnotatio
-ex "../../ast/lexema" importa SymbolumGenus
+ex "../../ast/lexema" importa SymbolumGenus, VerbumId
 ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
 
@@ -151,7 +151,7 @@ functio parseCuraSententia(Resolvitor r) -> Sententia {
     # Parse optional resource expression
     # Skip if next token starts a binding (pro, fit, fiet) or block
     varia res = nihil qua Expressia?
-    si non p.probaVerbum("pro") et non p.probaVerbum("fit") et non p.probaVerbum("fiet") et non p.proba(SymbolumGenus.UncusSin) {
+    si non p.probaVerbum("pro") et non p.probaVerbumId(VerbumId.Fit) et non p.probaVerbumId(VerbumId.Fiet) et non p.proba(SymbolumGenus.UncusSin) {
         res = r.expressia()
     }
 
@@ -159,14 +159,11 @@ functio parseCuraSententia(Resolvitor r) -> Sententia {
     varia asynca = falsum
     varia hasBinding = falsum
 
-    si p.probaVerbum("pro") {
-        p.procede()
+    si p.congruetVerbum("pro") {
         hasBinding = verum
-    } sin p.probaVerbum("fit") {
-        p.procede()
+    } sin p.congruetVerbumId(VerbumId.Fit) {
         hasBinding = verum
-    } sin p.probaVerbum("fiet") {
-        p.procede()
+    } sin p.congruetVerbumId(VerbumId.Fiet) {
         asynca = verum
         hasBinding = verum
     }
@@ -245,22 +242,18 @@ functio parseAdSententia(Resolvitor r) -> Sententia {
 
     # Parse optional binding clause
     varia vinculum = nihil qua AdVinculum?
-    si p.probaVerbum("fit") aut p.probaVerbum("fiet") aut p.probaVerbum("fiunt") aut p.probaVerbum("fient") aut p.probaVerbum("pro") {
+    si p.probaVerbumId(VerbumId.Fit) aut p.probaVerbumId(VerbumId.Fiet) aut p.probaVerbumId(VerbumId.Fiunt) aut p.probaVerbumId(VerbumId.Fient) aut p.probaVerbum("pro") {
         fixum vincLocus = p.locusActualis()
 
         # Parse verb (default to fit)
         varia verbum = AdVerbumVinculandi.Fit
-        si p.probaVerbum("fit") {
-            p.procede()
+        si p.congruetVerbumId(VerbumId.Fit) {
             verbum = AdVerbumVinculandi.Fit
-        } sin p.probaVerbum("fiet") {
-            p.procede()
+        } sin p.congruetVerbumId(VerbumId.Fiet) {
             verbum = AdVerbumVinculandi.Fiet
-        } sin p.probaVerbum("fiunt") {
-            p.procede()
+        } sin p.congruetVerbumId(VerbumId.Fiunt) {
             verbum = AdVerbumVinculandi.Fiunt
-        } sin p.probaVerbum("fient") {
-            p.procede()
+        } sin p.congruetVerbumId(VerbumId.Fient) {
             verbum = AdVerbumVinculandi.Fient
         }
 

@@ -25,7 +25,7 @@
 # - synchrona = synchronize
 # - notae = comments (marks/notes)
 
-ex "../ast/lexema" importa Symbolum, SymbolumGenus
+ex "../ast/lexema" importa Symbolum, SymbolumGenus, VerbumId
 ex "../ast/radix" importa Nota, NotaGenus
 ex "../ast/positio" importa Locus
 ex "./errores" importa ParserError, ParserErrorCodice, error
@@ -245,6 +245,13 @@ genus Parser {
         redde s.species === SymbolumGenus.Verbum et s.verbum === verbum        
     }
 
+    # Check if current token is a keyword with canonical identity
+    @ publica
+    functio probaVerbumId(VerbumId verbumId) -> bivalens {
+        fixum s = ego.specta(0)
+        redde s.species === SymbolumGenus.Verbum et s.verbumId === verbumId
+    }
+
     # Match and consume token if type matches
     # Returns true if matched and consumed, false otherwise
     @ publica
@@ -261,6 +268,16 @@ genus Parser {
     @ publica
     functio congruetVerbum(textus verbum) -> bivalens {
         si ego.probaVerbum(verbum) {
+            ego.procede()
+            redde verum
+        }
+        redde falsum
+    }
+
+    # Match and consume keyword by canonical identity
+    @ publica
+    functio congruetVerbumId(VerbumId verbumId) -> bivalens {
+        si ego.probaVerbumId(verbumId) {
             ego.procede()
             redde verum
         }
@@ -317,7 +334,8 @@ genus Parser {
             species: species,
             valor: "",
             locus: s.locus,
-            verbum: nihil
+            verbum: nihil,
+            verbumId: nihil
         } qua Symbolum
     }
 
@@ -343,7 +361,8 @@ genus Parser {
             species: SymbolumGenus.Verbum,
             valor: verbum,
             locus: s.locus,
-            verbum: verbum
+            verbum: verbum,
+            verbumId: nihil
         } qua Symbolum
     }
 

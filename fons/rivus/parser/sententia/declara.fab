@@ -25,7 +25,7 @@ ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia
 ex "../../ast/sententia" importa Sententia, Parametrum, TypusParametrum, CampusDeclaratio, PactumMethodus, OrdoMembrum, VariansDeclaratio, VariansCampus, Visibilitas, ReddeVerbum, ImportaSpecificator
 ex "../../ast/typus" importa TypusAnnotatio
-ex "../../ast/lexema" importa SymbolumGenus
+ex "../../ast/lexema" importa SymbolumGenus, VerbumId
 ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
 ex "./varia" importa parseNomenVelVerbum
@@ -72,18 +72,18 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
     si p.congruet(SymbolumGenus.Sagitta) {
         reddeVerbum = ReddeVerbum.Sagitta
         typusReditus = r.adnotatio()
-    } sin p.probaVerbum("fit") {
+    } sin p.congruetVerbumId(VerbumId.Fit) {
         reddeVerbum = ReddeVerbum.Fit
         typusReditus = r.adnotatio()
-    } sin p.probaVerbum("fiet") {
+    } sin p.congruetVerbumId(VerbumId.Fiet) {
         reddeVerbum = ReddeVerbum.Fiet
         asynca = verum
         typusReditus = r.adnotatio()
-    } sin p.probaVerbum("fiunt") {
+    } sin p.congruetVerbumId(VerbumId.Fiunt) {
         reddeVerbum = ReddeVerbum.Fiunt
         generator = verum
         typusReditus = r.adnotatio()
-    } sin p.probaVerbum("fient") {
+    } sin p.congruetVerbumId(VerbumId.Fient) {
         reddeVerbum = ReddeVerbum.Fient
         asynca = verum
         generator = verum
@@ -201,15 +201,15 @@ functio parseGenusDeclaratio(Resolvitor r, bivalens abstractum) -> Sententia {
 
             si p.congruet(SymbolumGenus.Sagitta) {
                 retTypus = r.adnotatio()
-            } sin p.probaVerbum("fit") {
+            } sin p.congruetVerbumId(VerbumId.Fit) {
                 retTypus = r.adnotatio()
-            } sin p.probaVerbum("fiet") {
+            } sin p.congruetVerbumId(VerbumId.Fiet) {
                 asynca = verum
                 retTypus = r.adnotatio()
-            } sin p.probaVerbum("fiunt") {
+            } sin p.congruetVerbumId(VerbumId.Fiunt) {
                 generator = verum
                 retTypus = r.adnotatio()
-            } sin p.probaVerbum("fient") {
+            } sin p.congruetVerbumId(VerbumId.Fient) {
                 asynca = verum
                 generator = verum
                 retTypus = r.adnotatio()
@@ -325,15 +325,15 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
         varia asynca = falsum
         varia generator = falsum
 
-        si p.congruet(SymbolumGenus.Sagitta) aut p.probaVerbum("fit") {
+        si p.congruet(SymbolumGenus.Sagitta) aut p.congruetVerbumId(VerbumId.Fit) {
             typusReditus = r.adnotatio()
-        } sin p.probaVerbum("fiet") {
+        } sin p.congruetVerbumId(VerbumId.Fiet) {
             asynca = verum
             typusReditus = r.adnotatio()
-        } sin p.probaVerbum("fiunt") {
+        } sin p.congruetVerbumId(VerbumId.Fiunt) {
             generator = verum
             typusReditus = r.adnotatio()
-        } sin p.probaVerbum("fient") {
+        } sin p.congruetVerbumId(VerbumId.Fient) {
             asynca = verum
             generator = verum
             typusReditus = r.adnotatio()
