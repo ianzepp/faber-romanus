@@ -24,7 +24,7 @@ ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia
 ex "../../ast/sententia" importa Sententia, Parametrum, TypusParametrum, CampusDeclaratio, PactumMethodus, OrdoMembrum, VariansDeclaratio, VariansCampus, Visibilitas, ReddeVerbum, ImportaSpecificator
-ex "../../ast/typus" importa TypusAnnotatio
+ex "../../ast/typus" importa TypusAnnotatio, typusSimplicis
 ex "../../ast/lexema" importa SymbolumGenus, VerbumId
 ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
@@ -523,7 +523,7 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
 
         varia campi = [] qua lista<VariansCampus>
 
-        # Optional fields in braces
+        # Optional fields in braces or parens
         si p.congruet(SymbolumGenus.UncusSin) {
             dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
                 fixum campusLocus = p.locusActualis()
@@ -540,6 +540,22 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
                 p.congruet(SymbolumGenus.Coma)
             }
             p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
+        } sin p.congruet(SymbolumGenus.ParensSin) {
+            varia index = 1
+            si non p.proba(SymbolumGenus.ParensDex) {
+                fac {
+                    fixum campusLocus = p.locusActualis()
+                    fixum campusTypus = r.adnotatio()
+                    fixum campusNomen = index == 1 sic "value" secus scriptum("value§", index)
+                    index += 1
+                    campi.adde({
+                        locus: campusLocus,
+                        nomen: campusNomen,
+                        typus: campusTypus
+                    } qua VariansCampus)
+                } dum p.congruet(SymbolumGenus.Coma)
+            }
+            p.expecta(SymbolumGenus.ParensDex, ParserErrorCodice.ExpectaturParensDex)
         }
 
         variantes.adde({
@@ -584,14 +600,31 @@ functio parseTypusAliasDeclaratio(Resolvitor r) -> Sententia {
     # Expect '='
     p.expecta(SymbolumGenus.Aequum, ParserErrorCodice.ExpectaturAequale)
 
-    # Parse type
-    fixum typus = r.adnotatio()
+    # Parse type (or typeof alias)
+    varia scopusNomen = nihil qua textus?
+    varia typusAlias = nihil qua TypusAnnotatio?
+
+    si p.probaVerbum("typus") {
+        p.procede()
+        fixum scopusSym = p.specta(0)
+        si scopusSym.species == SymbolumGenus.Nomen aut scopusSym.species == SymbolumGenus.Verbum {
+            p.procede()
+            scopusNomen = scopusSym.valor
+            typusAlias = typusSimplicis("ignotum", locus)
+        } secus {
+            p.renuncia(ParserErrorCodice.ExpectaturNomen, scriptum("got '§'", scopusSym.valor))
+            p.procede()
+            typusAlias = typusSimplicis("ignotum", locus)
+        }
+    } secus {
+        typusAlias = r.adnotatio()
+    }
 
     redde finge TypusAliasDeclaratio {
         locus: locus,
         nomen: nomen,
-        typus: typus,
-        scopusNomen: nihil
+        typus: typusAlias,
+        scopusNomen: scopusNomen
     } qua Sententia
 }
 

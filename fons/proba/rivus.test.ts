@@ -14,7 +14,13 @@ import { parse as parseYaml } from 'yaml';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, basename } from 'path';
 
-import { fileURLToPath } from 'url';
+import { lexare } from '../../opus/bootstrap/lexor/index';
+import { resolvere } from '../../opus/bootstrap/parser/index';
+import { analyze } from '../../opus/bootstrap/semantic/index';
+import { generateTs } from '../../opus/bootstrap/codegen/ts/index';
+
+import type { Programma } from '../../opus/bootstrap/ast/radix';
+import type { Sententia } from '../../opus/bootstrap/ast/sententia';
 
 // =============================================================================
 // TYPES
@@ -85,74 +91,31 @@ function shouldSkip(tc: TestCase): boolean {
 // COMPILER
 // =============================================================================
 
-const repoRoot = join(import.meta.dir, '..', '..');
-const compileScript = fileURLToPath(new URL('./rivus-compile.ts', import.meta.url));
-const COMPILE_TIMEOUT_MS = 3500;
-
-async function readTextWithTimeout(stream: ReadableStream, timeoutMs: number, label: string): Promise<string> {
-    const timer = setTimeout(() => {
-        try {
-            stream.cancel(`${label} read timeout`);
-        } catch {}
-    }, timeoutMs);
-
-    try {
-        return await new Response(stream).text();
-    } finally {
-        clearTimeout(timer);
-    }
-}
-
-async function compile(code: string, options: { timeoutMs?: number; strictSemantic?: boolean } = {}): Promise<string> {
-    const timeoutMs = options.timeoutMs ?? COMPILE_TIMEOUT_MS;
+async function compile(code: string, options: { strictSemantic?: boolean } = {}): Promise<string> {
     const strictSemantic = options.strictSemantic ?? false;
 
-    const proc = Bun.spawn({
-        cmd: ['bun', compileScript],
-        cwd: repoRoot,
-        env: {
-            ...process.env,
-            RIVUS_STRICT_SEMANTIC: strictSemantic ? '1' : '0',
-        },
-        stdin: 'pipe',
-        stdout: 'pipe',
-        stderr: 'pipe',
-    });
-
-    proc.stdin.write(code);
-    proc.stdin.end();
-
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-            try {
-                proc.kill('SIGKILL');
-            } catch {}
-            try {
-                proc.stdout.cancel('compile timeout');
-            } catch {}
-            try {
-                proc.stderr.cancel('compile timeout');
-            } catch {}
-            reject(new Error(`Timeout after ${timeoutMs}ms`));
-        }, timeoutMs);
-    });
-
-    const exitCode = await Promise.race([proc.exited, timeout]).finally(() => {
-        if (timeoutId !== undefined) {
-            clearTimeout(timeoutId);
-        }
-    });
-    const [stdout, stderr] = await Promise.all([readTextWithTimeout(proc.stdout, 250, 'stdout'), readTextWithTimeout(proc.stderr, 250, 'stderr')]);
-
-    const errText = stderr.trim();
-    if (exitCode !== 0) {
-        throw new Error(errText || `Compile failed (exit ${exitCode})`);
+    const lexResult = lexare(code);
+    if (lexResult.errores.length > 0) {
+        const msgs = lexResult.errores.map((e: any) => `${e.codice ?? 'L???'} ${e.textus || String(e)}`).join('; ');
+        throw new Error(`Tokenizer errors: ${msgs}`);
     }
-    if (errText.length > 0) {
-        throw new Error(errText);
+
+    const parseResult = resolvere(lexResult.symbola);
+    if (parseResult.errores.length > 0) {
+        const msgs = parseResult.errores.map((e: any) => `${e.codice ?? 'P???'} ${e.nuntius || String(e)}`).join('; ');
+        throw new Error(`Parse errors: ${msgs}`);
     }
-    return stdout;
+    if (!parseResult.programma) {
+        throw new Error('Parse failed: no program');
+    }
+
+    const semanticResult = analyze(parseResult.programma as Programma);
+    if (strictSemantic && semanticResult.errores.length > 0) {
+        const msgs = semanticResult.errores.map((e: any) => e.nuntius || e.textus || String(e)).join('; ');
+        throw new Error(`Semantic errors: ${msgs}`);
+    }
+
+    return generateTs((parseResult.programma as Programma).corpus as Sententia[]);
 }
 
 // =============================================================================

@@ -132,8 +132,18 @@ functio parseExSententia(Resolvitor r) -> Sententia {
     # Parse iterable expression
     fixum iterabile = r.expressia()
 
-    # Expect 'pro'
-    p.expectaVerbum("pro", ParserErrorCodice.ExpectaturPro)
+    varia asynca = falsum
+    varia expectaPro = verum
+    si p.probaVerbum("fiet") {
+        asynca = verum
+        expectaPro = falsum
+        p.procede()
+    }
+
+    # Expect 'pro' for sync loops
+    si expectaPro {
+        p.expectaVerbum("pro", ParserErrorCodice.ExpectaturPro)
+    }
 
     # Parse variable name
     fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
@@ -154,7 +164,7 @@ functio parseExSententia(Resolvitor r) -> Sententia {
         variabilis: variabilis,
         iterabile: iterabile,
         corpus: corpus,
-        asynca: falsum,
+        asynca: asynca,
         cape: cape
     } qua Sententia
 }
@@ -272,6 +282,31 @@ functio parseCorpusBrevis(Resolvitor r) -> Sententia {
         redde finge ReddeSententia {
             locus: locus,
             valor: valor
+        } qua Sententia
+    }
+
+    # Short-form block: fac ... fine
+    si p.probaVerbum("fac") {
+        p.procede()
+        varia corpus = [] qua lista<Sententia>
+
+        dum non p.estFinis() {
+            fixum s = p.specta(0)
+            si (s.species == SymbolumGenus.Verbum et s.verbum == "fine") aut (s.species == SymbolumGenus.Nomen et s.valor == "fine") {
+                p.procede()
+                redde finge MassaSententia {
+                    locus: locus,
+                    corpus: corpus
+                } qua Sententia
+            }
+
+            corpus.adde(r.sententia())
+        }
+
+        # Fallback: unterminated short block
+        redde finge MassaSententia {
+            locus: locus,
+            corpus: corpus
         } qua Sententia
     }
 

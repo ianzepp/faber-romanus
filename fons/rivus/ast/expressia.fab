@@ -52,6 +52,14 @@ genus CatenaGradus {
     Expressia? argumentum    # optional argument (5 in "prima 5")
 }
 
+# Ab filter clause (ubi condition or boolean shorthand)
+@ publicum
+genus AbFiltrum {
+    Locus locus
+    bivalens habetUbi        # true if 'ubi' form was used
+    Expressia condicio
+}
+
 # ============================================================================
 # EXPRESSIA DISCRETIO
 # ============================================================================
@@ -243,12 +251,14 @@ discretio Expressia {
         textus modus              # "all" | "line"
     }
 
-    # Ab (from/pipe) expression for collection operations
-    # Example: items ab filtrata(pro x: x > 0) ab mappata(pro x: x * 2)
+    # Ab expression for collection filtering DSL
+    # Example: ab items activus, prima 5
     AbExpressia {
         Locus locus
         Expressia fons           # source
-        Expressia transformatio
+        bivalens negata          # true if "non" used
+        AbFiltrum? filtrum       # optional filter clause
+        lista<CatenaGradus>? gradus
     }
 
     # -------------------------------------------------------------------------

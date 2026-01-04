@@ -4,6 +4,7 @@
 # Uses scriptum() for string formatting for consistency.
 
 ex "../../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum
+ex "../../../ast/expressia" importa AbFiltrum, CatenaGradus
 ex "../../../ast/sententia" importa Sententia, VariaGenus
 ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa TsGenerator
@@ -116,6 +117,34 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu AssignatioExpressia ut e {
+            # Map assignments for tabula<K,V>
+            discerne e.sinister {
+                casu MembrumExpressia ut m {
+                    si m.computatum qua bivalens {
+                        fixum tabulaNomen = invenitTabulaNomen(m.obiectum, g)
+                        si nonnihil tabulaNomen {
+                            fixum obj = genExpressia(m.obiectum, g)
+                            fixum prop = genNudaExpressia(m.proprietas, g)
+                            fixum right = genNudaExpressia(e.dexter, g)
+
+                            fixum getExpr = genTabulaGet(obj, prop, m.optivum qua bivalens, m.nonNullum qua bivalens)
+                            fixum setStmt = genTabulaSet(obj, prop, "__next", m.optivum qua bivalens, m.nonNullum qua bivalens)
+
+                            si e.signum == "=" {
+                                redde scriptum("(() => { const __next = §; §; return __next; })()", right, setStmt)
+                            }
+
+                            varia op = e.signum qua textus
+                            si op.longitudo() > 1 et op.sectio(op.longitudo() - 1, op.longitudo()) == "=" {
+                                op = op.sectio(0, op.longitudo() - 1)
+                            }
+
+                            redde scriptum("(() => { const __next = (§ as any) § §; §; return __next; })()", getExpr, op, right, setStmt)
+                        }
+                    }
+                }
+            }
+
             # WHY: Avoid extra parens on RHS for assignments.
             redde scriptum("§ § §", genExpressia(e.sinister, g), e.signum, genNudaExpressia(e.dexter, g))
         }
@@ -137,8 +166,8 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu CatenaExpressia ut e {
-            # Collection DSL chains - TODO: implement properly
-            redde genExpressia(e.fons, g)
+            fixum fons = genExpressia(e.fons, g)
+            redde applicaCatenaGradus(fons, e.gradus qua lista<CatenaGradus>, g)
         }
 
         casu PraefixumExpressia ut e {
@@ -198,9 +227,28 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         casu MembrumExpressia ut e {
             fixum obj = genExpressia(e.obiectum, g)
             si e.computatum qua bivalens {
-                fixum idx = genExpressia(e.proprietas, g)
+                discerne e.proprietas {
+                    casu AmbitusExpressia ut a {
+                        redde genSectioAccess(obj, a, e.optivum qua bivalens, e.nonNullum qua bivalens, g)
+                    }
+                }
+
+                fixum idx = genNudaExpressia(e.proprietas, g)
+
+                fixum tabulaNomen = invenitTabulaNomen(e.obiectum, g)
+                si nonnihil tabulaNomen {
+                    redde genTabulaGet(obj, idx, e.optivum qua bivalens, e.nonNullum qua bivalens)
+                }
+
+                si estNegativusIndex(e.proprietas) {
+                    redde genNegativusAccess(obj, idx, e.optivum qua bivalens, e.nonNullum qua bivalens)
+                }
+
                 si e.optivum qua bivalens {
                     redde scriptum("§?.[§]", obj, idx)
+                }
+                si e.nonNullum qua bivalens {
+                    redde scriptum("§![§]", obj, idx)
                 }
                 redde scriptum("§[§]", obj, idx)
             }
@@ -255,7 +303,34 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu AbExpressia ut e {
-            redde scriptum("§.§", genExpressia(e.fons, g), genExpressia(e.transformatio, g))
+            fixum fons = genExpressia(e.fons, g)
+
+            si e.filtrum == nihil {
+                si nonnihil e.gradus {
+                    redde applicaCatenaGradus(fons, e.gradus qua lista<CatenaGradus>, g)
+                }
+                redde fons
+            }
+
+            fixum filtrum = e.filtrum qua AbFiltrum
+            fixum param = "_x"
+            varia condicio = ""
+
+            si filtrum.habetUbi {
+                condicio = genExpressia(filtrum.condicio, g)
+            } secus {
+                condicio = scriptum("§.§", param, genExpressia(filtrum.condicio, g))
+            }
+
+            si e.negata qua bivalens {
+                condicio = scriptum("!(§)", condicio)
+            }
+
+            varia result = scriptum("§.filter(§ => §)", fons, param, condicio)
+            si nonnihil e.gradus {
+                result = applicaCatenaGradus(result, e.gradus qua lista<CatenaGradus>, g)
+            }
+            redde result
         }
 
         # Collections
@@ -437,6 +512,157 @@ functio genAmbitusExpressia(Expressia expr, TsGenerator g) -> textus {
     }
 
     redde genExpressia(expr, g)
+}
+
+functio applicaCatenaGradus(textus fons, lista<CatenaGradus> gradus, TsGenerator g) -> textus {
+    varia result = fons
+    ex gradus pro gradusSingulus {
+        fixum verbum = gradusSingulus.verbum qua textus
+        elige verbum {
+            casu "prima" {
+                fixum arg = genExpressia(gradusSingulus.argumentum qua Expressia, g)
+                result = scriptum("§.slice(0, §)", result, arg)
+            }
+            casu "ultima" {
+                fixum arg = genExpressia(gradusSingulus.argumentum qua Expressia, g)
+                result = scriptum("§.slice(-§)", result, arg)
+            }
+            casu "summa" {
+                result = scriptum("§.reduce((a, b) => a + b, 0)", result)
+            }
+        }
+    }
+    redde result
+}
+
+functio invenitTabulaNomen(Expressia obiectum, TsGenerator g) -> textus? {
+    discerne obiectum {
+        casu Nomen ut n {
+            fixum nomen = n.valor qua textus
+            ex g.tabulaNominata pro item {
+                si item == nomen {
+                    redde nomen
+                }
+            }
+        }
+    }
+    redde nihil
+}
+
+functio genTabulaGet(textus obj, textus prop, bivalens optivum, bivalens nonNullum) -> textus {
+    si optivum {
+        redde scriptum("§?.get(§)", obj, prop)
+    }
+    si nonNullum {
+        redde scriptum("§!.get(§)", obj, prop)
+    }
+    redde scriptum("§.get(§)", obj, prop)
+}
+
+functio genTabulaSet(textus obj, textus prop, textus valor, bivalens optivum, bivalens nonNullum) -> textus {
+    si optivum {
+        redde scriptum("§?.set(§, §)", obj, prop, valor)
+    }
+    si nonNullum {
+        redde scriptum("§!.set(§, §)", obj, prop, valor)
+    }
+    redde scriptum("§.set(§, §)", obj, prop, valor)
+}
+
+functio estNegativusIndex(Expressia expr) -> bivalens {
+    discerne expr {
+        casu UnariaExpressia ut u {
+            redde (u.signum qua textus) == "-"
+        }
+    }
+    redde falsum
+}
+
+functio genNegativusAccess(textus obj, textus idx, bivalens optivum, bivalens nonNullum) -> textus {
+    si optivum {
+        redde scriptum("§?.at(§)", obj, idx)
+    }
+    si nonNullum {
+        redde scriptum("§!.at(§)", obj, idx)
+    }
+    redde scriptum("§.at(§)", obj, idx)
+}
+
+functio genSectioAccess(textus obj, Expressia range, bivalens optivum, bivalens nonNullum, TsGenerator g) -> textus {
+    discerne range {
+        casu AmbitusExpressia ut a {
+            fixum initium = genExpressia(a.initium, g)
+            fixum finis = genExpressia(a.finis, g)
+            varia receiver = obj
+            si optivum {
+                receiver = scriptum("§?", receiver)
+            } sin nonNullum {
+                receiver = scriptum("§!", receiver)
+            }
+
+            si a.inclusivum qua bivalens {
+                fixum literal = legeNumerusLiteralis(a.finis)
+                si nonnihil literal {
+                    fixum inclusive = (literal qua numerus) + 1
+                    si inclusive == 0 {
+                        redde scriptum("§.slice(§)", receiver, initium)
+                    }
+                    redde scriptum("§.slice(§, §)", receiver, initium, inclusive)
+                }
+                redde scriptum("§.slice(§, § + 1)", receiver, initium, finis)
+            }
+
+            redde scriptum("§.slice(§, §)", receiver, initium, finis)
+        }
+    }
+
+    redde scriptum("§[§]", obj, genExpressia(range, g))
+}
+
+functio legeNumerusLiteralis(Expressia expr) -> numerus? {
+    discerne expr {
+        casu Littera ut l {
+            si l.species == LitteraGenus.Numerus {
+                redde legeNumerusTextus(l.crudus)
+            }
+        }
+        casu UnariaExpressia ut u {
+            si (u.signum qua textus) == "-" {
+                discerne u.argumentum {
+                    casu Littera ut l {
+                        si l.species == LitteraGenus.Numerus {
+                            redde -legeNumerusTextus(l.crudus)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    redde nihil
+}
+
+functio legeNumerusTextus(textus crudus) -> numerus {
+    varia result = 0
+    varia i = 0
+    dum i < crudus.longitudo() {
+        fixum c = crudus.sectio(i, i + 1)
+        varia digit = 0
+        elige c {
+            casu "0" { digit = 0 }
+            casu "1" { digit = 1 }
+            casu "2" { digit = 2 }
+            casu "3" { digit = 3 }
+            casu "4" { digit = 4 }
+            casu "5" { digit = 5 }
+            casu "6" { digit = 6 }
+            casu "7" { digit = 7 }
+            casu "8" { digit = 8 }
+            casu "9" { digit = 9 }
+        }
+        result = result * 10 + digit
+        i += 1
+    }
+    redde result
 }
 
 @ publica

@@ -122,7 +122,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         }
 
         casu FacSententia ut s {
-            redde genFac(s.corpus qua Sententia, s.condicio, g)
+            redde genFac(s.corpus qua Sententia, s.condicio, s.cape, g)
         }
 
         casu AdfirmaSententia ut s {
@@ -456,8 +456,20 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         fixum prevInFiunt = g.inFiunt
         fixum prevInFiet = g.inFiet
         fixum prevInFient = g.inFient
+        fixum prevTabula = g.tabulaNominata
+
+        varia localTabula = [] qua lista<textus>
+        ex parametra pro param {
+            si nonnihil param.typus {
+                fixum typus = param.typus qua TypusAnnotatio
+                si typus.nomen == "tabula" {
+                    localTabula.adde(param.nomen)
+                }
+            }
+        }
 
         g.inGenerator = localGenerator
+        g.tabulaNominata = localTabula
 
         si nonnihil reddeVerbum {
             g.inFlumina = useFit aut useFiet
@@ -488,6 +500,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         g.inFiunt = prevInFiunt
         g.inFiet = prevInFiet
         g.inFient = prevInFient
+        g.tabulaNominata = prevTabula
 
         si useFit {
             fixum ind = g.ind()
@@ -1143,14 +1156,32 @@ functio genIace(bivalens fatale, Expressia argumentum, TsGenerator g) -> textus 
 }
 
 @ publica
-functio genFac(Sententia corpus, ignotum condicio, TsGenerator g) -> textus {
+functio genFac(Sententia corpus, ignotum condicio, ignotum cape, TsGenerator g) -> textus {
     g.intraProfundum()
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
 
     si nonnihil condicio {
-        # do-while loop
-        redde scriptum("§do {{\n§\n§}} while (§);", g.ind(), body, g.ind(), genExpressia(condicio qua Expressia, g))
+        fixum test = genExpressia(condicio qua Expressia, g)
+        fixum loop = scriptum("§do {{\n§\n§}} while (§);", g.ind(), body, g.ind(), test)
+
+        si nonnihil cape {
+            fixum c = cape qua CapeClausula
+            g.intraProfundum()
+            fixum catchBody = genSententia(c.corpus, g)
+            g.exiProfundum()
+            redde scriptum("§try {\n§\n§} catch (§) {\n§\n§}", g.ind(), loop, g.ind(), c.param, catchBody, g.ind())
+        }
+
+        redde loop
+    }
+
+    si nonnihil cape {
+        fixum c = cape qua CapeClausula
+        g.intraProfundum()
+        fixum catchBody = genSententia(c.corpus, g)
+        g.exiProfundum()
+        redde scriptum("§try {\n§\n§} catch (§) {\n§\n§}", g.ind(), body, g.ind(), c.param, catchBody, g.ind())
     }
 
     # Plain block
@@ -1217,6 +1248,9 @@ functio genIncipit(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
             result = scriptum("§\n§", result, genSententia(ergo qua Sententia, g))
         }
         redde result
+    }
+    si nonnihil ergo {
+        redde genSententia(ergo qua Sententia, g)
     }
     redde ""
 }

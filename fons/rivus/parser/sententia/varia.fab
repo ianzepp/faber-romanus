@@ -207,15 +207,15 @@ functio parseVariaSententia(Resolvitor r) -> Sententia {
     si p.estTypusNomen(p.specta(0)) {
         # Builtin type: fixum numerus x = 42
         adnotatio = r.adnotatio()
-        nomen = parseNomen(r)
+        nomen = parseNomenVelVerbum(r)
     } sin p.proba(SymbolumGenus.Nomen) et p.specta(1).species === SymbolumGenus.Nomen {
         # Two identifiers: first is type, second is name
         # Handles user-defined types: fixum UserId id = 42
         adnotatio = r.adnotatio()
-        nomen = parseNomen(r)
+        nomen = parseNomenVelVerbum(r)
     } secus {
         # Just a name (type inference): fixum x = 42
-        nomen = parseNomen(r)
+        nomen = parseNomenVelVerbum(r)
     }
 
     # -------------------------------------------------------------------------

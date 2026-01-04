@@ -21,6 +21,7 @@
 ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum
+ex "../../ast/expressia" importa AbFiltrum, CatenaGradus
 ex "../../ast/typus" importa TypusAnnotatio
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../../ast/sententia" importa Sententia
@@ -106,6 +107,11 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
         } qua Expressia
     }
 
+    # Ab expression (collection filtering DSL)
+    si p.probaVerbum("ab") {
+        redde parseAbExpressia(r)
+    }
+
     # Identifier
     si sym.species == SymbolumGenus.Nomen {
         p.procede()
@@ -171,6 +177,20 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
         redde parseRegexExpressia(r)
     }
 
+    # Collection DSL expression: ex items prima 5
+    si p.probaVerbum("ex") {
+        redde parseCatenaExpressia(r)
+    }
+
+    # Keyword identifiers (allow keywords as names in expression position)
+    si sym.species == SymbolumGenus.Verbum {
+        p.procede()
+        redde finge Nomen {
+            locus: locus,
+            valor: sym.valor
+        } qua Expressia
+    }
+
     # Fallback: report error and return placeholder
     p.renuncia(ParserErrorCodice.ExpectaturExpressia, scriptum("got '§'", sym.valor))
     si non p.estFinis() {
@@ -180,6 +200,136 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
         locus: locus,
         valor: ""
     } qua Expressia
+}
+
+# Parse collection DSL expression (ex ... transforms)
+@ publica
+functio parseCatenaExpressia(Resolvitor r) -> Expressia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    p.expectaVerbum("ex", ParserErrorCodice.ExpectaturEx)
+    fixum fons = r.expressia()
+
+    varia gradus = parseCatenaGradus(r)
+    si gradus.longitudo() == 0 {
+        p.renuncia(ParserErrorCodice.ExpectaturExpressia, "expected DSL transform after ex")
+    }
+
+    redde finge CatenaExpressia {
+        locus: locus,
+        fons: fons,
+        gradus: gradus
+    } qua Expressia
+}
+
+# Parse ab expression (collection filtering DSL)
+#
+# GRAMMAR:
+#   abExpr := 'ab' expression filter? (',' transform)*
+#   filter := ['non'] ('ubi' expression | IDENT)
+#   transform := ('prima' | 'ultima' | 'summa') expression?
+@ publica
+functio parseAbExpressia(Resolvitor r) -> Expressia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    p.expectaVerbum("ab", ParserErrorCodice.ExpectaturExpressia)
+
+    fixum fons = r.expressia()
+
+    varia negata = falsum
+    si p.probaVerbum("non") {
+        negata = verum
+        p.procede()
+    }
+
+    varia filtrum = nihil qua AbFiltrum?
+
+    functio estCatenaVerbumSym(symbolum) -> bivalens {
+        si symbolum.species !== SymbolumGenus.Verbum {
+            redde falsum
+        }
+        si symbolum.verbum inter ["prima", "ultima", "summa"] {
+            redde verum
+        }
+        redde falsum
+    }
+
+    si non p.proba(SymbolumGenus.Coma) {
+        si p.probaVerbum("ubi") {
+            p.procede()
+            fixum condicio = r.expressia()
+            filtrum = {
+                locus: locus,
+                habetUbi: verum,
+                condicio: condicio
+            } qua AbFiltrum
+        } sin (p.proba(SymbolumGenus.Nomen) aut p.proba(SymbolumGenus.Verbum)) {
+            fixum prox = p.specta(0)
+            si non estCatenaVerbumSym(prox) et non p.probaVerbum("pro") et non p.probaVerbum("fit") et non p.probaVerbum("fiet") {
+                fixum nomenSym = p.procede()
+                filtrum = {
+                    locus: nomenSym.locus,
+                    habetUbi: falsum,
+                    condicio: finge Nomen {
+                        locus: nomenSym.locus,
+                        valor: nomenSym.valor
+                    } qua Expressia
+                } qua AbFiltrum
+            }
+        }
+    }
+
+    varia gradus = nihil qua lista<CatenaGradus>?
+    si p.congruet(SymbolumGenus.Coma) aut estCatenaVerbumSym(p.specta(0)) {
+        gradus = parseCatenaGradus(r)
+    }
+
+    redde finge AbExpressia {
+        locus: locus,
+        fons: fons,
+        negata: negata,
+        filtrum: filtrum,
+        gradus: gradus
+    } qua Expressia
+}
+
+@ publica
+functio parseCatenaGradus(Resolvitor r) -> lista<CatenaGradus> {
+    fixum p = r.parser()
+    varia gradus = [] qua lista<CatenaGradus>
+
+    functio estCatenaVerbumSym(symbolum) -> bivalens {
+        si symbolum.species !== SymbolumGenus.Verbum {
+            redde falsum
+        }
+        si symbolum.verbum inter ["prima", "ultima", "summa"] {
+            redde verum
+        }
+        redde falsum
+    }
+
+    dum estCatenaVerbumSym(p.specta(0)) {
+        fixum verbSym = p.procede()
+        varia argumentum = nihil qua Expressia?
+
+        si verbSym.verbum == "prima" aut verbSym.verbum == "ultima" {
+            argumentum = r.expressia()
+        }
+
+        gradus.adde({
+            locus: verbSym.locus,
+            verbum: verbSym.verbum,
+            argumentum: argumentum
+        } qua CatenaGradus)
+
+        si non p.congruet(SymbolumGenus.Coma) {
+            rumpe
+        }
+    }
+
+    redde gradus
 }
 
 # Parse array literal

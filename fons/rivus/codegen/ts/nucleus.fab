@@ -40,6 +40,9 @@ genus TsGenerator {
     # Whether we're inside a class body (for visibility handling)
     bivalens inClass
 
+    # Current function-scope tabula names (for Map get/set lowering)
+    lista<textus> tabulaNominata
+
     # Features used that need preamble setup
     RequiredFeatures features
 
@@ -108,7 +111,8 @@ functio creaTsGenerator() -> TsGenerator {
         inFiet: falsum,
         inFient: falsum,
         inClass: falsum,
-        features: creaRequiredFeatures()
+        features: creaRequiredFeatures(),
+        tabulaNominata: [] qua lista<textus>
     } qua TsGenerator
 }
 
@@ -124,6 +128,7 @@ functio creaTsGeneratorCum(textus indentum) -> TsGenerator {
         inFiet: falsum,
         inFient: falsum,
         inClass: falsum,
-        features: creaRequiredFeatures()
+        features: creaRequiredFeatures(),
+        tabulaNominata: [] qua lista<textus>
     } qua TsGenerator
 }
