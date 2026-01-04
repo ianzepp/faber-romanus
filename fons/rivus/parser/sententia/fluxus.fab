@@ -140,11 +140,13 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
             fixum variansNomen = variansNomenSym.valor
 
             # Parse optional bindings: ut alias OR pro x, y, z
+            # WHY: 'ut' binds the whole variant, 'pro' binds fields positionally.
+            varia alias = nihil qua textus?
             varia vincula = [] qua lista<textus>
             si p.probaVerbum("ut") {
                 p.procede()
                 fixum aliasSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
-                vincula.adde(aliasSym.valor)
+                alias = aliasSym.valor
             } sin p.probaVerbum("pro") {
                 p.procede()
                 fac {
@@ -159,6 +161,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
             casus.adde({
                 locus: casusLocus,
                 variansNomen: variansNomen,
+                alias: alias,
                 vincula: vincula,
                 consequens: consequens
             } qua VariansCasus)

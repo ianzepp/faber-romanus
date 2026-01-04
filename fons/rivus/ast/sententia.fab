@@ -183,7 +183,8 @@ genus EligeCasus {
 genus VariansCasus {
     Locus locus
     textus variansNomen
-    lista<textus> vincula        # field bindings
+    textus? alias                # 'ut' binds entire variant
+    lista<textus> vincula        # field bindings from 'pro'
     Sententia consequens         # MassaSententia
 }
 

@@ -155,7 +155,19 @@ functio analyzeDiscerne(Resolvitor r, Sententia discerneStmt) -> vacuum {
                 # Enter scope for pattern bindings
                 a.intraScopum(ScopusSpecies.Massa)
 
-                # Define bound variable if present
+                # Define bound variables if present
+                # WHY: 'ut' introduces an alias, 'pro' introduces field bindings.
+                si nonnihil casus.alias {
+                    fixum alias = casus.alias qua textus
+                    a.scopus.symbola[alias] = {
+                        nomen: alias,
+                        semanticTypus: IGNOTUM,  # TODO: infer from variant
+                        species: SymbolumSpecies.Variabilis,
+                        mutabilis: falsum,
+                        locus: casus.locus
+                    }
+                }
+
                 ex casus.vincula pro vinculum {
                     a.scopus.symbola[vinculum] = {
                         nomen: vinculum,

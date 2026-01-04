@@ -653,8 +653,11 @@ functio genDiscerne(Expressia discriminans, lista<VariansCasus> casus, TsGenerat
 
         g.intraProfundum()
 
-        # Bind fields
-        si c.vincula.longitudo() > 0 {
+        # Bind alias or fields
+        si nonnihil c.alias {
+            # WHY: 'ut' binds the whole variant for access via alias.
+            result = scriptum("§§const § = §;\n", result, g.ind(), c.alias, disc)
+        } sin c.vincula.longitudo() > 0 {
             result = scriptum("§§const {{ § }} = §;\n", result, g.ind(), c.vincula.coniunge(", "), disc)
         }
 
