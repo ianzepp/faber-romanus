@@ -122,6 +122,20 @@ If Faber-English ≈ Faber-Latin, then the mechanism is primarily structure/regu
 
 This claim builds compiler credibility, which is a major part of reputation.
 
+### Rivus (Bootstrap Compiler) as a Conformance Target
+
+The repository includes a bootstrap compiler written in Faber itself (`fons/rivus/`). This is not the primary development compiler; it is a **conformance target** and regression gate.
+
+Rivus is strategically valuable because it turns Claim C into something you can repeatedly verify on a non-toy workload (a real compiler), without needing any model experiments.
+
+**Harness-friendly checks** (externally scored):
+
+- `bun run build:rivus` success rate
+- `bun run test:rivus` pass rate
+- Determinism (same input → identical outputs, or stable hashes)
+- Failure taxonomy distribution (parse/semantic/codegen/runtime/test)
+- Feature coverage (what subset is exercised by Rivus)
+
 ## What Makes This “Research-Grade”
 
 ### 1) Reproducibility First
