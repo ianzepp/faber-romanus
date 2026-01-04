@@ -80,15 +80,15 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
 
         # Control flow
         casu SiSententia ut s {
-            redde genSi(s.condicio, s.consequens qua Sententia, s.alternans, g)
+            redde genSi(s.condicio, s.consequens qua Sententia, s.alternans, s.cape, g)
         }
 
         casu DumSententia ut s {
-            redde genDum(s.condicio, s.corpus qua Sententia, g)
+            redde genDum(s.condicio, s.corpus qua Sententia, s.cape, g)
         }
 
         casu IteratioSententia ut s {
-            redde genIteratio(s.species qua IteratioGenus, s.variabilis qua textus, s.iterabile, s.corpus qua Sententia, s.asynca qua bivalens, g)
+            redde genIteratio(s.species qua IteratioGenus, s.variabilis qua textus, s.iterabile, s.corpus qua Sententia, s.asynca qua bivalens, s.cape, g)
         }
 
         casu InSententia ut s {
@@ -169,7 +169,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         }
 
         casu ProbaSententia ut s {
-            redde genProba(s.nomen qua textus, s.modificator, s.corpus qua Sententia, g)
+            redde genProba(s.nomen qua textus, s.modificator, s.ratioModificatoris, s.corpus qua Sententia, g)
         }
 
         casu PraeparaMassa ut s {
@@ -524,12 +524,24 @@ functio genDiscretio(textus nomen, ignotum generaParametra, lista<VariansDeclara
 # =============================================================================
 
 @ publica
-functio genSi(Expressia condicio, Sententia consequens, ignotum alternans, TsGenerator g) -> textus {
+functio genSi(Expressia condicio, Sententia consequens, ignotum alternans, ignotum cape, TsGenerator g) -> textus {
     g.intraProfundum()
     fixum consBody = genSententia(consequens, g)
     g.exiProfundum()
 
-    varia result = scriptum("§if (§) {{\n§\n§}}", g.ind(), genExpressia(condicio, g), consBody, g.ind())
+    varia result = ""
+
+    # WHY: si allows a catch clause, so we wrap the if in try/catch.
+    si nonnihil cape {
+        fixum c = cape qua CapeClausula
+        g.intraProfundum()
+        fixum ifBody = scriptum("§if (§) {{\n§\n§}}", g.ind(), genExpressia(condicio, g), consBody, g.ind())
+        g.exiProfundum()
+
+        result = scriptum("§try {{\n§\n§}} catch (§) §", g.ind(), ifBody, g.ind(), c.param, genSententia(c.corpus, g))
+    } secus {
+        result = scriptum("§if (§) {{\n§\n§}}", g.ind(), genExpressia(condicio, g), consBody, g.ind())
+    }
 
     si nonnihil alternans {
         g.intraProfundum()
@@ -542,15 +554,24 @@ functio genSi(Expressia condicio, Sententia consequens, ignotum alternans, TsGen
 }
 
 @ publica
-functio genDum(Expressia condicio, Sententia corpus, TsGenerator g) -> textus {
+functio genDum(Expressia condicio, Sententia corpus, ignotum cape, TsGenerator g) -> textus {
     g.intraProfundum()
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
-    redde scriptum("§while (§) {{\n§\n§}}", g.ind(), genExpressia(condicio, g), body, g.ind())
+
+    fixum loop = scriptum("§while (§) {{\n§\n§}}", g.ind(), genExpressia(condicio, g), body, g.ind())
+
+    # WHY: dum allows cape; wrap the loop in try/catch.
+    si nonnihil cape {
+        fixum c = cape qua CapeClausula
+        redde scriptum("§try {{\n§\n§}} catch (§) §", g.ind(), loop, g.ind(), c.param, genSententia(c.corpus, g))
+    }
+
+    redde loop
 }
 
 @ publica
-functio genIteratio(IteratioGenus species, textus variabilis, Expressia iterabile, Sententia corpus, bivalens asynca, TsGenerator g) -> textus {
+functio genIteratio(IteratioGenus species, textus variabilis, Expressia iterabile, Sententia corpus, bivalens asynca, ignotum cape, TsGenerator g) -> textus {
     fixum keyword = species == IteratioGenus.De sic "in" secus "of"
     fixum asyncPrefix = asynca sic "await " secus ""
 
@@ -558,7 +579,38 @@ functio genIteratio(IteratioGenus species, textus variabilis, Expressia iterabil
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
 
-    redde scriptum("§for §(const § § §) {{\n§\n§}}", g.ind(), asyncPrefix, variabilis, keyword, genExpressia(iterabile, g), body, g.ind())
+    # WHY: Ranges become traditional for loops for efficiency.
+    discerne iterabile {
+        casu AmbitusExpressia ut a {
+            fixum initium = genExpressia(a.initium, g)
+            fixum finis = genExpressia(a.finis, g)
+            fixum op = (a.inclusivum qua bivalens) sic "<=" secus "<"
+
+            varia incrementum = scriptum("§++", variabilis)
+            si nonnihil a.gradus {
+                incrementum = scriptum("§ += §", variabilis, genExpressia(a.gradus qua Expressia, g))
+            }
+
+            fixum header = scriptum("for §(let § = §; § § §; §)", asyncPrefix, variabilis, initium, variabilis, op, finis, incrementum)
+            fixum loop = scriptum("§§ {{\n§\n§}}", g.ind(), header, body, g.ind())
+
+            si nonnihil cape {
+                fixum c = cape qua CapeClausula
+                redde scriptum("§try {{\n§\n§}} catch (§) §", g.ind(), loop, g.ind(), c.param, genSententia(c.corpus, g))
+            }
+
+            redde loop
+        }
+    }
+
+    fixum loop = scriptum("§for §(const § § §) {{\n§\n§}}", g.ind(), asyncPrefix, variabilis, keyword, genExpressia(iterabile, g), body, g.ind())
+
+    si nonnihil cape {
+        fixum c = cape qua CapeClausula
+        redde scriptum("§try {{\n§\n§}} catch (§) §", g.ind(), loop, g.ind(), c.param, genSententia(c.corpus, g))
+    }
+
+    redde loop
 }
 
 @ publica
@@ -682,10 +734,17 @@ functio genFac(Sententia corpus, ignotum condicio, TsGenerator g) -> textus {
 
 @ publica
 functio genAdfirma(Expressia condicio, ignotum nuntius, TsGenerator g) -> textus {
+    fixum test = genExpressia(condicio, g)
+
+    varia nuntiusTextus = ""
     si nonnihil nuntius {
-        redde scriptum("§console.assert(§, §);", g.ind(), genExpressia(condicio, g), genExpressia(nuntius qua Expressia, g))
+        nuntiusTextus = genExpressia(nuntius qua Expressia, g)
+    } secus {
+        # WHY: Auto-generate assertion message from expression.
+        nuntiusTextus = scriptum("\"Assertion failed: §\"", test.replace("\"", "\\\""))
     }
-    redde scriptum("§console.assert(§);", g.ind(), genExpressia(condicio, g))
+
+    redde scriptum("§if (!(§)) { throw new Error(§); }", g.ind(), test, nuntiusTextus)
 }
 
 # =============================================================================
@@ -783,25 +842,38 @@ functio genCura(ignotum res, textus vinculum, Sententia corpus, bivalens asynca,
 
 @ publica
 functio genProbandum(textus nomen, lista<Sententia> corpus, TsGenerator g) -> textus {
+    varia lines = [] qua lista<textus>
+    lines.adde(scriptum("§describe(\"§\", () => {{", g.ind(), nomen))
+
     g.intraProfundum()
-    varia body = "" qua textus
     ex corpus pro stmt {
-        body = scriptum("§§\n", body, genSententia(stmt, g))
+        lines.adde(genSententia(stmt, g))
     }
     g.exiProfundum()
 
-    redde scriptum("§describe('§', () => {{\n§§}});", g.ind(), nomen, body, g.ind())
+    lines.adde(scriptum("§});", g.ind()))
+    redde lines.coniunge("\n")
 }
 
 @ publica
-functio genProba(textus nomen, ignotum modificator, Sententia corpus, TsGenerator g) -> textus {
-    varia testFn = "it"
+functio genProba(textus nomen, ignotum modificator, textus? ratioModificatoris, Sententia corpus, TsGenerator g) -> textus {
+    varia ratio = ""
+    si nonnihil ratioModificatoris {
+        ratio = scriptum("§: ", ratioModificatoris)
+    }
+
     si nonnihil modificator {
         fixum mod = modificator qua ProbaModificator
+        fixum titulus = scriptum("§§", ratio, nomen)
+
         si mod == ProbaModificator.Omitte {
-            testFn = "it.skip"
-        } sin mod == ProbaModificator.Futurum {
-            testFn = "it.todo"
+            g.intraProfundum()
+            fixum body = genSententia(corpus, g)
+            g.exiProfundum()
+            redde scriptum("§test.skip(\"§\", () => {{\n§\n§}});", g.ind(), titulus, body, g.ind())
+        }
+        si mod == ProbaModificator.Futurum {
+            redde scriptum("§test.todo(\"§\");", g.ind(), titulus)
         }
     }
 
@@ -809,7 +881,7 @@ functio genProba(textus nomen, ignotum modificator, Sententia corpus, TsGenerato
     fixum body = genSententia(corpus, g)
     g.exiProfundum()
 
-    redde scriptum("§§('§', () => {{\n§\n§}});", g.ind(), testFn, nomen, body, g.ind())
+    redde scriptum("§test(\"§\", () => {{\n§\n§}});", g.ind(), nomen, body, g.ind())
 }
 
 @ publica

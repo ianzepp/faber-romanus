@@ -25,8 +25,18 @@ functio parseProbandumSententia(Resolvitor r) -> Sententia {
 
     p.expectaVerbum("probandum", ParserErrorCodice.ExpectaturProbandum)
 
-    fixum nomenSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
-    fixum nomen = nomenSym.valor
+    varia nomen = "" qua textus
+
+    si p.proba(SymbolumGenus.Textus) {
+        fixum nomenSym = p.procede()
+        nomen = nomenSym.valor
+    } sin modificator == ProbaModificator.Futurum et p.proba(SymbolumGenus.UncusSin) {
+        # WHY: Futurum can omit a test name, leaving only a reason.
+        nomen = ""
+    } secus {
+        fixum nomenSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
+        nomen = nomenSym.valor
+    }
 
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 

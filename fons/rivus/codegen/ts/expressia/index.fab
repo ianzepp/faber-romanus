@@ -80,7 +80,8 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu AssignatioExpressia ut e {
-            redde scriptum("§ § §", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
+            # WHY: Avoid extra parens on RHS for assignments.
+            redde scriptum("§ § §", genExpressia(e.sinister, g), e.signum, genNudaExpressia(e.dexter, g))
         }
 
         casu CondicioExpressia ut e {
@@ -88,8 +89,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu AmbitusExpressia ut e {
-            # Range expressions become array generation
-            redde scriptum("[§, §]", genExpressia(e.initium, g), genExpressia(e.finis, g))
+            redde genAmbitusExpressia(e, g)
         }
 
         casu QuaExpressia ut e {
@@ -288,6 +288,54 @@ functio genLittera(LitteraGenus species, textus crudus) -> textus {
     }
     # Numerus, Fractus pass through raw value
     redde crudus
+}
+
+# =============================================================================
+# RANGE + BARE EXPRESSIONS
+# =============================================================================
+
+@ publica
+functio genAmbitusExpressia(Expressia expr, TsGenerator g) -> textus {
+    # WHY: Ranges become arrays outside of for-loops.
+    discerne expr {
+        casu AmbitusExpressia ut e {
+            fixum initium = genExpressia(e.initium, g)
+            fixum finis = genExpressia(e.finis, g)
+            fixum adj = (e.inclusivum qua bivalens) sic " + 1" secus ""
+
+            si nonnihil e.gradus {
+                fixum gradus = genExpressia(e.gradus qua Expressia, g)
+                si e.inclusivum qua bivalens {
+                    redde scriptum("Array.from({length: Math.floor((§ - §) / §) + 1}, (_, i) => § + i * §)", finis, initium, gradus, initium, gradus)
+                }
+                redde scriptum("Array.from({length: Math.ceil((§ - §) / §)}, (_, i) => § + i * §)", finis, initium, gradus, initium, gradus)
+            }
+
+            redde scriptum("Array.from({length: § - §§}, (_, i) => § + i)", finis, initium, adj, initium)
+        }
+    }
+
+    redde genExpressia(expr, g)
+}
+
+@ publica
+functio genNudaExpressia(Expressia expr, TsGenerator g) -> textus {
+    # WHY: Flatten binary expressions when outer parens are unnecessary.
+    discerne expr {
+        casu BinariaExpressia ut e {
+            fixum sin = genNudaExpressia(e.sinister, g)
+            fixum dex = genNudaExpressia(e.dexter, g)
+            varia signum = e.signum qua textus
+            elige signum {
+                casu "et" { signum = "&&" }
+                casu "aut" { signum = "||" }
+                casu "vel" { signum = "??" }
+            }
+            redde scriptum("§ § §", sin, signum, dex)
+        }
+    }
+
+    redde genExpressia(expr, g)
 }
 
 # Generate template literal

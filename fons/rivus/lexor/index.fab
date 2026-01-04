@@ -188,6 +188,20 @@ genus Lexor {
                 ego.columnaInitium = ego.index
             }
             # Single-line comment: # ... until newline
+            sin c == "#" {
+                # WHY: Faber uses # for line comments across targets.
+                fixum loc = ego.locus()
+                varia textus nota = ""
+
+                ego.procede()  # consume #
+
+                dum non ego.estFinis() et ego.specta(0) != "\n" {
+                    nota = nota + ego.procede()
+                }
+
+                ego.addeSymbolum(SymbolumGenus.NotaLinea, nota, loc)
+            }
+            # Single-line comment: // ... until newline
             sin c == "/" et ego.specta(1) == "/" {
                 fixum loc = ego.locus()
                 varia textus nota = ""      # nota = "note/comment"
