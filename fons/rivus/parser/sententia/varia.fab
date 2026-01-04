@@ -18,7 +18,7 @@
 ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia
-ex "../../ast/sententia" importa Sententia, VariaGenus
+ex "../../ast/sententia" importa Sententia, VariaGenus, ImportaSpecificator
 ex "../../ast/typus" importa TypusAnnotatio
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
@@ -47,6 +47,65 @@ functio parseNomenVelVerbum(Resolvitor r) -> textus {
     p.renuncia(ParserErrorCodice.ExpectaturNomen, scriptum("got '§'", s.valor))
     p.procede()
     redde s.valor
+}
+
+# Parse destructure declaration
+#
+# GRAMMAR: destruct := 'ex' expr (fixum|varia|figendum|variandum) spec (',' spec)*
+# spec := IDENT ('ut' IDENT)? | 'ceteri' IDENT
+@ publica
+functio parseDestructuraSententia(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    p.expectaVerbum("ex", ParserErrorCodice.ExpectaturEx)
+    fixum fons = r.expressia()
+
+    # Binding kind
+    fixum verbum = p.specta(0).verbum
+    varia species = VariaGenus.Fixum
+    elige verbum {
+        casu "fixum" { species = VariaGenus.Fixum }
+        casu "varia" { species = VariaGenus.Varia }
+        casu "figendum" { species = VariaGenus.Figendum }
+        casu "variandum" { species = VariaGenus.Variandum }
+    }
+    p.procede()
+
+    varia specificatores = [] qua lista<ImportaSpecificator>
+
+    fac {
+        fixum specLocus = p.locusActualis()
+
+        varia residuum = falsum
+        si p.probaVerbum("ceteri") {
+            residuum = verum
+            p.procede()
+        }
+
+        fixum importatum = parseNomenVelVerbum(r)
+        varia locale = importatum
+
+        si p.probaVerbum("ut") {
+            p.procede()
+            locale = parseNomenVelVerbum(r)
+        }
+
+        specificatores.adde({
+            locus: specLocus,
+            importatum: importatum,
+            locale: locale,
+            residuum: residuum
+        } qua ImportaSpecificator)
+
+    } dum p.congruet(SymbolumGenus.Coma)
+
+    redde finge DestructuraSententia {
+        locus: locus,
+        fons: fons,
+        species: species,
+        specificatores: specificatores
+    } qua Sententia
 }
 
 # Parse variable declaration

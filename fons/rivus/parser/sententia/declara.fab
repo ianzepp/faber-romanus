@@ -52,10 +52,16 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
     fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
     fixum nomen = nomenSym.valor
 
-    # Optional generic parameters: prae typus T, U
+    # Optional generic parameters: either `prae typus T, U` or `<T, U>`
     varia generaParametra = nihil qua lista<TypusParametrum>?
     si p.probaVerbum("prae") {
         generaParametra = parseTypusParametra(r)
+    } sin p.congruet(SymbolumGenus.Minor) {
+        fixum nomina = parseGenericaNomina(r)
+        generaParametra = [] qua lista<TypusParametrum>
+        ex nomina pro n {
+            generaParametra.adde({ locus: locus, nomen: n } qua TypusParametrum)
+        }
     }
 
     # Parse parameters
@@ -90,11 +96,8 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
         typusReditus = r.adnotatio()
     }
 
-    # Parse body (optional for abstract methods)
-    varia corpus = nihil qua Sententia?
-    si p.proba(SymbolumGenus.UncusSin) {
-        corpus = parseMassaSententia(r)
-    }
+    # Parse body
+    fixum corpus = parseMassaSententia(r)
 
     redde finge FunctioDeclaratio {
         locus: locus,
@@ -395,8 +398,18 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
         varia valor = nihil qua textus?
         si p.congruet(SymbolumGenus.Aequum) {
             # Parse value (number or string)
-            fixum valorSym = p.procede()
-            valor = valorSym.valor
+            si p.congruet(SymbolumGenus.Minus) {
+                # Negative numeric literal
+                fixum valorSym = p.procede()
+                valor = scriptum("-§", valorSym.valor)
+            } secus {
+                fixum valorSym = p.procede()
+                si valorSym.species === SymbolumGenus.Textus {
+                    valor = scriptum("\"§\"", valorSym.valor)
+                } secus {
+                    valor = valorSym.valor
+                }
+            }
         }
 
         membra.adde({
@@ -551,7 +564,9 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
         }
 
         # Optional parameter marker
+        varia optionalis = falsum
         si p.probaVerbum("si") {
+            optionalis = verum
             p.procede()
         }
 
@@ -568,25 +583,33 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
             paramTypus = r.adnotatio()
         } sin p.proba(SymbolumGenus.Verbum) et p.specta(1).species == SymbolumGenus.Nomen {
             paramTypus = r.adnotatio()
-        } sin p.proba(SymbolumGenus.Nomen) et p.specta(1).species == SymbolumGenus.Nomen {
-            # Two identifiers: first is type
+        } sin p.proba(SymbolumGenus.Nomen) et (
+            p.specta(1).species == SymbolumGenus.Nomen aut
+            p.specta(1).species == SymbolumGenus.Minor aut
+            p.specta(1).species == SymbolumGenus.QuadratusSin aut
+            p.specta(1).species == SymbolumGenus.Rogatio
+        ) {
+            # User-defined type (Point, Point[], Point?, Point<T>)
             paramTypus = r.adnotatio()
         }
 
-        # Parse name
-        fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
-        fixum nomen = nomenSym.valor
+        # Parse name (keywords like `page` allowed)
+        fixum nomen = parseNomenVelVerbum(r)
 
         # Optional alias: ut alias
         varia paramAlias = nihil qua textus?
         si p.probaVerbum("ut") {
-            fixum aliasSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
-            paramAlias = aliasSym.valor
+            p.procede()
+            paramAlias = parseNomenVelVerbum(r)
         }
 
         # Optional default: vel value
         varia praedefinitum = nihil qua Expressia?
         si p.probaVerbum("vel") {
+            p.procede()
+            praedefinitum = r.expressia()
+        } sin p.congruet(SymbolumGenus.Colon) {
+            # LEGACY: `textus name: "World"` style defaults
             praedefinitum = r.expressia()
         }
 
@@ -597,6 +620,7 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
             typus: paramTypus,
             praedefinitum: praedefinitum,
             praepositio: praepositio,
+            optionalis: optionalis,
             residuum: residuum
         } qua Parametrum)
 
@@ -686,6 +710,7 @@ functio parseImportaSententia(Resolvitor r) -> Sententia {
     si p.congruet(SymbolumGenus.Stella) {
         totum = verum
         si p.probaVerbum("ut") {
+            p.procede()
             fixum aliasSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
             totumAlias = aliasSym.valor
         }
@@ -698,6 +723,7 @@ functio parseImportaSententia(Resolvitor r) -> Sententia {
             varia residuum = falsum
             si p.probaVerbum("ceteri") {
                 residuum = verum
+                p.procede()
             }
 
             fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
@@ -706,6 +732,7 @@ functio parseImportaSententia(Resolvitor r) -> Sententia {
 
             # Optional alias: ut localName
             si p.probaVerbum("ut") {
+                p.procede()
                 fixum aliasSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
                 locale = aliasSym.valor
             }

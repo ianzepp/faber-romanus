@@ -89,11 +89,7 @@ const repoRoot = join(import.meta.dir, '..', '..');
 const compileScript = fileURLToPath(new URL('./rivus-compile.ts', import.meta.url));
 const COMPILE_TIMEOUT_MS = 3500;
 
-async function readTextWithTimeout(
-    stream: ReadableStream,
-    timeoutMs: number,
-    label: string,
-): Promise<string> {
+async function readTextWithTimeout(stream: ReadableStream, timeoutMs: number, label: string): Promise<string> {
     const timer = setTimeout(() => {
         try {
             stream.cancel(`${label} read timeout`);
@@ -107,10 +103,17 @@ async function readTextWithTimeout(
     }
 }
 
-async function compile(code: string, timeoutMs: number = COMPILE_TIMEOUT_MS): Promise<string> {
+async function compile(code: string, options: { timeoutMs?: number; strictSemantic?: boolean } = {}): Promise<string> {
+    const timeoutMs = options.timeoutMs ?? COMPILE_TIMEOUT_MS;
+    const strictSemantic = options.strictSemantic ?? false;
+
     const proc = Bun.spawn({
         cmd: ['bun', compileScript],
         cwd: repoRoot,
+        env: {
+            ...process.env,
+            RIVUS_STRICT_SEMANTIC: strictSemantic ? '1' : '0',
+        },
         stdin: 'pipe',
         stdout: 'pipe',
         stderr: 'pipe',
@@ -140,10 +143,7 @@ async function compile(code: string, timeoutMs: number = COMPILE_TIMEOUT_MS): Pr
             clearTimeout(timeoutId);
         }
     });
-    const [stdout, stderr] = await Promise.all([
-        readTextWithTimeout(proc.stdout, 250, 'stdout'),
-        readTextWithTimeout(proc.stderr, 250, 'stderr'),
-    ]);
+    const [stdout, stderr] = await Promise.all([readTextWithTimeout(proc.stdout, 250, 'stdout'), readTextWithTimeout(proc.stderr, 250, 'stderr')]);
 
     const errText = stderr.trim();
     if (exitCode !== 0) {
@@ -256,7 +256,7 @@ for (const { file, cases } of yamlFiles) {
 
                 if (hasErrata(tc)) {
                     try {
-                        await compile(input.trim());
+                        await compile(input.trim(), { strictSemantic: true });
                         throw new Error('Expected compilation to fail');
                     } catch (error: any) {
                         checkErrata(tc, error);

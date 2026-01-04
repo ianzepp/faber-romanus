@@ -8,6 +8,8 @@
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, TEXTUS, NUMERUS, BIVALENS, NIHIL, IGNOTUM
 ex "../typi" importa usitatumTypus, genericumTypus
+ex "../typi" importa formaTypum, assignabileAd
+ex "../errores" importa immutableAssignmentError, typeMismatchError, undefinedVariableError
 ex "../../ast/expressia" importa Expressia
 
 # Import resolvers - no circular dependency since they only use Resolvitor
@@ -152,6 +154,45 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
 # Resolve assignment expression
 @ publica
 functio resolveAssignatio(Resolvitor r, Expressia assignatioExpr) -> SemanticTypus {
-    # TODO: Check mutability, resolve target and value
+    fixum a = r.analyzator()
+
+    discerne assignatioExpr {
+        casu AssignatioExpressia ut as {
+            fixum dexterTypus = r.expressia(as.dexter)
+
+            discerne as.sinister {
+                casu Nomen ut n {
+                    fixum symbolum = a.quaere(n.valor)
+                    si nihil symbolum {
+                        fixum err = undefinedVariableError(n.valor)
+                        a.error(err.textus, n.locus)
+                        redde IGNOTUM
+                    }
+
+                    si non symbolum.mutabilis {
+                        fixum err = immutableAssignmentError(symbolum.nomen)
+                        a.error(err.textus, as.locus)
+                    }
+
+                    si non assignabileAd(dexterTypus, symbolum.semanticTypus) {
+                        fixum err = typeMismatchError(formaTypum(dexterTypus), formaTypum(symbolum.semanticTypus))
+                        a.error(err.textus, as.locus)
+                    }
+
+                    redde symbolum.semanticTypus
+                }
+
+                casu MembrumExpressia ut m {
+                    # TODO: Resolve member types once genus metadata exists.
+                    r.expressia(m.obiectum)
+                    r.expressia(m.proprietas)
+                    redde dexterTypus
+                }
+            }
+
+            redde dexterTypus
+        }
+    }
+
     redde IGNOTUM
 }

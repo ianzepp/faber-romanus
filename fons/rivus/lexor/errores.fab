@@ -9,12 +9,12 @@ ex "../ast/positio" importa Locus
 # L-prefix distinguishes from parser (P) and semantic (S) errors
 @ publicum
 ordo LexorErrorCodice {
-    TextusNonClausa           # L001: Unterminated string
-    ExemplarNonClausum        # L002: Unterminated template string
-    SignumInopinatum          # L003: Unexpected character
-    NumerusHexMalus           # L004: Invalid hex literal
-    NumerusBinariusMalus      # L005: Invalid binary literal
-    NumerusOctalisMalus       # L006: Invalid octal literal
+    TextusNonClausa = "L001",           # Unterminated string
+    ExemplarNonClausum = "L002",        # Unterminated template string
+    SignumInopinatum = "L003",          # Unexpected character
+    NumerusHexMalus = "L004",           # Invalid hex literal
+    NumerusBinariusMalus = "L005",      # Invalid binary literal
+    NumerusOctalisMalus = "L006"        # Invalid octal literal
 }
 
 # Structured error message
@@ -30,37 +30,37 @@ functio nuntiumErroris(LexorErrorCodice codice) -> LexorErrorNuntius {
     elige codice {
         casu LexorErrorCodice.TextusNonClausa {
             redde {
-                textus: "Textus non clausa",
+                textus: "Unterminated string",
                 auxilium: "String literals must be closed on the same line. Use backticks for multi-line."
             } qua LexorErrorNuntius
         }
         casu LexorErrorCodice.ExemplarNonClausum {
             redde {
-                textus: "Exemplar non clausum",
+                textus: "Unterminated template string",
                 auxilium: "Template strings must end with a closing backtick."
             } qua LexorErrorNuntius
         }
         casu LexorErrorCodice.SignumInopinatum {
             redde {
-                textus: "Signum inopinatum",
+                textus: "Unexpected character",
                 auxilium: "This character is not valid in Latin syntax."
             } qua LexorErrorNuntius
         }
         casu LexorErrorCodice.NumerusHexMalus {
             redde {
-                textus: "Numerus hex malus",
+                textus: "Invalid hex literal",
                 auxilium: "Hex literals must have at least one digit after 0x prefix."
             } qua LexorErrorNuntius
         }
         casu LexorErrorCodice.NumerusBinariusMalus {
             redde {
-                textus: "Numerus binarius malus",
+                textus: "Invalid binary literal",
                 auxilium: "Binary literals must have at least one digit after 0b prefix."
             } qua LexorErrorNuntius
         }
         casu LexorErrorCodice.NumerusOctalisMalus {
             redde {
-                textus: "Numerus octalis malus",
+                textus: "Invalid octal literal",
                 auxilium: "Octal literals must have at least one digit after 0o prefix."
             } qua LexorErrorNuntius
         }

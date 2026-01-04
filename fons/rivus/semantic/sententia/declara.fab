@@ -6,9 +6,16 @@ ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, VACUUM, IGNOTUM
 ex "../typi" importa functioTypus, usitatumTypus, genusTypus, pactumTypus, ordoTypus
 ex "../typi" importa formaTypum, assignabileAd
-ex "../scopus" importa SymbolumSpecies, ScopusSpecies, quaereSymbolumLocale
-ex "../errores" importa noTypeOrInitializerError, typeMismatchError
+ex "../scopus" importa Symbolum, SymbolumSpecies, ScopusSpecies, quaereSymbolumLocale
+ex "../nucleus" importa latinTypusAd
+ex "../errores" importa noTypeOrInitializerError, typeMismatchError, awaitOutsideAsyncError
 ex "../../ast/sententia" importa Sententia, VariaGenus
+ex "../../ast/typus" importa TypusAnnotatio
+
+functio resolveTypusAnnotatio(Resolvitor r, TypusAnnotatio annotatio) -> SemanticTypus {
+    # EDGE: Bootstrap currently only needs primitive resolution for errata tests.
+    redde latinTypusAd(annotatio.nomen)
+}
 
 # =============================================================================
 # VARIABLE DECLARATION
@@ -25,8 +32,7 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
             varia resolvedTypus = IGNOTUM qua SemanticTypus
 
             si nonnihil v.typus {
-                # TODO: resolve type annotation
-                resolvedTypus = IGNOTUM
+                resolvedTypus = resolveTypusAnnotatio(r, v.typus qua TypusAnnotatio)
             }
             sin nonnihil v.valor {
                 resolvedTypus = r.expressia(v.valor)
@@ -45,15 +51,21 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
                 }
             }
 
+            si (v.species == VariaGenus.Figendum aut v.species == VariaGenus.Variandum) et non a.currentFunctioAsync {
+                fixum keyword = v.species == VariaGenus.Figendum sic "figendum" secus "variandum"
+                fixum err = awaitOutsideAsyncError(keyword)
+                a.error(err.textus, v.locus)
+            }
+
             # Define in symbol table
             fixum mutabilis = v.species == VariaGenus.Varia aut v.species == VariaGenus.Variandum
-            a.scopus.symbola[v.nomen] = {
+            a.definie({
                 nomen: v.nomen,
                 semanticTypus: resolvedTypus,
                 species: SymbolumSpecies.Variabilis,
                 mutabilis: mutabilis,
                 locus: v.locus
-            }
+            } qua Symbolum)
         }
     }
 }
@@ -72,29 +84,34 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
             # Build parameter types
             varia paramTypi = [] qua lista<SemanticTypus>
             ex f.parametra pro param {
-                # TODO: resolve parameter type annotation
-                paramTypi.adde(IGNOTUM)
+                si nonnihil param.typus {
+                    paramTypi.adde(resolveTypusAnnotatio(r, param.typus qua TypusAnnotatio))
+                } secus {
+                    paramTypi.adde(IGNOTUM)
+                }
             }
 
             # Resolve return type
             varia reditusTypus = VACUUM qua SemanticTypus
             si nonnihil f.typusReditus {
-                # TODO: resolve return type annotation
-                reditusTypus = IGNOTUM
+                reditusTypus = resolveTypusAnnotatio(r, f.typusReditus qua TypusAnnotatio)
             }
 
             # Build function type
             fixum fnTypus = functioTypus(paramTypi, reditusTypus, f.asynca, falsum)
 
-            # Define in symbol table if not predeclared
-            si nihil quaereSymbolumLocale(a.scopus, f.nomen) {
-                a.scopus.symbola[f.nomen] = {
+            # Define in symbol table (predeclare creates placeholder)
+            fixum existens = quaereSymbolumLocale(a.scopus, f.nomen)
+            si nonnihil existens {
+                a.scopus.symbola[f.nomen].semanticTypus = fnTypus
+            } secus {
+                a.definie({
                     nomen: f.nomen,
                     semanticTypus: fnTypus,
                     species: SymbolumSpecies.Functio,
                     mutabilis: falsum,
                     locus: f.locus
-                }
+                } qua Symbolum)
             }
 
             # Analyze body in new scope

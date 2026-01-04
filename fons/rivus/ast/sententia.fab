@@ -107,6 +107,7 @@ genus Parametrum {
     TypusAnnotatio? typus
     Expressia? praedefinitum  # vel default
     textus? praepositio       # de, in, ex
+    bivalens optionalis       # si (optional parameter)
     bivalens residuum         # ceteri (rest)
 }
 

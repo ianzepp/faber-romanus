@@ -26,22 +26,28 @@ const source = await Bun.stdin.text();
 
 const lexResult = lexare(source);
 if (lexResult.errores.length > 0) {
-    const msgs = lexResult.errores.map((e: any) => e.textus || String(e)).join('; ');
-    fail(`Lexor errors: ${msgs}`);
+    const msgs = lexResult.errores.map((e: any) => `${e.codice ?? 'L???'} ${e.textus || String(e)}`).join('; ');
+    fail(`Tokenizer errors: ${msgs}`);
 }
 
 const parseResult = resolvere(lexResult.symbola);
 if (parseResult.errores.length > 0) {
-    const msgs = parseResult.errores.map((e: any) => e.nuntius || String(e)).join('; ');
-    fail(`Parser errors: ${msgs}`);
+    const msgs = parseResult.errores.map((e: any) => `${e.codice ?? 'P???'} ${e.nuntius || String(e)}`).join('; ');
+    fail(`Parse errors: ${msgs}`);
 }
 if (!parseResult.programma) {
     fail('Parse failed: no program');
 }
 
-// WHY: Lenient mode - run semantic analysis but ignore errors.
-// Snippet tests often have undefined variables as placeholders.
-analyze(parseResult.programma as Programma);
+// WHY: Most codegen tests are "snippet" style and may reference undefined
+// variables as placeholders, so the default mode is to ignore semantic errors.
+// Errata tests can opt into strict checking via an env var.
+const semanticResult = analyze(parseResult.programma as Programma);
+const strictSemantic = process.env.RIVUS_STRICT_SEMANTIC === '1';
+if (strictSemantic && semanticResult.errores.length > 0) {
+    const msgs = semanticResult.errores.map((e: any) => e.nuntius || e.textus || String(e)).join('; ');
+    fail(`Semantic errors: ${msgs}`);
+}
 
 const output = generateTs((parseResult.programma as Programma).corpus as Sententia[]);
 process.stdout.write(output);

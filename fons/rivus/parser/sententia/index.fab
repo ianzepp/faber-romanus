@@ -18,6 +18,7 @@ ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia
 ex "../../ast/sententia" importa Sententia, ScribeGradus
 ex "../../ast/lexema" importa SymbolumGenus, VerbumId
+ex "../../ast/radix" importa NodusRadix
 ex "../errores" importa ParserErrorCodice
 
 # Import statement parsers from submodules
@@ -28,16 +29,55 @@ ex "./imperium" importa parseSiSententia, parseDumSententia, parseExSententia, p
 ex "./fluxus" importa parseEligeSententia, parseDiscerneSententia, parseCustodiSententia
 ex "./initus" importa parseIncipitSententia, parseIncipietSententia, parseCuraSententia, parseAdSententia
 ex "./massa" importa parseMassaSententia, parseExpressiaSententia
-ex "./varia" importa parseVariaSententia
+ex "./varia" importa parseVariaSententia, parseDestructuraSententia, parseNomenVelVerbum
 ex "./proba" importa parseProbandumSententia, parseProbaSententia, parsePraeparaMassa
 
 # Parse a statement
 #
 # Main dispatcher that routes to appropriate parser based on leading token.
+# Collects and attaches leading/trailing comments.
 @ publica
 functio parseSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
+
+    # Capture any leading comments before the statement.
+    p.colligeNotas()
+
+    fixum stmt = parseSententiaSineNotis(r)
+
+    # Attach leading/trailing comments (if any).
+    fixum radix = stmt qua ignotum qua NodusRadix
+    radix.notaePrae = p.consumeNotas()
+    radix.notaePost = p.colligeNotamTrahentem(radix.locus.linea)
+
+    redde stmt
+}
+
+functio parseSententiaSineNotis(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
     fixum sym = p.specta(0)
+
+    # Annotation prefix (e.g. `@ futura`)
+    si sym.species === SymbolumGenus.At {
+        varia annotationes = [] qua lista<textus>
+        dum p.congruet(SymbolumGenus.At) {
+            annotationes.adde(parseNomenVelVerbum(r))
+        }
+
+        fixum stmt = parseSententiaSineNotis(r)
+
+        ex annotationes pro a {
+            si a == "futura" {
+                discerne stmt {
+                    casu FunctioDeclaratio ut f {
+                        f.asynca = verum
+                    }
+                }
+            }
+        }
+
+        redde stmt
+    }
 
     # Block statement
     si sym.species === SymbolumGenus.UncusSin {
@@ -105,7 +145,6 @@ functio parseSententia(Resolvitor r) -> Sententia {
         }
         si verbumId === VerbumId.Ex {
             # Look ahead: ex (IDENTIFIER|STRING) importa -> import
-            # Otherwise it's a for-of loop
             fixum nextSym = p.specta(1)
             si (nextSym.species === SymbolumGenus.Nomen aut nextSym.species === SymbolumGenus.Textus) {
                 fixum afterSym = p.specta(2)
@@ -113,6 +152,23 @@ functio parseSententia(Resolvitor r) -> Sententia {
                     redde parseImportaSententia(r)
                 }
             }
+
+            # Destructure: ex <expr> fixum/varia/figendum/variandum ...
+            varia i = 1
+            dum i < 32 et non p.estFinis() {
+                fixum s = p.specta(i)
+                si s.species === SymbolumGenus.Verbum {
+                    si s.verbumId inter [VerbumId.Fixum, VerbumId.Varia, VerbumId.Figendum, VerbumId.Variandum] {
+                        redde parseDestructuraSententia(r)
+                    }
+                    si s.verbumId === VerbumId.Pro {
+                        rumpe
+                    }
+                }
+                i += 1
+            }
+
+            # Otherwise it's a for-of loop
             redde parseExSententia(r)
         }
         si verbumId === VerbumId.De {

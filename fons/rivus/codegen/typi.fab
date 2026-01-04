@@ -132,23 +132,53 @@ functio estGeneris(lista<textus> modifiers) -> bivalens {
 # COMMENT FORMATTING
 # =============================================================================
 
-# WHY: Comment formatting is stubbed for bootstrap. The TS compiler in fons/
-#      has full comment support, but the self-hosted compiler doesn't preserve
-#      comments yet. This is P3 (nice-to-have) - not blocking for Phase 1.
-#
-# TODO: Implement comment formatting when needed:
-#   1. Add string methods (contains, split) to textus
-#   2. Implement formataNota to handle line/block comments
-#   3. Wire up formataNotaePrae/formataNotaePost in genSententia
+ex "../ast/radix" importa Nota, NotaGenus, NodusRadix
 
-# Stub: Format leading comments (not implemented)
-@ publica
-functio formataNotaePrae(ignotum nodus, ignotum syntax, textus indentum) -> textus {
-    redde ""
+functio formataNotaTs(Nota nota) -> textus {
+    elige nota.species {
+        casu NotaGenus.Massa reddit scriptum("/*§*/", nota.valor)
+        casu NotaGenus.Docens reddit scriptum("/**§*/", nota.valor)
+    }
+
+    redde scriptum("//§", nota.valor)
 }
 
-# Stub: Format trailing comments (not implemented)
+# Format leading comments (emitted on separate lines)
+@ publica
+functio formataNotaePrae(ignotum nodus, ignotum syntax, textus indentum) -> textus {
+    si nodus == nihil {
+        redde ""
+    }
+
+    fixum radix = nodus qua NodusRadix
+    fixum notae = radix.notaePrae
+    si nihil notae {
+        redde ""
+    }
+
+    varia out = ""
+    ex notae pro nota {
+        out = out + indentum + formataNotaTs(nota) + "\n"
+    }
+    redde out
+}
+
+# Format trailing comments (emitted inline at end)
 @ publica
 functio formataNotaePost(ignotum nodus, ignotum syntax) -> textus {
-    redde ""
+    si nodus == nihil {
+        redde ""
+    }
+
+    fixum radix = nodus qua NodusRadix
+    fixum notae = radix.notaePost
+    si nihil notae {
+        redde ""
+    }
+
+    varia out = ""
+    ex notae pro nota {
+        out = out + " " + formataNotaTs(nota)
+    }
+    redde out
 }

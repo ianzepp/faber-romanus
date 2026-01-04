@@ -23,6 +23,19 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 ex "./unaria" importa parseUnaria
 
+functio estAssignabile(Expressia expr) -> bivalens {
+    discerne expr {
+        casu Nomen ut n {
+            redde verum
+        }
+        casu MembrumExpressia ut m {
+            redde verum
+        }
+    }
+
+    redde falsum
+}
+
 # Parse assignment expression
 #
 # GRAMMAR: assignment := ternary (('=' | '+=' | '-=' | ...) assignment)?
@@ -39,6 +52,10 @@ functio parseAssignatio(Resolvitor r) -> Expressia {
     # Check for assignment operator
     si p.estAssignatioSignum(p.specta(0)) {
         fixum signum = p.procede().valor
+
+        si non estAssignabile(sinister) {
+            p.renuncia(ParserErrorCodice.InvalidumAssignatio, nihil)
+        }
 
         # Right-associative: recurse into assignment
         fixum dexter = parseAssignatio(r)
