@@ -230,12 +230,12 @@ The pattern is **consistent across all domains**. Learn the conjugation once, ap
 
 ### Summary
 
-| Category                             | Count | Morphology                        |
-| ------------------------------------ | ----- | --------------------------------- |
-| Full pairs (imperative + participle) | 7     | `@ radix(imperativus, perfectum)` |
-| Mutate-only                          | 9     | `@ radix(imperativus)`            |
-| Participle-only                      | 20    | `@ radix(perfectum)`              |
-| Read-only                            | 42    | None                              |
+| Category                             | Count | Morphology                       |
+| ------------------------------------ | ----- | -------------------------------- |
+| Full pairs (imperative + participle) | 7     | `@ radix imperativus, perfectum` |
+| Mutate-only                          | 9     | `@ radix imperativus`            |
+| Participle-only                      | 20    | `@ radix perfectum`              |
+| Read-only                            | 42    | None                             |
 
 Collections benefit modestly from morphology. The system is **designed for IO domains** where async and streaming variants are essential.
 
@@ -246,7 +246,7 @@ Collections benefit modestly from morphology. The system is **designed for IO do
 Functions declare valid conjugations via annotation:
 
 ```faber
-@ radix(imperativus, perfectum, futurum_activum)
+@ radix imperativus, perfectum, futurum_activum
 functio filtra<T>(praedicatum: functio(T) fit bivalens) {
     # Single implementation - compiler generates variants
 }
@@ -317,7 +317,7 @@ functio iteratePages(url: textus) fiunt Pagina {
 ### Generated Output (TypeScript)
 
 ```typescript
-// From: @ radix(imperativus, perfectum, futurum_activum)
+// From: @ radix imperativus, perfectum, futurum_activum
 
 // imperativus: filtra() - mutates in place, sync
 filtra(predicate: (x: T) => boolean): void {
@@ -590,7 +590,7 @@ casu VocatioExpressia ut e {
 
 ### Phase 1: Annotation Support (Current)
 
-- Add `@ radix(...)` annotation parsing
+- Add `@ radix ...` annotation parsing
 - Validate conjugations against declared variants
 - Error on unrecognized morphology
 
@@ -629,35 +629,93 @@ casu VocatioExpressia ut e {
 
 ---
 
-## GPT Notes
+## GPT Notes (Final Review)
 
-- **Rivus-only direction**: Treat `fons/faber` as a static reference; implement and dogfood morphology in `fons/rivus` only (parser → AST → semantic → codegen). The roadmap item “Phase 4: Faber Migration” is likely obsolete under this strategy.
+**Verdict:** The design is worth pursuing and is strongly aligned with the Latin-first thesis, but it only becomes “industrial quality” if morphology is implemented as **typed, opt-in semantic dispatch** (not lexical macro rewriting). Morphology should determine _what value you get back_ (sync/async/generator + mutate/copy), never inject hidden control flow.
 
-- **Preferred `@ radix` surface syntax**: Use a line-based form, not parentheses:
+### Where This Design Is Truly Strong
 
-    ```faber
-    @ radix imperativus, perfectum, futurum_indicativum, futurum_activum
-    functio filtra<T>(...) fit vacuum { ... }
-    ```
+#### 1. Latin Grammar as Semantic Compression
 
-    In Rivus, parse the comma-separated identifiers only while tokens remain on the same source line as the `@` annotation.
+The mapping from conjugation/aspect to execution model is not naming-convention theater; it is genuinely expressive:
 
-- **Avoid `@ radix(...)` drift**: A prior attempt implemented parenthesized args and was reverted. Don’t reintroduce parentheses syntax unless you explicitly want to support both forms long-term.
+- **Imperative** reads as “do this now” → sync + mutating.
+- **Future indicative** reads as “will do” → async + mutating.
+- **Perfect participle** can be interpreted as “the thing-having-been-X’d” → returns a new value.
+- **Future participle** reads as “about to produce” → async + returns a new value.
 
-- **Model annotations as data, not side effects**: Rivus currently “executes” a couple annotations in the statement parser (`@ futura`, `@ abstractum`). For morphology, preserve annotations on declarations (top-level functions and genus/pactum methods) so semantic/codegen can consult them uniformly.
+This is exactly the kind of “learn one rule, apply everywhere” pattern that reduces API surface area without adding syntactic noise.
 
-- **Naming: don’t call conjugation lists `radices`**: In this design, `radix` already means “stem”. Store the declared conjugations/forms under a name like `formae`, `conjugationes`, or `morphologia` to avoid confusion once a real stem registry exists.
+#### 2. IO Domains Are the Real Payoff
 
-- **Centralize annotation parsing**: `pactum`/`genus` member parsers should reuse the same annotation parsing logic as the top-level statement parser to avoid divergence.
+The filesystem/network/db/kernel layer naturally has sync/async/streaming variants for almost every operation. Morphology gives you a consistent, low-entropy naming scheme that avoids the Node-style explosion of ad-hoc suffixes.
 
-- **Registry + validation**: Use `@ radix ...` declarations to build a stem registry (per receiver type and/or module). At call sites where `parseMethodum()` recognizes morphology:
-    - error if the stem is not declared as morphology-enabled
-    - error if the conjugation is not in the declared set
-    - keep error messages stem-aware (show parsed stem + allowed conjugations)
+#### 3. The Stdlib/User Boundary Is Acceptable
 
-- **Avoid hidden `await` in codegen**: The current Rivus POC emits `await` inside generated expressions for async morphology variants. This can generate invalid JS in non-async contexts and bypass existing “await outside async” checks. Prefer: morphology determines return type (Promise vs value), but awaiting remains explicit via `figendum`/`variandum` (and `cede` inside `fiet`/`fient`).
+A split where:
 
-- **Irregular stems**: The POC already hints at stem irregularity (e.g., `invert-` vs `invers-`). If morphology is driven by declared stems, allow a declaration to pin the canonical stem (or list alternate stems) rather than relying purely on stripping suffixes.
+- stdlib uses morphology (Latin names by design)
+- user code uses `fit`/`fiet`/`fiunt`/`fient` (arbitrary names)
+
+…is fine as long as the compiler’s implementation stays non-magical and mechanically certain. The key is that both paths must compile to the same underlying semantics in each backend.
+
+### Non-Negotiables (Must Fix Before Expanding)
+
+#### 1. No Hidden `await`
+
+Morphology may change _return type shape_ (e.g., `Promise<T>`/Future), but the user must still explicitly consume it via `cede`/`figendum`/`variandum` (and generator loops). Hidden `await` breaks correctness and defeats explicit control-flow principles.
+
+#### 2. Receiver Type Binding (Opt-In)
+
+Dispatch must not be based solely on the method’s spelling. The compiler must verify the receiver is a morphology-enabled type and that the stem/conjugation is declared for that type. Otherwise user-defined methods that happen to share spellings will miscompile.
+
+#### 3. Single `@ radix` Syntax (No Parenthesized Variant)
+
+Use the line-based syntax consistently:
+
+```faber
+@ radix imperativus, perfectum, futurum_indicativum, futurum_activum
+functio filtra<T>(...) fit vacuum { ... }
+```
+
+In Rivus, parse the comma-separated identifiers only while tokens remain on the same source line as the `@` annotation.
+
+#### 4. Naming Hygiene: `radix` Means Stem
+
+The term `radix` already means “stem” throughout the proposal and POC. The annotation lists **conjugations/forms**, not stems. Avoid naming any AST field `radices` if it stores conjugation names; use something like `formae` / `conjugationes` / `morphologia`.
+
+#### 5. Document the Semantic Extensions Honestly
+
+Even if the system uses Latin-inspired endings, it is still a compiler feature with deliberate semantics. Be explicit that:
+
+- participles are interpreted substantively (“produce the filtered thing”), not purely descriptively
+- generator mapping is a semantic choice
+- the POC currently does suffix matching (which is fine) rather than full Latin morphological analysis
+
+### A Concrete Contract (What `@ radix` Should Mean)
+
+- `@ radix ...` marks a declaration site as morphology-enabled and declares which **forms** are valid.
+- At call sites, the compiler:
+    1. checks whether the receiver type is morphology-enabled
+    2. parses the called method name into `(stem, form)`
+    3. validates `(stem, form)` against the receiver’s declared set
+    4. lowers to the correct backend implementation
+
+If the receiver is not morphology-enabled, the call is treated as an ordinary method call (no “lexical hijacking”).
+
+### On Partial Coverage (Collections)
+
+Partial coverage for collections can be okay if it is intentional and documented as “high-value verbs only”. If it is accidental, it should be completed or removed—silent gaps undermine predictability.
+
+### Next Implementation Step (Rivus)
+
+To keep Rivus self-hosting and mechanically certain, the first end-to-end milestone should be:
+
+1. Parse `@ radix imperativus, ...` (line-based)
+2. Store structured annotation data on declarations
+3. Build a per-type registry during semantic analysis
+4. Enforce receiver-bound validation at call sites
+5. Remove hidden-await codegen in TS morphology helpers
 
 ## Gemini 3 Opinion: Morphologia & The Latin-First Thesis
 
@@ -698,7 +756,7 @@ The proposal accepts a split world:
     ```faber
     genus Repository {
         # Maps 'quaer-' stem to this implementation
-        @ radix(quaer-, futurum_indicativum)
+        @ radix quaer, futurum_indicativum
         functio findUser(id) { ... }
     }
     ```
@@ -857,9 +915,9 @@ The design questions whether this is the right mapping (morphologia.md:620). Lat
 
 #### 6. Annotation Syntax Must Not Drift
 
-GPT notes correctly warn: "Avoid `@ radix(...)` drift — a prior attempt with parentheses was reverted."
+GPT notes correctly warn: "Avoid `@ radix` syntax drift — keep a single argument syntax."
 
-**Concern:** If `@ radix` supports both comma-separated line form and parenthesized form, parsers will diverge over time. Choose **one** syntax and stick to it.
+**Concern:** If `@ radix` supports multiple syntaxes, parsers will diverge over time. Choose one syntax and stick to it.
 
 The preferred form (line-based) is cleaner:
 
@@ -868,7 +926,7 @@ The preferred form (line-based) is cleaner:
 functio filtra<T>(...) fit vacuum { ... }
 ```
 
-Parenthesized form creates ambiguity: is it `@ radix(imperativus, perfectum)` or `@ radix(imperativus perfectum)`? Line-based avoids this parsing complexity.
+Any alternate variant tends to create ambiguity; the line-based form avoids this parsing complexity.
 
 ---
 
@@ -887,7 +945,7 @@ How does `@ radix` interact with morphology? Does compiler validate that `filtra
 **Scenario:** If I write:
 
 ```faber
-@ radix(imperativus)
+@ radix imperativus
 functio filtra<T>(pred: functio(T) fit bivalens) fit vacuum { ... }
 ```
 
@@ -925,7 +983,7 @@ The design mentions irregular participles like `fero` → `latus` (morphologia.m
 
 ```faber
 # User defines irregularity mapping
-@ radix stems(fero, lat) imperativus, perfectum
+@ radix stems fero et lat, imperativus, perfectum
 functio fere<T>(items: lista<T>) fit vacuum { ... }
 ```
 
@@ -993,6 +1051,7 @@ All reviews affirm that Latin conjugation genuinely encodes the semantic axes mo
 **I disagree.** The design document is honest that collections are secondary — morphology is designed for IO domains. The 7 full pairs (`filtra/filtrata`, `ordina/ordinata`, etc.) are high-traffic operations where API proliferation hurts most. Partial coverage is acceptable **if documented as intentional**.
 
 However, the specific gaps are puzzling:
+
 - `adde` exists but not `addita` ("added" → new list with element)?
 - `mappata` exists but not `mappa` ("map in place")?
 
@@ -1005,6 +1064,7 @@ These feel like incomplete implementation rather than deliberate exclusion. If `
 **I disagree.** The value of morphology is **consistency** — learn once, apply everywhere. If users define their own `@ radix` mappings with arbitrary stems, you lose the "one pattern" benefit and create a Tower of Babel.
 
 The stdlib/user split is a feature, not a bug:
+
 - **Stdlib** uses Latin names by design; morphology applies naturally.
 - **User code** uses whatever names developers choose (English, German, domain-specific); `fit`/`fiet`/`fiunt`/`fient` handle this correctly.
 
@@ -1030,10 +1090,10 @@ The following points were not raised by other reviews:
 
 The verb `mappare` does not exist in classical, medieval, or ecclesiastical Latin. This is English "map" with a Latin-looking suffix. For a language whose thesis is "Latin grammar as semantic machinery," this creates dissonance.
 
-| Current | Problem | Alternative |
-|---------|---------|-------------|
-| `mappata` | Not Latin | `translata` (from `transferre`, "carry across") |
-| `mappata` | Not Latin | `conversa` (from `convertere`, "turn together") |
+| Current   | Problem   | Alternative                                                            |
+| --------- | --------- | ---------------------------------------------------------------------- |
+| `mappata` | Not Latin | `translata` (from `transferre`, "carry across")                        |
+| `mappata` | Not Latin | `conversa` (from `convertere`, "turn together")                        |
 | `mappata` | Not Latin | `mutata` (from `mutare`, "change") — conflicts with mutation semantics |
 
 If the thesis is "Latin encodes semantics," the vocabulary should follow. `transferre` → `transfera`/`translata` would mean "carry across" — semantically accurate for transforming collection elements.
@@ -1059,10 +1119,10 @@ This isn't necessarily bad — pattern matching is simpler and more predictable 
 
 Latin perfect passive participle (`-ata/-ita/-ta`) means "having been X'd" — it describes the **state after action**, not "produce a new thing."
 
-| Latin Form | Literal Meaning | Design's Meaning |
-|------------|-----------------|------------------|
+| Latin Form | Literal Meaning        | Design's Meaning        |
+| ---------- | ---------------------- | ----------------------- |
 | `filtrata` | "having been filtered" | "returns filtered copy" |
-| `ordinata` | "having been arranged" | "returns sorted copy" |
+| `ordinata` | "having been arranged" | "returns sorted copy"   |
 
 The design effectively treats participles as **substantivized adjectives** ("the filtered thing" / "the sorted thing"), which then implies "a new collection in that state." This interpretation is defensible but requires a semantic leap.
 
@@ -1084,22 +1144,23 @@ GLM 4.7 asks: "Why not derive stems algorithmically?" but doesn't provide a conc
 
 Latin verbs fall into five conjugation classes with systematic patterns:
 
-| Class | Infinitive | Imperative | Perfect Participle |
-|-------|------------|------------|-------------------|
-| 1st | `-are` | `-a` | `-atus/-ata` |
-| 2nd | `-ere` | `-e` | `-itus/-ita` |
-| 3rd | `-ere` | `-e` | `-tus/-ta` (varies) |
-| 3rd-io | `-ere` | `-e` | `-tus/-ta` |
-| 4th | `-ire` | `-i` | `-itus/-ita` |
+| Class  | Infinitive | Imperative | Perfect Participle  |
+| ------ | ---------- | ---------- | ------------------- |
+| 1st    | `-are`     | `-a`       | `-atus/-ata`        |
+| 2nd    | `-ere`     | `-e`       | `-itus/-ita`        |
+| 3rd    | `-ere`     | `-e`       | `-tus/-ta` (varies) |
+| 3rd-io | `-ere`     | `-e`       | `-tus/-ta`          |
+| 4th    | `-ire`     | `-i`       | `-itus/-ita`        |
 
 Instead of maintaining per-verb stem tables (`invert-`, `invers-`, `inver-`), the `@ radix` annotation could declare conjugation class:
 
 ```faber
-@ radix classis(tertia), imperativus, perfectum
+@ radix classis tertia, imperativus, perfectum
 functio inverte<T>() fit vacuum { ... }
 ```
 
 The compiler would then derive:
+
 - Imperative: `inverte` (3rd conjugation → `-e`)
 - Perfect participle: `inversus` → `inversa` (feminine, for collections)
 
@@ -1118,9 +1179,9 @@ This is "mechanically certain" — conjugation classes are systematic. The irreg
 2. **Bind morphology dispatch to receiver type.** Do not dispatch based solely on method name. Verify the receiver has `@ radix` declarations for the parsed stem.
 
 3. **Document semantic extensions.** Acknowledge that:
-   - Perfect participle is interpreted as "produce the X'd thing" (substantivized adjective)
-   - Present participle for generators is a pragmatic mapping, not strict grammar
-   - The parser does suffix matching, not full morphological analysis
+    - Perfect participle is interpreted as "produce the X'd thing" (substantivized adjective)
+    - Present participle for generators is a pragmatic mapping, not strict grammar
+    - The parser does suffix matching, not full morphological analysis
 
 #### Important (Should Address)
 
@@ -1128,7 +1189,7 @@ This is "mechanically certain" — conjugation classes are systematic. The irreg
 
 5. **Complete or justify partial coverage.** Either implement `addita`, `mappa`, etc., or document why specific operations don't have full pairs. "We chose not to implement X because Y" is better than silent gaps.
 
-6. **Choose one `@ radix` syntax.** Line-based (`@ radix imperativus, perfectum`) or parenthesized (`@ radix(imperativus, perfectum)`), but not both. GPT Notes correctly warn against drift.
+6. **Choose one `@ radix` syntax.** Use the line-based form only (and enforce it consistently in parser, docs, and examples).
 
 #### Optional (Consider)
 
