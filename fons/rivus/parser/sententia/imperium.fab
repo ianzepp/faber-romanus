@@ -49,8 +49,8 @@ functio parseSiSententia(Resolvitor r) -> Sententia {
     # Parse condition
     fixum condicio = r.expressia()
 
-    # Parse consequent block
-    fixum consequens = parseMassaSententia(r)
+    # Parse consequent body
+    fixum consequens = parseCorpusBrevis(r)
 
     # Check for optional catch (si expr { } cape err { })
     varia cape = nihil qua CapeClausula?
@@ -61,38 +61,11 @@ functio parseSiSententia(Resolvitor r) -> Sententia {
     # Check for else/else-if chain
     varia alternans = nihil qua Sententia?
 
-    si p.probaVerbum("secus") {
-        # Check if this is 'sin' (else if)
-        si p.probaVerbum("si") {
-            # Recurse - but we already consumed 'si', need to back up
-            # Actually, let's handle else-if differently
-        }
-        alternans = parseMassaSententia(r)
-    }
-
-    # Also check for 'sin' (else if shorthand)
     si p.probaVerbum("sin") {
-        # Parse the rest as another si statement
-        fixum siLocus = p.locusActualis()
-        fixum siCondicio = r.expressia()
-        fixum siConsequens = parseMassaSententia(r)
-
-        # Recursively check for more else-if or else
-        varia siAlternans = nihil qua Sententia?
-        si p.probaVerbum("secus") {
-            siAlternans = parseMassaSententia(r)
-        } sin p.probaVerbum("sin") {
-            # Need to handle nested sin - for now, parse as expression statement
-            # TODO: proper recursive handling
-        }
-
-        alternans = finge SiSententia {
-            locus: siLocus,
-            condicio: siCondicio,
-            consequens: siConsequens,
-            alternans: siAlternans,
-            cape: nihil
-        } qua Sententia
+        alternans = parseSinSententia(r)
+    } sin p.probaVerbum("secus") {
+        p.procede()
+        alternans = parseCorpusBrevis(r)
     }
 
     redde finge SiSententia {
@@ -123,7 +96,7 @@ functio parseDumSententia(Resolvitor r) -> Sententia {
     fixum condicio = r.expressia()
 
     # Parse body
-    fixum corpus = parseMassaSententia(r)
+    fixum corpus = parseCorpusBrevis(r)
 
     # Optional catch
     varia cape = nihil qua CapeClausula?
@@ -165,7 +138,7 @@ functio parseExSententia(Resolvitor r) -> Sententia {
     fixum variabilis = nomenSym.valor
 
     # Parse body
-    fixum corpus = parseMassaSententia(r)
+    fixum corpus = parseCorpusBrevis(r)
 
     # Optional catch
     varia cape = nihil qua CapeClausula?
@@ -209,7 +182,7 @@ functio parseDeSententia(Resolvitor r) -> Sententia {
     fixum variabilis = nomenSym.valor
 
     # Parse body
-    fixum corpus = parseMassaSententia(r)
+    fixum corpus = parseCorpusBrevis(r)
 
     # Optional catch
     varia cape = nihil qua CapeClausula?
@@ -236,7 +209,9 @@ functio parseDeSententia(Resolvitor r) -> Sententia {
 @ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()
-    fixum locus = p.praevius().locus  # 'cape' already consumed
+    fixum locus = p.locusActualis()
+
+    p.expectaVerbum("cape", ParserErrorCodice.ExpectaturCape)
 
     # Parse error binding name
     fixum paramSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
@@ -250,4 +225,55 @@ functio parseCapeClausula(Resolvitor r) -> CapeClausula {
         param: param,
         corpus: corpus
     } qua CapeClausula
+}
+
+# Parse a block or short-form body
+@ publica
+functio parseCorpusBrevis(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    si p.probaVerbum("ergo") {
+        p.procede()
+        redde r.sententia()
+    }
+
+    si p.probaVerbum("reddit") {
+        p.procede()
+        fixum valor = r.expressia()
+        redde finge ReddeSententia {
+            locus: locus,
+            valor: valor
+        } qua Sententia
+    }
+
+    redde parseMassaSententia(r)
+}
+
+# Parse a "sin" (else-if) clause
+@ publica
+functio parseSinSententia(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    p.expectaVerbum("sin", ParserErrorCodice.ExpectaturSi)
+
+    fixum condicio = r.expressia()
+    fixum consequens = parseCorpusBrevis(r)
+
+    varia alternans = nihil qua Sententia?
+    si p.probaVerbum("sin") {
+        alternans = parseSinSententia(r)
+    } sin p.probaVerbum("secus") {
+        p.procede()
+        alternans = parseCorpusBrevis(r)
+    }
+
+    redde finge SiSententia {
+        locus: locus,
+        condicio: condicio,
+        consequens: consequens,
+        alternans: alternans,
+        cape: nihil
+    } qua Sententia
 }

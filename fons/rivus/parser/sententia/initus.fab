@@ -40,10 +40,9 @@ functio parseIncipitSententia(Resolvitor r) -> Sententia {
     # Consume 'incipit'
     p.expectaVerbum("incipit", ParserErrorCodice.ExpectaturIncipit)
 
-    # Check for ergo form
-    si p.probaVerbum("ergo") {
-        p.procede()
-        fixum ergo = r.sententia()
+    # Check for short form
+    fixum ergo = parseErgoVelReddit(r)
+    si nonnihil ergo {
         redde finge IncipitSententia {
             locus: locus,
             corpus: nihil,
@@ -77,10 +76,9 @@ functio parseIncipietSententia(Resolvitor r) -> Sententia {
     # Consume 'incipiet'
     p.expectaVerbum("incipiet", ParserErrorCodice.ExpectaturIncipiet)
 
-    # Check for ergo form
-    si p.probaVerbum("ergo") {
-        p.procede()
-        fixum ergo = r.sententia()
+    # Check for short form
+    fixum ergo = parseErgoVelReddit(r)
+    si nonnihil ergo {
         redde finge IncipietSententia {
             locus: locus,
             corpus: nihil,
@@ -96,6 +94,29 @@ functio parseIncipietSententia(Resolvitor r) -> Sententia {
         corpus: corpus,
         ergo: nihil
     } qua Sententia
+}
+
+# Parse short entrypoint bodies: ergo statement or reddit expression
+@ publica
+functio parseErgoVelReddit(Resolvitor r) -> Sententia? {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    si p.probaVerbum("ergo") {
+        p.procede()
+        redde r.sententia()
+    }
+
+    si p.probaVerbum("reddit") {
+        p.procede()
+        fixum valor = r.expressia()
+        redde finge ReddeSententia {
+            locus: locus,
+            valor: valor
+        } qua Sententia
+    }
+
+    redde nihil
 }
 
 # Parse cura (resource management) statement

@@ -62,14 +62,8 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
             # Parse condition expression
             fixum condicio = r.expressia()
 
-            # Parse body: ergo stmt or block
-            varia consequens = nihil qua Sententia?
-            si p.probaVerbum("ergo") {
-                p.procede()
-                consequens = r.sententia()
-            } secus {
-                consequens = parseMassaSententia(r)
-            }
+            # Parse body: block, ergo stmt, or reddit expr
+            fixum consequens = parseCorpusBrevis(r)
 
             casus.adde({
                 locus: casusLocus,
@@ -80,7 +74,7 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
         # Check for 'ceterum' (default case)
         sin p.probaVerbum("ceterum") {
             p.procede()
-            praedefinitum = parseMassaSententia(r)
+            praedefinitum = parseCorpusBrevis(r)
             rumpe  # Default must be last
         }
         secus {
@@ -145,9 +139,13 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
             fixum variansNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
             fixum variansNomen = variansNomenSym.valor
 
-            # Parse optional bindings: pro x, y, z
+            # Parse optional bindings: ut alias OR pro x, y, z
             varia vincula = [] qua lista<textus>
-            si p.probaVerbum("pro") {
+            si p.probaVerbum("ut") {
+                p.procede()
+                fixum aliasSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
+                vincula.adde(aliasSym.valor)
+            } sin p.probaVerbum("pro") {
                 p.procede()
                 fac {
                     fixum vincSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
@@ -155,8 +153,8 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
                 } dum p.congruet(SymbolumGenus.Coma)
             }
 
-            # Parse body block
-            fixum consequens = parseMassaSententia(r)
+            # Parse body
+            fixum consequens = parseCorpusBrevis(r)
 
             casus.adde({
                 locus: casusLocus,
@@ -210,7 +208,7 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
             p.procede()  # Consume 'si'
 
             fixum condicio = r.expressia()
-            fixum consequens = parseMassaSententia(r)
+            fixum consequens = parseCorpusBrevis(r)
 
             clausulae.adde({
                 locus: clausulaLocus,
@@ -252,4 +250,27 @@ functio parseCapeClausula(Resolvitor r) -> CapeClausula {
         param: param,
         corpus: corpus
     } qua CapeClausula
+}
+
+# Parse a block or short-form body
+@ publica
+functio parseCorpusBrevis(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    si p.probaVerbum("ergo") {
+        p.procede()
+        redde r.sententia()
+    }
+
+    si p.probaVerbum("reddit") {
+        p.procede()
+        fixum valor = r.expressia()
+        redde finge ReddeSententia {
+            locus: locus,
+            valor: valor
+        } qua Sententia
+    }
+
+    redde parseMassaSententia(r)
 }
