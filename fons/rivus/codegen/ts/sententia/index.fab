@@ -331,8 +331,37 @@ functio genInExpressia(Expressia expr, Expressia obiectum, TsGenerator g) -> tex
 functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> parametra, ignotum reddeVerbum, ignotum typusReditus, ignotum corpus, bivalens asynca, bivalens generator, bivalens structor, TsGenerator g) -> textus {
     varia result = g.ind()
 
+    # Return type verb flags
+    varia useFit = falsum
+    varia useFiunt = falsum
+    varia useFiet = falsum
+    varia useFient = falsum
+    si nonnihil reddeVerbum et non structor {
+        fixum rv = reddeVerbum qua ReddeVerbum
+        useFit = rv == ReddeVerbum.Fit
+        useFiunt = rv == ReddeVerbum.Fiunt
+        useFiet = rv == ReddeVerbum.Fiet
+        useFient = rv == ReddeVerbum.Fient
+    }
+
+    varia localAsync = asynca
+    varia localGenerator = generator
+    si useFit {
+        localAsync = falsum
+        localGenerator = falsum
+    } sin useFiunt {
+        localAsync = falsum
+        localGenerator = verum
+    } sin useFiet {
+        localAsync = verum
+        localGenerator = falsum
+    } sin useFient {
+        localAsync = verum
+        localGenerator = verum
+    }
+
     # Async prefix
-    si asynca {
+    si localAsync {
         result = scriptum("§async ", result)
     }
 
@@ -340,7 +369,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
     si structor {
         result = scriptum("§constructor", result)
     } secus {
-        si generator {
+        si localGenerator {
             result = scriptum("§function* §", result, nomen)
         } secus {
             result = scriptum("§function §", result, nomen)
@@ -366,20 +395,24 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
     }
     result = scriptum("§(§)", result, params.coniunge(", "))
 
-    # Return type
     si nonnihil typusReditus et non structor {
         fixum base = genTypus(typusReditus qua TypusAnnotatio, g)
-
-        si generator {
+        si useFiunt {
+            result = scriptum("§: Generator<§>", result, base)
+        } sin useFient {
+            result = scriptum("§: AsyncGenerator<§>", result, base)
+        } sin useFiet {
+            result = scriptum("§: Promise<§>", result, base)
+        } sin localGenerator {
             # Generator functions wrap yield type in Generator/AsyncGenerator.
-            si asynca {
+            si localAsync {
                 result = scriptum("§: AsyncGenerator<§>", result, base)
             } secus {
                 result = scriptum("§: Generator<§>", result, base)
             }
         } secus {
             # Async functions return Promise<T>.
-            si asynca {
+            si localAsync {
                 result = scriptum("§: Promise<§>", result, base)
             } secus {
                 result = scriptum("§: §", result, base)
@@ -396,14 +429,13 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         fixum prevInFiet = g.inFiet
         fixum prevInFient = g.inFient
 
-        g.inGenerator = generator
+        g.inGenerator = localGenerator
 
         si nonnihil reddeVerbum {
-            fixum rv = reddeVerbum qua ReddeVerbum
-            g.inFlumina = rv == ReddeVerbum.Fit
-            g.inFiet = rv == ReddeVerbum.Fiet
-            g.inFiunt = rv == ReddeVerbum.Fiunt
-            g.inFient = rv == ReddeVerbum.Fient
+            g.inFlumina = useFit aut useFiet
+            g.inFiet = useFiet
+            g.inFiunt = useFiunt
+            g.inFient = useFient
             si g.inFlumina aut g.inFiet aut g.inFiunt aut g.inFient {
                 g.features.flumina = verum
             }
@@ -429,7 +461,19 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         g.inFiet = prevInFiet
         g.inFient = prevInFient
 
-        si body == "" {
+        si useFit {
+            fixum ind = g.ind()
+            result = scriptum("§ {\n§  return asFit(function* () {\n§\n§  });\n§}", result, ind, body, ind, ind)
+        } sin useFiunt {
+            fixum ind = g.ind()
+            result = scriptum("§ {\n§  yield* asFiunt((function* () {\n§\n§  })());\n§}", result, ind, body, ind, ind)
+        } sin useFiet {
+            fixum ind = g.ind()
+            result = scriptum("§ {\n§  return await asFiet(async function* () {\n§\n§  });\n§}", result, ind, body, ind, ind)
+        } sin useFient {
+            fixum ind = g.ind()
+            result = scriptum("§ {\n§  yield* asFient((async function* () {\n§\n§  })());\n§}", result, ind, body, ind, ind)
+        } sin body == "" {
             result = scriptum("§ {{}}", result)
         } secus {
             result = scriptum("§ {\n§\n§}", result, body, g.ind())
@@ -1014,6 +1058,10 @@ functio genScribe(ScribeGradus gradus, lista<Expressia> argumenta, TsGenerator g
 
 @ publica
 functio genRedde(ignotum valor, TsGenerator g) -> textus {
+    si g.inFlumina {
+        fixum data = nonnihil valor sic genExpressia(valor qua Expressia, g) secus "undefined"
+        redde scriptum("§yield respond.ok(§);", g.ind(), data)
+    }
     si nonnihil valor {
         redde scriptum("§return §;", g.ind(), genExpressia(valor qua Expressia, g))
     }
