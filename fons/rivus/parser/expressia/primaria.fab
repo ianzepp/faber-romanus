@@ -77,32 +77,32 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
     }
 
     # Boolean: verum
-    si p.probaVerbum("verum") {
+    si sym.species == SymbolumGenus.Verum {
         p.procede()
         redde finge Littera {
             locus: locus,
             species: LitteraGenus.Verum,
-            crudus: "verum"
+            crudus: sym.valor
         } qua Expressia
     }
 
     # Boolean: falsum
-    si p.probaVerbum("falsum") {
+    si sym.species == SymbolumGenus.Falsum {
         p.procede()
         redde finge Littera {
             locus: locus,
             species: LitteraGenus.Falsum,
-            crudus: "falsum"
+            crudus: sym.valor
         } qua Expressia
     }
 
     # Null: nihil
-    si p.probaVerbum("nihil") {
+    si sym.species == SymbolumGenus.Nihil {
         p.procede()
         redde finge Littera {
             locus: locus,
             species: LitteraGenus.Nihil,
-            crudus: "nihil"
+            crudus: sym.valor
         } qua Expressia
     }
 

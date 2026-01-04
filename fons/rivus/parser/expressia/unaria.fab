@@ -42,6 +42,9 @@ functio parseUnaria(Resolvitor r) -> Expressia {
             SymbolumGenus.Fractus,
             SymbolumGenus.Textus,
             SymbolumGenus.Exemplar,
+            SymbolumGenus.Verum,
+            SymbolumGenus.Falsum,
+            SymbolumGenus.Nihil,
             SymbolumGenus.ParensSin,
             SymbolumGenus.QuadratusSin,
             SymbolumGenus.UncusSin
@@ -109,7 +112,7 @@ functio parseUnaria(Resolvitor r) -> Expressia {
         redde estInitiumExpressiae(s)
     }
 
-    si p.probaVerbum("nihil") et estInitiumPostNihil(prox) et prox.species !== SymbolumGenus.UncusSin {
+    si p.proba(SymbolumGenus.Nihil) et estInitiumPostNihil(prox) et prox.species !== SymbolumGenus.UncusSin {
         # WHY: Avoid treating block starts as unary operands (si x == nihil { ... }).
         p.procede()
         fixum argumentum = parseUnaria(r)

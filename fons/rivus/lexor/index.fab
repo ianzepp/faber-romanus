@@ -541,6 +541,24 @@ genus Lexor {
             valor = valor + ego.procede()
         }
 
+        # Boolean/null literals are tokens, not keywords.
+        # WHY: "nihil" is ambiguous (literal vs unary operator vs type name), and
+        #      treating these as dedicated token kinds keeps downstream matching
+        #      explicit without depending on keyword IDs.
+        si ego.dialectus === Dialectus.Anglicus {
+            elige valor {
+                casu "true" { ego.addeSymbolum(SymbolumGenus.Verum, valor, loc); redde }
+                casu "false" { ego.addeSymbolum(SymbolumGenus.Falsum, valor, loc); redde }
+                casu "null" { ego.addeSymbolum(SymbolumGenus.Nihil, valor, loc); redde }
+            }
+        }
+
+        elige valor {
+            casu "verum" { ego.addeSymbolum(SymbolumGenus.Verum, valor, loc); redde }
+            casu "falsum" { ego.addeSymbolum(SymbolumGenus.Falsum, valor, loc); redde }
+            casu "nihil" { ego.addeSymbolum(SymbolumGenus.Nihil, valor, loc); redde }
+        }
+
         # Check if the identifier is a reserved keyword
         # verbumId() is defined in lexicon/verba.fab
         fixum id = verbumId(valor, ego.dialectus)

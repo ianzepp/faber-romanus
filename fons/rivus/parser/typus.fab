@@ -54,7 +54,10 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
         # Regular identifier (Persona, MyType, etc.)
         nomen = p.procede().valor
     } sin p.proba(SymbolumGenus.Verbum) {
-        # Keywords can be type names (nihil, textus, numerus, etc.)
+        # Keywords can be type names (textus, numerus, etc.)
+        nomen = p.procede().valor
+    } sin p.proba(SymbolumGenus.Nihil) {
+        # EDGE: "nihil" is both a literal and a type name.
         nomen = p.procede().valor
     } secus {
         # Error: expected type name

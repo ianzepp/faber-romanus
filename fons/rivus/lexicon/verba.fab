@@ -125,14 +125,11 @@ functio verbumFaberId(textus v) -> VerbumId? {
         casu "ceteri" reddit VerbumId.Ceteri
         casu "nulla" reddit VerbumId.Nulla
         casu "nonnulla" reddit VerbumId.Nonnulla
-        casu "nihil" reddit VerbumId.Nihil
         casu "nonnihil" reddit VerbumId.Nonnihil
         casu "negativum" reddit VerbumId.Negativum
         casu "positivum" reddit VerbumId.Positivum
 
         # Valor - literal values
-        casu "verum" reddit VerbumId.Verum
-        casu "falsum" reddit VerbumId.Falsum
         casu "ego" reddit VerbumId.Ego
 
         # Praepositio - prepositions
@@ -194,55 +191,55 @@ functio verbumId(textus v, si Dialectus dialectus) -> VerbumId? {
 functio estVerbumSententiae(textus v) -> bivalens {
     elige v {
         # Declarations
-        casu "functio" { redde verum }
-        casu "varia" { redde verum }
-        casu "fixum" { redde verum }
-        casu "figendum" { redde verum }
-        casu "variandum" { redde verum }
-        casu "typus" { redde verum }
-        casu "ordo" { redde verum }
-        casu "genus" { redde verum }
-        casu "pactum" { redde verum }
-        casu "discretio" { redde verum }
+        casu "functio" reddit verum
+        casu "varia" reddit verum
+        casu "fixum" reddit verum
+        casu "figendum" reddit verum
+        casu "variandum" reddit verum
+        casu "typus" reddit verum
+        casu "ordo" reddit verum
+        casu "genus" reddit verum
+        casu "pactum" reddit verum
+        casu "discretio" reddit verum
 
         # Control flow
-        casu "si" { redde verum }
-        casu "dum" { redde verum }
-        casu "ex" { redde verum }
-        casu "de" { redde verum }
-        casu "elige" { redde verum }
-        casu "discerne" { redde verum }
-        casu "custodi" { redde verum }
-        casu "fac" { redde verum }
-        casu "in" { redde verum }
+        casu "si" reddit verum
+        casu "dum" reddit verum
+        casu "ex" reddit verum
+        casu "de" reddit verum
+        casu "elige" reddit verum
+        casu "discerne" reddit verum
+        casu "custodi" reddit verum
+        casu "fac" reddit verum
+        casu "in" reddit verum
 
         # Actions
-        casu "redde" { redde verum }
-        casu "rumpe" { redde verum }
-        casu "perge" { redde verum }
-        casu "scribe" { redde verum }
-        casu "vide" { redde verum }
-        casu "mone" { redde verum }
-        casu "adfirma" { redde verum }
-        casu "iace" { redde verum }
-        casu "mori" { redde verum }
-        casu "cede" { redde verum }
+        casu "redde" reddit verum
+        casu "rumpe" reddit verum
+        casu "perge" reddit verum
+        casu "scribe" reddit verum
+        casu "vide" reddit verum
+        casu "mone" reddit verum
+        casu "adfirma" reddit verum
+        casu "iace" reddit verum
+        casu "mori" reddit verum
+        casu "cede" reddit verum
 
         # Error handling
-        casu "tempta" { redde verum }
-        casu "cura" { redde verum }
+        casu "tempta" reddit verum
+        casu "cura" reddit verum
 
         # Entry points
-        casu "incipit" { redde verum }
-        casu "incipiet" { redde verum }
+        casu "incipit" reddit verum
+        casu "incipiet" reddit verum
 
         # Testing
-        casu "probandum" { redde verum }
-        casu "proba" { redde verum }
-        casu "praepara" { redde verum }
-        casu "postpara" { redde verum }
+        casu "probandum" reddit verum
+        casu "proba" reddit verum
+        casu "praepara" reddit verum
+        casu "postpara" reddit verum
 
-        ceterum { redde falsum }
+        ceterum reddit falsum
     }
 }
 
@@ -254,18 +251,18 @@ functio estVerbumSententiae(textus v) -> bivalens {
 functio estVerbumGeneris(textus v) -> bivalens {
     elige v {
         # Method declaration
-        casu "functio" { redde verum }
+        casu "functio" reddit verum
 
         # Visibility modifiers (precede fields/methods)
-        casu "privatus" { redde verum }
-        casu "protectus" { redde verum }
+        casu "privatus" reddit verum
+        casu "protectus" reddit verum
 
         # Static modifier
-        casu "generis" { redde verum }
+        casu "generis" reddit verum
 
         # Abstract modifier
-        casu "abstractus" { redde verum }
+        casu "abstractus" reddit verum
 
-        ceterum { redde falsum }
+        ceterum reddit falsum
     }
 }
