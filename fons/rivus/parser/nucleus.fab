@@ -407,7 +407,7 @@ genus Parser {
     # Used to distinguish "fixum textus nomen" from "fixum nomen"
     @ publica
     functio estTypusNomen(Symbolum s) -> bivalens {
-        si s.species !== SymbolumGenus.Nomen reddit falsum
+        si s.species !== SymbolumGenus.Nomen et s.species !== SymbolumGenus.Verbum reddit falsum
 
         # Check against builtin type names
         # TODO: This should use a proper type registry

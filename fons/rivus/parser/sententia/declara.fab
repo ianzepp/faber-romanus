@@ -518,25 +518,31 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
     fac {
         fixum paramLocus = p.locusActualis()
 
+        # Check for preposition (de, in, ex)
+        varia praepositio = nihil qua textus?
+        si p.estPraepositio(p.specta(0)) {
+            praepositio = p.procede().verbum
+        }
+
+        # Optional parameter marker
+        si p.probaVerbum("si") {
+            p.procede()
+        }
+
         # Check for rest parameter
         varia residuum = falsum
         si p.probaVerbum("ceteri") {
             residuum = verum
-        }
-
-        # Check for preposition (de, in, ex)
-        varia praepositio = nihil qua textus?
-        si p.probaVerbum("de") {
-            praepositio = "de"
-        } sin p.probaVerbum("in") {
-            praepositio = "in"
-        } sin p.probaVerbum("ex") {
-            praepositio = "ex"
+            p.procede()
         }
 
         # Parse type (optional if no type annotation)
         varia paramTypus = nihil qua TypusAnnotatio?
-        si p.proba(SymbolumGenus.Nomen) et p.specta(1).species == SymbolumGenus.Nomen {
+        si p.estTypusNomen(p.specta(0)) {
+            paramTypus = r.adnotatio()
+        } sin p.proba(SymbolumGenus.Verbum) et p.specta(1).species == SymbolumGenus.Nomen {
+            paramTypus = r.adnotatio()
+        } sin p.proba(SymbolumGenus.Nomen) et p.specta(1).species == SymbolumGenus.Nomen {
             # Two identifiers: first is type
             paramTypus = r.adnotatio()
         }
