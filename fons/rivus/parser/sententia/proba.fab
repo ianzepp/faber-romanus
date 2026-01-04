@@ -30,9 +30,6 @@ functio parseProbandumSententia(Resolvitor r) -> Sententia {
     si p.proba(SymbolumGenus.Textus) {
         fixum nomenSym = p.procede()
         nomen = nomenSym.valor
-    } sin modificator == ProbaModificator.Futurum et p.proba(SymbolumGenus.UncusSin) {
-        # WHY: Futurum can omit a test name, leaving only a reason.
-        nomen = ""
     } secus {
         fixum nomenSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
         nomen = nomenSym.valor
@@ -99,8 +96,17 @@ functio parseProbaSententia(Resolvitor r) -> Sententia {
         ratio = ratioSym.valor
     }
 
-    fixum nomenSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
-    fixum nomen = nomenSym.valor
+    varia nomen = "" qua textus
+    si p.proba(SymbolumGenus.Textus) {
+        fixum nomenSym = p.procede()
+        nomen = nomenSym.valor
+    } sin modificator == ProbaModificator.Futurum et p.proba(SymbolumGenus.UncusSin) {
+        # WHY: Futurum allows omission of test name.
+        nomen = ""
+    } secus {
+        fixum nomenSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
+        nomen = nomenSym.valor
+    }
 
     fixum corpus = parseMassaSententia(r)
 
