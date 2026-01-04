@@ -10,16 +10,17 @@ Latin verb morphology encodes semantic information. The compiler parses conjugat
 
 Modern programming requires expressing multiple variants of the same operation:
 
-| Variant | JavaScript | Python | Rust |
-|---------|------------|--------|------|
-| Mutate, sync | `arr.sort()` | `list.sort()` | `vec.sort()` |
-| Copy, sync | `[...arr].sort()` | `sorted(list)` | `vec.iter().sorted()` |
-| Mutate, async | ??? | ??? | ??? |
-| Copy, async | ??? | ??? | ??? |
-| Stream/lazy | `arr.values()` | `iter(list)` | `vec.iter()` |
-| Async stream | `for await...` | `async for...` | `Stream` trait |
+| Variant       | JavaScript        | Python         | Rust                  |
+| ------------- | ----------------- | -------------- | --------------------- |
+| Mutate, sync  | `arr.sort()`      | `list.sort()`  | `vec.sort()`          |
+| Copy, sync    | `[...arr].sort()` | `sorted(list)` | `vec.iter().sorted()` |
+| Mutate, async | ???               | ???            | ???                   |
+| Copy, async   | ???               | ???            | ???                   |
+| Stream/lazy   | `arr.values()`    | `iter(list)`   | `vec.iter()`          |
+| Async stream  | `for await...`    | `async for...` | `Stream` trait        |
 
 Languages handle this inconsistently:
+
 - **Naming conventions**: `sort`/`sorted`, `reverse`/`reversed`, `readFileSync`/`readFile`
 - **Separate APIs**: sync vs async modules, eager vs lazy collections
 - **Method suffixes**: `_mut`, `_async`, `_iter`
@@ -32,21 +33,22 @@ Each approach requires memorizing arbitrary conventions that vary by operation a
 
 Latin verb conjugation already encodes these semantics:
 
-| Form | Latin Name | Ending | Semantics |
-|------|------------|--------|-----------|
-| Imperative | Imperativus | `-a`, `-e`, `-i` | Command: mutate now |
-| Perfect Participle | Participium Perfectum | `-ata`, `-ita`, `-ta` | Completed: return result |
-| Future Indicative | Futurum Indicativum | `-abit`, `-ebit`, `-iet` | Will do: async mutate |
-| Future Participle | Participium Futurum | `-atura`, `-itura` | About to produce: async result |
+| Form               | Latin Name            | Ending                   | Semantics                      |
+| ------------------ | --------------------- | ------------------------ | ------------------------------ |
+| Imperative         | Imperativus           | `-a`, `-e`, `-i`         | Command: mutate now            |
+| Perfect Participle | Participium Perfectum | `-ata`, `-ita`, `-ta`    | Completed: return result       |
+| Future Indicative  | Futurum Indicativum   | `-abit`, `-ebit`, `-iet` | Will do: async mutate          |
+| Future Participle  | Participium Futurum   | `-atura`, `-itura`       | About to produce: async result |
 
 This maps directly to a semantic matrix:
 
-|  | Sync | Async |
-|--|------|-------|
-| **Mutates** | `-a/-e/-i` (imperative) | `-abit/-ebit` (future indicative) |
+|                 | Sync                             | Async                               |
+| --------------- | -------------------------------- | ----------------------------------- |
+| **Mutates**     | `-a/-e/-i` (imperative)          | `-abit/-ebit` (future indicative)   |
 | **Returns new** | `-ata/-ita` (perfect participle) | `-atura/-itura` (future participle) |
 
 The conjugation ending tells you everything:
+
 - `filtra` → mutates in place, synchronous
 - `filtrata` → returns new collection, synchronous
 - `filtrabit` → mutates in place, asynchronous
@@ -60,18 +62,18 @@ For in-memory collections, morphology provides modest value—7 operations with 
 
 ### Stdlib Domains
 
-| Type | Latin | Domain | Primary Mode | Morphology Value |
-|------|-------|--------|--------------|------------------|
-| **mathesis** | "learning" | Math | Sync | None |
-| **tempus** | "time" | Date/time | Sync | None |
-| **textus** | "woven" | Strings | Sync | Low |
-| **lista** | "list" | Arrays | Sync | Medium |
-| **tabula** | "table" | Maps | Sync | Medium |
-| **copia** | "abundance" | Sets | Sync | Medium |
-| **solum** | "ground" | Filesystem | Async + streaming | **High** |
-| **caelum** | "sky" | Network | Async + streaming | **High** |
-| **arca** | "chest" | Database | Async + streaming | **High** |
-| **nucleus** | "kernel" | System/IPC | Async + streaming | **High** |
+| Type         | Latin       | Domain     | Primary Mode      | Morphology Value |
+| ------------ | ----------- | ---------- | ----------------- | ---------------- |
+| **mathesis** | "learning"  | Math       | Sync              | None             |
+| **tempus**   | "time"      | Date/time  | Sync              | None             |
+| **textus**   | "woven"     | Strings    | Sync              | Low              |
+| **lista**    | "list"      | Arrays     | Sync              | Medium           |
+| **tabula**   | "table"     | Maps       | Sync              | Medium           |
+| **copia**    | "abundance" | Sets       | Sync              | Medium           |
+| **solum**    | "ground"    | Filesystem | Async + streaming | **High**         |
+| **caelum**   | "sky"       | Network    | Async + streaming | **High**         |
+| **arca**     | "chest"     | Database   | Async + streaming | **High**         |
+| **nucleus**  | "kernel"    | System/IPC | Async + streaming | **High**         |
 
 ### IO Operations Matrix
 
@@ -79,42 +81,42 @@ For IO types, every operation naturally has multiple variants:
 
 #### solum (Filesystem)
 
-| Operation | Sync | Async | Generator |
-|-----------|------|-------|-----------|
-| Read file | `lege` | `leget` | `legens` |
-| Write file | `scribe` | `scribet` | `scribens` |
+| Operation      | Sync      | Async        | Generator   |
+| -------------- | --------- | ------------ | ----------- |
+| Read file      | `lege`    | `leget`      | `legens`    |
+| Write file     | `scribe`  | `scribet`    | `scribens`  |
 | List directory | `enumera` | `enumerabit` | `enumerans` |
-| File exists | `exstat` | `exstabit` | — |
-| Delete | `dele` | `delebit` | — |
+| File exists    | `exstat`  | `exstabit`   | —           |
+| Delete         | `dele`    | `delebit`    | —           |
 
 #### caelum (Network)
 
-| Operation | Sync | Async | Generator |
-|-----------|------|-------|-----------|
-| HTTP fetch | — | `pete` | `petens` |
-| Send data | — | `mitte` | `mittens` |
-| WebSocket listen | — | — | `auscultans` |
-| Stream response | — | — | `fluit` |
+| Operation        | Sync | Async   | Generator    |
+| ---------------- | ---- | ------- | ------------ |
+| HTTP fetch       | —    | `pete`  | `petens`     |
+| Send data        | —    | `mitte` | `mittens`    |
+| WebSocket listen | —    | —       | `auscultans` |
+| Stream response  | —    | —       | `fluit`      |
 
 #### arca (Database)
 
-| Operation | Sync | Async | Generator |
-|-----------|------|-------|-----------|
-| Query | `quaere` | `quaeret` | `quaerens` |
-| Insert | — | `inseret` | — |
-| Update | — | `mutabit` | — |
-| Delete | — | `delebit` | — |
-| Transaction | — | `transiget` | — |
+| Operation   | Sync     | Async       | Generator  |
+| ----------- | -------- | ----------- | ---------- |
+| Query       | `quaere` | `quaeret`   | `quaerens` |
+| Insert      | —        | `inseret`   | —          |
+| Update      | —        | `mutabit`   | —          |
+| Delete      | —        | `delebit`   | —          |
+| Transaction | —        | `transiget` | —          |
 
 #### nucleus (Microkernel)
 
-| Operation | Sync | Async | Generator |
-|-----------|------|-------|-----------|
-| Spawn process | `genera` | `generabit` | — |
-| Wait for child | `expecta` | `expectabit` | — |
-| Send signal | `signa` | `signabit` | — |
-| Listen signals | — | — | `signans` |
-| IPC receive | `accipe` | `accipiet` | `accipiens` |
+| Operation      | Sync      | Async        | Generator   |
+| -------------- | --------- | ------------ | ----------- |
+| Spawn process  | `genera`  | `generabit`  | —           |
+| Wait for child | `expecta` | `expectabit` | —           |
+| Send signal    | `signa`   | `signabit`   | —           |
+| Listen signals | —         | —            | `signans`   |
+| IPC receive    | `accipe`  | `accipiet`   | `accipiens` |
 
 ### The Value Proposition
 
@@ -122,10 +124,10 @@ Without morphology, IO operations require ad-hoc naming:
 
 ```javascript
 // Node.js style
-fs.readFileSync(path)
-fs.readFile(path, callback)
-fs.promises.readFile(path)
-fs.createReadStream(path)
+fs.readFileSync(path);
+fs.readFile(path, callback);
+fs.promises.readFile(path);
+fs.createReadStream(path);
 ```
 
 With morphology, the verb form encodes the behavior:
@@ -144,96 +146,96 @@ The pattern is **consistent across all domains**. Learn the conjugation once, ap
 
 ### lista Methods by Radix
 
-| Stem | Imperative (mutates) | Participle (returns new) | Notes |
-|------|---------------------|--------------------------|-------|
-| **add-** | `adde` | `addita` | Full pair |
-| **praepon-** | `praepone` | `praeposita` | Full pair |
-| **remov-** | `remove` | `remota` | Full pair |
-| **decapit-** | `decapita` | `decapitata` | Full pair |
-| **filtr-** | `filtra` | `filtrata` | Full pair |
-| **ordin-** | `ordina` | `ordinata` | Full pair |
-| **invert-** | `inverte` | `inversa` | Full pair |
-| **purg-** | `purga` | — | Mutate only |
-| **mapp-** | — | `mappata` | Participle only |
-| **reduct-** | — | `reducta` | Participle only |
-| **explan-** | — | `explanata` | Participle only |
-| **plan-** | — | `plana` | Participle only |
-| **sect-** | — | `sectio` | Participle only |
-| **prim-** | — | `prima` | Participle only |
-| **ultim-** | — | `ultima` | Participle only |
-| **unic-** | — | `unica` | Participle only |
+| Stem         | Imperative (mutates) | Participle (returns new) | Notes           |
+| ------------ | -------------------- | ------------------------ | --------------- |
+| **add-**     | `adde`               | `addita`                 | Full pair       |
+| **praepon-** | `praepone`           | `praeposita`             | Full pair       |
+| **remov-**   | `remove`             | `remota`                 | Full pair       |
+| **decapit-** | `decapita`           | `decapitata`             | Full pair       |
+| **filtr-**   | `filtra`             | `filtrata`               | Full pair       |
+| **ordin-**   | `ordina`             | `ordinata`               | Full pair       |
+| **invert-**  | `inverte`            | `inversa`                | Full pair       |
+| **purg-**    | `purga`              | —                        | Mutate only     |
+| **mapp-**    | —                    | `mappata`                | Participle only |
+| **reduct-**  | —                    | `reducta`                | Participle only |
+| **explan-**  | —                    | `explanata`              | Participle only |
+| **plan-**    | —                    | `plana`                  | Participle only |
+| **sect-**    | —                    | `sectio`                 | Participle only |
+| **prim-**    | —                    | `prima`                  | Participle only |
+| **ultim-**   | —                    | `ultima`                 | Participle only |
+| **unic-**    | —                    | `unica`                  | Participle only |
 
 #### Read-Only Methods (No Morphology)
 
-| Method | Type | Meaning |
-|--------|------|---------|
-| `longitudo` | noun | Length |
-| `primus` | adjective | First element |
-| `ultimus` | adjective | Last element |
-| `continet` | verb (3sg) | Contains |
-| `vacua` | adjective | Is empty |
-| `inveni` | verb | Find element |
-| `omnes` | adjective | All match |
-| `aliquis` | pronoun | Any matches |
-| `summa` | noun | Sum |
-| `minimus` | adjective | Minimum |
-| `maximus` | adjective | Maximum |
+| Method      | Type       | Meaning       |
+| ----------- | ---------- | ------------- |
+| `longitudo` | noun       | Length        |
+| `primus`    | adjective  | First element |
+| `ultimus`   | adjective  | Last element  |
+| `continet`  | verb (3sg) | Contains      |
+| `vacua`     | adjective  | Is empty      |
+| `inveni`    | verb       | Find element  |
+| `omnes`     | adjective  | All match     |
+| `aliquis`   | pronoun    | Any matches   |
+| `summa`     | noun       | Sum           |
+| `minimus`   | adjective  | Minimum       |
+| `maximus`   | adjective  | Maximum       |
 
 ### copia Methods by Radix
 
-| Stem | Imperative (mutates) | Participle (returns new) | Notes |
-|------|---------------------|--------------------------|-------|
-| **add-** | `adde` | — | Mutate only |
-| **del-** | `dele` | — | Mutate only |
-| **purg-** | `purga` | — | Mutate only |
-| **uni-** | — | `unio` | Returns new |
-| **intersect-** | — | `intersectio` | Returns new |
-| **differenti-** | — | `differentia` | Returns new |
-| **symmetr-** | — | `symmetrica` | Returns new |
+| Stem            | Imperative (mutates) | Participle (returns new) | Notes       |
+| --------------- | -------------------- | ------------------------ | ----------- |
+| **add-**        | `adde`               | —                        | Mutate only |
+| **del-**        | `dele`               | —                        | Mutate only |
+| **purg-**       | `purga`              | —                        | Mutate only |
+| **uni-**        | —                    | `unio`                   | Returns new |
+| **intersect-**  | —                    | `intersectio`            | Returns new |
+| **differenti-** | —                    | `differentia`            | Returns new |
+| **symmetr-**    | —                    | `symmetrica`             | Returns new |
 
 #### Read-Only Methods (No Morphology)
 
-| Method | Meaning |
-|--------|---------|
-| `habet` | Has element |
-| `longitudo` | Size |
-| `vacua` | Is empty |
-| `subcopia` | Is subset |
+| Method       | Meaning     |
+| ------------ | ----------- |
+| `habet`      | Has element |
+| `longitudo`  | Size        |
+| `vacua`      | Is empty    |
+| `subcopia`   | Is subset   |
 | `supercopia` | Is superset |
 
 ### tabula Methods by Radix
 
-| Stem | Imperative (mutates) | Participle (returns new) | Notes |
-|------|---------------------|--------------------------|-------|
-| **pon-** | `pone` | — | Mutate only |
-| **del-** | `dele` | — | Mutate only |
-| **purg-** | `purga` | — | Mutate only |
-| **confl-** | `confla` | — | Mutate only (merge) |
-| **invert-** | — | `inversa` | Returns new (swap k/v) |
-| **selig-** | — | `selige` | Returns new (pick) |
-| **omitt-** | — | `omitte` | Returns new (omit) |
+| Stem        | Imperative (mutates) | Participle (returns new) | Notes                  |
+| ----------- | -------------------- | ------------------------ | ---------------------- |
+| **pon-**    | `pone`               | —                        | Mutate only            |
+| **del-**    | `dele`               | —                        | Mutate only            |
+| **purg-**   | `purga`              | —                        | Mutate only            |
+| **confl-**  | `confla`             | —                        | Mutate only (merge)    |
+| **invert-** | —                    | `inversa`                | Returns new (swap k/v) |
+| **selig-**  | —                    | `selige`                 | Returns new (pick)     |
+| **omitt-**  | —                    | `omitte`                 | Returns new (omit)     |
 
 #### Read-Only Methods (No Morphology)
 
-| Method | Meaning |
-|--------|---------|
-| `accipe` | Get value |
-| `accipeAut` | Get or default |
-| `habet` | Has key |
-| `longitudo` | Size |
-| `vacua` | Is empty |
-| `claves` | Keys iterator |
-| `valores` | Values iterator |
-| `paria` | Entries iterator |
+| Method      | Meaning          |
+| ----------- | ---------------- |
+| `accipe`    | Get value        |
+| `accipeAut` | Get or default   |
+| `habet`     | Has key          |
+| `longitudo` | Size             |
+| `vacua`     | Is empty         |
+| `claves`    | Keys iterator    |
+| `valores`   | Values iterator  |
+| `paria`     | Entries iterator |
 
 ### Summary
 
-| Category | Count | Morphology |
-|----------|-------|------------|
-| Full pairs (imperative + participle) | 7 | `@ radix(imperativus, perfectum)` |
-| Mutate-only | 9 | `@ radix(imperativus)` |
-| Participle-only | 20 | `@ radix(perfectum)` |
-| Read-only | 42 | None |
+| Category                             | Count | Morphology                        |
+| ------------------------------------ | ----- | --------------------------------- |
+| Full pairs (imperative + participle) | 7     | `@ radix(imperativus, perfectum)` |
+| Mutate-only                          | 9     | `@ radix(imperativus)`            |
+| Participle-only                      | 20    | `@ radix(perfectum)`              |
+| Read-only                            | 42    | None                              |
 
 Collections benefit modestly from morphology. The system is **designed for IO domains** where async and streaming variants are essential.
 
@@ -251,6 +253,7 @@ functio filtra<T>(praedicatum: functio(T) fit bivalens) {
 ```
 
 The compiler:
+
 1. Parses the stem from the function name (`filtra` → `filtr-`)
 2. Validates called conjugations against declared variants
 3. Generates target code with appropriate semantics per variant
@@ -259,12 +262,12 @@ The compiler:
 
 Currently, Faber uses return type modifiers to indicate async/generator semantics:
 
-| Modifier | Meaning |
-|----------|---------|
-| `fit` | Sync return |
-| `fiet` | Async return (Promise) |
-| `fiunt` | Sync generator (yields) |
-| `fient` | Async generator |
+| Modifier | Meaning                 |
+| -------- | ----------------------- |
+| `fit`    | Sync return             |
+| `fiet`   | Async return (Promise)  |
+| `fiunt`  | Sync generator (yields) |
+| `fient`  | Async generator         |
 
 With morphology in place, this creates redundancy:
 
@@ -278,10 +281,10 @@ functio filtratura<T>(...) fiet lista<T> { ... }
 
 Morphology only applies to Latin-named stdlib functions. User code uses arbitrary names (English, German, etc.) that don't follow Latin conjugation patterns.
 
-| Context | Async/generator mechanism |
-|---------|---------------------------|
+| Context                                 | Async/generator mechanism           |
+| --------------------------------------- | ----------------------------------- |
 | Latin stdlib (lista, solum, arca, etc.) | Morphology (`-atura`, `-ans`, etc.) |
-| User-defined functions | `fit`/`fiet`/`fiunt`/`fient` |
+| User-defined functions                  | `fit`/`fiet`/`fiunt`/`fient`        |
 
 ```faber
 # STDLIB: Morphology encodes semantics
@@ -298,14 +301,14 @@ functio iteratePages(url: textus) fiunt Pagina {
 }
 ```
 
-| Conjugation | Semantics | Stdlib equivalent |
-|-------------|-----------|-------------------|
-| Imperative (`-a/-e/-i`) | Sync, mutates | `fit` (default) |
-| Perfect Participle (`-ata/-ita`) | Sync, returns new | `fit` |
-| Future Indicative (`-abit/-ebit`) | Async, mutates | `fiet` |
-| Future Participle (`-atura/-itura`) | Async, returns new | `fiet` |
-| Present Participle (`-ans/-ens`) | Generator | `fiunt` |
-| Future + Generator | Async generator | `fient` |
+| Conjugation                         | Semantics          | Stdlib equivalent |
+| ----------------------------------- | ------------------ | ----------------- |
+| Imperative (`-a/-e/-i`)             | Sync, mutates      | `fit` (default)   |
+| Perfect Participle (`-ata/-ita`)    | Sync, returns new  | `fit`             |
+| Future Indicative (`-abit/-ebit`)   | Async, mutates     | `fiet`            |
+| Future Participle (`-atura/-itura`) | Async, returns new | `fiet`            |
+| Present Participle (`-ans/-ens`)    | Generator          | `fiunt`           |
+| Future + Generator                  | Async generator    | `fient`           |
 
 **For stdlib:** Morphology is the source of truth. The `@ radix` annotation declares valid conjugations.
 
@@ -384,14 +387,14 @@ genus MorphologiaFlagga {
 
 ### Flag Mapping by Conjugation
 
-| Form | mutare | async | reddeNovum | allocatio | generator |
-|------|:------:|:-----:|:----------:|:---------:|:---------:|
-| Imperative | yes | no | no | no | no |
-| Perfect Participle | no | no | yes | yes | no |
-| Future Indicative | yes | yes | no | no | no |
-| Future Participle | no | yes | yes | yes | no |
-| Present Participle | no | no | no | no | yes |
-| Future + Generator | no | yes | no | no | yes |
+| Form               | mutare | async | reddeNovum | allocatio | generator |
+| ------------------ | :----: | :---: | :--------: | :-------: | :-------: |
+| Imperative         |  yes   |  no   |     no     |    no     |    no     |
+| Perfect Participle |   no   |  no   |    yes     |    yes    |    no     |
+| Future Indicative  |  yes   |  yes  |     no     |    no     |    no     |
+| Future Participle  |   no   |  yes  |    yes     |    yes    |    no     |
+| Present Participle |   no   |  no   |     no     |    no     |    yes    |
+| Future + Generator |   no   |  yes  |     no     |    no     |    yes    |
 
 ---
 
@@ -401,11 +404,11 @@ Zig removed native async/await in version 0.11. Faber compiles async/generator f
 
 ### Three Paths to Async
 
-| Source | Example | Zig Support |
-|--------|---------|-------------|
+| Source                   | Example                       | Zig Support                |
+| ------------------------ | ----------------------------- | -------------------------- |
 | `futura`/`cursor` + `->` | `futura functio fetch() -> T` | **Error** (TS/Python only) |
-| Return verb | `functio fetch() fiet T` | Supported |
-| Morphology | `solum.leget(path)` | Supported |
+| Return verb              | `functio fetch() fiet T`      | Supported                  |
+| Morphology               | `solum.leget(path)`           | Supported                  |
 
 Both morphology and return verbs compile to the **same state machine pattern**:
 
@@ -421,12 +424,12 @@ functio iterateRows() fiunt Row { ... }           # fiunt → Iterator
 
 ### Conjugation to State Machine Mapping
 
-| Conjugation | Return Verb | Zig Output |
-|-------------|-------------|------------|
-| Future Indicative (`-abit`/`-ebit`/`-et`) | `fiet` | `Future` with `poll()` |
-| Future Participle (`-atura`/`-itura`) | `fiet` | `Future` with `poll()` |
-| Present Participle (`-ans`/`-ens`) | `fiunt` | `Iterator` with `next()` |
-| Future + Generator | `fient` | `AsyncIterator` with `poll_next()` |
+| Conjugation                               | Return Verb | Zig Output                         |
+| ----------------------------------------- | ----------- | ---------------------------------- |
+| Future Indicative (`-abit`/`-ebit`/`-et`) | `fiet`      | `Future` with `poll()`             |
+| Future Participle (`-atura`/`-itura`)     | `fiet`      | `Future` with `poll()`             |
+| Present Participle (`-ans`/`-ens`)        | `fiunt`     | `Iterator` with `next()`           |
+| Future + Generator                        | `fient`     | `AsyncIterator` with `poll_next()` |
 
 ### Generated Structure
 
@@ -484,6 +487,7 @@ The compiler detects async/generator semantics from either source:
 ### Allocator Threading
 
 Zig state machines need allocators for:
+
 - State struct allocation
 - Result collection allocation (for `-atura` forms that return new collections)
 
@@ -622,3 +626,35 @@ casu VocatioExpressia ut e {
 4. **Error messages**: When morphology parsing fails, show parsed stem or original method name?
 
 5. **Property access**: `items.longitudo` (no parens) doesn't go through call dispatch. Need type info for property translation.
+
+---
+
+## GPT Notes
+
+- **Rivus-only direction**: Treat `fons/faber` as a static reference; implement and dogfood morphology in `fons/rivus` only (parser → AST → semantic → codegen). The roadmap item “Phase 4: Faber Migration” is likely obsolete under this strategy.
+
+- **Preferred `@ radix` surface syntax**: Use a line-based form, not parentheses:
+
+    ```faber
+    @ radix imperativus, perfectum, futurum_indicativum, futurum_activum
+    functio filtra<T>(...) fit vacuum { ... }
+    ```
+
+    In Rivus, parse the comma-separated identifiers only while tokens remain on the same source line as the `@` annotation.
+
+- **Avoid `@ radix(...)` drift**: A prior attempt implemented parenthesized args and was reverted. Don’t reintroduce parentheses syntax unless you explicitly want to support both forms long-term.
+
+- **Model annotations as data, not side effects**: Rivus currently “executes” a couple annotations in the statement parser (`@ futura`, `@ abstractum`). For morphology, preserve annotations on declarations (top-level functions and genus/pactum methods) so semantic/codegen can consult them uniformly.
+
+- **Naming: don’t call conjugation lists `radices`**: In this design, `radix` already means “stem”. Store the declared conjugations/forms under a name like `formae`, `conjugationes`, or `morphologia` to avoid confusion once a real stem registry exists.
+
+- **Centralize annotation parsing**: `pactum`/`genus` member parsers should reuse the same annotation parsing logic as the top-level statement parser to avoid divergence.
+
+- **Registry + validation**: Use `@ radix ...` declarations to build a stem registry (per receiver type and/or module). At call sites where `parseMethodum()` recognizes morphology:
+    - error if the stem is not declared as morphology-enabled
+    - error if the conjugation is not in the declared set
+    - keep error messages stem-aware (show parsed stem + allowed conjugations)
+
+- **Avoid hidden `await` in codegen**: The current Rivus POC emits `await` inside generated expressions for async morphology variants. This can generate invalid JS in non-async contexts and bypass existing “await outside async” checks. Prefer: morphology determines return type (Promise vs value), but awaiting remains explicit via `figendum`/`variandum` (and `cede` inside `fiet`/`fient`).
+
+- **Irregular stems**: The POC already hints at stem irregularity (e.g., `invert-` vs `invers-`). If morphology is driven by declared stems, allow a declaration to pin the canonical stem (or list alternate stems) rather than relying purely on stripping suffixes.
