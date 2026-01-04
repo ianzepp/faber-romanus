@@ -291,3 +291,46 @@ This is a path to build a reputable language project without academia:
 - Use the data to drive language/compiler changes.
 
 If you do this, the project stops being “a cute syntax” and becomes a serious, repeatable system: an LLM-oriented IR + compiler with evidence.
+
+## Gemini 3 Pro: Notes
+
+### 1. The Strategic Pivot is Correct
+
+Moving the definition of Faber Romanus from a "Language" to an "**LLM-Native Intermediate Representation (IR)**" is the strongest possible move. It immediately neutralizes the "why would I learn this?" objection.
+
+- **Verdict:** Keep this central. The claim "LLM drafts → Human audits → Compiler builds" defines a distinct market slot that existing languages (designed for humans first) cannot easily occupy.
+
+### 2. The "Faber-English" Baseline is Critical
+
+The section on **Ablations** (Claim A) is the intellectual anchor of this entire plan.
+
+- **Why:** Without `Faber-English` (same grammar, English keywords), critics will always conflate the _structure_ of the language with the _vocabulary_.
+- **Recommendation:** Prioritize the implementation of the `Faber-English` keyword mapping in the compiler. It allows you to prove whether the "Latin advantage" is real or if the gains come solely from the rigid, type-first grammar.
+
+### 3. Gap Analysis: The "Code Distribution" Problem
+
+In **"Why Latin"**, the hypothesis rests on Latin being a "high-frequency linguistic substrate."
+
+- **The Risk:** While base models (GPT-4, Claude) know Latin, their _coding_ capabilities are fine-tuned on GitHub (Python, TS, Rust). Latin syntax might be **out-of-distribution** for the specific "coding heads."
+- **Refinement:** Control for "In-Context Learning" (ICL). Distinguish between **Zero-shot** (testing priors) and **Few-shot** (testing learnability/regularity). Latin might lose on Zero-shot but win on Few-shot due to lower token ambiguity.
+
+### 4. Claim B (Reviewability) is the Hardest to Prove
+
+**Claim B** (human review) is the weakest link because "time-to-decision" varies wildly by human skill.
+
+- **Suggestion:** Narrow this claim to **"Ambiguity Reduction"**. Can a human correctly predict runtime behavior? (e.g., "What is the type of variable X?"). This is objectively measurable without complex user studies.
+
+### 5. The Confound of Compiler Diagnostics
+
+In **Claim A**, there is a hidden variable: **Error Message Quality**.
+
+- **The Problem:** If the compiler gives poor error messages, the "Repair cost" metric will tank, regardless of language design.
+- **Recommendation:** Treat "Diagnostic Quality" as a prerequisite for benchmarks.
+
+### Summary
+
+**Top Action Items:**
+
+1.  **Build the Harness First:** The "product" is the benchmark harness.
+2.  **Implement Faber-English:** Essential for the control group.
+3.  **Define the Prompting Strategy:** Test language structure, not doc memorization.
