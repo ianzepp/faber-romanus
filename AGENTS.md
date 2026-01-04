@@ -209,6 +209,7 @@ fons/faber/codegen/
 - **Error handling**: Collect errors, never crash on malformed input
 - **No comments explaining what**: Explain WHY, not WHAT
 - **Guard clauses**: Prefer early returns over nested if/else
+- **Prefer `reddit` for single-line returns**: Use `si cond reddit x` and `casu k reddit v` over `{ redde ... }` when the body is a single expression
 - **Stroustrup brace style**: Opening brace on same line
 
 ## Working in Worktrees
