@@ -1,476 +1,293 @@
-# PhD Thesis Potential Analysis
+# Faber Romanus: Research-Grade Rigor Without a PhD
 
 **Date**: 2026-01-03
-**Status**: Exploratory discussion (not currently pursuing PhD)
+**Status**: Engineering strategy document (not pursuing PhD)
 
-## Core Insight
+## Purpose
 
-Faber Romanus could serve as the foundation for a PhD thesis, but the contribution isn't "I built a Latin programming language" — it's proving empirical claims about LLM code generation reliability.
+This document is not a PhD proposal.
 
-## The Breakthrough Reframing
+It is a blueprint for applying **PhD-grade rigor** (clear claims, controlled comparisons, reproducible evaluation) to:
 
-### Original Framing
-"I built a Latin programming language for LLMs to write and humans to review"
+- Improve the language and compiler via measurable feedback loops
+- Strengthen the project’s positioning beyond novelty
+- Produce artifacts that read like serious research engineering, even outside academia
 
-### Actual Contribution
-**"LLM training data has uneven linguistic distribution. By deliberately choosing an over-represented substrate, we can build more reliable code generation systems than by inventing new syntax or using under-represented target languages."**
+The goal is to move the narrative from:
 
-## Why Latin Specifically?
+> “TypeScript in a toga”
 
-Latin isn't chosen for aesthetics — it's chosen because:
+to:
 
-### Latin is the Most Over-Represented Linguistic Substrate in LLM Training Data
+> “A human-legible, machine-checkable intermediate language optimized for LLM→human→compiler workflows, backed by reproducible evaluation and multi-target compilation.”
 
-**One standardized Latin** (Classical Latin grammar) vs **million fragmented programming languages**
+## Core Reframing
 
-Latin appears across:
-- Romance languages: Spanish, French, Italian, Portuguese, Romanian (~8% of web)
-- English technical vocabulary: 60%+ of academic/technical terms have Latin roots
-- Medical terminology: Universal (anatomical terms, diagnoses)
-- Legal terminology: Universal (legal Latin in all English legal documents)
-- Scientific naming: Binomial nomenclature, chemical compounds
-- Religious texts: Massive historical corpus
-- Academic papers: "et al.", "in situ", "de facto", etc.
+### What This Project Is Not
 
-**Estimated representation**: Billions of tokens, distributed across all major training corpora
+- Not “a Latin programming language” as the core contribution
+- Not a purely aesthetic or meme-driven syntax experiment
+- Not a claim about AI intelligence
 
-vs.
+### What This Project Is
 
-Programming language representation in training data:
-- Rust: ~0.1% of GitHub
-- Zig: ~0.01% of GitHub
-- TypeScript: ~10% of GitHub
-- Even the most popular languages are dwarfed by Latin's implicit presence
+**Faber Romanus is an intermediate representation (IR) that is:**
 
-### The Unfair Advantage
+- **LLM-friendly to write** (regular, low-entropy structure)
+- **Human-friendly to skim** (word-based, explicit intent)
+- **Compiler-friendly to validate** (deterministic grammar + strong diagnostics)
+- **Multi-target by construction** (single AST, multiple backends)
 
-You're not competing with a million programming languages for training data representation. You're leveraging 2000+ years of Latin's dominance in Western intellectual tradition.
+The central workflow claim is:
 
-**Every biology textbook, legal document, medical text, and Romance language conversation reinforces Faber's syntax.**
+> LLM drafts in Faber → human approves/skims → compiler emits production targets.
 
-### Cross-Model Convergence
+Even if the keyword vocabulary were changed tomorrow, the project remains valuable if the IR/harness/compiler methodology produces measurable improvements.
 
-When GPT, Gemini, and Claude independently reviewed Faber code, all three converged on similar observations ("low-entropy", "predictable", "industrial"). This isn't coincidence — it's because:
+## Why Latin (Positioning, Not Mysticism)
 
-1. All three models trained on web-scale data
-2. All three saw massive Latin exposure across domains
-3. All three built similar representations of Latin morphology
-4. **Faber activates that shared representation**
+Latin is not chosen for aesthetics. It is chosen as a plausible **high-frequency linguistic substrate** for Western web-trained models:
 
-This is robust to:
-- Different model architectures
-- Different training corpora (CommonCrawl vs proprietary)
-- Different training recipes (supervised vs RLHF)
-- Different model sizes (7B to 1T+ parameters)
+- Latin roots permeate English technical vocabulary
+- Romance languages share morphology and word roots with Latin
+- Legal, medical, scientific writing contains Latin fragments
 
-**Latin is the common denominator.**
+This is a _hypothesis about priors_, not a belief.
 
-## Potential Research Angles
+If Latin provides a measurable advantage, it should be demonstrable with ablations and baselines. If it doesn’t, the project can still succeed on the “low-entropy IR” thesis.
 
-### 1. Human Factors / HCI
-**Claim**: "Humans can review Latin-syntax code faster/more accurately than target language equivalents"
+## The “Rigor Loop” (How This Improves the Language)
 
-**What exists**:
-- Working implementation
-- Multiple compile targets for comparison
-- Anecdotal claims about skimmability
+PhD-grade rigor is a development method:
 
-**What's missing**:
-- User studies (50-100 participants)
-- Metrics: time-to-decision, error detection rate, cognitive load
-- Control for familiarity (experts vs novices)
-- Real-world corpus (not toy examples)
-- Statistical analysis
+1. **State a claim** precisely (what improves, relative to what).
+2. **Define metrics** that are externally checkable.
+3. **Build a reproducible harness** to measure those metrics.
+4. **Run baselines and ablations** to isolate causes.
+5. **Use the results to drive implementation** (compiler features, diagnostics, grammar constraints).
+6. **Repeat**, keeping historical results to detect regressions.
 
-**Difficulty**: Medium (well-understood methodology, but expensive)
+This makes language evolution measurable rather than aesthetic.
 
-### 2. Programming Languages Theory
-**Claim**: "Word-based syntax with grammatical structure reduces LLM semantic errors"
+## Claims (Keep It Small and Falsifiable)
 
-**What exists**:
-- Syntax design
-- Multi-target codegen
-- Grammar documentation
+A strong strategy is to pick **2–3 primary claims** and treat everything else as supportive evidence.
 
-**What's missing**:
-- Formal semantics (operational/denotational)
-- Soundness proofs for type system
-- Compilation correctness proofs
-- LLM benchmarks across models
-- Theoretical framework for why word-based syntax helps
-- Information theory / entropy analysis
+### Claim A: LLM generation reliability improves
 
-**Difficulty**: Hard (requires deep formal methods background)
+**Claim**: For a fixed task suite and prompting protocol, generating Faber yields lower failure rates than generating target languages directly.
 
-### 3. Empirical Software Engineering
-**Claim**: "Intermediate languages improve LLM-human collaborative code generation"
-
-**What exists**:
-- Concrete implementation
-- Design rationale
-
-**What's missing**:
-- Longitudinal study (teams using Faber vs direct target languages over months)
-- Defect analysis (bug rates, review effectiveness)
-- Workflow metrics (time from prompt to production)
-- Qualitative data (interviews with practitioners)
-- Comparison systems
-- Threats to validity analysis
-
-**Difficulty**: Hard (requires long-term collaboration, hard to control variables)
-
-### 4. Compilers / Code Generation
-**Claim**: "Single AST can emit idiomatic code for 5+ target languages with semantic preservation"
-
-**What exists**:
-- Working multi-target compiler
-- Bootstrap compiler (Rivus - Faber compiling itself)
-
-**What's missing**:
-- Semantic equivalence proofs
-- Performance benchmarks
-- Idiom conformance analysis
-- Coverage analysis (what features can't be expressed?)
-- Compilation strategy taxonomy
+**Primary metrics** (externally scored):
 
-**Difficulty**: Medium-Hard (requires compiler expertise, but measurable)
+- Parse success rate
+- Typecheck success rate
+- End-to-end success rate (tests pass)
+- Repair cost (number of edit iterations to pass)
+- Token cost per passing solution
 
-## The AI Participants Breakthrough
+**Baselines** (minimum):
 
-### Key Question
-"Do participants have to be human? Why not AI participants?"
+- Direct TypeScript (or Rust) generation
+- Faber → TypeScript (or Rust) compilation
 
-### Answer
-**They don't have to be human, and AI participants actually align better with the stated goals.**
+**Ablations** (to isolate mechanism):
 
-Faber's actual claim isn't "humans review faster" — it's:
-> "LLMs write Faber, humans skim it to approve, compiler emits production code"
+- Faber-English (same grammar, English keywords)
+- Faber-Symbols (same structure, symbolic keywords)
 
-If the human is just the approval gate, the critical path is **LLM→Faber conversion quality**. And that can be measured with AI participants.
+If Faber-English ≈ Faber-Latin, then the mechanism is primarily structure/regularity. That is still valuable; the narrative shifts accordingly.
 
-### Advantages of AI-Based Evaluation
+### Claim B: Reviewability improves (human or AI)
 
-1. **Reproducibility**: `temperature=0` = identical results
-2. **Scale**: 10,000 trials instead of 50 participants
-3. **Cost**: $500 in API calls vs $5,000 in participant compensation
-4. **No IRB**: No human subjects = no ethics review delays
-5. **Isolation**: Control model version, training cutoff, prompt format exactly
-6. **Longitudinal**: Test across model generations (GPT-3.5 → 4 → 4.5)
+**Claim**: Under fixed budget constraints (time for humans, token budget for AI), reviewing Faber yields higher bug recall / lower false positives than reviewing target language equivalents.
 
-### Proposed AI-Based Studies
+**Primary metrics**:
 
-#### Study 1: LLM Code Generation Accuracy
-- **Setup**: GPT-4, Claude, Gemini perform identical programming tasks
-- **Conditions**: Generate Faber vs Rust vs TypeScript directly
-- **Metrics**:
-  - Syntax error rate
-  - Type error rate
-  - Test pass rate
-  - Token efficiency (tokens per working solution)
-- **Hypothesis**: Faber has lower error rate due to reduced symbol density + leveraging Latin substrate
+- Bug recall on seeded defects
+- False positive rate
+- Time-to-decision (humans)
+- Token-to-decision (AI)
 
-#### Study 2: AI Code Review Effectiveness
-- **Setup**: Insert bugs into Faber vs Rust vs TS code
-- **Task**: Claude reviews code, reports bugs found
-- **Metrics**:
-  - Bug detection rate
-  - False positive rate
-  - Tokens consumed during review
-- **Hypothesis**: AI detects more bugs in Faber because syntax is less ambiguous
+**Important constraint**: review must be graded against a labeled bug corpus. No self-judged “looks correct” scoring.
 
-#### Study 3: Cross-Model Semantic Consistency
-- **Setup**: Multiple LLMs read same Faber code, explain what it does
-- **Baseline**: Same LLMs explain equivalent Rust code
-- **Metrics**:
-  - Agreement rate between models
-  - Semantic accuracy vs ground truth
-  - Hallucination rate
-- **Hypothesis**: Word-based syntax reduces interpretation variance
+### Claim C: Multi-target compilation preserves semantics for a defined subset
 
-#### Study 4: Novel Construct Generalization
-- **Setup**: Add new syntax to Faber that doesn't exist in any language
-- **Task**: Test if LLMs can learn it from 5 examples (in-context)
-- **Metrics**: Correctness on held-out examples
-- **Hypothesis**: If they generalize, they're learning grammar, not memorizing
+**Claim**: For an explicitly defined subset of the language, code generated for N targets preserves semantics as validated by a shared test suite.
 
-#### Study 5: Synthetic Language Ablations
-- **Setup**: Create variants:
-  - Faber-Swahili (same grammar, Swahili keywords)
-  - Faber-Klingon (same grammar, invented words)
-  - Faber-Symbols (same grammar, mathematical symbols)
-- **Metrics**: Error rates across variants
-- **Hypothesis**: Faber-Latin outperforms synthetic variants due to training exposure
+**Primary metrics**:
 
-### The Hybrid Approach
+- Cross-target test pass rate
+- Feature coverage (what subset is included)
+- Determinism (same input → same output)
 
-Combine both for strongest evidence:
+This claim builds compiler credibility, which is a major part of reputation.
 
-1. **AI studies** prove LLMs work better with Faber (cheap, reproducible, strong N)
-2. **Small human study** validates humans can skim adequately (50 participants, quick validation)
+## What Makes This “Research-Grade”
 
-This provides:
-- Strong quantitative evidence (AI studies)
-- Real-world validation (humans don't reject the output)
+### 1) Reproducibility First
 
-## Addressing the "Training Artifacts" Objection
+The project becomes reputable when third parties can rerun the same evaluation and see similar outcomes.
 
-### The Objection
-"But you're just measuring LLM training artifacts. Maybe GPT-4 is good at Faber because it saw similar Latin text during training."
+- Fixed harness
+- Logged prompts
+- Versioned task suite
+- Deterministic formatting
+- Stable diagnostics
+- Clear failure taxonomy
 
-### The Response
-**"Yes. And that's a feature, not a bug."**
+### 2) External Scoring (Not Vibes)
 
-This objection reveals a double standard:
+Where possible, evaluate via:
 
-**For humans:**
-- "I learned calculus by studying examples" = competence
-- "I write English because I heard English" = natural
+- Compiler success/failure
+- Typechecking
+- Tests
+- Runtime behavior
 
-**For AI:**
-- "It learned patterns from training data" = cheating, artifact, not real intelligence
+Prefer “the program passed” over “the model said it passed.”
 
-This is the **"AI effect"** — once AI does something, we redefine it as "not real intelligence."
+### 3) Baselines You Control
 
-### The Reframe
+To avoid the “TypeScript in a toga” critique, comparisons must separate:
 
-Instead of defending, embrace it:
+- surface vocabulary vs structure
+- structure vs toolchain feedback
+- IR merits vs backend quality
 
-> "Of course LLMs perform better on Faber because Latin and programming syntax are both in their training data. **That's the point.** We're not trying to test LLM intelligence — we're designing a language that exploits existing LLM capabilities."
+Faber-English is strategically important because it removes Latin as a confound while keeping the grammar identical.
 
-The contribution isn't:
-- ❌ "Look how smart LLMs are at Faber" (testing intelligence)
+### 4) Confounds to Track Explicitly
 
-The contribution is:
-- ✅ "Here's how to design languages that leverage what LLMs already know" (design methodology)
+If you want the results to survive skeptical readers, track these as covariates:
 
-### The Legitimate Concern Beneath
+- Tokenization (tokens per program)
+- Prompt length and format
+- Allowed tools/feedback loops (compilers, error messages)
+- Model versions (silent updates happen)
 
-What the committee member is actually worried about:
+Treat “temperature=0” as “reduced randomness,” not absolute determinism.
 
-**Not**: "It learned Latin" (that's fine — that's how learning works)
+## The Evaluation Harness (Practical Design)
 
-**But**: "Did it learn general principles, or memorize specific examples?"
+The most valuable artifact (for both engineering and reputation) is a harness that can:
 
-**How to address**:
-- Show cross-model consistency (3+ model families succeed → not model-specific)
-- Show generalization to novel constructs (not memorization)
-- Show predictable failures on invalid syntax (understanding, not pattern matching)
-- Show synthetic language ablations (isolate structure vs vocabulary)
+- Generate or accept Faber source
+- Compile with `bun run faber compile`
+- Compile to multiple targets
+- Execute target test suites
+- Score outcomes with a consistent rubric
 
-## What All Approaches Need
+### Suggested outcome taxonomy
 
-### 1. Literature Review (~30-50 pages)
-- DSLs and transpilers (CoffeeScript, Elm, TypeScript)
-- LLM code generation (Codex, AlphaCode, GPT-4 papers)
-- Syntax design for readability (empirical PL research)
-- Intermediate representations (LLVM IR, WebAssembly)
-- Multi-language code generation systems
-- **NEW**: Linguistic substrates in ML training data
+Every run should end in exactly one bucket:
 
-### 2. Positioning the Contribution
-- "First Latin-based programming language" ≠ sufficient for CS PhD
-- Need: "First empirical evidence that leveraging over-represented linguistic substrates improves LLM code generation by X%"
-- Or: "Design methodology for LLM-optimized languages based on training corpus analysis"
+- `tokenize_error`
+- `parse_error`
+- `semantic_error` (type errors, name resolution, etc.)
+- `codegen_error` (backend failure)
+- `runtime_error`
+- `test_failure`
+- `success`
 
-### 3. Reproducibility
-- Benchmark suite, test corpus
-- Detailed methodology for replication
-- All data/code publicly available
-- Model versions, prompts, evaluation criteria
+This taxonomy directly drives compiler work: improvements are measured by moving failures “left” (runtime → compile-time) and decreasing total failures.
 
-### 4. Threat Analysis
-- **Internal validity**: Did you measure what you claim?
-- **External validity**: Does this generalize beyond your examples?
-- **Construct validity**: Are your metrics meaningful?
-- **Training data contamination**: How do you ensure models didn't see Faber during training? (Answer: Faber didn't exist during training cutoff)
+## Evidence That Improves Implementation
 
-## The Design Principle (Generalizable Contribution)
+Rigor is not just for positioning; it directly improves the language:
 
-### For Any LLM-Targeted Language
+- If parse errors dominate, improve grammar constraints and diagnostics.
+- If semantic errors dominate, improve type system, name resolution, error messages.
+- If codegen errors dominate, tighten AST invariants and backend conformance.
+- If runtime/test failures dominate, improve standard library + semantic checks.
 
-When designing DSLs, IRs, or config languages for LLM consumption:
+This also produces a clean roadmap driven by data rather than taste.
 
-1. **Analyze training corpus representation**:
-   - What linguistic substrates are over-represented?
-   - What vocabulary appears across domains?
+## Positioning (How to Talk About It)
 
-2. **Prefer high-representation substrates**:
-   - Western LLMs: Latin/Greek roots
-   - Chinese LLMs: Classical Chinese
-   - Arabic domains: Quranic Arabic
-   - Mathematical: Established notation (∀, ∃, →)
+### Don’t lead with
 
-3. **Avoid inventing new syntax when existing substrate exists**:
-   - Don't create `∀x ∈ S: P(x)` when you can write `ex S pro x { P(x) }`
-   - Don't invent symbols when words with deep representation exist
+- “Latin programming language”
+- “over-represented substrate” (as a claim without measurements)
+- “unfair advantage” (fun, but reads like marketing)
 
-4. **Test cross-model consistency**:
-   - If it works on GPT but not Claude, it's model-specific
-   - If it works across 3+ families, it's a substrate property
+### Lead with
 
-### Why This Matters
+- “LLM-oriented intermediate representation with deterministic compilation”
+- “multi-target compiler”
+- “measured improvements in compilation success / test pass rate”
+- “reproducible benchmark harness”
 
-Traditional PL design: "Invent syntax, hope people learn it"
-- High adoption barrier
-- Fragile to model updates
-- Requires documentation, tutorials
+### Optional secondary story
 
-Faber's approach: "Use syntax LLMs already 'know' from billions of examples"
-- Latin morphology: already in weights from Romance languages
-- Verb conjugations: learned from language exposure
-- Word roots: reinforced across medical, legal, scientific domains
-- **Activates latent knowledge, doesn't require new learning**
+Once measured:
 
-## Current State Assessment
+- “Vocabulary alignment with high-frequency linguistic priors may help reliability”
 
-### What Exists ✅
-- Novel idea
-- Working implementation with 5 compile targets
-- Bootstrap compiler (Faber compiling itself)
-- Design rationale and grammar documentation
-- Anecdotal cross-model validation
-- Clear design principles
+Only elevate this if the ablations support it.
 
-### What's Missing ❌
-- Empirical evidence (controlled studies)
-- Theoretical framework (formal semantics)
-- Comparison to baselines (other IRs, DSLs)
-- Formal evaluation with statistical analysis
-- Corpus analysis of Latin representation in training data
-- Systematic ablation studies
+## Deliverables (Reputation Comes From Artifacts)
 
-### Progress Estimate
-**~40% there** for a PhD thesis.
+If you want non-academic credibility, produce things that look like serious engineering research:
 
-The artifact is further along than most PhD students reach by proposal defense. But PhD isn't about building something cool — it's about **proving a claim with rigor**.
+- A “claims + metrics” one-pager
+- A benchmark suite (small, curated at first)
+- A harness to run it reproducibly
+- A short technical report (8–20 pages) with results and limitations
+- A public dashboard-like summary (even a markdown table) tracking regressions
 
-The remaining 60% is designing studies, collecting data, analyzing results, writing 200 pages that survives committee scrutiny.
+## A Practical Roadmap
 
-## Recommended Path Forward (If Pursuing)
+### Phase 1: Define the claims (days)
 
-### Easiest: HCI + AI Studies Hybrid
-1. **AI studies** (3-6 months):
-   - Code generation accuracy across models
-   - Code review effectiveness
-   - Cross-model consistency
-   - Cost: ~$500-1000 in API calls
+- Choose 2–3 claims.
+- Write the scoring rubric.
+- Decide baselines and ablations.
 
-2. **Small human study** (2-3 months):
-   - 50 participants on Mechanical Turk
-   - Code review task: find bugs in Faber vs Rust
-   - Measures: accuracy, time, confidence
-   - Cost: ~$2000-3000
+### Phase 2: Build the harness (1–3 weeks)
 
-3. **Corpus analysis** (1-2 months):
-   - Measure Latin representation in Common Crawl
-   - Compare to programming language representation
-   - Quantify the "unfair advantage"
+- Automate compilation + testing for at least one target.
+- Log every input/output.
+- Implement the failure taxonomy.
 
-4. **Write-up** (6-12 months):
-   - Literature review
-   - Methodology
-   - Results and analysis
-   - Discussion and future work
+### Phase 3: Run small pilots (days)
 
-**Total time**: 12-24 months if focused
+- 10–30 tasks.
+- 2–3 model families if possible.
+- Identify dominant failure modes.
 
-### Hardest: Formal PL Theory
-- Requires deep formal methods background
-- Operational semantics, type soundness proofs
-- Compilation correctness theorems
-- 3-5 years for someone without PL PhD background
+### Phase 4: Improve implementation using data (ongoing)
 
-## Key Talking Points for Defense
+- Fix the most common failure class.
+- Re-run.
+- Track regressions.
 
-### "You're just measuring training artifacts"
-**Response**: "Yes, and that's the contribution. I'm showing that deliberate substrate choice based on training corpus analysis produces measurable improvements. The principle generalizes: analyze corpus, choose over-represented substrate, validate cross-model."
+### Phase 5: Scale tasks + publish results (ongoing)
 
-### "This only works for Latin"
-**Response**: "No, I demonstrate the principle with ablations. Faber-Latin outperforms Faber-Klingon because of training exposure, not inherent properties of Latin. The method works for any over-represented substrate."
+- Grow to 100+ tasks.
+- Add more targets.
+- Publish the technical report.
 
-### "What about future models?"
-**Response**: "This is empirical work on 2024-2026 era LLMs. The principle may evolve, but Latin's embedding in technical English is increasing, not decreasing. Regardless, I'm measuring current systems and providing a methodology for future analysis."
+## Notes on “AI Participants”
 
-### "Why not just use TypeScript/Python directly?"
-**Response**: "Target languages have two problems: (1) symbol-dense syntax increases LLM error rates, (2) hard for humans to skim generated code. Faber solves both by providing a human-readable intermediate representation with high LLM training corpus representation."
+Using AI participants is aligned with the actual workflow being optimized: LLMs produce the drafts.
 
-## The Actual Thesis Title
+However:
 
-**Option 1** (Empirical): "Leveraging Linguistic Priors in LLM Training Data for Reliable Code Generation: A Case Study with Latin-Based Intermediate Representation"
+- AI-based evaluation must be externally scored (compiler/tests).
+- Human studies can be minimal and still useful: validate that the IR is skimmable enough for approval gates.
 
-**Option 2** (Design): "Design Principles for LLM-Optimized Programming Languages: Exploiting Over-Represented Linguistic Substrates"
+The hybrid approach is pragmatic:
 
-**Option 3** (Systems): "Faber Romanus: A Multi-Target Compiler Demonstrating Improved LLM Code Generation Through Training Corpus-Aligned Syntax"
-
-## Committee Composition
-
-Ideal committee for this work:
-
-1. **Chair**: Compilers / PL professor (validates technical implementation)
-2. **Member**: ML/AI professor (validates LLM evaluation methodology)
-3. **Member**: Software Engineering professor (validates empirical methodology)
-4. **Member**: HCI professor (if including human studies)
-5. **External**: Industry expert in LLM tooling (practical validation)
-
-Avoid:
-- Pure theory PL professors (will want formal proofs you don't have)
-- Pure HCI professors (will want large-scale human studies)
-- Anyone hostile to empirical CS (wants mathematical proofs, not measurements)
+- AI runs provide scale and reproducibility.
+- Small human validation ensures the “approval gate” assumption is real.
 
 ## Bottom Line
 
-**Is this a PhD thesis?** Yes, if you add rigorous empirical evaluation.
+This is a path to build a reputable language project without academia:
 
-**Is it a good PhD thesis?** Yes, because:
-1. Novel contribution (substrate-aware language design for LLMs)
-2. Measurable claims (error rates, consistency, efficiency)
-3. Practical impact (DSL designers, compiler engineers, LLM tools)
-4. Generalizable principle (works beyond Latin)
-5. Timely (LLM code generation is active research area)
+- Make a small number of falsifiable claims.
+- Build a reproducible harness.
+- Measure baselines and ablations.
+- Use the data to drive language/compiler changes.
 
-**Is it worth doing?** Only if you want a PhD for career reasons.
-
-The work is already valuable as open-source contribution and proof-of-concept. A PhD adds:
-- Academic credibility
-- Rigorous evaluation that strengthens claims
-- Publication venue for wider dissemination
-- Deeper understanding through forced analysis
-
-But costs 2-5 years and significant opportunity cost.
-
-## Strategic Value Without PhD
-
-Even without formal PhD pursuit, this discussion reveals:
-
-1. **The marketing message**: "Latin isn't aesthetic — it's the most over-represented substrate in LLM training"
-2. **The competitive moat**: Other languages compete for training data; you leverage 2000 years of accumulated representation
-3. **The design principle**: Substrate-aware language design is generalizable beyond Faber
-4. **The validation approach**: AI participants + small human study is cheaper and more scalable than traditional HCI
-
-These insights strengthen the project regardless of academic pursuit.
-
-## References for Future Work
-
-- HumanEval: LLM code generation benchmark (Chen et al., 2021)
-- APPS: Automated Programming Progress Standard (Hendrycks et al., 2021)
-- CodeContests: Competitive programming benchmark (Li et al., 2022)
-- WebAssembly: Multi-target IR design (Haas et al., 2017)
-- LLVM IR: Compiler intermediate representation (Lattner & Adve, 2004)
-- Syntax design for readability: empirical PL research (Stefik & Siebert, 2013)
-
-## Next Steps (If Pursued)
-
-1. ✅ Log this discussion (done)
-2. ⬜ Corpus analysis: quantify Latin representation in Common Crawl
-3. ⬜ Design AI participant studies (detailed protocols)
-4. ⬜ Run pilot study with GPT-4, Claude, Gemini on 10 tasks
-5. ⬜ Analyze results, refine methodology
-6. ⬜ Scale to full study (100+ tasks across models)
-7. ⬜ Optional: Small human validation study
-8. ⬜ Write paper for conference submission (OOPSLA, PLDI, ICSE)
-9. ⬜ Use conference feedback to refine thesis scope
-10. ⬜ Find advisor if pursuing formally
-
----
-
-**Final Note**: This is not a commitment to pursue PhD — this is documentation of the strategic insight that Faber leverages an unfair advantage (Latin's massive training corpus representation) and how that could be proven empirically if desired.
+If you do this, the project stops being “a cute syntax” and becomes a serious, repeatable system: an LLM-oriented IR + compiler with evidence.
