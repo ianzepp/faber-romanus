@@ -407,7 +407,7 @@ functio genEstExpressiaCum(Expressia expr, TypusAnnotatio scopus, TsGenerator g,
     # Primitive type checks use typeof
     si scopus.nomen == "textus" {
         fixum op = negatum sic "!==" secus "==="
-        fixum check = scriptum("typeof § § 'string'", val, op)
+        fixum check = scriptum("typeof § § \"string\"", val, op)
         si scopus.nullabilis {
             redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
         }
@@ -415,7 +415,7 @@ functio genEstExpressiaCum(Expressia expr, TypusAnnotatio scopus, TsGenerator g,
     }
     si scopus.nomen == "numerus" aut scopus.nomen == "fractus" {
         fixum op = negatum sic "!==" secus "==="
-        fixum check = scriptum("typeof § § 'number'", val, op)
+        fixum check = scriptum("typeof § § \"number\"", val, op)
         si scopus.nullabilis {
             redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
         }
@@ -423,7 +423,7 @@ functio genEstExpressiaCum(Expressia expr, TypusAnnotatio scopus, TsGenerator g,
     }
     si scopus.nomen == "bivalens" {
         fixum op = negatum sic "!==" secus "==="
-        fixum check = scriptum("typeof § § 'boolean'", val, op)
+        fixum check = scriptum("typeof § § \"boolean\"", val, op)
         si scopus.nullabilis {
             redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
         }
