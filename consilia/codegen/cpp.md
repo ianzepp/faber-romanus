@@ -489,7 +489,7 @@ auto shared = std::make_shared<Persona>();  // Shared ownership
 | `genus`                | Implemented     | struct with fields, methods               |
 | `pactum`               | Implemented     | C++20 concepts                            |
 | Error handling         | **Implemented** | `tempta`/`cape`/`demum` via RAII          |
-| `de`/`in` prepositions | Designed        | Not yet implemented                       |
+| `de`/`in` prepositions | **Implemented** | Parameter borrowing semantics             |
 | Lambdas                | Implemented     | `pro` and arrow syntax                    |
 | Lista methods          | **Implemented** | 53 methods via C++23 ranges               |
 | Tabula methods         | **Implemented** | 17 methods via `std::unordered_map`       |

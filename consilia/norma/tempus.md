@@ -1,8 +1,8 @@
 ---
 status: partial
-targets: [ts]
-note: Basic instant/sleep done for TS; datetime and formatting not yet implemented
-updated: 2024-12
+targets: [ts, py, zig, rs, cpp]
+note: Basic instant and sleep functions implemented across all targets; datetime and formatting not yet implemented
+updated: 2025-01-03
 ---
 
 # Tempus - Time Operations
@@ -388,20 +388,22 @@ std.time.sleep(duratio * 1_000_000)  // ns
 
 ## Implementation Status
 
-| Feature                | TS   | Py  | Zig | Notes                 |
-| ---------------------- | ---- | --- | --- | --------------------- |
-| `momentum.nunc()`      | Done | -   | -   | Epoch ms              |
-| `momentum` arithmetic  | -    | -   | -   |                       |
-| `tempus.nunc()`        | -    | -   | -   | Datetime object       |
-| `tempus.hodie()`       | -    | -   | -   | Today at midnight     |
-| `tempus` fields        | -    | -   | -   | annus, mensis, etc.   |
-| `tempus.forma()`       | -    | -   | -   | Formatting            |
-| `tempus.para()`        | -    | -   | -   | Parsing               |
-| `duratio` constructors | -    | -   | -   | secunda, minuta, etc. |
-| `duratio` arithmetic   | -    | -   | -   | +, -, \*, /           |
-| Duration constants     | Done | -   | -   | SECUNDUM, etc.        |
-| `dormi()`              | Done | -   | -   | Async sleep           |
-| Timezone support       | -    | -   | -   | in_zona()             |
+| Feature                | TS  | Py  | Zig | Rust | C++ | Notes                 |
+| ---------------------- | --- | --- | --- | ---- | --- | --------------------- |
+| `nunc()` (epoch ms)    | [x] | [x] | [x] | [x]  | [x] | Current epoch         |
+| `nunc_nano()` (nanos)  | [x] | [x] | [x] | [x]  | [x] | Nanosecond precision  |
+| `nunc_secunda()` (sec) | [x] | [x] | [x] | [x]  | [x] | Second precision      |
+| `dormi()` (sleep)      | [x] | [x] | [x] | [x]  | [x] | Async sleep           |
+| Duration constants     | [x] | [x] | [x] | [x]  | [x] | SECUNDUM, etc.        |
+| `momentum` arithmetic  | [ ] | [ ] | [ ] | [ ]  | [ ] | Not implemented       |
+| `tempus.nunc()`        | [ ] | [ ] | [ ] | [ ]  | [ ] | Datetime object       |
+| `tempus.hodie()`       | [ ] | [ ] | [ ] | [ ]  | [ ] | Today at midnight     |
+| `tempus` fields        | [ ] | [ ] | [ ] | [ ]  | [ ] | annus, mensis, etc.   |
+| `tempus.forma()`       | [ ] | [ ] | [ ] | [ ]  | [ ] | Formatting            |
+| `tempus.para()`        | [ ] | [ ] | [ ] | [ ]  | [ ] | Parsing               |
+| `duratio` constructors | [ ] | [ ] | [ ] | [ ]  | [ ] | secunda, minuta, etc. |
+| `duratio` arithmetic   | [ ] | [ ] | [ ] | [ ]  | [ ] | +, -, \*, /           |
+| Timezone support       | [ ] | [ ] | [ ] | [ ]  | [ ] | in_zona()             |
 
 ---
 

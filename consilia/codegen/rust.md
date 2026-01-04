@@ -1,8 +1,8 @@
 ---
-status: planned
+status: partial
 targets: [rust]
-note: Design complete; skeleton only, not yet implemented
-updated: 2024-12
+note: 76% implementation complete (580/760 tests passing). Core language features working, some stdlib gaps remain.
+updated: 2025-01-03
 ---
 
 # Rust Target Notes

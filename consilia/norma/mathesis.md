@@ -1,8 +1,8 @@
 ---
-status: planned
+status: implemented
 targets: [ts, py, zig, rs, cpp]
-note: Math functions as stdlib module, not intrinsics
-updated: 2024-12
+note: All math functions implemented across all targets
+updated: 2025-01-03
 ---
 
 # Mathesis - Math Operations
@@ -184,23 +184,23 @@ Faber's design principle: semantic keywords over cryptic abbreviations. `pavimen
 
 | Feature                 | TS  | Py  | Zig | Rust | C++ |
 | ----------------------- | --- | --- | --- | ---- | --- |
-| `pavimentum` (floor)    | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `tectum` (ceiling)      | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `radix` (sqrt)          | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `potentia` (pow)        | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `absolutum` (abs)       | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `signum` (sign)         | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `rotundum` (round)      | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `truncatum` (trunc)     | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `logarithmus` (log)     | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `logarithmus10` (log10) | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `exponens` (exp)        | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `sinus` (sin)           | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `cosinus` (cos)         | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `tangens` (tan)         | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `minimus` (min)         | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `maximus` (max)         | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `constringens` (clamp)  | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `PI` constant           | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `E` constant            | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `TAU` constant          | [ ] | [ ] | [ ] | [ ]  | [ ] |
+| `pavimentum` (floor)    | [x] | [x] | [x] | [x]  | [x] |
+| `tectum` (ceiling)      | [x] | [x] | [x] | [x]  | [x] |
+| `radix` (sqrt)          | [x] | [x] | [x] | [x]  | [x] |
+| `potentia` (pow)        | [x] | [x] | [x] | [x]  | [x] |
+| `absolutum` (abs)       | [x] | [x] | [x] | [x]  | [x] |
+| `signum` (sign)         | [x] | [x] | [x] | [x]  | [x] |
+| `rotundum` (round)      | [x] | [x] | [x] | [x]  | [x] |
+| `truncatum` (trunc)     | [x] | [x] | [x] | [x]  | [x] |
+| `logarithmus` (log)     | [x] | [x] | [x] | [x]  | [x] |
+| `logarithmus10` (log10) | [x] | [x] | [x] | [x]  | [x] |
+| `exponens` (exp)        | [x] | [x] | [x] | [x]  | [x] |
+| `sinus` (sin)           | [x] | [x] | [x] | [x]  | [x] |
+| `cosinus` (cos)         | [x] | [x] | [x] | [x]  | [x] |
+| `tangens` (tan)         | [x] | [x] | [x] | [x]  | [x] |
+| `minimus` (min)         | [x] | [x] | [x] | [x]  | [x] |
+| `maximus` (max)         | [x] | [x] | [x] | [x]  | [x] |
+| `constringens` (clamp)  | [x] | [x] | [x] | [x]  | [x] |
+| `PI` constant           | [x] | [x] | [x] | [x]  | [x] |
+| `E` constant            | [x] | [x] | [x] | [x]  | [x] |
+| `TAU` constant          | [x] | [x] | [x] | [x]  | [x] |

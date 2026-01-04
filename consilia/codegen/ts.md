@@ -95,20 +95,20 @@ Features that would need new Faber syntax to support.
 
 ### High Priority (commonly used)
 
-| TS Feature          | Syntax           | Status   | Latin Candidate       | Notes                            |
-| ------------------- | ---------------- | -------- | --------------------- | -------------------------------- |
-| Spread (array)      | `...arr`         | Planned  | `sparge arr`          | Array spreading                  |
-| Spread (object)     | `...obj`         | Planned  | `sparge obj`          | Object spreading                 |
-| Rest parameters     | `...args`        | Planned  | `ceteri args`         | Collect remaining args           |
-| Optional chaining   | `?.`             | Planned  | `?.`                  | Keep as punctuation              |
-| Non-null assertion  | `!.`             | Planned  | `!.`                  | Keep as punctuation              |
-| Nullish coalescing  | `??`             | Partial  | `vel`                 | Extending to general expressions |
-| Array destructuring | `[a, b] = arr`   | Planned  | `ex arr fixum [a, b]` | Enabled by `ceteri` rest syntax  |
-| typeof (runtime)    | `typeof x`       | Planned  | `x est numerus`       | Via `est` with type RHS          |
-| instanceof          | `x instanceof T` | Planned  | `x est T`             | Via `est` with type RHS          |
-| Regex literals      | `/pattern/`      | Planned  | `sed /pattern/`       | Keyword disambiguates tokenizer  |
-| Getters             | `get prop()`     | Excluded | —                     | Use methods instead              |
-| Setters             | `set prop(v)`    | Excluded | —                     | Use `nexum` or methods           |
+| TS Feature          | Syntax           | Status      | Latin Candidate       | Notes                            |
+| ------------------- | ---------------- | ----------- | --------------------- | -------------------------------- |
+| Spread (array)      | `...arr`         | Implemented | `sparge arr`          | Array spreading                  |
+| Spread (object)     | `...obj`         | Implemented | `sparge obj`          | Object spreading                 |
+| Rest parameters     | `...args`        | Implemented | `ceteri args`         | Collect remaining args           |
+| Optional chaining   | `?.`             | Implemented | `?.`                  | Keep as punctuation              |
+| Non-null assertion  | `!.`             | Implemented | `!.`                  | Keep as punctuation              |
+| Nullish coalescing  | `??`             | Partial     | `vel`                 | Extending to general expressions |
+| Array destructuring | `[a, b] = arr`   | Planned     | `ex arr fixum [a, b]` | Enabled by `ceteri` rest syntax  |
+| typeof (runtime)    | `typeof x`       | Planned     | `x est numerus`       | Via `est` with type RHS          |
+| instanceof          | `x instanceof T` | Planned     | `x est T`             | Via `est` with type RHS          |
+| Regex literals      | `/pattern/`      | Implemented | `sed /pattern/`       | Keyword disambiguates tokenizer  |
+| Getters             | `get prop()`     | Excluded    | —                     | Use methods instead              |
+| Setters             | `set prop(v)`    | Excluded    | —                     | Use `nexum` or methods           |
 
 ### Medium Priority (useful)
 

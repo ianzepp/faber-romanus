@@ -1,8 +1,8 @@
 ---
-status: planned
+status: implemented
 targets: [ts, py, zig, rs, cpp]
-note: Random number generation as stdlib module
-updated: 2024-12
+note: All random functions implemented across all targets
+updated: 2025-01-03
 ---
 
 # Aleator - Random Number Generation
@@ -173,10 +173,10 @@ For `fractus()` and `numerus()`, fast PRNG is acceptable.
 
 | Feature             | TS  | Py  | Zig | Rust | C++ |
 | ------------------- | --- | --- | --- | ---- | --- |
-| `fractus()` (float) | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `numerus(min, max)` | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `octeti(n)` (bytes) | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `uuid()` (UUID v4)  | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `elige(lista)`      | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `misce(lista)`      | [ ] | [ ] | [ ] | [ ]  | [ ] |
-| `semen(n)` (seed)   | [ ] | [ ] | [ ] | [ ]  | [ ] |
+| `fractus()` (float) | [x] | [x] | [x] | [x]  | [x] |
+| `numerus(min, max)` | [x] | [x] | [x] | [x]  | [x] |
+| `octeti(n)` (bytes) | [x] | [x] | [x] | [x]  | [x] |
+| `uuid()` (UUID v4)  | [x] | [x] | [x] | [x]  | [x] |
+| `elige(lista)`      | [x] | [x] | [x] | [x]  | [x] |
+| `misce(lista)`      | [x] | [x] | [x] | [x]  | [x] |
+| `semen(n)` (seed)   | [x] | [x] | [x] | [x]  | [x] |
