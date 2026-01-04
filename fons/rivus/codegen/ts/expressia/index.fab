@@ -234,9 +234,11 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 
         casu LegeExpressia ut e {
             si (e.modus qua textus) == "line" {
-                redde "await _readline()"
+                # WHY: Match faber output; Bun needs readline for single-line input.
+                redde "(await (async () => { const rl = require(\"readline\").createInterface({ input: process.stdin }); for await (const line of rl) { rl.close(); return line; } return \"\"; })())"
             }
-            redde "await _read()"
+            # WHY: Bun stdin reads all input via text().
+            redde "await Bun.stdin.text()"
         }
 
         casu AbExpressia ut e {
