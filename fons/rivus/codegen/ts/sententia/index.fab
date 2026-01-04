@@ -7,6 +7,7 @@ ex "../../../ast/sententia" importa Sententia, VariaGenus, ScribeGradus, Iterati
 ex "../../../ast/sententia" importa Parametrum, CampusDeclaratio, EligeCasus, VariansCasus
 ex "../../../ast/sententia" importa CustodiClausula, CapeClausula, OrdoMembrum, VariansDeclaratio
 ex "../../../ast/sententia" importa ImportaSpecificator, PactumMethodus, TypusParametrum
+ex "../../../ast/sententia" importa SeriesDestructuraElementum
 ex "../../../ast/sententia" importa Visibilitas, ProbaModificator, PraeparaTempus, ReddeVerbum
 ex "../../../ast/expressia" importa Expressia, LitteraGenus
 ex "../../../ast/typus" importa TypusAnnotatio
@@ -52,6 +53,10 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
             redde genDestructura(s.fons, s.species qua VariaGenus, s.specificatores qua lista<ImportaSpecificator>, g)
         }
 
+        casu SeriesDestructuraSententia ut s {
+            redde genSeriesDestructura(s.elementa qua lista<SeriesDestructuraElementum>, s.fons, s.species qua VariaGenus, g)
+        }
+
         # Function declaration
         casu FunctioDeclaratio ut f {
             redde genFunctio(f.nomen qua textus, f.generaParametra, f.parametra qua lista<Parametrum>, f.reddeVerbum, f.typusReditus, f.corpus, f.asynca qua bivalens, f.generator qua bivalens, f.structor qua bivalens, g)
@@ -92,9 +97,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         }
 
         casu InSententia ut s {
-            fixum obj = genExpressia(s.obiectum, g)
-            fixum block = genSententia(s.corpus qua Sententia, g)
-            redde scriptum("§// in §\n§", g.ind(), obj, block)
+            redde genIn(s.obiectum, s.corpus qua Sententia, g)
         }
 
         casu EligeSententia ut s {
@@ -257,6 +260,67 @@ functio genDestructura(Expressia fons, VariaGenus species, lista<ImportaSpecific
     }
 
     redde scriptum("§§ { § } = §§;", g.ind(), keyword, specs.coniunge(", "), asyncPrefix, genExpressia(fons, g))
+}
+
+@ publica
+functio genSeriesDestructura(lista<SeriesDestructuraElementum> elementa, Expressia fons, VariaGenus species, TsGenerator g) -> textus {
+    fixum keyword = (species == VariaGenus.Fixum aut species == VariaGenus.Figendum) sic "const" secus "let"
+    fixum asyncPrefix = (species == VariaGenus.Figendum aut species == VariaGenus.Variandum) sic "await " secus ""
+
+    varia items = [] qua lista<textus>
+    ex elementa pro elem {
+        si elem.omissum {
+            items.adde("")
+        } sin elem.residuum {
+            items.adde(scriptum("...§", elem.nomen))
+        } secus {
+            items.adde(elem.nomen)
+        }
+    }
+
+    redde scriptum("§§ [§] = §§;", g.ind(), keyword, items.coniunge(", "), asyncPrefix, genExpressia(fons, g))
+}
+
+# =============================================================================
+# IN (MUTATION BLOCK)
+# =============================================================================
+
+@ publica
+functio genIn(Expressia obiectum, Sententia corpus, TsGenerator g) -> textus {
+    discerne corpus {
+        casu MassaSententia ut m {
+            varia lines = [] qua lista<textus>
+            ex m.corpus pro stmt {
+                lines.adde(genInSententia(stmt, obiectum, g))
+            }
+            redde lines.coniunge("\n")
+        }
+    }
+    redde genSententia(corpus, g)
+}
+
+functio genInSententia(Sententia stmt, Expressia obiectum, TsGenerator g) -> textus {
+    discerne stmt {
+        casu ExpressiaSententia ut s {
+            fixum expr = genInExpressia(s.expressia, obiectum, g)
+            redde scriptum("§§;", g.ind(), expr)
+        }
+    }
+    redde genSententia(stmt, g)
+}
+
+functio genInExpressia(Expressia expr, Expressia obiectum, TsGenerator g) -> textus {
+    discerne expr {
+        casu AssignatioExpressia ut a {
+            discerne a.sinister {
+                casu Nomen ut n {
+                    fixum lhs = scriptum("§.§", genExpressia(obiectum, g), n.valor)
+                    redde scriptum("§ § §", lhs, a.signum, genExpressia(a.dexter, g))
+                }
+            }
+        }
+    }
+    redde genExpressia(expr, g)
 }
 
 # =============================================================================
@@ -515,9 +579,23 @@ functio genPactum(textus nomen, ignotum generaParametra, lista<PactumMethodus> m
         }
 
         varia line = scriptum("§§(§)", g.ind(), methodus.nomen, params.coniunge(", "))
-
+        varia reditus = ""
         si nonnihil methodus.typusReditus {
-            line = scriptum("§: §", line, genTypus(methodus.typusReditus qua TypusAnnotatio, g))
+            reditus = genTypus(methodus.typusReditus qua TypusAnnotatio, g)
+        }
+
+        si reditus == "" et (methodus.generator aut methodus.asynca) {
+            reditus = "void"
+        }
+
+        si methodus.generator {
+            reditus = methodus.asynca sic scriptum("AsyncGenerator<§>", reditus) secus scriptum("Generator<§>", reditus)
+        } sin methodus.asynca {
+            reditus = scriptum("Promise<§>", reditus)
+        }
+
+        si reditus != "" {
+            line = scriptum("§: §", line, reditus)
         }
 
         result = scriptum("§§;\n", result, line)

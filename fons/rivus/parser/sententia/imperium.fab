@@ -1,6 +1,6 @@
 # Control Flow Statement Parsers
 #
-# Handles: si, dum, ex, de (conditionals and loops)
+# Handles: si, dum, ex, de, in (conditionals and loops)
 #
 # GRAMMAR:
 #   siStmt := 'si' expr blockStmt ('secus' 'si' expr blockStmt)* ('secus' blockStmt)?
@@ -8,6 +8,7 @@
 #   dumStmt := 'dum' expr blockStmt ('cape' IDENT blockStmt)?
 #   exStmt := 'ex' expr 'pro' IDENT blockStmt ('cape' IDENT blockStmt)?
 #   deStmt := 'de' expr 'pro' IDENT blockStmt ('cape' IDENT blockStmt)?
+#   inStmt := 'in' expr blockStmt
 #
 # LATIN VOCABULARY:
 # - si = if
@@ -16,6 +17,7 @@
 # - dum = while
 # - ex = from (iterate values)
 # - de = from (iterate keys)
+# - in = into (mutation)
 # - pro = for
 # - cape = catch
 
@@ -198,6 +200,32 @@ functio parseDeSententia(Resolvitor r) -> Sententia {
         corpus: corpus,
         asynca: falsum,
         cape: cape
+    } qua Sententia
+}
+
+# Parse mutation block
+#
+# GRAMMAR: inStmt := 'in' expr blockStmt
+#
+# Example: in user { nomen = "Marcus" }
+@ publica
+functio parseInSententia(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    # Consume 'in'
+    p.expectaVerbum("in", ParserErrorCodice.ExpectaturIn)
+
+    # Parse target object
+    fixum obiectum = r.expressia()
+
+    # Parse block body
+    fixum corpus = parseMassaSententia(r)
+
+    redde finge InSententia {
+        locus: locus,
+        obiectum: obiectum,
+        corpus: corpus
     } qua Sententia
 }
 

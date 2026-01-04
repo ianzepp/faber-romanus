@@ -313,6 +313,19 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
     varia methodi = [] qua lista<PactumMethodus>
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
+        # Optional annotations (e.g., @ futura)
+        varia annotationes = [] qua lista<textus>
+        dum p.congruet(SymbolumGenus.At) {
+            fixum a = p.specta(0)
+            si a.species === SymbolumGenus.Nomen aut a.species === SymbolumGenus.Verbum {
+                p.procede()
+                annotationes.adde(a.valor)
+            } secus {
+                p.renuncia(ParserErrorCodice.ExpectaturNomen, scriptum("got '§'", a.valor))
+                p.procede()
+            }
+        }
+
         # Each method: functio name(params) returnType
         p.expectaVerbum("functio", ParserErrorCodice.ExpectaturFunctio)
 
@@ -340,6 +353,12 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
             asynca = verum
             generator = verum
             typusReditus = r.adnotatio()
+        }
+
+        ex annotationes pro a {
+            si a == "futura" {
+                asynca = verum
+            }
         }
 
         methodi.adde({

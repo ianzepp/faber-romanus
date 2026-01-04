@@ -347,7 +347,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
 # Parse lambda expression
 #
 # GRAMMAR:
-#   lambdaExpr := 'pro' params? ('->' type)? ':' expression
+#   lambdaExpr := 'pro' params? ('->' type)? (':' expression | blockStmt)
 #   params := IDENTIFIER (',' IDENTIFIER)*
 #
 # Examples:
@@ -356,8 +356,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
 #   pro x, y: x + y               # multiple params
 #   pro x -> numerus: x * 2       # with return type
 #
-# Note: Block form (pro x { ... }) requires Sententia in corpus,
-#       which this AST doesn't support yet. Expression form only.
+# Note: Block form uses MassaSententia as corpus for later codegen.
 @ publica
 functio parseLambdaExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -389,9 +388,16 @@ functio parseLambdaExpressia(Resolvitor r) -> Expressia {
         typusReditus = r.adnotatio()
     }
 
-    # Expression body: : expr
-    p.expecta(SymbolumGenus.Colon, ParserErrorCodice.ExpectaturColon)
-    fixum corpus = r.expressia()
+    # Body: ':' expression or blockStmt
+    varia corpus = nihil qua ignotum?
+    si p.congruet(SymbolumGenus.Colon) {
+        corpus = r.expressia()
+    } sin p.proba(SymbolumGenus.UncusSin) {
+        corpus = r.massa()
+    } secus {
+        p.expecta(SymbolumGenus.Colon, ParserErrorCodice.ExpectaturColon)
+        corpus = r.expressia()
+    }
 
     redde finge LambdaExpressia {
         locus: locus,

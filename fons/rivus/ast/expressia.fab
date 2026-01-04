@@ -286,7 +286,7 @@ discretio Expressia {
     LambdaExpressia {
         Locus locus
         lista<LambdaParametrum> parametra
-        Expressia corpus         # single expression body
+        ignotum corpus           # expression body or MassaSententia
         TypusAnnotatio? typusReditus    # optional return type
     }
 

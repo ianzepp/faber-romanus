@@ -27,6 +27,14 @@ functio analyzeSententia(Resolvitor r, Sententia stmt) -> vacuum {
             analyzeVariaDeclaratio(r, stmt)
         }
 
+        casu DestructuraSententia ut s {
+            r.expressia(s.fons)
+        }
+
+        casu SeriesDestructuraSententia ut s {
+            r.expressia(s.fons)
+        }
+
         casu FunctioDeclaratio {
             analyzeFunctioDeclaratio(r, stmt)
         }

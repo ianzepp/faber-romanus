@@ -19,6 +19,7 @@ ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia
 ex "../../ast/sententia" importa Sententia, VariaGenus, ImportaSpecificator
+ex "../../ast/sententia" importa SeriesDestructuraElementum
 ex "../../ast/typus" importa TypusAnnotatio
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
@@ -108,6 +109,53 @@ functio parseDestructuraSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
+# Parse array destructuring pattern: [a, b, ceteri rest]
+@ publica
+functio parseSeriesDestructura(Resolvitor r) -> lista<SeriesDestructuraElementum> {
+    fixum p = r.parser()
+
+    p.expecta(SymbolumGenus.QuadratusSin, ParserErrorCodice.ExpectaturQuadratusSin)
+
+    varia elementa = [] qua lista<SeriesDestructuraElementum>
+    si non p.proba(SymbolumGenus.QuadratusDex) {
+        fac {
+            fixum locus = p.locusActualis()
+            varia residuum = falsum
+            varia omissum = falsum
+            varia nomen = nihil qua textus?
+
+            si p.probaVerbum("ceteri") {
+                residuum = verum
+                p.procede()
+            }
+
+            fixum s = p.specta(0)
+            si s.species === SymbolumGenus.Nomen aut s.species === SymbolumGenus.Verbum {
+                p.procede()
+                si s.valor == "_" {
+                    omissum = verum
+                } secus {
+                    nomen = s.valor
+                }
+            } secus {
+                p.renuncia(ParserErrorCodice.ExpectaturNomen, scriptum("got '§'", s.valor))
+                p.procede()
+            }
+
+            elementa.adde({
+                locus: locus,
+                nomen: nomen,
+                residuum: residuum,
+                omissum: omissum
+            } qua SeriesDestructuraElementum)
+        } dum p.congruet(SymbolumGenus.Coma)
+    }
+
+    p.expecta(SymbolumGenus.QuadratusDex, ParserErrorCodice.ExpectaturQuadratusDex)
+
+    redde elementa
+}
+
 # Parse variable declaration
 #
 # GRAMMAR: varDecl := ('varia'|'fixum'|'figendum'|'variandum') type? name ('=' expr)?
@@ -136,12 +184,25 @@ functio parseVariaSententia(Resolvitor r) -> Sententia {
     p.procede()
 
     # -------------------------------------------------------------------------
-    # Determine what follows: type, name, or destructuring pattern
+    # Array destructuring: fixum [a, b] = coords
+    # -------------------------------------------------------------------------
+    si p.proba(SymbolumGenus.QuadratusSin) {
+        fixum elementa = parseSeriesDestructura(r)
+        p.expecta(SymbolumGenus.Aequum, ParserErrorCodice.ExpectaturAequale)
+        fixum fons = r.expressia()
+        redde finge SeriesDestructuraSententia {
+            locus: locus,
+            species: species,
+            elementa: elementa,
+            fons: fons
+        } qua Sententia
+    }
+
+    # -------------------------------------------------------------------------
+    # Determine what follows: type or name
     # -------------------------------------------------------------------------
     varia adnotatio = nihil qua TypusAnnotatio?
     varia nomen = ""
-
-    # TODO: Handle array destructuring [a, b] = arr
 
     si p.estTypusNomen(p.specta(0)) {
         # Builtin type: fixum numerus x = 42

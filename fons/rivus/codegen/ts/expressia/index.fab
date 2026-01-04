@@ -289,7 +289,19 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             si nonnihil e.typusReditus {
                 retType = scriptum(": §", genTypus(e.typusReditus qua TypusAnnotatio, g))
             }
-            redde scriptum("(§)§ => §", params.coniunge(", "), retType, genExpressia(e.corpus, g))
+            fixum massa = e.corpus qua Sententia
+            discerne massa {
+                casu MassaSententia ut m {
+                    g.intraProfundum()
+                    fixum body = genPraefixumMassa(m.corpus, g)
+                    g.exiProfundum()
+                    si body == "" {
+                        redde scriptum("(§)§ => {{}}", params.coniunge(", "), retType)
+                    }
+                    redde scriptum("(§)§ => {\n§\n§}", params.coniunge(", "), retType, body, g.ind())
+                }
+            }
+            redde scriptum("(§)§ => §", params.coniunge(", "), retType, genExpressia(e.corpus qua Expressia, g))
         }
 
         # Discretio construction

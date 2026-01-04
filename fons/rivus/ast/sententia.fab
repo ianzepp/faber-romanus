@@ -97,6 +97,16 @@ genus ImportaSpecificator {
     bivalens residuum         # true for ceteri (rest)
 }
 
+# Array destructuring element
+# Example: a, ceteri rest, _
+@ publicum
+genus SeriesDestructuraElementum {
+    Locus locus
+    textus? nomen             # binding name (nil for omitted)
+    bivalens residuum         # true for ceteri (rest)
+    bivalens omissum          # true for placeholder _
+}
+
 # Function parameter
 # Example: textus nomen, de lista<T> items, ceteri args
 @ publicum
@@ -270,6 +280,15 @@ discretio Sententia {
         Expressia fons           # source expression
         VariaGenus species
         lista<ImportaSpecificator> specificatores
+    }
+
+    # Array destructure declaration
+    # Example: fixum [a, b, c] = coords
+    SeriesDestructuraSententia {
+        Locus locus
+        VariaGenus species
+        lista<SeriesDestructuraElementum> elementa
+        Expressia fons
     }
 
     # -------------------------------------------------------------------------
