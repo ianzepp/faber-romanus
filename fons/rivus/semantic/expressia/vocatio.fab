@@ -4,7 +4,9 @@
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, TEXTUS, NUMERUS, BIVALENS, IGNOTUM
-ex "../../ast/expressia" importa Expressia
+ex "../errores" importa morphologiaRadixNonDeclarataError, morphologiaFormaNonPermissaError
+ex "../../ast/expressia" importa Expressia, MorphologiaInvocatio
+ex "../../parser/morphologia" importa parseMethodum, formaExFlagga
 
 # =============================================================================
 # CALL EXPRESSION RESOLUTION
@@ -22,6 +24,47 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
                 r.expressia(arg)
             }
 
+            # Morphologia dispatch validation (receiver-bound)
+            discerne v.vocatum {
+                casu MembrumExpressia ut m {
+                    si non (m.computatum qua bivalens) {
+                        discerne m.proprietas {
+                            casu Nomen ut n {
+                                fixum parsed = parseMethodum(n.valor)
+                                si nonnihil parsed {
+                                    fixum obiectumTypus = r.expressia(m.obiectum)
+                                    fixum recipiens = nomenReceptor(obiectumTypus)
+                                    si nonnihil recipiens {
+                                        fixum receiver = recipiens qua textus
+                                        si r.analyzator().habetMorphologiam(receiver) {
+                                            fixum formae = r.analyzator().formaeMorphologiae(receiver, parsed.radix)
+
+                                            # EDGE: Avoid lexical hijacking. Only treat a call as morphologia if
+                                            # the stem is actually declared for this receiver.
+                                            si nihil formae {
+                                                perge
+                                            }
+
+                                            fixum forma = formaExFlagga(parsed.flagga)
+                                            si non estFormaPermissa(formae qua lista<textus>, forma) {
+                                                fixum err = morphologiaFormaNonPermissaError(n.valor, parsed.radix, forma, receiver, formae qua lista<textus>)
+                                                r.analyzator().error(err.textus, n.locus)
+                                            } secus {
+                                                v.morphologia = {
+                                                    recipiens: receiver,
+                                                    radix: parsed.radix,
+                                                    forma: forma
+                                                } qua MorphologiaInvocatio
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             # If callee is a function type, return its return type
             discerne vocatumTypus {
                 casu Functio ut f {
@@ -35,6 +78,33 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
     }
 
     redde IGNOTUM
+}
+
+functio nomenReceptor(SemanticTypus t) -> textus? {
+    discerne t {
+        casu Genericum ut g {
+            redde g.nomen
+        }
+        casu Genus ut g {
+            redde g.nomen
+        }
+        casu Pactum ut p {
+            redde p.nomen
+        }
+        casu Usitatum ut u {
+            redde u.nomen
+        }
+    }
+    redde nihil
+}
+
+functio estFormaPermissa(lista<textus> formae, textus forma) -> bivalens {
+    ex formae pro item {
+        si item == forma {
+            redde verum
+        }
+    }
+    redde falsum
 }
 
 # =============================================================================

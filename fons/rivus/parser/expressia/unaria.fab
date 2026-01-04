@@ -196,7 +196,8 @@ functio parsePostfix(Resolvitor r) -> Expressia {
                     locus: locus,
                     vocatum: expressia,
                     argumenta: argumenta,
-                    optivum: verum
+                    optivum: verum,
+                    morphologia: nihil
                 } qua Expressia
                 perge
             }
@@ -258,7 +259,8 @@ functio parsePostfix(Resolvitor r) -> Expressia {
                     locus: locus,
                     vocatum: expressia,
                     argumenta: argumenta,
-                    optivum: falsum
+                    optivum: falsum,
+                    morphologia: nihil
                 } qua Expressia
                 perge
             }
@@ -273,7 +275,8 @@ functio parsePostfix(Resolvitor r) -> Expressia {
                 locus: locus,
                 vocatum: expressia,
                 argumenta: argumenta,
-                optivum: falsum
+                optivum: falsum,
+                morphologia: nihil
             } qua Expressia
             perge
         }

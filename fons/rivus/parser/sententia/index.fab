@@ -16,10 +16,11 @@
 ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
 ex "../../ast/expressia" importa Expressia
-ex "../../ast/sententia" importa Sententia, ScribeGradus
+ex "../../ast/sententia" importa Sententia, ScribeGradus, MorphologiaDeclaratio
 ex "../../ast/lexema" importa SymbolumGenus, VerbumId
 ex "../../ast/radix" importa NodusRadix
 ex "../errores" importa ParserErrorCodice
+ex "./annotatio" importa parseAnnotationes
 
 # Import statement parsers from submodules
 ex "./actio" importa parseReddeSententia, parseRumpeSententia, parsePergeSententia, parseIaceSententia, parseScribeSententia
@@ -60,22 +61,22 @@ functio parseSententiaSineNotis(Resolvitor r) -> Sententia {
 
     # Annotation prefix (e.g. `@ futura`)
     si sym.species === SymbolumGenus.At {
-        varia annotationes = [] qua lista<textus>
-        dum p.congruet(SymbolumGenus.At) {
-            annotationes.adde(parseNomenVelVerbum(r))
-        }
+        fixum annotationes = parseAnnotationes(r)
 
         fixum stmt = parseSententiaSineNotis(r)
 
         ex annotationes pro a {
             discerne stmt {
                 casu FunctioDeclaratio ut f {
-                    si a == "futura" {
+                    si a.nomen == "futura" {
                         f.asynca = verum
+                    }
+                    si a.nomen == "radix" {
+                        f.morphologia = { locus: a.locus, formae: a.argumenta } qua MorphologiaDeclaratio
                     }
                 }
                 casu GenusDeclaratio ut g {
-                    si a inter ["abstractum", "abstracta", "abstractus"] {
+                    si a.nomen inter ["abstractum", "abstracta", "abstractus"] {
                         g.abstractum = verum
                     }
                 }

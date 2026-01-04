@@ -15,7 +15,8 @@ ex "./expressia/index" importa resolveExpressia
 ex "./sententia/index" importa analyzeSententia
 ex "../ast/radix" importa Programma
 ex "../ast/expressia" importa Expressia
-ex "../ast/sententia" importa Sententia
+ex "../ast/sententia" importa Sententia, MorphologiaDeclaratio
+ex "../parser/morphologia" importa parseMethodum
 
 # =============================================================================
 # RESOLVITOR IMPLEMENTATION
@@ -115,6 +116,20 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
                 mutabilis: falsum,
                 locus: g.locus
             } qua Symbolum)
+
+            ex g.methodi pro methodus {
+                discerne methodus {
+                    casu FunctioDeclaratio ut f {
+                        si nonnihil f.morphologia {
+                            fixum parsed = parseMethodum(f.nomen)
+                            si nonnihil parsed {
+                                fixum nota = f.morphologia qua MorphologiaDeclaratio
+                                a.addeMorphologiam(g.nomen, parsed.radix, nota.formae)
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         # Pactum declaration - register name with user type
@@ -126,6 +141,16 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
                 mutabilis: falsum,
                 locus: p.locus
             } qua Symbolum)
+
+            ex p.methodi pro methodus {
+                si nonnihil methodus.morphologia {
+                    fixum parsed = parseMethodum(methodus.nomen)
+                    si nonnihil parsed {
+                        fixum nota = methodus.morphologia qua MorphologiaDeclaratio
+                        a.addeMorphologiam(p.nomen, parsed.radix, nota.formae)
+                    }
+                }
+            }
         }
 
         # Ordo declaration - register name with user type

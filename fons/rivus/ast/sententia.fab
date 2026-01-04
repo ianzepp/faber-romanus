@@ -121,6 +121,13 @@ genus Parametrum {
     bivalens residuum         # ceteri (rest)
 }
 
+# Morphologia annotation metadata
+@ publicum
+genus MorphologiaDeclaratio {
+    Locus locus
+    lista<textus> formae
+}
+
 # Compile-time type parameter
 # Example: prae typus T
 @ publicum
@@ -151,6 +158,7 @@ genus PactumMethodus {
     TypusAnnotatio? typusReditus
     bivalens asynca
     bivalens generator
+    MorphologiaDeclaratio? morphologia
 }
 
 # Ordo (enum) member
@@ -310,6 +318,7 @@ discretio Sententia {
         bivalens structor       # WHY: "constructor" is a JS reserved word
         Visibilitas? visibilitas
         ReddeVerbum? reddeVerbum
+        MorphologiaDeclaratio? morphologia
     }
 
     # -------------------------------------------------------------------------
@@ -328,6 +337,7 @@ discretio Sententia {
         lista<CampusDeclaratio> campi
         Sententia? structor      # FunctioDeclaratio (WHY: "constructor" is JS reserved)
         lista<Sententia> methodi # lista<FunctioDeclaratio>
+        MorphologiaDeclaratio? morphologia
     }
 
     # Pactum (interface) declaration

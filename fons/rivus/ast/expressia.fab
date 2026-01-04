@@ -60,6 +60,14 @@ genus AbFiltrum {
     Expressia condicio
 }
 
+# Morphology dispatch info for method calls
+@ publicum
+genus MorphologiaInvocatio {
+    textus recipiens
+    textus radix
+    textus forma
+}
+
 # ============================================================================
 # EXPRESSIA DISCRETIO
 # ============================================================================
@@ -207,6 +215,7 @@ discretio Expressia {
         Expressia vocatum        # what's being called (callee)
         lista<Expressia> argumenta
         bivalens optivum         # ?. optional call
+        MorphologiaInvocatio? morphologia
     }
 
     # Member access expression

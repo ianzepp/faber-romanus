@@ -167,3 +167,22 @@ functio moduleParseError(textus path) -> SemanticErrorNuntius {
         auxilium: "Fix the syntax errors in the imported module before importing it."
     } qua SemanticErrorNuntius
 }
+
+# Morphologia errors
+@ publica
+functio morphologiaRadixNonDeclarataError(textus methodus, textus radix, textus forma, textus recipiens, lista<textus> formae) -> SemanticErrorNuntius {
+    fixum aux = formae.longitudo() == 0 sic "Allowed forms for this stem: (none)" secus scriptum("Allowed forms for this stem: §", formae.coniunge(", "))
+    redde {
+        textus: scriptum("Morphologia stem '§' is not declared for '§' (method '§', forma '§'). §", radix, recipiens, methodus, forma, aux),
+        auxilium: aux
+    } qua SemanticErrorNuntius
+}
+
+@ publica
+functio morphologiaFormaNonPermissaError(textus methodus, textus radix, textus forma, textus recipiens, lista<textus> formae) -> SemanticErrorNuntius {
+    fixum aux = scriptum("Allowed forms for this stem: §", formae.coniunge(", "))
+    redde {
+        textus: scriptum("Morphologia forma '§' is not allowed for stem '§' on '§' (method '§'). §", forma, radix, recipiens, methodus, aux),
+        auxilium: aux
+    } qua SemanticErrorNuntius
+}

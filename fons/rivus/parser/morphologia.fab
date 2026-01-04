@@ -26,6 +26,24 @@ genus RadixEtFlagga {
     MorphologiaFlagga flagga
 }
 
+# Map semantic flags to canonical form name
+@ publicum
+functio formaExFlagga(MorphologiaFlagga flagga) -> textus {
+    si flagga.mutare et non flagga.async et non flagga.reddeNovum {
+        redde "imperativus"
+    }
+    si non flagga.mutare et non flagga.async et flagga.reddeNovum {
+        redde "perfectum"
+    }
+    si flagga.mutare et flagga.async et non flagga.reddeNovum {
+        redde "futurum_indicativum"
+    }
+    si non flagga.mutare et flagga.async et flagga.reddeNovum {
+        redde "futurum_activum"
+    }
+    redde "ignotum"
+}
+
 # ============================================================================
 # FLAG CONSTANTS
 # ============================================================================

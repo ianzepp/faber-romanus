@@ -1,0 +1,56 @@
+# Morphologia - receiver-bound semantic dispatch
+
+- name: morphologia lista filtra dispatch
+  faber: |
+    genus lista {
+    @ radix imperativus, perfectum
+    functio filtra(ignotum pred) { }
+    }
+    fixum items = ["a", "b"]
+    items.filtra(pro x: verum)
+    items.filtrata(pro x: verum)
+  expect:
+      ts:
+          contains:
+              - "splice"
+              - ".filter("
+          not_contains:
+              - "items.filtra("
+              - "items.filtrata("
+
+- name: morphologia ignores non-enabled receiver
+  faber: |
+    genus Calculator {
+    functio adde(numerus x) { }
+    }
+    fixum calc = novum Calculator()
+    calc.adde(1)
+  expect:
+      ts:
+          contains:
+              - "calc.adde(1);"
+          not_contains:
+              - ".push("
+
+- name: morphologia rejects undeclared form
+  faber: |
+    genus lista {
+    @ radix imperativus
+    functio filtra(ignotum pred) { }
+    }
+    fixum items = ["a", "b"]
+    items.filtrata(pro x: verum)
+  errata:
+      - "Semantic errors:"
+      - "filtrata"
+      - "lista"
+      - "imperativus"
+
+- name: morphologia rejects unknown radix form
+  faber: |
+    @ radix imperativus, bogus
+    functio filtra() { }
+  errata:
+      - "Parse errors:"
+      - "Unknown radix form"
+      - "bogus"

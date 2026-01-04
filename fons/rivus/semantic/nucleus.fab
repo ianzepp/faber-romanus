@@ -90,6 +90,9 @@ genus Analyzator {
     # Type aliases being resolved (for cycle detection)
     lista<textus> resolvendoTypusAliases
 
+    # Morphologia registry: receiver -> stem -> allowed forms
+    tabula<textus, tabula<textus, lista<textus> > > morphologiaRegistra
+
     # ==========================================================================
     # ERROR REPORTING
     # ==========================================================================
@@ -164,6 +167,49 @@ genus Analyzator {
             locus: locus
         } qua Symbolum
     }
+
+    # ==========================================================================
+    # MORPHOLOGIA REGISTRY
+    # ==========================================================================
+
+    @ publica
+    functio habetMorphologiam(textus recipiens) -> bivalens {
+        redde nonnihil ego.morphologiaRegistra[recipiens]
+    }
+
+    @ publica
+    functio formaeMorphologiae(textus recipiens, textus radix) -> lista<textus>? {
+        fixum perRecipiens = ego.morphologiaRegistra[recipiens]
+        si nihil perRecipiens {
+            redde nihil
+        }
+        redde perRecipiens[radix]
+    }
+
+    @ publica
+    functio addeMorphologiam(textus recipiens, textus radix, lista<textus> formae) -> vacuum {
+        si nihil ego.morphologiaRegistra[recipiens] {
+            ego.morphologiaRegistra[recipiens] = {} qua tabula<textus, lista<textus> >
+        }
+
+        fixum perRecipiens = ego.morphologiaRegistra[recipiens]
+        si nihil perRecipiens[radix] {
+            perRecipiens[radix] = [] qua lista<textus>
+        }
+
+        fixum existentes = perRecipiens[radix]
+        ex formae pro forma {
+            varia iam = falsum
+            ex existentes pro existens {
+                si existens == forma {
+                    iam = verum
+                }
+            }
+            si non iam {
+                existentes.adde(forma)
+            }
+        }
+    }
 }
 
 # =============================================================================
@@ -179,7 +225,8 @@ functio novumAnalyzator() -> Analyzator {
         currentFunctioReditus: nihil,
         currentFunctioAsync: falsum,
         currentFunctioGenerator: falsum,
-        resolvendoTypusAliases: [] qua lista<textus>
+        resolvendoTypusAliases: [] qua lista<textus>,
+        morphologiaRegistra: {} qua tabula<textus, tabula<textus, lista<textus> > >
     } qua Analyzator
 
     # Define built-in intrinsics

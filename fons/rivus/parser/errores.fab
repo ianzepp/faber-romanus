@@ -93,7 +93,10 @@ ordo ParserErrorCodice {
     DeestGenusNomen = "P202",
     DeestPactumNomen = "P203",
     DeestTypusNomen = "P204",
-    DeestVariaNomen = "P205"
+    DeestVariaNomen = "P205",
+
+    # Annotation errors (P300-P399)
+    InvalidaRadixForma = "P300"
 }
 
 # Error message with help text
@@ -310,6 +313,12 @@ functio nuntiumErroris(ParserErrorCodice codice) -> ParserErrorNuntius {
         }
         casu ParserErrorCodice.DeestVariaNomen {
             redde { textus: "Variable requires name", auxilium: "varia x = 5" } qua ParserErrorNuntius
+        }
+        casu ParserErrorCodice.InvalidaRadixForma {
+            redde {
+                textus: "Unknown radix form",
+                auxilium: "Use: imperativus, perfectum, futurum_indicativum, futurum_activum"
+            } qua ParserErrorNuntius
         }
 
         # Default fallback

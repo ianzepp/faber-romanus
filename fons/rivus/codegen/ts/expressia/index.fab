@@ -3,13 +3,13 @@
 # Routes expression AST nodes to their specific generators.
 # Uses scriptum() for string formatting for consistency.
 
-ex "../../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum
+ex "../../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum, MorphologiaInvocatio
 ex "../../../ast/expressia" importa AbFiltrum, CatenaGradus
 ex "../../../ast/sententia" importa Sententia, VariaGenus
 ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa TsGenerator
 ex "../typus" importa genTypus
-ex "../../../parser/morphologia" importa parseMethodum, estRadixListae
+ex "../../../parser/morphologia" importa parseMethodum
 ex "../../radices" importa generaListaMethodum
 
 # =============================================================================
@@ -192,22 +192,18 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                 args.adde(genExpressia(arg, g))
             }
 
-            # WHY: Check for morphology-based collection method dispatch.
-            # If callee is a member expression with a recognized verb conjugation,
-            # dispatch to the stem-based generator instead of literal passthrough.
-            discerne e.vocatum {
-                casu MembrumExpressia ut m {
-                    # Only non-computed member access (dot notation)
-                    si non (m.computatum qua bivalens) {
-                        discerne m.proprietas {
-                            casu Nomen ut prop {
-                                fixum methodNomen = prop.valor qua textus
-                                fixum parsed = parseMethodum(methodNomen)
-
-                                si nonnihil parsed {
-                                    si estRadixListae(parsed.radix) {
+            # WHY: Morphology dispatch is receiver-bound and semantic-gated.
+            si nonnihil e.morphologia {
+                discerne e.vocatum {
+                    casu MembrumExpressia ut m {
+                        si non (m.computatum qua bivalens) {
+                            discerne m.proprietas {
+                                casu Nomen ut prop {
+                                    fixum methodNomen = prop.valor qua textus
+                                    fixum parsed = parseMethodum(methodNomen)
+                                    si nonnihil parsed et (e.morphologia qua MorphologiaInvocatio).recipiens == "lista" {
                                         fixum obj = genExpressia(m.obiectum, g)
-                                        fixum result = generaListaMethodum(parsed.radix, obj, args, parsed.flagga)
+                                        fixum result = generaListaMethodum((e.morphologia qua MorphologiaInvocatio).radix, obj, args, parsed.flagga)
                                         si nonnihil result {
                                             redde result
                                         }
