@@ -14,39 +14,39 @@ ex "./nucleus" importa TsGenerator
 functio mappaNomenTypi(textus nomen) -> textus {
     elige nomen {
         # Primitives
-        casu "textus" { redde "string" }
-        casu "numerus" { redde "number" }
-        casu "fractus" { redde "number" }
-        casu "decimus" { redde "Decimal" }
-        casu "magnus" { redde "bigint" }
-        casu "bivalens" { redde "boolean" }
-        casu "nihil" { redde "null" }
-        casu "vacuum" { redde "void" }
-        casu "numquam" { redde "never" }
+        casu "textus" reddit "string"
+        casu "numerus" reddit "number"
+        casu "fractus" reddit "number"
+        casu "decimus" reddit "Decimal"
+        casu "magnus" reddit "bigint"
+        casu "bivalens" reddit "boolean"
+        casu "nihil" reddit "null"
+        casu "vacuum" reddit "void"
+        casu "numquam" reddit "never"
 
         # Binary
-        casu "octeti" { redde "Uint8Array" }
+        casu "octeti" reddit "Uint8Array"
 
         # Collections
-        casu "lista" { redde "Array" }
-        casu "tabula" { redde "Map" }
-        casu "copia" { redde "Set" }
+        casu "lista" reddit "Array"
+        casu "tabula" reddit "Map"
+        casu "copia" reddit "Set"
 
         # Async
-        casu "promissum" { redde "Promise" }
+        casu "promissum" reddit "Promise"
 
         # Error
-        casu "erratum" { redde "Error" }
+        casu "erratum" reddit "Error"
 
         # Iterator
-        casu "cursor" { redde "Iterator" }
+        casu "cursor" reddit "Iterator"
 
         # Object
-        casu "objectum" { redde "object" }
-        casu "object" { redde "object" }
+        casu "objectum" reddit "object"
+        casu "object" reddit "object"
 
         # Unknown
-        casu "ignotum" { redde "unknown" }
+        casu "ignotum" reddit "unknown"
     }
 
     # User-defined type: pass through unchanged

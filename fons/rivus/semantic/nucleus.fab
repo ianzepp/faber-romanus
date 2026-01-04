@@ -53,12 +53,12 @@ genus SemanticResultatum {
 @ publica
 functio latinTypusAd(textus nomen) -> SemanticTypus {
     elige nomen {
-        casu "textus" { redde TEXTUS }
-        casu "numerus" { redde NUMERUS }
-        casu "fractus" { redde FRACTUS }
-        casu "bivalens" { redde BIVALENS }
-        casu "nihil" { redde NIHIL }
-        casu "vacuum" { redde VACUUM }
+        casu "textus" reddit TEXTUS
+        casu "numerus" reddit NUMERUS
+        casu "fractus" reddit FRACTUS
+        casu "bivalens" reddit BIVALENS
+        casu "nihil" reddit NIHIL
+        casu "vacuum" reddit VACUUM
     }
     redde IGNOTUM
 }
