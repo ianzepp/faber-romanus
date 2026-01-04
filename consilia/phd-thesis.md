@@ -202,6 +202,40 @@ Rigor is not just for positioning; it directly improves the language:
 
 This also produces a clean roadmap driven by data rather than taste.
 
+## Who Is the Audience?
+
+The document implicitly assumes humans need to be convinced—hence the focus on positioning, narrative, and "how to talk about it." But if the workflow is genuinely "LLM drafts → human skims → compiler emits," the human's role shrinks to approval gate, not authorship.
+
+The real question: **who chooses the IR?**
+
+### Short Term (Now – 2-3 Years): Human Developers
+
+Today, humans choose the language, framework, and toolchain. LLMs comply with whatever is requested. Marketing must convince human decision-makers that Faber is worth adopting.
+
+**Go-to-market**: Developer advocacy, benchmarks, technical reports, conference talks.
+
+### Medium Term: Tool and Agent Builders
+
+Agentic coding tools (Claude Code, Cursor, Devin, Codex successors) increasingly make tactical decisions—which files to edit, which patterns to use. The jump to "which language to draft in" is not far.
+
+If Faber demonstrably reduces LLM error rates, agentic systems will adopt it as an internal representation—possibly without end users ever seeing `.fab` files. The IR becomes infrastructure, not interface.
+
+**Go-to-market**: Integration with agent frameworks, SDK/API access, partnerships with tool vendors.
+
+### Long Term (Speculative): LLMs as Autonomous Selectors
+
+Do LLMs, given freedom to choose, gravitate toward lower-entropy representations? If an LLM could choose to draft in a language where it makes fewer errors and needs fewer repair cycles, why wouldn't it?
+
+The "comfortable" hypothesis becomes testable: measure whether models, when given a choice, prefer Faber over alternatives. If yes, the market _is_ the models.
+
+**Go-to-market**: Publish preference studies; position Faber as the "native" format for AI-generated code.
+
+### Implications
+
+- **Claims A, B, C remain valid across all audiences.** The metrics don't change; the narrative emphasis does.
+- **The Latin question gets more interesting.** If LLMs genuinely find Latin roots more "comfortable" (lower perplexity, fewer tokenization artifacts), they might prefer Faber even without being told to. This is empirically testable once the harness exists.
+- **The approval gate is the bottleneck.** If humans can skim Faber faster than TypeScript (Claim B), and the compiler guarantees correctness (Claim C), the human has less reason to care what the IR looks like. "I don't understand it, but it compiles and passes tests" is already how most people treat generated code.
+
 ## Positioning (How to Talk About It)
 
 ### Don’t lead with
@@ -334,3 +368,41 @@ In **Claim A**, there is a hidden variable: **Error Message Quality**.
 1.  **Build the Harness First:** The "product" is the benchmark harness.
 2.  **Implement Faber-English:** Essential for the control group.
 3.  **Define the Prompting Strategy:** Test language structure, not doc memorization.
+
+## Claude Opus 4.5: Notes
+
+### 1. The IR Framing is Defensible
+
+The shift from "Latin programming language" to "LLM-oriented IR" is the correct strategic move. "LLM drafts -> human audits -> compiler emits" is a concrete, measurable workflow claim that existing languages cannot easily counter.
+
+### 2. Falsifiability is Built In
+
+The ablation design (Faber-Latin vs Faber-English vs Faber-Symbols) is intellectually honest. You're explicitly setting up conditions where the Latin hypothesis could fail, and acknowledging the project survives either way. This is good research hygiene.
+
+### 3. The Failure Taxonomy is Practical
+
+The `tokenize_error` -> `parse_error` -> `semantic_error` -> ... -> `success` progression gives a clear improvement axis that directly feeds compiler prioritization. This is one of the most useful artifacts in the document.
+
+### 4. Gaps to Address
+
+- **Task suite definition is absent.** The document discusses metrics and harnesses but never specifies what tasks you'll actually test. FizzBuzz-level? Algorithm challenges? Real-world patterns like "implement a REST endpoint"? Task distribution will heavily influence results.
+
+- **Which models?** "2-3 model families" is mentioned but not named. Claude, GPT-4, Gemini? Open-weight models like Llama? Tokenization and training data differ significantly.
+
+- **Claim B may not be worth the effort.** Human reviewability is the hardest to measure. Unless you have a specific use case (compliance audits, security review), deprioritize this and focus on Claims A and C.
+
+- **The Faber-English ablation is non-trivial.** It requires maintaining a parallel keyword set through the entire compiler. Is this already implemented? If not, the Phase 2 timeline (1-3 weeks) is optimistic.
+
+- **No discussion of statistical power.** "10-30 tasks" in Phase 3 may be too small to detect meaningful differences across 3+ conditions. You might get noisy results that don't replicate at scale.
+
+### 5. Key Sentence to Promote
+
+Line 157: "Faber-English is strategically important because it removes Latin as a confound while keeping the grammar identical." This is the intellectual core of the entire ablation strategy. Consider promoting it to the executive summary.
+
+### 6. Recommended Sequencing
+
+Get Claim C (multi-target semantic preservation) working first. That's pure engineering with immediate credibility payoff-no LLM experiments needed, just deterministic compiler correctness. Use that stable foundation to run the LLM experiments for Claim A.
+
+### Summary
+
+The document is honest about what Faber Romanus is and isn't, and sets up a framework where you can win even if Latin turns out to be irrelevant. The main risk is overcommitting to the full research protocol before the tooling is ready. Stabilize the compiler, then run the experiments.
