@@ -8,7 +8,7 @@ ex "../../../ast/sententia" importa Parametrum, CampusDeclaratio, EligeCasus, Va
 ex "../../../ast/sententia" importa CustodiClausula, CapeClausula, OrdoMembrum, VariansDeclaratio
 ex "../../../ast/sententia" importa ImportaSpecificator, PactumMethodus, TypusParametrum
 ex "../../../ast/sententia" importa Visibilitas, ProbaModificator, PraeparaTempus
-ex "../../../ast/expressia" importa Expressia
+ex "../../../ast/expressia" importa Expressia, LitteraGenus
 ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa TsGenerator
 ex "../typus" importa genTypus
@@ -713,11 +713,35 @@ functio genTempta(Sententia corpus, ignotum cape, ignotum demum, TsGenerator g) 
 
 @ publica
 functio genIace(bivalens fatale, Expressia argumentum, TsGenerator g) -> textus {
+    fixum expr = genExpressia(argumentum, g)
+
     si fatale {
+        # WHY: mori is fatal - use Panic and string coercion for non-literals.
         g.features.panic = verum
-        redde scriptum("§throw new Panic(§);", g.ind(), genExpressia(argumentum, g))
+        discerne argumentum {
+            casu Littera ut lit {
+                si lit.species == LitteraGenus.Textus {
+                    redde scriptum("§throw new Panic(§);", g.ind(), expr)
+                }
+            }
+        }
+        redde scriptum("§throw new Panic(String(§));", g.ind(), expr)
     }
-    redde scriptum("§throw §;", g.ind(), genExpressia(argumentum, g))
+
+    # WHY: In flumina mode, iace yields an error response and exits.
+    si g.inFlumina aut g.inFiunt aut g.inFiet aut g.inFient {
+        varia message = scriptum("String(§)", expr)
+        discerne argumentum {
+            casu Littera ut lit {
+                si lit.species == LitteraGenus.Textus {
+                    message = expr
+                }
+            }
+        }
+        redde scriptum("§yield respond.error(\"EFAIL\", §);\n§return;", g.ind(), message, g.ind())
+    }
+
+    redde scriptum("§throw §;", g.ind(), expr)
 }
 
 @ publica

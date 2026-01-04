@@ -76,7 +76,31 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu UnariaExpressia ut e {
-            redde scriptum("§§", e.signum, genExpressia(e.argumentum, g))
+            fixum arg = genExpressia(e.argumentum, g)
+
+            # WHY: Null/empty checks are language-level operators, not JS prefixes.
+            elige e.signum qua textus {
+                casu "nulla" {
+                    redde scriptum("(§ == null || (Array.isArray(§) || typeof § === 'string' ? §.length === 0 : typeof § === 'object' ? Object.keys(§).length === 0 : !§))", arg, arg, arg, arg, arg, arg, arg, arg)
+                }
+                casu "nonnulla" {
+                    redde scriptum("(§ != null && (Array.isArray(§) || typeof § === 'string' ? §.length > 0 : typeof § === 'object' ? Object.keys(§).length > 0 : Boolean(§)))", arg, arg, arg, arg, arg, arg, arg, arg)
+                }
+                casu "nihil" {
+                    redde scriptum("(§ == null)", arg)
+                }
+                casu "nonnihil" {
+                    redde scriptum("(§ != null)", arg)
+                }
+                casu "negativum" {
+                    redde scriptum("(§ < 0)", arg)
+                }
+                casu "positivum" {
+                    redde scriptum("(§ > 0)", arg)
+                }
+            }
+
+            redde scriptum("§§", e.signum, arg)
         }
 
         casu AssignatioExpressia ut e {
