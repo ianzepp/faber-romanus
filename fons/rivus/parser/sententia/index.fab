@@ -29,6 +29,7 @@ ex "./fluxus" importa parseEligeSententia, parseDiscerneSententia, parseCustodiS
 ex "./initus" importa parseIncipitSententia, parseIncipietSententia, parseCuraSententia, parseAdSententia
 ex "./massa" importa parseMassaSententia, parseExpressiaSententia
 ex "./varia" importa parseVariaSententia
+ex "./proba" importa parseProbandumSententia, parseProbaSententia, parsePraeparaMassa
 
 # Parse a statement
 #
@@ -172,7 +173,17 @@ functio parseSententia(Resolvitor r) -> Sententia {
             redde parseAdSententia(r)
         }
 
-        # TODO: probandum, proba, praepara (testing - not needed for bootstrap)
+        # Testing
+        si verbum === "probandum" {
+            redde parseProbandumSententia(r)
+        }
+        si verbum === "proba" {
+            redde parseProbaSententia(r)
+        }
+        si verbum inter ["praepara", "praeparabit", "postpara", "postparabit"] {
+            # WHY: Allow hooks at top level for test files.
+            redde parsePraeparaMassa(r)
+        }
     }
 
     # Fall through to expression statement

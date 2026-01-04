@@ -1,0 +1,139 @@
+# Test Statement Parsers
+#
+# Handles: probandum (suite), proba (test), praepara/postpara (hooks)
+#
+# GRAMMAR:
+#   probandumDecl := 'probandum' STRING '{' probandumBody '}'
+#   probandumBody := (praeparaBlock | probandumDecl | probaStmt)*
+#   probaStmt := 'proba' probaModifier? STRING blockStmt
+#   probaModifier := 'omitte' STRING | 'futurum' STRING
+#   praeparaBlock := ('praepara' | 'praeparabit' | 'postpara' | 'postparabit') 'omnia'? blockStmt
+#
+# WHY: These map 1:1 to the shared proba YAML test suite structure.
+
+ex "../resolvitor" importa Resolvitor
+ex "../../ast/positio" importa Locus
+ex "../../ast/sententia" importa Sententia, ProbaModificator, PraeparaTempus
+ex "../../ast/lexema" importa SymbolumGenus
+ex "../errores" importa ParserErrorCodice
+ex "./massa" importa parseMassaSententia
+
+@ publica
+functio parseProbandumSententia(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    p.expectaVerbum("probandum", ParserErrorCodice.ExpectaturProbandum)
+
+    fixum nomenSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
+    fixum nomen = nomenSym.valor
+
+    p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
+
+    varia corpus = [] qua lista<Sententia>
+
+    dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
+        fixum sym = p.specta(0)
+        si sym.species == SymbolumGenus.Verbum {
+            elige sym.verbum {
+                casu "probandum" {
+                    corpus.adde(parseProbandumSententia(r))
+                }
+                casu "proba" {
+                    corpus.adde(parseProbaSententia(r))
+                }
+                casu "praepara" { corpus.adde(parsePraeparaMassa(r)) }
+                casu "praeparabit" { corpus.adde(parsePraeparaMassa(r)) }
+                casu "postpara" { corpus.adde(parsePraeparaMassa(r)) }
+                casu "postparabit" { corpus.adde(parsePraeparaMassa(r)) }
+                ceterum {
+                    # WHY: Test suites are restricted to suite/test/hook forms.
+                    p.renuncia(ParserErrorCodice.ExpectaturProba, scriptum("got '§'", sym.valor))
+                    p.procede()
+                }
+            }
+        } secus {
+            p.renuncia(ParserErrorCodice.ExpectaturProba, scriptum("got '§'", sym.valor))
+            p.procede()
+        }
+    }
+
+    p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
+
+    redde finge ProbandumSententia {
+        locus: locus,
+        nomen: nomen,
+        corpus: corpus
+    } qua Sententia
+}
+
+@ publica
+functio parseProbaSententia(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    p.expectaVerbum("proba", ParserErrorCodice.ExpectaturProba)
+
+    varia modificator = nihil qua ProbaModificator?
+    varia ratio = nihil qua textus?
+
+    si p.probaVerbum("omitte") {
+        p.procede()
+        modificator = ProbaModificator.Omitte
+        fixum ratioSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
+        ratio = ratioSym.valor
+    } sin p.probaVerbum("futurum") {
+        p.procede()
+        modificator = ProbaModificator.Futurum
+        fixum ratioSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
+        ratio = ratioSym.valor
+    }
+
+    fixum nomenSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
+    fixum nomen = nomenSym.valor
+
+    fixum corpus = parseMassaSententia(r)
+
+    redde finge ProbaSententia {
+        locus: locus,
+        nomen: nomen,
+        modificator: modificator,
+        ratioModificatoris: ratio,
+        corpus: corpus
+    } qua Sententia
+}
+
+@ publica
+functio parsePraeparaMassa(Resolvitor r) -> Sententia {
+    fixum p = r.parser()
+    fixum locus = p.locusActualis()
+
+    fixum verbum = p.expecta(SymbolumGenus.Verbum, ParserErrorCodice.ExpectaturAnteVelPost).verbum
+
+    varia tempus = PraeparaTempus.Praepara
+    varia asynca = falsum
+
+    elige verbum {
+        casu "praepara" { tempus = PraeparaTempus.Praepara }
+        casu "praeparabit" { tempus = PraeparaTempus.Praepara; asynca = verum }
+        casu "postpara" { tempus = PraeparaTempus.Postpara }
+        casu "postparabit" { tempus = PraeparaTempus.Postpara; asynca = verum }
+    }
+
+    varia omnia = falsum
+    si p.probaVerbum("omnia") {
+        # WHY: "omnia" marks per-suite hooks.
+        p.procede()
+        omnia = verum
+    }
+
+    fixum corpus = parseMassaSententia(r)
+
+    redde finge PraeparaMassa {
+        locus: locus,
+        tempus: tempus,
+        asynca: asynca,
+        omnia: omnia,
+        corpus: corpus
+    } qua Sententia
+}
