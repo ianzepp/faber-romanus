@@ -953,3 +953,201 @@ Why include collection morphology with only 7 full pairs? Either drop it (collec
 6. **Annotation drift risk** — choose one syntax and enforce it
 
 The core insight (Latin conjugation encodes semantic axes) is brilliant. The implementation strategy needs to respect the same principles it claims to embody.
+
+---
+
+## Opus 4.5 Notes
+
+**Verdict:** The design is **conceptually sound and linguistically grounded**, but the POC has critical bugs that must be fixed before expansion. More importantly, the design makes deliberate semantic extensions to Latin grammar that should be explicitly acknowledged rather than presented as pure morphological parsing.
+
+### Where All Reviews Converge
+
+Having reviewed GPT Notes, Gemini 3, and GLM 4.7, I note strong consensus on three points:
+
+#### 1. Hidden `await` Is a Showstopper
+
+Every review flags this. The POC in `radices.fab` emits patterns like:
+
+```faber
+scriptum("await (async () => {{ §.push(§); }})()", ...)
+```
+
+This violates Faber's core principle of explicit control flow. If `filtrabit` silently injects `await`, you cannot use it in a `fit` function without generating invalid target code. **All reviews agree:** morphology determines return type (`Promise<T>` vs `T`), not control flow. The user must explicitly `cede` or assign to `figendum`.
+
+#### 2. Type Binding Is Missing
+
+Gemini 3's `Calculator.adde()` example is the clearest articulation: current dispatch checks `estRadixListae("add")` without verifying the receiver type. A user-defined `genus Calculator` with method `adde(n: numerus)` would incorrectly compile to `calculator.push(n)`. This is a bug, not a design flaw, but it's critical.
+
+#### 3. The Core Insight Is Valid
+
+All reviews affirm that Latin conjugation genuinely encodes the semantic axes modern programming struggles with. This isn't naming-convention theater — the mapping from Future Indicative (`-abit`) to async mutation and Future Participle (`-atura`) to async result is grammatically truthful.
+
+---
+
+### Where I Diverge from Other Reviews
+
+#### On Partial Collection Coverage
+
+**GLM 4.7 says:** "7 of 78 methods? Either commit fully or drop it."
+
+**I disagree.** The design document is honest that collections are secondary — morphology is designed for IO domains. The 7 full pairs (`filtra/filtrata`, `ordina/ordinata`, etc.) are high-traffic operations where API proliferation hurts most. Partial coverage is acceptable **if documented as intentional**.
+
+However, the specific gaps are puzzling:
+- `adde` exists but not `addita` ("added" → new list with element)?
+- `mappata` exists but not `mappa` ("map in place")?
+
+These feel like incomplete implementation rather than deliberate exclusion. If `mappa` is semantically invalid (mapping always produces a new collection), document that reasoning. If `addita` was simply never implemented, either complete it or remove `adde` from morphology.
+
+#### On Democratizing Morphology
+
+**Gemini 3 says:** Allow users to define morphology for their own types, or stdlib feels "magical."
+
+**I disagree.** The value of morphology is **consistency** — learn once, apply everywhere. If users define their own `@ radix` mappings with arbitrary stems, you lose the "one pattern" benefit and create a Tower of Babel.
+
+The stdlib/user split is a feature, not a bug:
+- **Stdlib** uses Latin names by design; morphology applies naturally.
+- **User code** uses whatever names developers choose (English, German, domain-specific); `fit`/`fiet`/`fiunt`/`fient` handle this correctly.
+
+Forcing users to write Latin to get morphology benefits would contradict "LLM-first, human-readable." The LLM writes stdlib-style code; humans approve it. User-defined functions with English names don't need morphology — they need clear `fiet` declarations.
+
+#### On Generator Semantics
+
+**GLM 4.7 says:** Present participle is "linguistically tenuous."
+
+**Gemini 3 says:** Gerund might be better, but participle is "the best pragmatic fit."
+
+**My view:** The gerundive (`-andus`/`-endus`) is semantically closer than either. Present participle (`legens` = "reading") describes ongoing action. Gerundive (`legendus` = "to be read" / "needing to be read") describes something **available for an action** — closer to a generator that yields items-to-be-consumed.
+
+But I acknowledge this may be over-engineering. Present participle is recognizable; gerundive is obscure even to Latin scholars. If the choice is between linguistic purity and practical learnability, choose learnability. Document the semantic extension and move on.
+
+---
+
+### Unique Observations
+
+The following points were not raised by other reviews:
+
+#### 1. Vocabulary Purity: `mappare` Is Not Latin
+
+The verb `mappare` does not exist in classical, medieval, or ecclesiastical Latin. This is English "map" with a Latin-looking suffix. For a language whose thesis is "Latin grammar as semantic machinery," this creates dissonance.
+
+| Current | Problem | Alternative |
+|---------|---------|-------------|
+| `mappata` | Not Latin | `translata` (from `transferre`, "carry across") |
+| `mappata` | Not Latin | `conversa` (from `convertere`, "turn together") |
+| `mappata` | Not Latin | `mutata` (from `mutare`, "change") — conflicts with mutation semantics |
+
+If the thesis is "Latin encodes semantics," the vocabulary should follow. `transferre` → `transfera`/`translata` would mean "carry across" — semantically accurate for transforming collection elements.
+
+Similarly, `filtrare` is medieval Latin (from `filtrum` = felt used for filtering), not classical. This is defensible — medieval Latin is still Latin — but should be acknowledged.
+
+#### 2. The `-sa` Suffix Reveals Heuristic Matching
+
+In `morphologia.fab:119-120`:
+
+```faber
+si suffix2 == "ta" aut suffix2 == "sa"
+    reddit { radix: nomen.sectio(0, longitudo - 2), flagga: FLAGGA_PERFECTUM }
+```
+
+This catches `inversa` (from `invertere`), but `-sa` is not a standard participle suffix. The perfect passive participle of `invertere` is `inversus/-a/-um`. The `-sa` ending is the feminine nominative singular form, not a suffix category.
+
+This reveals that the parser is doing **heuristic suffix matching**, not true morphological parsing. The system works, but calling it "morphology" overstates the mechanism. It's pattern matching on known forms with Latin-inspired naming.
+
+This isn't necessarily bad — pattern matching is simpler and more predictable than full morphological analysis. But the documentation should be honest: "morphology-inspired dispatch" rather than "morphological parsing."
+
+#### 3. Participle Semantics Are Stretched
+
+Latin perfect passive participle (`-ata/-ita/-ta`) means "having been X'd" — it describes the **state after action**, not "produce a new thing."
+
+| Latin Form | Literal Meaning | Design's Meaning |
+|------------|-----------------|------------------|
+| `filtrata` | "having been filtered" | "returns filtered copy" |
+| `ordinata` | "having been arranged" | "returns sorted copy" |
+
+The design effectively treats participles as **substantivized adjectives** ("the filtered thing" / "the sorted thing"), which then implies "a new collection in that state." This interpretation is defensible but requires a semantic leap.
+
+Document this as a deliberate extension: "We interpret the perfect participle as 'produce the thing-that-has-been-X'd' rather than 'describe something already X'd.'" Don't present it as direct Latin-to-code mapping.
+
+#### 4. Read-Only Method Collision Risk
+
+The design shows `primus` (first element), `ultimus` (last element), `maximus` (maximum), `minimus` (minimum) as read-only methods. These are adjectives ending in `-us`.
+
+But `-us` is also the masculine nominative singular of many verb forms. If someone creates a stdlib method `validus` ("valid check") or `certus` ("certainty check"), the morphology parser might attempt to parse it as a conjugated verb.
+
+The solution is in the design (no `@ radix` = no morphology), but this creates a footgun: a stdlib designer might accidentally name a method with a pattern that looks conjugatable, triggering unexpected morphology dispatch.
+
+**Recommendation:** The parser should only attempt morphology on methods where the receiver type has `@ radix` declarations. This is the type-binding fix Gemini 3 identified, but the collision risk for read-only methods specifically wasn't highlighted.
+
+#### 5. Conjugation Class Could Replace Stem Tables
+
+GLM 4.7 asks: "Why not derive stems algorithmically?" but doesn't provide a concrete alternative.
+
+Latin verbs fall into five conjugation classes with systematic patterns:
+
+| Class | Infinitive | Imperative | Perfect Participle |
+|-------|------------|------------|-------------------|
+| 1st | `-are` | `-a` | `-atus/-ata` |
+| 2nd | `-ere` | `-e` | `-itus/-ita` |
+| 3rd | `-ere` | `-e` | `-tus/-ta` (varies) |
+| 3rd-io | `-ere` | `-e` | `-tus/-ta` |
+| 4th | `-ire` | `-i` | `-itus/-ita` |
+
+Instead of maintaining per-verb stem tables (`invert-`, `invers-`, `inver-`), the `@ radix` annotation could declare conjugation class:
+
+```faber
+@ radix classis(tertia), imperativus, perfectum
+functio inverte<T>() fit vacuum { ... }
+```
+
+The compiler would then derive:
+- Imperative: `inverte` (3rd conjugation → `-e`)
+- Perfect participle: `inversus` → `inversa` (feminine, for collections)
+
+This is "mechanically certain" — conjugation classes are systematic. The irregularity isn't in the stem; it's in the participle formation, which follows class rules.
+
+**Caveat:** This requires the compiler to know Latin conjugation patterns. It trades one complexity (stem tables) for another (grammar tables). But grammar tables are static and well-documented; stem tables grow with the API.
+
+---
+
+### Recommendations
+
+#### Critical (Must Fix)
+
+1. **Remove hidden `await` from codegen.** Morphology determines return type; control flow remains explicit via `cede`/`figendum`.
+
+2. **Bind morphology dispatch to receiver type.** Do not dispatch based solely on method name. Verify the receiver has `@ radix` declarations for the parsed stem.
+
+3. **Document semantic extensions.** Acknowledge that:
+   - Perfect participle is interpreted as "produce the X'd thing" (substantivized adjective)
+   - Present participle for generators is a pragmatic mapping, not strict grammar
+   - The parser does suffix matching, not full morphological analysis
+
+#### Important (Should Address)
+
+4. **Audit vocabulary for Latin authenticity.** Replace `mappata` with a real Latin verb (`translata`, `conversa`). Document medieval Latin forms like `filtrare`.
+
+5. **Complete or justify partial coverage.** Either implement `addita`, `mappa`, etc., or document why specific operations don't have full pairs. "We chose not to implement X because Y" is better than silent gaps.
+
+6. **Choose one `@ radix` syntax.** Line-based (`@ radix imperativus, perfectum`) or parenthesized (`@ radix(imperativus, perfectum)`), but not both. GPT Notes correctly warn against drift.
+
+#### Optional (Consider)
+
+7. **Explore conjugation-class derivation.** Instead of per-verb stem tables, declare conjugation class and let the compiler derive forms. This is more "mechanically certain" but requires grammar knowledge in the compiler.
+
+8. **Consider gerundive for generators.** If present participle feels weak, gerundive (`-andus`/`-endus`) means "to be X'd" — semantically closer to "yields items to be consumed." But this adds complexity and obscurity.
+
+---
+
+### Summary
+
+The design is **sound in conception**. Latin verb morphology genuinely encodes the semantic axes (sync/async, mutate/copy, eager/streaming) that modern languages express through ad-hoc naming conventions. The IO domain focus is strategically correct — that's where the payoff is highest.
+
+The POC has **critical bugs** (hidden `await`, missing type binding) that must be fixed before expansion. These are implementation issues, not design flaws.
+
+The design makes **deliberate semantic extensions** to Latin grammar (participles as substantivized adjectives, present participle for generators) that should be documented as such. Calling it "morphological parsing" overstates the mechanism; "morphology-inspired dispatch" is more accurate.
+
+The vocabulary includes **non-Latin forms** (`mappare`) that undermine the Latin-first thesis. This is fixable with better verb choices.
+
+The **stdlib/user split** is a feature, not a bug. Morphology works for Latin-named stdlib; `fit`/`fiet`/`fiunt`/`fient` work for arbitrarily-named user code. Don't democratize morphology — the consistency of the stdlib pattern is the value.
+
+**Overall:** Proceed with implementation, but fix the critical bugs first and be honest in documentation about what the system actually does.
