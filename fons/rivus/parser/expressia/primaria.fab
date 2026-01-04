@@ -421,7 +421,8 @@ functio parseFingeExpressia(Resolvitor r) -> Expressia {
                 fixum campusLocus = p.locusActualis()
 
                 fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
-                fixum clavis = finge Nomen {
+                # WHY: Keep Nomen as Expressia to avoid TS literal widening.
+                fixum Expressia clavis = finge Nomen {
                     locus: nomenSym.locus,
                     valor: nomenSym.valor
                 } qua Expressia
