@@ -129,7 +129,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu QuaExpressia ut e {
-            redde scriptum("§ as §", genExpressia(e.expressia, g), genTypus(e.scopus qua TypusAnnotatio, g))
+            redde scriptum("(§ as §)", genExpressia(e.expressia, g), genTypus(e.scopus qua TypusAnnotatio, g))
         }
 
         casu EstExpressia ut e {
