@@ -23,6 +23,7 @@ ex "../../ast/expressia" importa Expressia
 ex "../../ast/typus" importa TypusAnnotatio
 ex "../../ast/lexema" importa Symbolum, SymbolumGenus
 ex "../errores" importa ParserErrorCodice
+ex "../../lexicon/verba" importa estVerbumSententiae
 ex "./primaria" importa parsePrimaria
 
 # Parse unary expression
@@ -93,7 +94,23 @@ functio parseUnaria(Resolvitor r) -> Expressia {
         } qua Expressia
     }
 
-    si p.probaVerbum("nihil") et estInitiumExpressiae(prox) {
+    functio estInitiumPostNihil(Symbolum s) -> bivalens {
+        si s.species == SymbolumGenus.Verbum {
+            # WHY: Only allow keywords that start expressions as nihil operands.
+            si s.verbum inter ["pro", "finge", "praefixum", "scriptum", "lege", "sed", "novum", "ego"] {
+                redde verum
+            }
+            # Treat statement/short-form keywords as terminators, not operands.
+            si estVerbumSententiae(s.verbum) aut s.verbum inter ["reddit", "ergo", "secus", "sin", "aut", "et", "vel", "intra", "inter"] {
+                redde falsum
+            }
+            redde falsum
+        }
+        redde estInitiumExpressiae(s)
+    }
+
+    si p.probaVerbum("nihil") et estInitiumPostNihil(prox) et prox.species !== SymbolumGenus.UncusSin {
+        # WHY: Avoid treating block starts as unary operands (si x == nihil { ... }).
         p.procede()
         fixum argumentum = parseUnaria(r)
         redde finge UnariaExpressia {

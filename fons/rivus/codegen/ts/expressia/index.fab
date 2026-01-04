@@ -100,6 +100,15 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                 }
             }
 
+            # WHY: Preserve correct precedence for negated est checks.
+            si e.signum == "!" {
+                discerne e.argumentum {
+                    casu EstExpressia ut est {
+                        redde genEstExpressiaNegata(est.expressia, est.scopus qua TypusAnnotatio, g)
+                    }
+                }
+            }
+
             redde scriptum("§§", e.signum, arg)
         }
 
@@ -385,23 +394,56 @@ functio genLitteraExemplar(lista<textus> partes, lista<Expressia> expressiae, Ts
 # Generate est (type check) expression
 @ publica
 functio genEstExpressia(Expressia expr, TypusAnnotatio scopus, TsGenerator g) -> textus {
+    redde genEstExpressiaCum(expr, scopus, g, falsum)
+}
+
+functio genEstExpressiaNegata(Expressia expr, TypusAnnotatio scopus, TsGenerator g) -> textus {
+    redde genEstExpressiaCum(expr, scopus, g, verum)
+}
+
+functio genEstExpressiaCum(Expressia expr, TypusAnnotatio scopus, TsGenerator g, bivalens negatum) -> textus {
     fixum val = genExpressia(expr, g)
 
     # Primitive type checks use typeof
     si scopus.nomen == "textus" {
-        redde scriptum("typeof § === 'string'", val)
+        fixum op = negatum sic "!==" secus "==="
+        fixum check = scriptum("typeof § § 'string'", val, op)
+        si scopus.nullabilis {
+            redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
+        }
+        redde check
     }
     si scopus.nomen == "numerus" aut scopus.nomen == "fractus" {
-        redde scriptum("typeof § === 'number'", val)
+        fixum op = negatum sic "!==" secus "==="
+        fixum check = scriptum("typeof § § 'number'", val, op)
+        si scopus.nullabilis {
+            redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
+        }
+        redde check
     }
     si scopus.nomen == "bivalens" {
-        redde scriptum("typeof § === 'boolean'", val)
+        fixum op = negatum sic "!==" secus "==="
+        fixum check = scriptum("typeof § § 'boolean'", val, op)
+        si scopus.nullabilis {
+            redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
+        }
+        redde check
     }
     si scopus.nomen == "nihil" {
-        redde scriptum("§ === null", val)
+        fixum op = negatum sic "!==" secus "==="
+        redde scriptum("§ § null", val, op)
+    }
+    si scopus.nomen == "lista" {
+        si negatum {
+            redde scriptum("!Array.isArray(§)", val)
+        }
+        redde scriptum("Array.isArray(§)", val)
     }
 
     # User-defined types use instanceof
+    si negatum {
+        redde scriptum("!(§ instanceof §)", val, scopus.nomen)
+    }
     redde scriptum("§ instanceof §", val, scopus.nomen)
 }
 
