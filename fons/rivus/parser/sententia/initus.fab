@@ -216,7 +216,7 @@ functio parseAdSententia(Resolvitor r) -> Sententia {
     si non p.proba(SymbolumGenus.ParensDex) {
         fac {
             argumenta.adde(r.expressia())
-        } dum p.congruet(SymbolumGenus.Virgula)
+        } dum p.congruet(SymbolumGenus.Coma)
     }
 
     p.expecta(SymbolumGenus.ParensDex, ParserErrorCodice.ExpectaturParensDex)

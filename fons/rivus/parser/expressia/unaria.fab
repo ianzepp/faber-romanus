@@ -190,7 +190,7 @@ functio parseArgumenta(Resolvitor r) -> lista<Expressia> {
     argumenta.adde(r.expressia())
 
     # Parse remaining comma-separated arguments
-    dum p.congruet(SymbolumGenus.Virgula) {
+    dum p.congruet(SymbolumGenus.Coma) {
         # Allow trailing comma
         si p.proba(SymbolumGenus.ParensDex) {
             rumpe

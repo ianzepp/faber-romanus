@@ -152,7 +152,7 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
         fac {
             fixum ifaceSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
             implet.adde(ifaceSym.valor)
-        } dum p.congruet(SymbolumGenus.Virgula)
+        } dum p.congruet(SymbolumGenus.Coma)
     }
 
     # Parse body
@@ -234,7 +234,7 @@ functio parseGenusDeclaratio(Resolvitor r) -> Sententia {
         }
 
         # Optional comma/semicolon between members
-        p.congruet(SymbolumGenus.Virgula)
+        p.congruet(SymbolumGenus.Coma)
         p.congruet(SymbolumGenus.PunctumColon)
     }
 
@@ -323,7 +323,7 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
         } qua PactumMethodus)
 
         # Optional separator
-        p.congruet(SymbolumGenus.Virgula)
+        p.congruet(SymbolumGenus.Coma)
         p.congruet(SymbolumGenus.PunctumColon)
     }
 
@@ -380,7 +380,7 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
         } qua OrdoMembrum)
 
         # Optional comma
-        p.congruet(SymbolumGenus.Virgula)
+        p.congruet(SymbolumGenus.Coma)
     }
 
     p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
@@ -443,7 +443,7 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
                     typus: campusTypus
                 } qua VariansCampus)
 
-                p.congruet(SymbolumGenus.Virgula)
+                p.congruet(SymbolumGenus.Coma)
             }
             p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
         }
@@ -455,7 +455,7 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
         } qua VariansDeclaratio)
 
         # Optional comma between variants
-        p.congruet(SymbolumGenus.Virgula)
+        p.congruet(SymbolumGenus.Coma)
     }
 
     p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
@@ -568,7 +568,7 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
             residuum: residuum
         } qua Parametrum)
 
-    } dum p.congruet(SymbolumGenus.Virgula)
+    } dum p.congruet(SymbolumGenus.Coma)
 
     redde parametra
 }
@@ -590,7 +590,7 @@ functio parseTypusParametra(Resolvitor r) -> lista<TypusParametrum> {
             locus: paramLocus,
             nomen: nomenSym.valor
         } qua TypusParametrum)
-    } dum p.congruet(SymbolumGenus.Virgula)
+    } dum p.congruet(SymbolumGenus.Coma)
 
     redde parametra
 }
@@ -605,7 +605,7 @@ functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
     fac {
         fixum nomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
         nomina.adde(nomenSym.valor)
-    } dum p.congruet(SymbolumGenus.Virgula)
+    } dum p.congruet(SymbolumGenus.Coma)
 
     p.expecta(SymbolumGenus.Maior, ParserErrorCodice.ExpectaturAngulusDex)
 
@@ -685,7 +685,7 @@ functio parseImportaSententia(Resolvitor r) -> Sententia {
                 residuum: residuum
             } qua ImportaSpecificator)
 
-        } dum p.congruet(SymbolumGenus.Virgula)
+        } dum p.congruet(SymbolumGenus.Coma)
     }
 
     redde finge ImportaSententia {

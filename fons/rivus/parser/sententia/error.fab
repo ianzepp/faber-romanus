@@ -146,7 +146,7 @@ functio parseAdfirmaSententia(Resolvitor r) -> Sententia {
     # Parse optional message expression
     varia nuntius = nihil qua Expressia?
 
-    si p.congruet(SymbolumGenus.Virgula) {
+    si p.congruet(SymbolumGenus.Coma) {
         nuntius = r.expressia()
     }
 

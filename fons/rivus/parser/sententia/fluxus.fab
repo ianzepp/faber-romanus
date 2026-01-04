@@ -152,7 +152,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
                 fac {
                     fixum vincSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
                     vincula.adde(vincSym.valor)
-                } dum p.congruet(SymbolumGenus.Virgula)
+                } dum p.congruet(SymbolumGenus.Coma)
             }
 
             # Parse body block

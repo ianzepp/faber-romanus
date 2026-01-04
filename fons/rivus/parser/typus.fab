@@ -89,7 +89,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
         }
 
         # Parse remaining comma-separated type parameters
-        dum p.congruet(SymbolumGenus.Virgula) {
+        dum p.congruet(SymbolumGenus.Coma) {
             si p.proba(SymbolumGenus.Numerus) {
                 fixum litSym = p.procede()
                 parametra.adde(finge Littera {

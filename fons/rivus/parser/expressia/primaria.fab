@@ -171,7 +171,7 @@ functio parseSeriesExpressia(Resolvitor r) -> Expressia {
     si non p.proba(SymbolumGenus.QuadratusDex) {
         elementa.adde(r.expressia())
 
-        dum p.congruet(SymbolumGenus.Virgula) {
+        dum p.congruet(SymbolumGenus.Coma) {
             # Allow trailing comma
             si p.proba(SymbolumGenus.QuadratusDex) {
                 rumpe
@@ -285,7 +285,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
                     } qua ObiectumProprietas)
                 }
             }
-        } dum p.congruet(SymbolumGenus.Virgula) et non p.proba(SymbolumGenus.UncusDex)
+        } dum p.congruet(SymbolumGenus.Coma) et non p.proba(SymbolumGenus.UncusDex)
     }
 
     p.expecta(SymbolumGenus.UncusDex, ParserErrorCodice.ExpectaturUncusDex)
@@ -332,7 +332,7 @@ functio parseLambdaExpressia(Resolvitor r) -> Expressia {
                 nomen: nomenSym.valor,
                 typus: nihil
             } qua LambdaParametrum)
-        } dum p.congruet(SymbolumGenus.Virgula)
+        } dum p.congruet(SymbolumGenus.Coma)
     }
 
     # Optional return type: -> Type
