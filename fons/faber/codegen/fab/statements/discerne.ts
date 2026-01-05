@@ -1,30 +1,49 @@
 /**
  * Faber Code Generator - DiscerneStatement (pattern matching)
+ *
+ * Roundtrip: AST -> Faber source code.
+ * Supports both single and multi-discriminant matching.
  */
 
-import type { DiscerneStatement } from '../../../parser/ast';
+import type { DiscerneStatement, VariantPattern } from '../../../parser/ast';
 import type { FabGenerator } from '../generator';
 import { genBlockStatement } from './functio';
 
 export function genDiscerneStatement(node: DiscerneStatement, g: FabGenerator): string {
     const lines: string[] = [];
-    lines.push(`${g.ind()}discerne ${g.genExpression(node.discriminant)} {`);
+
+    // Generate discriminants (comma-separated)
+    const discriminants = node.discriminants.map((d) => g.genExpression(d)).join(', ');
+    lines.push(`${g.ind()}discerne ${discriminants} {`);
 
     g.depth++;
     for (const c of node.cases) {
-        if (c.alias) {
-            // Alias binding: casu Click ut c { ... }
-            lines.push(`${g.ind()}casu ${c.variant.name} ut ${c.alias.name} ${genBlockStatement(c.consequent, g)}`);
-        } else if (c.bindings.length > 0) {
-            // Positional bindings: casu Click pro x, y { ... }
-            const bindings = c.bindings.map(b => b.name).join(', ');
-            lines.push(`${g.ind()}casu ${c.variant.name} pro ${bindings} ${genBlockStatement(c.consequent, g)}`);
-        } else {
-            lines.push(`${g.ind()}casu ${c.variant.name} ${genBlockStatement(c.consequent, g)}`);
-        }
+        // Generate patterns (comma-separated)
+        const patterns = c.patterns.map((p) => genPattern(p)).join(', ');
+        lines.push(`${g.ind()}casu ${patterns} ${genBlockStatement(c.consequent, g)}`);
     }
     g.depth--;
 
     lines.push(`${g.ind()}}`);
     return lines.join('\n');
+}
+
+/**
+ * Generate a single pattern for output.
+ */
+function genPattern(p: VariantPattern): string {
+    if (p.isWildcard) {
+        return '_';
+    }
+
+    let result = p.variant.name;
+
+    if (p.alias) {
+        result += ` ut ${p.alias.name}`;
+    } else if (p.bindings.length > 0) {
+        const bindings = p.bindings.map((b) => b.name).join(', ');
+        result += ` pro ${bindings}`;
+    }
+
+    return result;
 }

@@ -250,3 +250,89 @@
           - 'casu Scale pro factor'
           - 'casu Reset'
           - 'scribe "reset"'
+
+# =============================================================================
+# Wildcard Pattern
+# =============================================================================
+
+# Wildcard pattern for catch-all cases
+- name: discerne with wildcard pattern
+  faber: |
+      discerne status {
+        casu Active { scribe "active" }
+        casu _ { scribe "other" }
+      }
+  expect:
+      ts:
+          - "if (status.tag === 'Active')"
+          - 'console.log("active")'
+          - 'else {'
+          - 'console.log("other")'
+      py:
+          - 'match status:'
+          - "case {'tag': 'Active'}:"
+          - 'case _:'
+          - 'print("other")'
+      rs:
+          - 'match status'
+          - 'Active =>'
+          - '_ =>'
+      zig:
+          - 'switch (status)'
+          - '.active =>'
+          - 'else =>'
+      fab:
+          - 'discerne status'
+          - 'casu Active'
+          - 'casu _'
+          - 'scribe "other"'
+
+# =============================================================================
+# Multi-Discriminant Matching
+# =============================================================================
+
+# Two discriminants with matching types
+- name: discerne with two discriminants
+  faber: |
+      discerne left, right {
+        casu A ut l, A ut r { scribe "both A" }
+        casu B ut l, B ut r { scribe "both B" }
+        casu _, _ { scribe "different" }
+      }
+  expect:
+      ts:
+          - "if (left.tag === 'A' && right.tag === 'A')"
+          - 'const l = left;'
+          - 'const r = right;'
+          - 'console.log("both A")'
+          - "else if (left.tag === 'B' && right.tag === 'B')"
+          - 'console.log("both B")'
+          - 'else {'
+          - 'console.log("different")'
+      fab:
+          - 'discerne left, right'
+          - 'casu A ut l, A ut r'
+          - 'casu B ut l, B ut r'
+          - 'casu _, _'
+
+# Mixed patterns - one specific, one wildcard
+- name: discerne with mixed wildcard
+  faber: |
+      discerne a, b {
+        casu Active, _ { scribe "a is active" }
+        casu _, Active { scribe "b is active" }
+        casu _, _ { scribe "neither active" }
+      }
+  expect:
+      ts:
+          - "if (a.tag === 'Active')"
+          - 'console.log("a is active")'
+          - "else if (b.tag === 'Active')"
+          - 'console.log("b is active")'
+          - 'else {'
+          - 'console.log("neither active")'
+      fab:
+          - 'discerne a, b'
+          - 'casu Active, _'
+          - 'casu _, Active'
+          - 'casu _, _'

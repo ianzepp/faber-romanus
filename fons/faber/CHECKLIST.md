@@ -118,6 +118,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | Switch cases (`si`)           |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | Switch default (`secus`)      |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `discerne` (pattern match)    |    [x]     | [x] |  [x]   | [x]  |  [~]  |
+| `discerne` multi-discriminant |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
 | `secus` (else/ternary alt)    |    [x]     | [ ] |  [x]   | [x]  |  [ ]  |
 | `fac` (do/block)              |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `ergo` (then, one-liner)      |    [x]     | [ ] |  [x]   | [ ]  |  [ ]  |

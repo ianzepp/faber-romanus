@@ -2139,68 +2139,107 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
     }
 
     function analyzeDiscerneStatement(node: DiscerneStatement): void {
-        const discriminantType = resolveExpression(node.discriminant);
+        // Resolve types for all discriminants
+        const discriminantTypes: SemanticType[] = [];
+        const discretios: (DiscretioType | null)[] = [];
 
-        // Try to get variant info if discriminant is a discretio type
-        let discretio: DiscretioType | null = null;
+        for (const discriminant of node.discriminants) {
+            const discriminantType = resolveExpression(discriminant);
+            discriminantTypes.push(discriminantType);
 
-        if (discriminantType.kind === 'discretio') {
-            discretio = discriminantType;
-        }
-        else if (discriminantType.kind === 'user') {
-            // Look up the type in scope — it might be a discretio
-            const symbol = lookupSymbol(currentScope, discriminantType.name);
+            // Try to get variant info if discriminant is a discretio type
+            let discretio: DiscretioType | null = null;
 
-            if (symbol?.type.kind === 'discretio') {
-                discretio = symbol.type;
+            if (discriminantType.kind === 'discretio') {
+                discretio = discriminantType;
             }
+            else if (discriminantType.kind === 'user') {
+                // Look up the type in scope — it might be a discretio
+                const symbol = lookupSymbol(currentScope, discriminantType.name);
+
+                if (symbol?.type.kind === 'discretio') {
+                    discretio = symbol.type;
+                }
+            }
+
+            discretios.push(discretio);
         }
 
-        // Collect handled variant names for exhaustiveness check
+        const numDiscriminants = node.discriminants.length;
+
+        // Collect handled variant combinations for exhaustiveness check
+        // For single discriminant: track variant names
+        // For multi-discriminant: track presence of wildcard catch-all
         const handledVariants = new Set<string>();
+        let hasWildcardCatchAll = false;
 
         for (const caseNode of node.cases) {
-            handledVariants.add(caseNode.variant.name);
-            // Variant matching: si VariantName (ut alias | pro bindings)? { ... }
-            // WHY: VariantCase introduces bindings into scope
+            // Validate pattern count matches discriminant count
+            if (caseNode.patterns.length !== numDiscriminants) {
+                error(
+                    `Pattern count mismatch: expected ${numDiscriminants} patterns, got ${caseNode.patterns.length}`,
+                    caseNode.position
+                );
+            }
+
+            // Check if this is a wildcard catch-all (all patterns are wildcards)
+            const allWildcards = caseNode.patterns.every((p) => p.isWildcard);
+            if (allWildcards) {
+                hasWildcardCatchAll = true;
+            }
+
+            // For single-discriminant, track handled variants
+            if (numDiscriminants === 1 && caseNode.patterns[0] && !caseNode.patterns[0].isWildcard) {
+                handledVariants.add(caseNode.patterns[0].variant.name);
+            }
+
+            // Each case introduces bindings into scope
             enterScope();
 
-            // Get variant field types if available
-            const variantName = caseNode.variant.name;
-            const variantInfo = discretio?.variants.get(variantName);
+            // Process each pattern
+            for (let i = 0; i < caseNode.patterns.length; i++) {
+                const pattern = caseNode.patterns[i]!;
+                const discriminantType = discriminantTypes[i] ?? UNKNOWN;
+                const discretio = discretios[i];
 
-            if (caseNode.alias) {
-                // Alias binding: si Click ut c { ... }
-                // Bind the whole variant to the alias name
-                // WHY: The alias gets the discriminant type (the whole discretio)
-                //      so c.x, c.y work via member access
-                define({
-                    name: caseNode.alias.name,
-                    type: discriminantType,
-                    kind: 'variable',
-                    mutable: false,
-                    position: caseNode.position,
-                });
+                // Skip binding for wildcards
+                if (pattern.isWildcard) continue;
 
-                caseNode.alias.resolvedType = discriminantType;
-            } else {
-                // Positional bindings: si Click pro x, y { ... }
-                for (let i = 0; i < caseNode.bindings.length; i++) {
-                    const binding = caseNode.bindings[i]!;
+                // Get variant field types if available
+                const variantName = pattern.variant.name;
+                const variantInfo = discretio?.variants.get(variantName);
 
-                    // Infer type from variant field at same position
-                    const fieldType = variantInfo?.fields[i]?.type ?? UNKNOWN;
-
+                if (pattern.alias) {
+                    // Alias binding: Click ut c
+                    // Bind the whole variant to the alias name
                     define({
-                        name: binding.name,
-                        type: fieldType,
+                        name: pattern.alias.name,
+                        type: discriminantType,
                         kind: 'variable',
-                        mutable: false, // Pattern bindings are immutable
-                        position: caseNode.position,
+                        mutable: false,
+                        position: pattern.position,
                     });
 
-                    // Also set the resolved type on the binding identifier
-                    binding.resolvedType = fieldType;
+                    pattern.alias.resolvedType = discriminantType;
+                } else if (pattern.bindings.length > 0) {
+                    // Positional bindings: Click pro x, y
+                    for (let j = 0; j < pattern.bindings.length; j++) {
+                        const binding = pattern.bindings[j]!;
+
+                        // Infer type from variant field at same position
+                        const fieldType = variantInfo?.fields[j]?.type ?? UNKNOWN;
+
+                        define({
+                            name: binding.name,
+                            type: fieldType,
+                            kind: 'variable',
+                            mutable: false, // Pattern bindings are immutable
+                            position: pattern.position,
+                        });
+
+                        // Also set the resolved type on the binding identifier
+                        binding.resolvedType = fieldType;
+                    }
                 }
             }
 
@@ -2208,14 +2247,26 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             exitScope();
         }
 
-        // Exhaustiveness check: all variants must be handled
-        if (discretio) {
-            const allVariants = Array.from(discretio.variants.keys());
-            const missingVariants = allVariants.filter((v) => !handledVariants.has(v));
+        // Exhaustiveness check
+        // For single discriminant: all variants must be handled
+        // For multi-discriminant: require wildcard catch-all (full exhaustiveness is complex)
+        if (numDiscriminants === 1) {
+            const discretio = discretios[0];
+            if (discretio && !hasWildcardCatchAll) {
+                const allVariants = Array.from(discretio.variants.keys());
+                const missingVariants = allVariants.filter((v) => !handledVariants.has(v));
 
-            if (missingVariants.length > 0) {
+                if (missingVariants.length > 0) {
+                    const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
+                    error(`${text(missingVariants)}\n${help}`, node.position);
+                }
+            }
+        } else {
+            // Multi-discriminant: for now, just require wildcard catch-all
+            // Full Cartesian product exhaustiveness checking is complex
+            if (!hasWildcardCatchAll) {
                 const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
-                error(`${text(missingVariants)}\n${help}`, node.position);
+                error(`${text(['_', '_'])}\n${help}`, node.position);
             }
         }
     }

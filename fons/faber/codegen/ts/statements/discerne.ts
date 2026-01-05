@@ -2,69 +2,90 @@
  * TypeScript Code Generator - DiscerneStatement
  *
  * TRANSFORMS:
- *   discerne event { si Click ut c { use(c.x) } }
+ *   # Single discriminant
+ *   discerne event { casu Click ut c { use(c.x) } }
  *   -> if (event.tag === 'Click') { const c = event; use(c.x); }
  *
- *   discerne event { si Click pro a, b { use(a, b) } si Quit { exit() } }
+ *   discerne event { casu Click pro a, b { use(a, b) } casu Quit { exit() } }
  *   -> if (event.tag === 'Click') { const a = event.x; const b = event.y; use(a, b); }
  *      else if (event.tag === 'Quit') { exit(); }
  *
+ *   # Multi-discriminant
+ *   discerne left, right {
+ *       casu Primitivum ut l, Primitivum ut r { redde l.nomen == r.nomen }
+ *       casu _, _ { redde falsum }
+ *   }
+ *   -> if (left.tag === 'Primitivum' && right.tag === 'Primitivum') {
+ *          const l = left; const r = right;
+ *          return l.nomen === r.nomen;
+ *      }
+ *      return false;
+ *
  * WHY: TypeScript discriminated unions use a 'tag' property for discrimination.
- *      The 'pro' syntax extracts fields positionally (a gets first field, b gets second).
- *      The 'ut' syntax binds the whole variant for field access via alias.
+ *      Multi-discriminant matching generates combined conditions to avoid nesting.
  */
 
-import type { DiscerneStatement, Identifier } from '../../../parser/ast';
+import type { DiscerneStatement, Identifier, VariantPattern } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
-import type { DiscretioType } from '../../../semantic/types';
+import type { DiscretioType, SemanticType } from '../../../semantic/types';
 
 export function genDiscerneStatement(node: DiscerneStatement, g: TsGenerator): string {
-    const discriminant = g.genExpression(node.discriminant);
+    // Generate expressions for all discriminants
+    const discriminants = node.discriminants.map((d) => g.genExpression(d));
+
+    // Get discretio type info for each discriminant
+    const discretios: (DiscretioType | null)[] = node.discriminants.map((d) => {
+        const t = d.resolvedType;
+        return t?.kind === 'discretio' ? (t as DiscretioType) : null;
+    });
+
     let result = '';
 
-    // Get discretio type info for field name lookup
-    const discriminantType = node.discriminant.resolvedType;
-    const discretio = discriminantType?.kind === 'discretio' ? (discriminantType as DiscretioType) : null;
-
-    // Generate if/else chain
+    // Generate if/else chain for each case
     for (let i = 0; i < node.cases.length; i++) {
         const caseNode = node.cases[i]!;
         const keyword = i === 0 ? 'if' : 'else if';
 
-        // Variant matching: si VariantName (ut alias | pro bindings)? { ... }
-        const variantName = caseNode.variant.name;
-        result += `${g.ind()}${keyword} (${discriminant}.tag === '${variantName}') {\n`;
-        g.depth++;
+        // Build combined condition for all patterns
+        const conditions: string[] = [];
+        for (let j = 0; j < caseNode.patterns.length; j++) {
+            const pattern = caseNode.patterns[j]!;
+            const discriminant = discriminants[j]!;
 
-        // Alias binding: si Click ut c { ... }
-        // WHY: Binds the whole variant to c, so c.x and c.y work
-        if (caseNode.alias) {
-            result += `${g.ind()}const ${caseNode.alias.name} = ${discriminant};\n`;
-        }
-        // Positional bindings: si Click pro a, b { ... }
-        // WHY: Extracts fields by position - a gets first field, b gets second
-        else if (caseNode.bindings.length > 0) {
-            const variantInfo = discretio?.variants.get(variantName);
-
-            if (variantInfo) {
-                // With type info: map positional bindings to actual field names
-                for (let j = 0; j < caseNode.bindings.length; j++) {
-                    const binding = caseNode.bindings[j]!;
-                    const fieldName = variantInfo.fields[j]?.name;
-
-                    if (fieldName) {
-                        result += `${g.ind()}const ${binding.name} = ${discriminant}.${fieldName};\n`;
-                    }
-                }
-            } else {
-                // Fallback without type info: assume binding names match field names
-                // WHY: When discretio isn't in scope (e.g., test snippets), we can't
-                //      know actual field names, so we assume programmer used matching names
-                const bindingNames = caseNode.bindings.map((b: Identifier) => b.name).join(', ');
-                result += `${g.ind()}const { ${bindingNames} } = ${discriminant};\n`;
+            // Wildcard matches anything - no condition needed
+            if (!pattern.isWildcard) {
+                conditions.push(`${discriminant}.tag === '${pattern.variant.name}'`);
             }
         }
 
+        // If all patterns are wildcards, this is a catch-all
+        if (conditions.length === 0) {
+            // Generate as else block if not first case, otherwise unconditional
+            if (i === 0) {
+                result += `${g.ind()}{\n`;
+            } else {
+                result += `${g.ind()}else {\n`;
+            }
+        } else {
+            const condition = conditions.join(' && ');
+            result += `${g.ind()}${keyword} (${condition}) {\n`;
+        }
+
+        g.depth++;
+
+        // Generate bindings for each pattern
+        for (let j = 0; j < caseNode.patterns.length; j++) {
+            const pattern = caseNode.patterns[j]!;
+            const discriminant = discriminants[j]!;
+            const discretio = discretios[j] ?? null;
+
+            // Skip wildcards - no bindings
+            if (pattern.isWildcard) continue;
+
+            result += genPatternBindings(pattern, discriminant, discretio, g);
+        }
+
+        // Generate body statements
         for (const stmt of caseNode.consequent.body) {
             result += g.genStatement(stmt) + '\n';
         }
@@ -75,6 +96,45 @@ export function genDiscerneStatement(node: DiscerneStatement, g: TsGenerator): s
         // Add newline if more cases follow
         if (i < node.cases.length - 1) {
             result += '\n';
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Generate bindings for a single pattern.
+ */
+function genPatternBindings(
+    pattern: VariantPattern,
+    discriminant: string,
+    discretio: DiscretioType | null,
+    g: TsGenerator
+): string {
+    let result = '';
+    const variantName = pattern.variant.name;
+    const variantInfo = discretio?.variants.get(variantName);
+
+    // Alias binding: casu Click ut c
+    if (pattern.alias) {
+        result += `${g.ind()}const ${pattern.alias.name} = ${discriminant};\n`;
+    }
+    // Positional bindings: casu Click pro a, b
+    else if (pattern.bindings.length > 0) {
+        if (variantInfo) {
+            // With type info: map positional bindings to actual field names
+            for (let j = 0; j < pattern.bindings.length; j++) {
+                const binding = pattern.bindings[j]!;
+                const fieldName = variantInfo.fields[j]?.name;
+
+                if (fieldName) {
+                    result += `${g.ind()}const ${binding.name} = ${discriminant}.${fieldName};\n`;
+                }
+            }
+        } else {
+            // Fallback without type info: destructure with binding names
+            const bindingNames = pattern.bindings.map((b: Identifier) => b.name).join(', ');
+            result += `${g.ind()}const { ${bindingNames} } = ${discriminant};\n`;
         }
     }
 

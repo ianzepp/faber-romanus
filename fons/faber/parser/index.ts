@@ -94,6 +94,7 @@ import type {
     DiscretioDeclaration,
     VariantDeclaration,
     VariantField,
+    VariantPattern,
     VariantCase,
     SiStatement,
     DumStatement,
@@ -2876,18 +2877,29 @@ export function parse(tokens: Token[]): ParserResult {
      * Parse variant matching statement (for discretio types).
      *
      * GRAMMAR:
-     *   discerneStmt := 'discerne' expression '{' variantCase* '}'
-     *   variantCase := 'casu' IDENTIFIER (('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*))? (blockStmt | 'ergo' statement | 'reddit' expression)
+     *   discerneStmt := 'discerne' discriminants '{' variantCase* '}'
+     *   discriminants := expression (',' expression)*
+     *   variantCase := 'casu' patterns (blockStmt | 'ergo' statement | 'reddit' expression)
+     *   patterns := pattern (',' pattern)*
+     *   pattern := '_' | (IDENTIFIER patternBind?)
+     *   patternBind := ('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*)
      *
      * WHY: 'discerne' (distinguish!) pairs with 'discretio' (the tagged union type).
-     *      Uses 'casu' for match arms, 'ut' to bind whole variants, and 'pro' to introduce positional bindings.
-     *      'ergo' for one-liners, 'reddit' for early return one-liners.
+     *      Uses 'casu' for match arms, 'ut' to bind whole variants, and 'pro' for positional bindings.
+     *      Multi-discriminant matching reduces nesting when comparing multiple values.
      *
-     * Example:
+     * Examples:
+     *   # Single discriminant
      *   discerne event {
      *       casu Click pro x, y { scribe "clicked at " + x + ", " + y }
      *       casu Keypress pro key reddit key
      *       casu Quit ergo mori "goodbye"
+     *   }
+     *
+     *   # Multi-discriminant
+     *   discerne left, right {
+     *       casu Primitivum ut l, Primitivum ut r { redde l.nomen == r.nomen }
+     *       casu _, _ { redde falsum }
      *   }
      */
     function parseDiscerneStatement(): DiscerneStatement {
@@ -2895,7 +2907,12 @@ export function parse(tokens: Token[]): ParserResult {
 
         expectKeyword('discerne', ParserErrorCode.ExpectedKeywordDiscerne);
 
-        const discriminant = parseExpression();
+        // Parse comma-separated discriminants
+        const discriminants: Expression[] = [];
+        discriminants.push(parseExpression());
+        while (match('COMMA')) {
+            discriminants.push(parseExpression());
+        }
 
         expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
@@ -2906,25 +2923,14 @@ export function parse(tokens: Token[]): ParserResult {
 
         while (hasMoreCases()) {
             if (checkKeyword('casu')) {
-                // Variant case: casu VariantName (ut alias | pro bindings)? { ... }
                 const casePosition = peek().position;
-
                 expectKeyword('casu', ParserErrorCode.ExpectedKeywordCasu);
 
-                const variant = parseIdentifierOrKeyword();
-
-                // Parse optional alias (ut) or bindings (pro)
-                let alias: Identifier | undefined;
-                const bindings: Identifier[] = [];
-
-                if (matchKeyword('ut')) {
-                    // Alias binding: casu Click ut c { ... }
-                    alias = parseIdentifierOrKeyword();
-                } else if (matchKeyword('pro')) {
-                    // Positional bindings: casu Click pro x, y { ... }
-                    do {
-                        bindings.push(parseIdentifierOrKeyword());
-                    } while (match('COMMA'));
+                // Parse comma-separated patterns (one per discriminant)
+                const patterns: VariantPattern[] = [];
+                patterns.push(parseVariantPattern());
+                while (match('COMMA')) {
+                    patterns.push(parseVariantPattern());
                 }
 
                 // Parse consequent: reddit, ergo, or block
@@ -2942,7 +2948,7 @@ export function parse(tokens: Token[]): ParserResult {
                     consequent = parseBlockStatement();
                 }
 
-                cases.push({ type: 'VariantCase', variant, alias, bindings, consequent, position: casePosition });
+                cases.push({ type: 'VariantCase', patterns, consequent, position: casePosition });
             } else {
                 error(ParserErrorCode.InvalidDiscerneCaseStart);
                 break;
@@ -2951,7 +2957,95 @@ export function parse(tokens: Token[]): ParserResult {
 
         expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
-        return { type: 'DiscerneStatement', discriminant, cases, position };
+        return { type: 'DiscerneStatement', discriminants, cases, position };
+    }
+
+    /**
+     * Parse a single variant pattern.
+     *
+     * GRAMMAR:
+     *   pattern := '_' | (IDENTIFIER patternBind?)
+     *   patternBind := ('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*)
+     *
+     * WHY: Patterns match against discriminants in discerne statements.
+     *      Wildcard '_' matches any variant without binding.
+     *      'ut' binds the whole variant, 'pro' destructures fields.
+     *
+     * DISAMBIGUATION: After 'pro', commas separate bindings until we see:
+     *   - '_' (wildcard pattern)
+     *   - An identifier followed by 'ut' or 'pro' (new pattern with binding)
+     *   - '{', 'ergo', 'reddit' (end of patterns)
+     */
+    function parseVariantPattern(): VariantPattern {
+        const position = peek().position;
+
+        // Wildcard pattern: _
+        if (check('IDENTIFIER') && peek().value === '_') {
+            const variant: Identifier = { type: 'Identifier', name: '_', position };
+            advance();
+            return { type: 'VariantPattern', variant, isWildcard: true, bindings: [], position };
+        }
+
+        // Variant name
+        const variant = parseIdentifierOrKeyword();
+        let alias: Identifier | undefined;
+        const bindings: Identifier[] = [];
+
+        if (matchKeyword('ut')) {
+            // Alias binding: Click ut c
+            alias = parseIdentifierOrKeyword();
+        } else if (matchKeyword('pro')) {
+            // Positional bindings: Click pro x, y
+            bindings.push(parseIdentifierOrKeyword());
+
+            // Continue parsing bindings while comma followed by binding (not pattern)
+            while (check('COMMA') && isNextTokenBinding()) {
+                advance(); // consume comma
+                bindings.push(parseIdentifierOrKeyword());
+            }
+        }
+
+        return { type: 'VariantPattern', variant, isWildcard: false, alias, bindings, position };
+    }
+
+    /**
+     * Check if the token after a comma is a binding (not a new pattern).
+     *
+     * WHY: In multi-discriminant patterns, commas separate both:
+     *   - Bindings within 'pro': `casu Click pro x, y { ... }`
+     *   - Patterns: `casu Click ut c, Quit { ... }`
+     *
+     * RULE: After comma, it's a new pattern ONLY if:
+     *   - Next token is '_' (wildcard)
+     *   - Next token is identifier followed by 'ut' or 'pro' (pattern with binding)
+     * Otherwise it's another binding.
+     *
+     * NOTE: This means `casu X pro a, b {` parses as X with bindings [a, b].
+     *       To have multiple patterns, use explicit binding syntax: `casu X pro a, Y ut y {`.
+     */
+    function isNextTokenBinding(): boolean {
+        // Must be at comma
+        if (!check('COMMA')) return false;
+
+        const next = peek(1);
+
+        // Comma followed by '_' is next pattern (wildcard)
+        if (next.type === 'IDENTIFIER' && next.value === '_') return false;
+
+        // Comma followed by non-identifier is not a binding (syntax error will follow)
+        if (next.type !== 'IDENTIFIER' && next.type !== 'KEYWORD') return false;
+
+        // Look at what follows the identifier
+        const afterIdent = peek(2);
+
+        // If followed by 'ut' or 'pro', it's a new pattern with binding
+        if (afterIdent.type === 'KEYWORD' && (afterIdent.keyword === 'ut' || afterIdent.keyword === 'pro')) {
+            return false;
+        }
+
+        // Otherwise assume it's a binding (including when followed by ',', '{', 'ergo', 'reddit')
+        // The semantic analyzer will validate pattern count vs discriminant count
+        return true;
     }
 
     /**

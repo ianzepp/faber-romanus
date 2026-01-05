@@ -2,30 +2,36 @@
  * Zig Code Generator - DiscerneStatement (pattern matching on variants)
  *
  * TRANSFORMS:
- *   discerne event { si Click ut c { use(c.x) } }
+ *   discerne event { casu Click ut c { use(c.x) } }
  *   -> switch (event) { .click => |c| { use(c.x); } }
  *
- *   discerne event { si Click pro x, y { use(x, y) } si Quit { exit() } }
+ *   discerne event { casu Click pro x, y { use(x, y) } casu Quit { exit() } }
  *   -> switch (event) { .click => |payload| { const x = payload.x; ... }, .quit => { exit(); } }
  *
  * WHY: Zig's switch on tagged unions is idiomatic and efficient.
+ *
+ * NOTE: Multi-discriminant matching not yet supported in Zig codegen.
+ *       For now, only single-discriminant patterns are emitted.
  */
 
 import type { DiscerneStatement } from '../../../parser/ast';
 import type { ZigGenerator } from '../generator';
 
 export function genDiscerneStatement(node: DiscerneStatement, g: ZigGenerator): string {
-    const discriminant = g.genExpression(node.discriminant);
+    // Use first discriminant only (multi-discriminant not yet supported)
+    const discriminant = g.genExpression(node.discriminants[0]!);
 
     let result = `${g.ind()}switch (${discriminant}) {\n`;
     g.depth++;
 
     for (const caseNode of node.cases) {
-        const variantName = caseNode.variant.name.toLowerCase();
+        // Use first pattern only
+        const pattern = caseNode.patterns[0];
+        if (!pattern) continue;
 
-        if (caseNode.alias) {
-            // Alias binding: si Click ut c { ... } -> .click => |c| { ... }
-            result += `${g.ind()}.${variantName} => |${caseNode.alias.name}| {\n`;
+        // Handle wildcard as else
+        if (pattern.isWildcard) {
+            result += `${g.ind()}else => {\n`;
             g.depth++;
 
             for (const stmt of caseNode.consequent.body) {
@@ -34,14 +40,30 @@ export function genDiscerneStatement(node: DiscerneStatement, g: ZigGenerator): 
 
             g.depth--;
             result += `${g.ind()}},\n`;
-        } else if (caseNode.bindings.length > 0) {
-            // Positional bindings: si Click pro x, y { ... }
+            continue;
+        }
+
+        const variantName = pattern.variant.name.toLowerCase();
+
+        if (pattern.alias) {
+            // Alias binding: casu Click ut c { ... } -> .click => |c| { ... }
+            result += `${g.ind()}.${variantName} => |${pattern.alias.name}| {\n`;
+            g.depth++;
+
+            for (const stmt of caseNode.consequent.body) {
+                result += g.genStatement(stmt) + '\n';
+            }
+
+            g.depth--;
+            result += `${g.ind()}},\n`;
+        } else if (pattern.bindings.length > 0) {
+            // Positional bindings: casu Click pro x, y { ... }
             // Capture payload and destructure
             result += `${g.ind()}.${variantName} => |payload| {\n`;
             g.depth++;
 
             // Bind individual fields
-            for (const binding of caseNode.bindings) {
+            for (const binding of pattern.bindings) {
                 result += `${g.ind()}const ${binding.name} = payload.${binding.name};\n`;
             }
 

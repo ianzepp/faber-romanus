@@ -3851,21 +3851,24 @@ describe('parser', () => {
 
                 const discerneStmt = program!.body[0] as any;
                 expect(discerneStmt.type).toBe('DiscerneStatement');
+                expect(discerneStmt.discriminants).toHaveLength(1);
                 expect(discerneStmt.cases).toHaveLength(2);
 
-                // First case: casu Click pro x, y
+                // First case: casu Click pro x, y (single pattern)
                 const clickCase = discerneStmt.cases[0];
                 expect(clickCase.type).toBe('VariantCase');
-                expect(clickCase.variant.name).toBe('Click');
-                expect(clickCase.bindings).toHaveLength(2);
-                expect(clickCase.bindings[0].name).toBe('x');
-                expect(clickCase.bindings[1].name).toBe('y');
+                expect(clickCase.patterns).toHaveLength(1);
+                expect(clickCase.patterns[0].variant.name).toBe('Click');
+                expect(clickCase.patterns[0].bindings).toHaveLength(2);
+                expect(clickCase.patterns[0].bindings[0].name).toBe('x');
+                expect(clickCase.patterns[0].bindings[1].name).toBe('y');
 
                 // Second case: casu Quit (no bindings)
                 const quitCase = discerneStmt.cases[1];
                 expect(quitCase.type).toBe('VariantCase');
-                expect(quitCase.variant.name).toBe('Quit');
-                expect(quitCase.bindings).toHaveLength(0);
+                expect(quitCase.patterns).toHaveLength(1);
+                expect(quitCase.patterns[0].variant.name).toBe('Quit');
+                expect(quitCase.patterns[0].bindings).toHaveLength(0);
             });
 
             test('empty discretio parses but has no variants', () => {

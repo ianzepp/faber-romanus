@@ -5,9 +5,9 @@
  *
  * TRANSFORMS:
  *   discerne event {
- *     si Click ut c { ... }
- *     si Click pro x, y { ... }
- *     si Quit { ... }
+ *     casu Click ut c { ... }
+ *     casu Click pro x, y { ... }
+ *     casu Quit { ... }
  *   }
  *   ->
  *   match event:
@@ -19,6 +19,9 @@
  *           ...
  *
  * WHY: Python match can destructure tagged unions using dict patterns.
+ *
+ * NOTE: Multi-discriminant matching not yet supported in Python codegen.
+ *       For now, only single-discriminant patterns are emitted.
  */
 
 import type { DiscerneStatement, Identifier } from '../../../parser/ast';
@@ -26,21 +29,34 @@ import type { PyGenerator } from '../generator';
 
 export function genDiscerneStatement(node: DiscerneStatement, g: PyGenerator): string {
     const lines: string[] = [];
-    const discriminant = g.genExpression(node.discriminant);
+    // Use first discriminant only (multi-discriminant not yet supported)
+    const discriminant = g.genExpression(node.discriminants[0]!);
 
     lines.push(`${g.ind()}match ${discriminant}:`);
     g.depth++;
 
     for (const caseNode of node.cases) {
-        // Variant matching: si VariantName (ut alias | pro bindings)? { ... }
-        const variantName = caseNode.variant.name;
+        // Use first pattern only
+        const pattern = caseNode.patterns[0];
+        if (!pattern) continue;
 
-        if (caseNode.alias) {
-            // Alias binding: si Click ut c { ... }
-            lines.push(`${g.ind()}case {'tag': '${variantName}'} as ${caseNode.alias.name}:`);
-        } else if (caseNode.bindings.length > 0) {
-            // Positional bindings: si Click pro x, y { ... }
-            const bindingNames = caseNode.bindings.map((b: Identifier) => b.name).join(', ');
+        // Handle wildcard
+        if (pattern.isWildcard) {
+            lines.push(`${g.ind()}case _:`);
+            g.depth++;
+            lines.push(g.genBlockStatementContent(caseNode.consequent));
+            g.depth--;
+            continue;
+        }
+
+        const variantName = pattern.variant.name;
+
+        if (pattern.alias) {
+            // Alias binding: casu Click ut c { ... }
+            lines.push(`${g.ind()}case {'tag': '${variantName}'} as ${pattern.alias.name}:`);
+        } else if (pattern.bindings.length > 0) {
+            // Positional bindings: casu Click pro x, y { ... }
+            const bindingNames = pattern.bindings.map((b: Identifier) => b.name).join(', ');
             lines.push(`${g.ind()}case {'tag': '${variantName}', ${bindingNames}}:`);
         } else {
             lines.push(`${g.ind()}case {'tag': '${variantName}'}:`);

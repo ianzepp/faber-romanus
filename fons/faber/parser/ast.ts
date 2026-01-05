@@ -985,50 +985,79 @@ export interface EligeCasus extends BaseNode {
  * Variant matching statement (for discretio types).
  *
  * GRAMMAR (in EBNF):
- *   discerneStmt := 'discerne' expression '{' variantCase* '}'
- *   variantCase := 'casu' IDENTIFIER (('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*))? blockStmt
+ *   discerneStmt := 'discerne' discriminants '{' variantCase* '}'
+ *   discriminants := expression (',' expression)*
+ *   variantCase := 'casu' patterns (blockStmt | 'ergo' statement | 'reddit' expression)
+ *   patterns := pattern (',' pattern)*
+ *   pattern := '_' | (IDENTIFIER patternBind?)
+ *   patternBind := ('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*)
  *
  * WHY: 'discerne' (distinguish!) pairs with 'discretio' (the tagged union type).
  *      Uses 'casu' for match arms, 'ut' to bind whole variants, and 'pro' for positional bindings.
+ *      Multi-discriminant matching reduces nesting when comparing multiple values.
  *
- * Example:
+ * Examples:
+ *   # Single discriminant (original syntax)
  *   discerne event {
  *       casu Click pro x, y { scribe "clicked at " + x + ", " + y }
  *       casu Keypress pro key { scribe "pressed " + key }
  *       casu Quit { mori "goodbye" }
  *   }
+ *
+ *   # Multi-discriminant (new syntax)
+ *   discerne left, right {
+ *       casu Primitivum ut l, Primitivum ut r { redde l.nomen == r.nomen }
+ *       casu _, _ { redde falsum }
+ *   }
  */
 export interface DiscerneStatement extends BaseNode {
     type: 'DiscerneStatement';
-    discriminant: Expression;
+    discriminants: Expression[];
     cases: VariantCase[];
+}
+
+/**
+ * Single pattern in a variant case (matches one discriminant).
+ *
+ * WHY: Each pattern matches against one discriminant in a multi-discriminant discerne.
+ *      Wildcard '_' matches any variant without binding.
+ *
+ * Examples:
+ *   Primitivum ut p  -> variant=Primitivum, alias=p (bind whole variant)
+ *   Click pro x, y   -> variant=Click, bindings=[x, y] (destructure)
+ *   Quit             -> variant=Quit, no bindings
+ *   _                -> wildcard, matches any variant
+ */
+export interface VariantPattern extends BaseNode {
+    type: 'VariantPattern';
+    variant: Identifier;
+    isWildcard: boolean;
+    alias?: Identifier;
+    bindings: Identifier[];
 }
 
 /**
  * Variant case for pattern matching (part of discerne statement).
  *
  * GRAMMAR (in EBNF):
- *   variantCase := 'casu' IDENTIFIER ('ut' IDENTIFIER | 'pro' IDENTIFIER (',' IDENTIFIER)*)? blockStmt
+ *   variantCase := 'casu' patterns (blockStmt | 'ergo' statement | 'reddit' expression)
+ *   patterns := pattern (',' pattern)*
  *
- * INVARIANT: variant is the variant name to match (e.g., Click, Keypress).
- * INVARIANT: Either alias OR bindings is used, not both.
+ * INVARIANT: patterns.length must equal discriminants.length (validated in semantic analysis).
  * INVARIANT: consequent is the block to execute on match.
  *
  * WHY: 'casu' (in the case of) for variant match arms.
- *      'ut' (as) binds the whole variant to a name.
- *      'pro' (for) destructures fields positionally.
+ *      Multiple patterns enable multi-discriminant matching: `casu X ut x, Y ut y { ... }`
  *
  * Examples:
- *   casu Click ut c { ... }       -> variant=Click, alias=c (bind whole variant)
- *   casu Click pro x, y { ... }   -> variant=Click, bindings=[x, y] (destructure)
- *   casu Keypress pro key { ... } -> variant=Keypress, bindings=[key]
- *   casu Quit { ... }             -> variant=Quit, no bindings
+ *   casu Click ut c { ... }                  -> single pattern with alias
+ *   casu Click pro x, y { ... }              -> single pattern with destructure
+ *   casu Primitivum ut l, Primitivum ut r {} -> two patterns for two discriminants
+ *   casu _, _ { ... }                        -> wildcard catch-all
  */
 export interface VariantCase extends BaseNode {
     type: 'VariantCase';
-    variant: Identifier;
-    alias?: Identifier;
-    bindings: Identifier[];
+    patterns: VariantPattern[];
     consequent: BlockStatement;
 }
 
