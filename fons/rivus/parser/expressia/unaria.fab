@@ -129,6 +129,28 @@ functio parseUnaria(Resolvitor r) -> Expressia {
         } qua Expressia
     }
 
+    # Boolean true check: verum x -> x === true
+    si p.proba(SymbolumGenus.Verum) et estInitiumPostNihil(prox) et prox.species !== SymbolumGenus.UncusSin {
+        p.procede()
+        fixum argumentum = parseUnaria(r)
+        redde finge UnariaExpressia {
+            locus: locus,
+            signum: "verum",
+            argumentum: argumentum
+        } qua Expressia
+    }
+
+    # Boolean false check: falsum x -> x === false
+    si p.proba(SymbolumGenus.Falsum) et estInitiumPostNihil(prox) et prox.species !== SymbolumGenus.UncusSin {
+        p.procede()
+        fixum argumentum = parseUnaria(r)
+        redde finge UnariaExpressia {
+            locus: locus,
+            signum: "falsum",
+            argumentum: argumentum
+        } qua Expressia
+    }
+
     # Await expression
     si p.congruetVerbum("cede") {
         fixum argumentum = parseUnaria(r)

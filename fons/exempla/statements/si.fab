@@ -211,11 +211,11 @@ incipit {
 
     fixum active = verum
 
-    si active est verum {
+    si verum active {
         scribe "Is exactly true"
     }
 
-    si active non est falsum {
+    si non falsum active {
         scribe "Is not false"
     }
 

@@ -1,12 +1,13 @@
-# Strict equality with est
+# Type and boolean checking
 #
-# est = "is" (strict equality, like ===)
-# Useful for null checks and type-safe comparisons
+# est = "is" (type check)
+# verum x = strict boolean true check
+# falsum x = strict boolean false check
 
 functio checkValue(x) -> textus {
     si x est nihil { redde "is null" }
-    si x est verum { redde "is true" }
-    si x est falsum { redde "is false" }
+    si verum x { redde "is true" }
+    si falsum x { redde "is false" }
     redde "is something else"
 }
 

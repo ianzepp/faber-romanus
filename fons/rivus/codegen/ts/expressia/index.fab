@@ -106,6 +106,12 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                 casu "positivum" {
                     redde scriptum("(§ > 0)", arg)
                 }
+                casu "verum" {
+                    redde scriptum("(§ === true)", arg)
+                }
+                casu "falsum" {
+                    redde scriptum("(§ === false)", arg)
+                }
             }
 
             # WHY: Preserve correct precedence for negated est checks.
