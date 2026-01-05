@@ -1,5 +1,5 @@
 {
-  "exclude": ["opus", "tmp"],
+  "exclude": ["archivum", "fons/proba", "opus", "tmp"],
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],

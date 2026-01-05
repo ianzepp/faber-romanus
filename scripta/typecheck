@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Type-check fons/faber source code
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+tsc --noEmit

@@ -2543,8 +2543,9 @@ describe('parser', () => {
             const { program, errors } = parseCode('functio f()');
 
             expect(errors.length).toBe(0);
-            expect(program.body[0]?.type).toBe('FunctioDeclaration');
-            expect((program.body[0] as any).body).toBeUndefined();
+            expect(program).not.toBeNull();
+            expect(program!.body[0]?.type).toBe('FunctioDeclaration');
+            expect((program!.body[0] as any).body).toBeUndefined();
         });
 
         test('missing condition in if', () => {
@@ -2603,8 +2604,9 @@ describe('parser', () => {
             const { program, errors } = parseCode('functio f() textus { }');
 
             expect(errors.length).toBe(0);
-            expect(program.body.length).toBe(3);
-            expect(program.body[0]?.type).toBe('FunctioDeclaration');
+            expect(program).not.toBeNull();
+            expect(program!.body.length).toBe(3);
+            expect(program!.body[0]?.type).toBe('FunctioDeclaration');
         });
 
         test('incomplete genus declaration', () => {
