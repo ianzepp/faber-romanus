@@ -50,6 +50,7 @@ export enum SemanticErrorCode {
     DefaultWithBorrowedParam = 'S011',
     RequiredAfterOptional = 'S015',
     MissingFunctionBody = 'S016',
+    NonExhaustiveMatch = 'S017',
     // Import resolution errors
     ModuleNotFound = 'S012',
     CircularImport = 'S013',
@@ -130,5 +131,9 @@ export const SEMANTIC_ERRORS = {
     [SemanticErrorCode.MissingFunctionBody]: {
         text: (name: string) => `Function '${name}' has no body`,
         help: "Regular functions require a body. Use '@ externa' annotation for external declarations.",
+    },
+    [SemanticErrorCode.NonExhaustiveMatch]: {
+        text: (missing: string[]) => `Non-exhaustive match: missing variant${missing.length > 1 ? 's' : ''} ${missing.map((v) => `'${v}'`).join(', ')}`,
+        help: 'All variants of a discretio must be handled in a discerne statement.',
     },
 } as const;

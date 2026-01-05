@@ -317,3 +317,60 @@
   errata:
       - 'Semantic errors'
       - "'figendum' requires"
+
+# =============================================================================
+# Semantic Errors - S017 Non-Exhaustive Match
+# =============================================================================
+
+- name: S017 missing single variant in discerne
+  faber: |
+      discretio Status {
+        Active
+        Inactive
+        Pending
+      }
+      functio check(Status s) -> vacuum {
+        discerne s {
+          casu Active { scribe "active" }
+          casu Inactive { scribe "inactive" }
+        }
+      }
+  errata:
+      - 'Semantic errors'
+      - 'Non-exhaustive match'
+      - "missing variant 'Pending'"
+
+- name: S017 missing multiple variants in discerne
+  faber: |
+      discretio Event {
+        Click { numerus x, numerus y }
+        Keypress { textus key }
+        Scroll { numerus delta }
+        Quit
+      }
+      functio handle(Event e) -> vacuum {
+        discerne e {
+          casu Click pro x, y { scribe x }
+        }
+      }
+  errata:
+      - 'Semantic errors'
+      - 'Non-exhaustive match'
+      - "missing variants"
+
+- name: S017 exhaustive match passes (no error)
+  faber: |
+      discretio Result {
+        Success { textus msg }
+        Failure { textus err }
+      }
+      functio process(Result r) -> vacuum {
+        discerne r {
+          casu Success pro m { scribe m }
+          casu Failure pro e { mone e }
+        }
+      }
+  expect:
+      ts:
+          - "if (r.tag === 'Success')"
+          - "else if (r.tag === 'Failure')"

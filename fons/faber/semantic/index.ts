@@ -2146,7 +2146,8 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
         if (discriminantType.kind === 'discretio') {
             discretio = discriminantType;
-        } else if (discriminantType.kind === 'user') {
+        }
+        else if (discriminantType.kind === 'user') {
             // Look up the type in scope — it might be a discretio
             const symbol = lookupSymbol(currentScope, discriminantType.name);
 
@@ -2155,7 +2156,11 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             }
         }
 
+        // Collect handled variant names for exhaustiveness check
+        const handledVariants = new Set<string>();
+
         for (const caseNode of node.cases) {
+            handledVariants.add(caseNode.variant.name);
             // Variant matching: si VariantName (ut alias | pro bindings)? { ... }
             // WHY: VariantCase introduces bindings into scope
             enterScope();
@@ -2201,6 +2206,17 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
             analyzeBlock(caseNode.consequent);
             exitScope();
+        }
+
+        // Exhaustiveness check: all variants must be handled
+        if (discretio) {
+            const allVariants = Array.from(discretio.variants.keys());
+            const missingVariants = allVariants.filter((v) => !handledVariants.has(v));
+
+            if (missingVariants.length > 0) {
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
+                error(`${text(missingVariants)}\n${help}`, node.position);
+            }
         }
     }
 

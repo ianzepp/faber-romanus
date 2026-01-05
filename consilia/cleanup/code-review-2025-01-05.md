@@ -32,7 +32,7 @@ The rivus bootstrap compiler is a Faber implementation of the Faber compiler its
 | ~~`parser/nucleus.fab`~~ | ~~🟡 Medium~~ | ~~Potential infinite loops~~ **FIXED** |
 | `lexor/index.fab` | 🟡 Medium | Incomplete template handling |
 | `parser/expressia/primaria.fab` | 🟡 Medium | Incomplete keyword handling |
-| `semantic/typi.fab` | 🟡 Medium | Large discriminated union |
+| ~~`semantic/typi.fab`~~ | ~~🟡 Medium~~ | ~~Large discriminated union~~ **FIXED** |
 | `codegen/ts/sententia/index.fab` | 🟡 Medium | Missing ad statement |
 | `parser/sententia/declara.fab` | 🟡 Medium | Complex parsing needs review |
 | ~~`parser/errores.fab`~~ | ~~🟢 Low~~ | ~~Verbose casting pattern~~ **FIXED** |
@@ -226,49 +226,23 @@ casu AdSententia ut s {
 
 ---
 
-#### 7. `semantic/typi.fab` — Large Discriminated Union
+#### 7. `semantic/typi.fab` — Large Discriminated Union ✅ FIXED
 
-**Location:** `fons/rivus/semantic/typi.fab`
+**Location:** `fons/faber/semantic/index.ts`, `fons/faber/semantic/errors.ts`
 
-**Issue:** The `SemanticTypus` discriminated union has 9 variants:
-- `Primitivum`
-- `Genericum`  
-- `Functio`
-- `Unio`
-- `Ignotum`
-- `Usitatum`
-- `Ordo`
-- `Genus`
-- `Pactum`
+**Issue:** Pattern matching on discriminated unions must be exhaustive, but there was no compiler enforcement.
 
-Pattern matching on this union must be exhaustive, but several `discerne` blocks in the codebase may not handle all cases.
+**Resolution (2025-01-05):**
+Implemented exhaustiveness checking for `discerne` statements in the semantic analyzer:
+- Added `NonExhaustiveMatch` error code (S017)
+- Compiler now collects handled variants and compares against discretio type
+- Reports missing variants with actionable error message
+- No `ceterum` escape hatch - all variants must be explicitly handled (like Zig)
 
-**Problematic Example (in `typiAequales`):**
-```fab
-discerne a {
-    casu Primitivum ut pa {
-        discerne b {
-            casu Primitivum ut pb { ... }
-        }
-        redde falsum  # What if b is Ignotum?
-    }
-    # ...
-}
+Example error output:
 ```
-
-**Recommendation:** Add exhaustiveness guards and consider splitting into categories:
-```fab
-# Option 1: Explicit fallthrough
-ceterum { redde falsum }
-
-# Option 2: Helper for common cases
-functio estTypusPrimitivusVelGenericus(SemanticTypus t) -> bivalens {
-    discerne t {
-        casu Primitivum { redde verum }
-        casu Genericum { redde verum }
-        ceterum { redde falsum }
-    }
-}
+Non-exhaustive match: missing variant 'Scroll'
+All variants of a discretio must be handled in a discerne statement.
 ```
 
 ---
@@ -461,9 +435,10 @@ Both exist and represent the `nihil` keyword, but serve different purposes.
 
 ### P2 — Should Fix (Plan to Address)
 
-5. **Add exhaustiveness guards to pattern matches**
-   - Files: `semantic/typi.fab`, various
+5. ~~**Add exhaustiveness guards to pattern matches**~~ **FIXED 2025-01-05**
+   - Files: `fons/faber/semantic/index.ts`, `fons/faber/semantic/errors.ts`
    - Reason: Silent failures on unhandled variants
+   - Resolution: Implemented exhaustiveness checking for `discerne` statements. Added `NonExhaustiveMatch` error code (S017). The semantic analyzer now collects handled variant names and compares against the discretio type's variants, reporting any missing cases. No `ceterum` escape hatch - all variants must be explicitly handled.
 
 6. ~~**Reduce verbose `qua` casting patterns**~~ **FIXED 2025-01-05**
    - Files: `parser/errores.fab`
