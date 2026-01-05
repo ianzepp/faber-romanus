@@ -17,13 +17,13 @@ ex "../typi" importa RequiredFeatures, creaRequiredFeatures, formataNotaePrae, f
 @ publicum
 genus TsGenerator {
     # Indentation depth (number of levels)
-    numerus depth
+    numerus profunditas
 
     # Indentation unit (e.g., "  " for 2 spaces)
     textus indentum
 
     # Whether we're inside a generator function (cede -> yield)
-    bivalens inGenerator
+    bivalens inCursore
 
     # Whether we're inside a fit function body (Responsum protocol)
     bivalens inFlumina
@@ -38,13 +38,13 @@ genus TsGenerator {
     bivalens inFient
 
     # Whether we're inside a class body (for visibility handling)
-    bivalens inClass
+    bivalens inGenere
 
     # Current function-scope tabula names (for Map get/set lowering)
     lista<textus> tabulaNominata
 
     # Features used that need preamble setup
-    RequiredFeatures features
+    RequiredFeatures requisita
 
     # ==========================================================================
     # INDENTATION
@@ -55,7 +55,7 @@ genus TsGenerator {
     functio ind() -> textus {
         varia result = ""
         varia i = 0
-        dum i < ego.depth {
+        dum i < ego.profunditas {
             result = result + ego.indentum
             i += 1
         }
@@ -65,13 +65,13 @@ genus TsGenerator {
     # Increment depth
     @ publica
     functio intraProfundum() {
-        ego.depth += 1
+        ego.profunditas += 1
     }
 
     # Decrement depth
     @ publica
     functio exiProfundum() {
-        ego.depth -= 1
+        ego.profunditas -= 1
     }
 
     # ==========================================================================
@@ -103,15 +103,15 @@ genus TsGenerator {
 @ publica
 functio creaTsGenerator() -> TsGenerator {
     redde {
-        depth: 0,
+        profunditas: 0,
         indentum: "  ",
-        inGenerator: falsum,
+        inCursore: falsum,
         inFlumina: falsum,
         inFiunt: falsum,
         inFiet: falsum,
         inFient: falsum,
-        inClass: falsum,
-        features: creaRequiredFeatures(),
+        inGenere: falsum,
+        requisita: creaRequiredFeatures(),
         tabulaNominata: [] qua lista<textus>
     } qua TsGenerator
 }
@@ -120,15 +120,15 @@ functio creaTsGenerator() -> TsGenerator {
 @ publica
 functio creaTsGeneratorCum(textus indentum) -> TsGenerator {
     redde {
-        depth: 0,
+        profunditas: 0,
         indentum: indentum,
-        inGenerator: falsum,
+        inCursore: falsum,
         inFlumina: falsum,
         inFiunt: falsum,
         inFiet: falsum,
         inFient: falsum,
-        inClass: falsum,
-        features: creaRequiredFeatures(),
+        inGenere: falsum,
+        requisita: creaRequiredFeatures(),
         tabulaNominata: [] qua lista<textus>
     } qua TsGenerator
 }

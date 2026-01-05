@@ -361,7 +361,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
     }
 
     # Visibility and abstract modifier (class methods only)
-    si g.inClass et non structor {
+    si g.inGenere et non structor {
         si nonnihil visibilitas {
             fixum vis = visibilitas qua Visibilitas
             si vis == Visibilitas.Publica {
@@ -385,7 +385,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
     # Function keyword (or constructor)
     si structor {
         result = scriptum("§constructor", result)
-    } sin g.inClass {
+    } sin g.inGenere {
         si localGenerator {
             result = scriptum("§*§", result, nomen)
         } secus {
@@ -451,7 +451,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
 
     si nonnihil corpus {
         # Context flags for cede/iace lowering
-        fixum prevInGenerator = g.inGenerator
+        fixum prevInCursore = g.inCursore
         fixum prevInFlumina = g.inFlumina
         fixum prevInFiunt = g.inFiunt
         fixum prevInFiet = g.inFiet
@@ -468,7 +468,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
             }
         }
 
-        g.inGenerator = localGenerator
+        g.inCursore = localGenerator
         g.tabulaNominata = localTabula
 
         si nonnihil reddeVerbum {
@@ -477,7 +477,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
             g.inFiunt = useFiunt
             g.inFient = useFient
             si g.inFlumina aut g.inFiet aut g.inFiunt aut g.inFient {
-                g.features.flumina = verum
+                g.requisita.flumina = verum
             }
         }
 
@@ -495,7 +495,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
 
         g.exiProfundum()
 
-        g.inGenerator = prevInGenerator
+        g.inCursore = prevInCursore
         g.inFlumina = prevInFlumina
         g.inFiunt = prevInFiunt
         g.inFiet = prevInFiet
@@ -594,7 +594,7 @@ functio genGenus(textus nomen, ignotum generaParametra, ignotum extendit, ignotu
 
     result = scriptum("§ {{\n", result)
     g.intraProfundum()
-    g.inClass = verum
+    g.inGenere = verum
 
     # Fields
     ex campi pro campus {
@@ -632,7 +632,7 @@ functio genGenus(textus nomen, ignotum generaParametra, ignotum extendit, ignotu
         result = scriptum("§§\n", result, genSententia(methodus, g))
     }
 
-    g.inClass = falsum
+    g.inGenere = falsum
     g.exiProfundum()
     result = scriptum("§§}}", result, g.ind())
 
@@ -1128,7 +1128,7 @@ functio genIace(bivalens fatale, Expressia argumentum, TsGenerator g) -> textus 
 
     si fatale {
         # WHY: mori is fatal - use Panic and string coercion for non-literals.
-        g.features.panic = verum
+        g.requisita.panic = verum
         discerne argumentum {
             casu Littera ut lit {
                 si lit.species == LitteraGenus.Textus {

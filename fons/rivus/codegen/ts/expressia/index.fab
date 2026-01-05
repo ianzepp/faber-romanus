@@ -39,7 +39,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu LitteraRegex ut e {
-            g.features.usesRegex = verum
+            g.requisita.usesRegex = verum
             # WHY: Escape '/' so JS regex literals stay valid.
             fixum pattern = escapaRegex(e.forma)
             redde scriptum("/§/§", pattern, e.vexilla)
@@ -279,7 +279,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
             si g.inFient {
                 redde scriptum("yield respond.item(await §)", genExpressia(e.argumentum, g))
             }
-            si g.inGenerator {
+            si g.inCursore {
                 redde scriptum("yield §", genExpressia(e.argumentum, g))
             }
             redde scriptum("await §", genExpressia(e.argumentum, g))

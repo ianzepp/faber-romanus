@@ -62,7 +62,7 @@ functio mappaNomenTypi(textus nomen) -> textus {
 functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
     # Track feature usage for preamble
     si adnotatio.nomen == "decimus" aut adnotatio.nomen == "decim" {
-        g.features.decimal = verum
+        g.requisita.decimal = verum
     }
 
     # Map Latin type name to TypeScript

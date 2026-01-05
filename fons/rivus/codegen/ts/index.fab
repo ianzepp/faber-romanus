@@ -27,7 +27,7 @@ functio generateTs(lista<Sententia> corpus) -> textus {
         lines.adde(genSententia(stmt, g))
     }
 
-    fixum preamble = genPreamble(g.features)
+    fixum preamble = genPreamble(g.requisita)
     fixum body = lines.coniunge("\n")
     si preamble == "" {
         redde body
