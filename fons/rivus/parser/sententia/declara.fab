@@ -111,6 +111,7 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
         generator: generator,
         abstracta: falsum,
         structor: falsum,
+        externa: falsum,
         visibilitas: nihil,
         reddeVerbum: reddeVerbum,
         morphologia: nihil
@@ -272,6 +273,7 @@ functio parseGenusDeclaratio(Resolvitor r, bivalens abstractum) -> Sententia {
                 generator: generator,
                 abstracta: abstracta,
                 structor: estStructor,
+                externa: falsum,
                 visibilitas: visibilitas,
                 reddeVerbum: nihil,
                 morphologia: morphologiaEx(annotationes)

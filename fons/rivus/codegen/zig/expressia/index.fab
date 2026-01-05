@@ -157,7 +157,6 @@ functio genExpressia(Expressia expr, ZigGenerator g) -> textus {
 # LITERAL HELPERS
 # =============================================================================
 
-@ publica
 functio genLittera(LitteraGenus species, textus crudus) -> textus {
     si species == LitteraGenus.Verum {
         redde "true"
@@ -180,7 +179,6 @@ functio genLittera(LitteraGenus species, textus crudus) -> textus {
 # OBJECT LITERAL
 # =============================================================================
 
-@ publica
 functio genObiectum(lista<ObiectumProprietas> proprietates, ZigGenerator g) -> textus {
     si proprietates.longitudo() == 0 {
         redde ".{}"
@@ -206,7 +204,6 @@ functio genObiectum(lista<ObiectumProprietas> proprietates, ZigGenerator g) -> t
 # FORMAT STRING (scriptum)
 # =============================================================================
 
-@ publica
 functio genScriptum(textus exemplar, lista<Expressia> argumenta, ZigGenerator g) -> textus {
     # Get current allocator
     fixum curator = g.curator()
@@ -240,7 +237,6 @@ functio genScriptum(textus exemplar, lista<Expressia> argumenta, ZigGenerator g)
 # LAMBDA
 # =============================================================================
 
-@ publica
 functio genLambda(lista<LambdaParametrum> parametra, ignotum corpus, ZigGenerator g) -> textus {
     varia params = [] qua lista<textus>
     ex parametra pro p {

@@ -79,8 +79,12 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
                 resolvedTypus = r.expressia(v.valor)
             }
             secus {
-                fixum err = noTypeOrInitializerError(v.nomen)
-                a.error(err.textus, v.locus)
+                # External declarations require type annotation but no initializer
+                # Non-externa without type or initializer is an error
+                si non v.externa {
+                    fixum err = noTypeOrInitializerError(v.nomen)
+                    a.error(err.textus, v.locus)
+                }
             }
 
             # Check initializer type compatibility

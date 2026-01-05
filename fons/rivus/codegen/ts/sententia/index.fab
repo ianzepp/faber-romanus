@@ -42,7 +42,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
 
         # Variable declarations
         casu VariaSententia ut s {
-            redde genVaria(s.species qua VariaGenus, s.nomen qua textus, s.typus, s.valor, g)
+            redde genVaria(s.species qua VariaGenus, s.nomen qua textus, s.typus, s.valor, s.externa qua bivalens, g)
         }
 
         casu ImportaSententia ut s {
@@ -59,7 +59,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
 
         # Function declaration
         casu FunctioDeclaratio ut f {
-            redde genFunctio(f.nomen qua textus, f.generaParametra, f.parametra qua lista<Parametrum>, f.reddeVerbum, f.typusReditus, f.corpus, f.asynca qua bivalens, f.generator qua bivalens, f.structor qua bivalens, f.visibilitas, f.abstracta qua bivalens, g)
+            redde genFunctio(f.nomen qua textus, f.generaParametra, f.parametra qua lista<Parametrum>, f.reddeVerbum, f.typusReditus, f.corpus, f.asynca qua bivalens, f.generator qua bivalens, f.structor qua bivalens, f.visibilitas, f.abstracta qua bivalens, f.externa qua bivalens, g)
         }
 
         # Type declarations
@@ -205,7 +205,16 @@ functio genMassa(lista<Sententia> corpus, TsGenerator g) -> textus {
 # =============================================================================
 
 @ publica
-functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignotum valor, TsGenerator g) -> textus {
+functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignotum valor, bivalens externa, TsGenerator g) -> textus {
+    # External declarations use TypeScript's 'declare' syntax
+    si externa {
+        varia result = scriptum("§declare const §", g.ind(), nomen)
+        si nonnihil adnotatioTypus {
+            result = scriptum("§: §", result, genTypus(adnotatioTypus qua TypusAnnotatio, g))
+        }
+        redde scriptum("§;", result)
+    }
+
     fixum keyword = species == VariaGenus.Fixum aut species == VariaGenus.Figendum sic "const" secus "let"
     fixum asyncPrefix = species == VariaGenus.Figendum aut species == VariaGenus.Variandum sic "await " secus ""
 
@@ -328,7 +337,38 @@ functio genInExpressia(Expressia expr, Expressia obiectum, TsGenerator g) -> tex
 # =============================================================================
 
 @ publica
-functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> parametra, ignotum reddeVerbum, ignotum typusReditus, ignotum corpus, bivalens asynca, bivalens generator, bivalens structor, ignotum visibilitas, bivalens abstracta, TsGenerator g) -> textus {
+functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> parametra, ignotum reddeVerbum, ignotum typusReditus, ignotum corpus, bivalens asynca, bivalens generator, bivalens structor, ignotum visibilitas, bivalens abstracta, bivalens externa, TsGenerator g) -> textus {
+    # External declarations use TypeScript's 'declare' syntax
+    si externa {
+        varia result = scriptum("§declare function §", g.ind(), nomen)
+
+        # Generic parameters
+        si nonnihil generaParametra {
+            fixum gp = generaParametra qua lista<TypusParametrum>
+            si gp.longitudo() > 0 {
+                varia names = [] qua lista<textus>
+                ex gp pro p {
+                    names.adde(p.nomen)
+                }
+                result = scriptum("§<§>", result, names.coniunge(", "))
+            }
+        }
+
+        # Parameters
+        varia params = [] qua lista<textus>
+        ex parametra pro param {
+            params.adde(genParametrum(param, g))
+        }
+        result = scriptum("§(§)", result, params.coniunge(", "))
+
+        # Return type
+        si nonnihil typusReditus {
+            result = scriptum("§: §", result, genTypus(typusReditus qua TypusAnnotatio, g))
+        }
+
+        redde scriptum("§;", result)
+    }
+
     varia result = g.ind()
 
     # Return type verb flags

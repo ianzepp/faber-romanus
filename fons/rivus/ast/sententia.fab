@@ -263,12 +263,14 @@ discretio Sententia {
 
     # Variable declaration
     # Examples: varia x = 5, fixum nomen = "Marcus"
+    # @ externa marks external declarations (no initializer required)
     VariaSententia {
         Locus locus
         VariaGenus species
         textus nomen
         TypusAnnotatio? typus
         Expressia? valor
+        bivalens externa        # @ externa annotation
     }
 
     # Import declaration
@@ -305,6 +307,7 @@ discretio Sententia {
 
     # Function declaration
     # Example: functio salve(textus nomen) fit textus { ... }
+    # @ externa marks external declarations (no body required)
     FunctioDeclaratio {
         Locus locus
         textus nomen
@@ -316,6 +319,7 @@ discretio Sententia {
         bivalens generator
         bivalens abstracta
         bivalens structor       # WHY: "constructor" is a JS reserved word
+        bivalens externa        # @ externa annotation
         Visibilitas? visibilitas
         ReddeVerbum? reddeVerbum
         MorphologiaDeclaratio? morphologia

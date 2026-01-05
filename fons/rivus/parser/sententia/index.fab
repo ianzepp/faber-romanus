@@ -74,6 +74,14 @@ functio parseSententiaSineNotis(Resolvitor r) -> Sententia {
                     si a.nomen == "radix" {
                         f.morphologia = { locus: a.locus, formae: a.argumenta } qua MorphologiaDeclaratio
                     }
+                    si a.nomen == "externa" {
+                        f.externa = verum
+                    }
+                }
+                casu VariaSententia ut v {
+                    si a.nomen == "externa" {
+                        v.externa = verum
+                    }
                 }
                 casu GenusDeclaratio ut g {
                     si a.nomen inter ["abstractum", "abstracta", "abstractus"] {

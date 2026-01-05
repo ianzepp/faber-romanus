@@ -27,12 +27,12 @@ functio genSententia(Sententia stmt, ZigGenerator g) -> textus {
 
         # Variable declarations
         casu VariaSententia ut s {
-            redde genVaria(s.species qua VariaGenus, s.nomen qua textus, s.typus, s.valor, g)
+            redde genVaria(s.species qua VariaGenus, s.nomen qua textus, s.typus, s.valor, s.externa qua bivalens, g)
         }
 
         # Function declaration
         casu FunctioDeclaratio ut f {
-            redde genFunctio(f.nomen qua textus, f.parametra qua lista<Parametrum>, f.typusReditus, f.corpus, g)
+            redde genFunctio(f.nomen qua textus, f.parametra qua lista<Parametrum>, f.typusReditus, f.corpus, f.externa qua bivalens, g)
         }
 
         # Control flow
@@ -115,7 +115,16 @@ functio genMassa(lista<Sententia> corpus, ZigGenerator g) -> textus {
 # =============================================================================
 
 @ publica
-functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignotum valor, ZigGenerator g) -> textus {
+functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignotum valor, bivalens externa, ZigGenerator g) -> textus {
+    # External declarations use Zig's 'extern' keyword
+    si externa {
+        varia result = scriptum("§extern var §", g.ind(), nomen)
+        si nonnihil adnotatioTypus {
+            result = scriptum("§: §", result, genTypus(adnotatioTypus qua TypusAnnotatio, g))
+        }
+        redde scriptum("§;", result)
+    }
+
     fixum keyword = species == VariaGenus.Fixum sic "const" secus "var"
 
     varia result = scriptum("§§ §", g.ind(), keyword, nomen)
@@ -136,7 +145,7 @@ functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignot
 # =============================================================================
 
 @ publica
-functio genFunctio(textus nomen, lista<Parametrum> parametra, ignotum typusReditus, ignotum corpus, ZigGenerator g) -> textus {
+functio genFunctio(textus nomen, lista<Parametrum> parametra, ignotum typusReditus, ignotum corpus, bivalens externa, ZigGenerator g) -> textus {
     # Build parameter list
     varia params = [] qua lista<textus>
     ex parametra pro param {
@@ -147,6 +156,11 @@ functio genFunctio(textus nomen, lista<Parametrum> parametra, ignotum typusRedit
     varia retType = "void"
     si nonnihil typusReditus {
         retType = genTypus(typusReditus qua TypusAnnotatio, g)
+    }
+
+    # External declarations use Zig's 'extern fn' syntax
+    si externa {
+        redde scriptum("§extern fn §(§) §;", g.ind(), nomen, params.coniunge(", "), retType)
     }
 
     varia result = scriptum("§pub fn §(§) §", g.ind(), nomen, params.coniunge(", "), retType)
