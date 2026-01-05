@@ -3,7 +3,7 @@
 # Routes statement AST nodes to their specific generators.
 # Uses scriptum() for string formatting to avoid method call return type bugs.
 
-ex "../../../ast/sententia" importa Sententia, VariaGenus, ScribeGradus, IteratioGenus
+ex "../../../ast/sententia" importa Sententia, VariaGenus, ScribeGradus, IteratioGenus, CuratorGenus
 ex "../../../ast/sententia" importa Parametrum, CampusDeclaratio, EligeCasus, VariansCasus
 ex "../../../ast/sententia" importa CustodiClausula, CapeClausula, OrdoMembrum, VariansDeclaratio
 ex "../../../ast/sententia" importa ImportaSpecificator, PactumMethodus, TypusParametrum
@@ -159,7 +159,7 @@ functio genSententiaContent(Sententia stmt, TsGenerator g) -> textus {
         }
 
         casu CuraSententia ut s {
-            redde genCura(s.res, s.vinculum qua textus, s.corpus qua Sententia, s.asynca qua bivalens, g)
+            redde genCura(s.curatorSpecies, s.res, s.vinculum qua textus, s.corpus qua Sententia, s.asynca qua bivalens, s.cape, g)
         }
 
         casu AdSententia {
@@ -1274,22 +1274,53 @@ functio genIncipiet(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
 }
 
 @ publica
-functio genCura(ignotum res, textus vinculum, Sententia corpus, bivalens asynca, TsGenerator g) -> textus {
+functio genCura(ignotum curatorSpecies, ignotum res, textus vinculum, Sententia corpus, bivalens asynca, ignotum cape, TsGenerator g) -> textus {
+    # WHY: For arena/page curator kinds, just emit the block contents.
+    # GC targets don't need allocator management - memory is automatic.
+    si nonnihil curatorSpecies {
+        fixum species = curatorSpecies qua CuratorGenus
+        si species == CuratorGenus.Arena aut species == CuratorGenus.Pagina {
+            redde genSententia(corpus, g)
+        }
+    }
+
+    # Generic resource management with try/finally
     varia result = scriptum("§{{\n", g.ind())
     g.intraProfundum()
 
+    # Resource acquisition: const <binding> = [await] <resource>;
+    fixum awaitPrefix = asynca sic "await " secus ""
     si nonnihil res {
-        result = scriptum("§§const § = §;\n", result, g.ind(), vinculum, genExpressia(res qua Expressia, g))
+        result = scriptum("§§const § = §§;\n", result, g.ind(), vinculum, awaitPrefix, genExpressia(res qua Expressia, g))
+    } secus {
+        result = scriptum("§§const § = undefined;\n", result, g.ind(), vinculum)
     }
 
+    # Try block
     g.intraProfundum()
     fixum tryBody = genSententia(corpus, g)
     g.exiProfundum()
+    si tryBody == "" {
+        result = scriptum("§§try {{}}\n", result, g.ind())
+    } secus {
+        result = scriptum("§§try {{\n§\n§}}\n", result, g.ind(), tryBody, g.ind())
+    }
 
-    result = scriptum("§§try {{\n§\n§}}\n", result, g.ind(), tryBody, g.ind())
+    # Optional catch clause
+    si nonnihil cape {
+        fixum capeClause = cape qua CapeClausula
+        fixum catchParam = capeClause.param
+        g.intraProfundum()
+        fixum catchBody = genSententia(capeClause.corpus, g)
+        g.exiProfundum()
+        result = scriptum("§§catch (§) {{\n§\n§}}\n", result, g.ind(), catchParam, catchBody, g.ind())
+    }
+
+    # Finally block with solve?.()
     result = scriptum("§§finally {{\n", result, g.ind())
     g.intraProfundum()
-    result = scriptum("§§// cleanup §\n", result, g.ind(), vinculum)
+    fixum cleanup = scriptum("§.solve?.();", vinculum)
+    result = scriptum("§§§\n", result, g.ind(), cleanup)
     g.exiProfundum()
     result = scriptum("§§}}\n", result, g.ind())
 
