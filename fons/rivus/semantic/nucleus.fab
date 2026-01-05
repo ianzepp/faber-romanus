@@ -153,6 +153,19 @@ genus Analyzator {
         ego.definieIntrinsicaFunctio("_vide", [], VACUUM, builtinLocus)
         ego.definieIntrinsicaFunctio("_mone", [], VACUUM, builtinLocus)
         ego.definieIntrinsicaFunctio("_lege", [], TEXTUS, builtinLocus)
+
+        # Register morphology for built-in collection types
+        fixum formae = ["imperativus", "perfectum", "futurum_indicativum", "futurum_activum"] qua lista<textus>
+
+        # lista verb stems
+        ego.addeMorphologiam("lista", "add", formae)
+        ego.addeMorphologiam("lista", "praepon", formae)
+        ego.addeMorphologiam("lista", "remov", formae)
+        ego.addeMorphologiam("lista", "decapit", formae)
+        ego.addeMorphologiam("lista", "filtr", formae)
+        ego.addeMorphologiam("lista", "mapp", formae)
+        ego.addeMorphologiam("lista", "ordin", formae)
+        ego.addeMorphologiam("lista", "invert", formae)
     }
 
     # Helper to define a single intrinsic function

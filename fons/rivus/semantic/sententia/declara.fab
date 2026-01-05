@@ -3,18 +3,59 @@
 # Handles: varia/fixum, functio, genus, pactum, ordo, discretio, typus
 
 ex "../resolvitor" importa Resolvitor
-ex "../typi" importa SemanticTypus, VACUUM, IGNOTUM
+ex "../typi" importa SemanticTypus, VACUUM, IGNOTUM, NIHIL
+ex "../typi" importa primitivumTypus, genericumTypus, unioTypus
 ex "../typi" importa functioTypus, usitatumTypus, genusTypus, pactumTypus, ordoTypus
 ex "../typi" importa formaTypum, assignabileAd
 ex "../scopus" importa Symbolum, SymbolumSpecies, ScopusSpecies, quaereSymbolumLocale
-ex "../nucleus" importa latinTypusAd
+ex "../nucleus" importa estGenericusTypus
 ex "../errores" importa noTypeOrInitializerError, typeMismatchError, awaitOutsideAsyncError
 ex "../../ast/sententia" importa Sententia, VariaGenus
-ex "../../ast/typus" importa TypusAnnotatio
+ex "../../ast/typus" importa TypusAnnotatio, TypusParametrum
 
 functio resolveTypusAnnotatio(Resolvitor r, TypusAnnotatio annotatio) -> SemanticTypus {
-    # EDGE: Bootstrap currently only needs primitive resolution for errata tests.
-    redde latinTypusAd(annotatio.nomen)
+    # WHY: Self-hosting needs full type annotation resolution for the compiler itself
+    # (AST nodes, generics, and nullable types).
+
+    # Union type: unio<A, B>
+    si nonnihil annotatio.unio {
+        varia typi = [] qua lista<SemanticTypus>
+        ex (annotatio.unio qua lista<TypusAnnotatio>) pro t {
+            typi.adde(resolveTypusAnnotatio(r, t))
+        }
+        si annotatio.nullabilis {
+            typi.adde(NIHIL)
+        }
+        redde unioTypus(typi)
+    }
+
+    # Generic types: lista<T>, tabula<K,V>, etc.
+    varia resolvedParametri = [] qua lista<SemanticTypus>
+    si nonnihil annotatio.typusParametra {
+        ex (annotatio.typusParametra qua lista<TypusParametrum>) pro p {
+            discerne p {
+                casu Typus ut tp {
+                    resolvedParametri.adde(resolveTypusAnnotatio(r, tp.adnotatio))
+                }
+                casu Littera {
+                    # EDGE: Numeric literal type params are not needed for self-host yet.
+                    resolvedParametri.adde(IGNOTUM)
+                }
+            }
+        }
+    }
+
+    si estGenericusTypus(annotatio.nomen) {
+        redde genericumTypus(annotatio.nomen, resolvedParametri, annotatio.nullabilis)
+    }
+
+    # Primitive types
+    si annotatio.nomen inter ["textus", "numerus", "fractus", "decimus", "magnus", "bivalens", "nihil", "vacuum", "octeti", "numquam", "objectum"] {
+        redde primitivumTypus(annotatio.nomen, annotatio.nullabilis)
+    }
+
+    # User-defined types (genus/pactum/etc.)
+    redde usitatumTypus(annotatio.nomen, annotatio.nullabilis)
 }
 
 # =============================================================================

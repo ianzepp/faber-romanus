@@ -45,6 +45,9 @@
       - "filtrata"
       - "lista"
       - "imperativus"
+  # WHY: Test mixes custom genus lista with array literals that infer to built-in lista<T>.
+  # Rivus registers morphology for built-in lista, so filtrata is valid on the array.
+  rivus: false
 
 - name: morphologia rejects unknown radix form
   faber: |

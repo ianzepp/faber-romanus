@@ -41,20 +41,18 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
 
                                             # EDGE: Avoid lexical hijacking. Only treat a call as morphologia if
                                             # the stem is actually declared for this receiver.
-                                            si nihil formae {
-                                                perge
-                                            }
-
-                                            fixum forma = formaExFlagga(parsed.flagga)
-                                            si non estFormaPermissa(formae qua lista<textus>, forma) {
-                                                fixum err = morphologiaFormaNonPermissaError(n.valor, parsed.radix, forma, receiver, formae qua lista<textus>)
-                                                r.analyzator().error(err.textus, n.locus)
-                                            } secus {
-                                                v.morphologia = {
-                                                    recipiens: receiver,
-                                                    radix: parsed.radix,
-                                                    forma: forma
-                                                } qua MorphologiaInvocatio
+                                            si nonnihil formae {
+                                                fixum forma = formaExFlagga(parsed.flagga)
+                                                si non estFormaPermissa(formae qua lista<textus>, forma) {
+                                                    fixum err = morphologiaFormaNonPermissaError(n.valor, parsed.radix, forma, receiver, formae qua lista<textus>)
+                                                    r.analyzator().error(err.textus, n.locus)
+                                                } secus {
+                                                    v.morphologia = {
+                                                        recipiens: receiver,
+                                                        radix: parsed.radix,
+                                                        forma: forma
+                                                    } qua MorphologiaInvocatio
+                                                }
                                             }
                                         }
                                     }

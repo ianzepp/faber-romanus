@@ -520,8 +520,19 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
             dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
                 fixum campusLocus = p.locusActualis()
                 fixum campusTypus = r.adnotatio()
-                fixum campusNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
-                fixum campusNomen = campusNomenSym.valor
+
+                # EDGE: Allow keywords as field names in compiler-internal ASTs.
+                #       Example: `TypusAnnotatio? typus`, `CapeClausula? cape`.
+                fixum campusNomenSym = p.specta(0)
+                varia campusNomen = ""
+                si campusNomenSym.species == SymbolumGenus.Nomen aut campusNomenSym.species == SymbolumGenus.Verbum {
+                    p.procede()
+                    campusNomen = campusNomenSym.valor
+                } secus {
+                    p.renuncia(ParserErrorCodice.ExpectaturNomen, scriptum("got '§'", campusNomenSym.valor))
+                    p.procede()
+                    campusNomen = campusNomenSym.valor
+                }
 
                 campi.adde({
                     locus: campusLocus,

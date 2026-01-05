@@ -102,17 +102,25 @@
           - 'x * 2'
 
 - name: lambda as callback
-  faber: 'items.filtrata(pro x: x > 0)'
+  faber: |
+      fixum items = [1, 2, 3]
+      items.filtrata(pro x: x > 0)
   expect:
-      ts: 'items.filter((x) => (x > 0));'
+      ts:
+          - 'const items'
+          - 'items.filter((x) => (x > 0))'
       py:
+          - 'items ='
           - 'filter'
           - 'lambda x: (x > 0)'
       rs:
+          - 'let items'
           - '.iter().filter(|x| (x > 0)).cloned().collect::<Vec<_>>()'
       cpp:
+          - 'items'
           - '(items | std::views::filter([&](auto x) { return (x > 0); }) | std::ranges::to<std::vector>());'
       fab:
+          - 'fixum items ='
           - 'items.filtrata(pro x:'
           - 'x > 0'
 
