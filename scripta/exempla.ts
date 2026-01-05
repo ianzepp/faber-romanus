@@ -5,9 +5,10 @@
  * Recursively scans exempla/ directory and mirrors structure in output.
  *
  * Usage:
- *   bun scripta/build-exempla.ts           # TypeScript output (default)
- *   bun scripta/build-exempla.ts -t zig    # Zig output
- *   bun scripta/build-exempla.ts -t all    # Both targets
+ *   bun run exempla                    # TypeScript output, faber compiler (default)
+ *   bun run exempla -t zig             # Zig output
+ *   bun run exempla -t all             # All targets (ts, zig, py, rs)
+ *   bun run exempla -c rivus           # Use rivus compiler instead of faber
  */
 
 import { readdir, mkdir } from 'fs/promises';
@@ -18,8 +19,8 @@ import { $ } from 'bun';
 const ROOT = join(import.meta.dir, '..');
 const EXEMPLA = join(ROOT, 'fons', 'exempla');
 const OUTPUT = join(ROOT, 'opus', 'exempla');
-const FABER = join(ROOT, 'fons', 'primus', 'cli.ts');
 
+type Compiler = 'faber' | 'rivus';
 type Target = 'ts' | 'zig' | 'py' | 'rs';
 
 /**
@@ -47,15 +48,16 @@ async function findFabFiles(dir: string): Promise<string[]> {
 async function main() {
     const args = process.argv.slice(2);
     const targetArg = args.includes('-t') ? args[args.indexOf('-t') + 1] : 'ts';
+    const compilerArg = args.includes('-c') ? args[args.indexOf('-c') + 1] : 'faber';
 
     const targets: Target[] = targetArg === 'all' ? ['ts', 'zig', 'py', 'rs'] : [targetArg as Target];
-
-    // WHY: Use unbundled CLI directly — bundled executable can't load preamble .txt files
+    const compiler: Compiler = compilerArg as Compiler;
+    const compilerPath = join(ROOT, 'opus', 'bin', compiler);
 
     // Find all .fab files recursively
     const files = await findFabFiles(EXEMPLA);
 
-    console.log(`Found ${files.length} .fab files in exempla/`);
+    console.log(`Found ${files.length} .fab files in exempla/ (compiler: ${compiler})`);
 
     let failed = 0;
 
@@ -73,7 +75,7 @@ async function main() {
             await mkdir(outputDir, { recursive: true });
 
             try {
-                const result = await $`bun ${FABER} compile ${file} -t ${target}`.quiet();
+                const result = await $`${compilerPath} compile ${file} -t ${target}`.quiet();
                 await Bun.write(output, result.stdout);
                 console.log(`  ${relativePath} -> opus/exempla/${target}/${subdir}/${name}.${ext}`);
             } catch (err: any) {
