@@ -35,7 +35,7 @@ The rivus bootstrap compiler is a Faber implementation of the Faber compiler its
 | `semantic/typi.fab` | 🟡 Medium | Large discriminated union |
 | `codegen/ts/sententia/index.fab` | 🟡 Medium | Missing ad statement |
 | `parser/sententia/declara.fab` | 🟡 Medium | Complex parsing needs review |
-| `parser/errores.fab` | 🟢 Low | Verbose casting pattern |
+| ~~`parser/errores.fab`~~ | ~~🟢 Low~~ | ~~Verbose casting pattern~~ **FIXED** |
 | `cli.fab` | 🟢 Low | Error handling improvements |
 | `codegen/typi.fab` | 🟢 Low | Stubbed comment formatting |
 | `lexicon/verba.fab` | 🟢 Low | Token type overlap |
@@ -302,28 +302,17 @@ This appears to handle both annotation-style (`@ publicum`) and inline keyword-s
 
 ### 🟢 LOW SEVERITY
 
-#### 9. `parser/errores.fab` — Verbose Casting Pattern
+#### 9. `parser/errores.fab` — Verbose Casting Pattern ✅ FIXED
 
-**Location:** `fons/rivus/parser/errores.fab`, line 95-96
+**Location:** `fons/rivus/parser/errores.fab`
 
-**Issue:** Self-documented TODO:
-```fab
-# TODO everything in here appears to be returning `qua ParserErrorNuntius`.. seems verbose.
-```
+**Issue:** Every case in `nuntiumErroris` used `{...} qua ParserErrorNuntius` which is semantically incorrect—using type cast (`qua`) as a constructor.
 
-Every case in `nuntiumErroris` ends with `qua ParserErrorNuntius`.
-
-**Recommendation:** Add a helper function:
-```fab
-functio nuntius(textus t, textus a) -> ParserErrorNuntius {
-    redde { textus: t, auxilium: a } qua ParserErrorNuntius
-}
-
-# Then use:
-casu ParserErrorCodice.ExpectaturParensDex {
-    redde nuntius("Expected ')'", "Parentheses must be balanced.")
-}
-```
+**Resolution (2025-01-05):**
+- Added helper: `functio creoNuntium(textus t, textus a) -> ParserErrorNuntius { redde novum ParserErrorNuntius de { textus: t, auxilium: a } }`
+- Replaced all 65+ instances with `creoNuntium(...)` calls
+- Fixed `qua ParserError` to use proper `novum ParserError de {...}`
+- Codebase scan found no other misuses—remaining `qua` patterns are in appropriate contexts (factory functions, method bodies)
 
 ---
 
@@ -476,9 +465,10 @@ Both exist and represent the `nihil` keyword, but serve different purposes.
    - Files: `semantic/typi.fab`, various
    - Reason: Silent failures on unhandled variants
 
-6. **Reduce verbose `qua` casting patterns**
+6. ~~**Reduce verbose `qua` casting patterns**~~ **FIXED 2025-01-05**
    - Files: `parser/errores.fab`
-   - Reason: Code readability
+   - Reason: Code readability, semantic correctness
+   - Resolution: Added `creoNuntium()` helper function using proper `novum ... de { }` construction. Replaced all 65+ instances of `{...} qua ParserErrorNuntius` with helper calls. Fixed `qua ParserError` to use `novum ParserError de {...}`. Scan of entire `fons/rivus/` found no other misuses - remaining `qua` patterns are in factory functions and method contexts where the cast is appropriate.
 
 ### P3 — Nice to Have (When Time Permits)
 

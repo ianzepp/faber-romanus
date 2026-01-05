@@ -106,224 +106,225 @@ genus ParserErrorNuntius {
     textus auxilium     # Extended help text
 }
 
+# Helper to construct error messages
+functio creoNuntium(textus t, textus a) -> ParserErrorNuntius {
+    redde novum ParserErrorNuntius de { textus: t, auxilium: a }
+}
+
 # Get error message for a given error code
 @ publica
 functio nuntiumErroris(ParserErrorCodice codice) -> ParserErrorNuntius {
-    # TODO everything in here appears to be returning `qua ParserErrorNuntius`.. seems verbose.
     elige codice {
         # Token expectation errors
         casu ParserErrorCodice.ExpectaturParensDex {
-            redde { textus: "Expected ')'", auxilium: "Parentheses must be balanced." } qua ParserErrorNuntius
+            redde creoNuntium("Expected ')'", "Parentheses must be balanced.")
         }
         casu ParserErrorCodice.ExpectaturUncusDex {
-            redde { textus: "Expected '}'", auxilium: "Braces must be balanced." } qua ParserErrorNuntius
+            redde creoNuntium("Expected '}'", "Braces must be balanced.")
         }
         casu ParserErrorCodice.ExpectaturQuadratusDex {
-            redde { textus: "Expected ']'", auxilium: "Brackets must be balanced." } qua ParserErrorNuntius
+            redde creoNuntium("Expected ']'", "Brackets must be balanced.")
         }
         casu ParserErrorCodice.ExpectaturAngulusDex {
-            redde { textus: "Expected '>'", auxilium: "Type parameters must be closed." } qua ParserErrorNuntius
+            redde creoNuntium("Expected '>'", "Type parameters must be closed.")
         }
         casu ParserErrorCodice.ExpectaturVirgula {
-            redde { textus: "Expected ','", auxilium: "Use commas to separate list items." } qua ParserErrorNuntius
+            redde creoNuntium("Expected ','", "Use commas to separate list items.")
         }
         casu ParserErrorCodice.ExpectaturColon {
-            redde { textus: "Expected ':'", auxilium: "Use colon for key:value or ternary alternate." } qua ParserErrorNuntius
+            redde creoNuntium("Expected ':'", "Use colon for key:value or ternary alternate.")
         }
         casu ParserErrorCodice.ExpectaturAequale {
-            redde { textus: "Expected '='", auxilium: "Use equals for assignments and type aliases." } qua ParserErrorNuntius
+            redde creoNuntium("Expected '='", "Use equals for assignments and type aliases.")
         }
         casu ParserErrorCodice.ExpectaturUncusSin {
-            redde { textus: "Expected '{'", auxilium: "Block statements require opening brace." } qua ParserErrorNuntius
+            redde creoNuntium("Expected '{'", "Block statements require opening brace.")
         }
         casu ParserErrorCodice.ExpectaturParensSin {
-            redde { textus: "Expected '('", auxilium: "Function calls require opening parenthesis." } qua ParserErrorNuntius
+            redde creoNuntium("Expected '('", "Function calls require opening parenthesis.")
         }
         casu ParserErrorCodice.ExpectaturQuadratusSin {
-            redde { textus: "Expected '['", auxilium: "Array patterns require opening bracket." } qua ParserErrorNuntius
+            redde creoNuntium("Expected '['", "Array patterns require opening bracket.")
         }
         casu ParserErrorCodice.ExpectaturNomen {
-            redde { textus: "Expected identifier", auxilium: "Identifier required here." } qua ParserErrorNuntius
+            redde creoNuntium("Expected identifier", "Identifier required here.")
         }
         casu ParserErrorCodice.ExpectaturTypusNomen {
-            redde { textus: "Expected type name", auxilium: "Type annotation required." } qua ParserErrorNuntius
+            redde creoNuntium("Expected type name", "Type annotation required.")
         }
         casu ParserErrorCodice.ExpectaturSagitta {
-            redde { textus: "Expected '->'", auxilium: "Use arrow for return type." } qua ParserErrorNuntius
+            redde creoNuntium("Expected '->'", "Use arrow for return type.")
         }
 
         # Keyword expectation errors
         casu ParserErrorCodice.ExpectaturEx {
-            redde { textus: "Expected 'ex'", auxilium: "For-of loops: ex lista pro item { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'ex'", "For-of loops: ex lista pro item { }")
         }
         casu ParserErrorCodice.ExpectaturImporta {
-            redde { textus: "Expected 'importa'", auxilium: "Imports: ex norma importa scribe" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'importa'", "Imports: ex norma importa scribe")
         }
         casu ParserErrorCodice.ExpectaturFunctio {
-            redde { textus: "Expected 'functio'", auxilium: "Functions: functio nomen() { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'functio'", "Functions: functio nomen() { }")
         }
         casu ParserErrorCodice.ExpectaturGenus {
-            redde { textus: "Expected 'genus'", auxilium: "Classes: genus Persona { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'genus'", "Classes: genus Persona { }")
         }
         casu ParserErrorCodice.ExpectaturPactum {
-            redde { textus: "Expected 'pactum'", auxilium: "Interfaces: pactum Legibilis { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'pactum'", "Interfaces: pactum Legibilis { }")
         }
         casu ParserErrorCodice.ExpectaturTypus {
-            redde { textus: "Expected 'typus'", auxilium: "Type aliases: typus ID = textus" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'typus'", "Type aliases: typus ID = textus")
         }
         casu ParserErrorCodice.ExpectaturSi {
-            redde { textus: "Expected 'si'", auxilium: "Conditionals: si x > 0 { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'si'", "Conditionals: si x > 0 { }")
         }
         casu ParserErrorCodice.ExpectaturDum {
-            redde { textus: "Expected 'dum'", auxilium: "While loops: dum verum { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'dum'", "While loops: dum verum { }")
         }
         casu ParserErrorCodice.ExpectaturPro {
-            redde { textus: "Expected 'pro'", auxilium: "For loops: ex lista pro item { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'pro'", "For loops: ex lista pro item { }")
         }
         casu ParserErrorCodice.ExpectaturIn {
-            redde { textus: "Expected 'in'", auxilium: "Mutation: in object { prop = val }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'in'", "Mutation: in object { prop = val }")
         }
         casu ParserErrorCodice.ExpectaturDe {
-            redde { textus: "Expected 'de'", auxilium: "For-in: de tabula pro clavis { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'de'", "For-in: de tabula pro clavis { }")
         }
         casu ParserErrorCodice.ExpectaturElige {
-            redde { textus: "Expected 'elige'", auxilium: "Switch: elige status { casu x { } }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'elige'", "Switch: elige status { casu x { } }")
         }
         casu ParserErrorCodice.ExpectaturCustodi {
-            redde { textus: "Expected 'custodi'", auxilium: "Guards: custodi { si err { } }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'custodi'", "Guards: custodi { si err { } }")
         }
         casu ParserErrorCodice.ExpectaturAdfirma {
-            redde { textus: "Expected 'adfirma'", auxilium: "Assert: adfirma x > 0" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'adfirma'", "Assert: adfirma x > 0")
         }
         casu ParserErrorCodice.ExpectaturRedde {
-            redde { textus: "Expected 'redde'", auxilium: "Return: redde valor" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'redde'", "Return: redde valor")
         }
         casu ParserErrorCodice.ExpectaturIace {
-            redde { textus: "Expected 'iace'", auxilium: "Throw: iace error" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'iace'", "Throw: iace error")
         }
         casu ParserErrorCodice.ExpectaturScribe {
-            redde { textus: "Expected 'scribe'", auxilium: "Print: scribe 'hello'" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'scribe'", "Print: scribe 'hello'")
         }
         casu ParserErrorCodice.ExpectaturTempta {
-            redde { textus: "Expected 'tempta'", auxilium: "Try: tempta { } cape e { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'tempta'", "Try: tempta { } cape e { }")
         }
         casu ParserErrorCodice.ExpectaturCape {
-            redde { textus: "Expected 'cape'", auxilium: "Catch: cape erratum { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'cape'", "Catch: cape erratum { }")
         }
         casu ParserErrorCodice.ExpectaturSecus {
-            redde { textus: "Expected 'secus'", auxilium: "Else/ternary: si x { } secus { }, sic x secus y" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'secus'", "Else/ternary: si x { } secus { }, sic x secus y")
         }
         casu ParserErrorCodice.ExpectaturFac {
-            redde { textus: "Expected 'fac'", auxilium: "Block scope: fac { } cape { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'fac'", "Block scope: fac { } cape { }")
         }
         casu ParserErrorCodice.ExpectaturFit {
-            redde { textus: "Expected 'fit'", auxilium: "Return type: functio f() fit T { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'fit'", "Return type: functio f() fit T { }")
         }
         casu ParserErrorCodice.ExpectaturOrdo {
-            redde { textus: "Expected 'ordo'", auxilium: "Enum: ordo Color { R, G, B }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'ordo'", "Enum: ordo Color { R, G, B }")
         }
         casu ParserErrorCodice.ExpectaturDiscretio {
-            redde { textus: "Expected 'discretio'", auxilium: "Tagged union: discretio Event { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'discretio'", "Tagged union: discretio Event { }")
         }
         casu ParserErrorCodice.ExpectaturDiscerne {
-            redde { textus: "Expected 'discerne'", auxilium: "Match: discerne e { casu Click { } }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'discerne'", "Match: discerne e { casu Click { } }")
         }
         casu ParserErrorCodice.ExpectaturProbandum {
-            redde { textus: "Expected 'probandum'", auxilium: "Test suite: probandum 'name' { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'probandum'", "Test suite: probandum 'name' { }")
         }
         casu ParserErrorCodice.ExpectaturProba {
-            redde { textus: "Expected 'proba'", auxilium: "Test case: proba 'name' { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'proba'", "Test case: proba 'name' { }")
         }
         casu ParserErrorCodice.ExpectaturCura {
-            redde { textus: "Expected 'cura'", auxilium: "Resource: cura res fit h { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'cura'", "Resource: cura res fit h { }")
         }
         casu ParserErrorCodice.ExpectaturAnteVelPost {
-            redde { textus: "Expected 'ante' or 'post'", auxilium: "Timing: ante (before) or post (after)" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'ante' or 'post'", "Timing: ante (before) or post (after)")
         }
         casu ParserErrorCodice.ExpectaturAd {
-            redde { textus: "Expected 'ad'", auxilium: "Dispatch: ad 'target' (args) { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'ad'", "Dispatch: ad 'target' (args) { }")
         }
         casu ParserErrorCodice.ExpectaturIncipit {
-            redde { textus: "Expected 'incipit'", auxilium: "Entry: incipit { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'incipit'", "Entry: incipit { }")
         }
         casu ParserErrorCodice.ExpectaturIncipiet {
-            redde { textus: "Expected 'incipiet'", auxilium: "Async entry: incipiet { }" } qua ParserErrorNuntius
+            redde creoNuntium("Expected 'incipiet'", "Async entry: incipiet { }")
         }
 
         # Module/source errors
         casu ParserErrorCodice.ExpectaturModulusNomen {
-            redde { textus: "Expected module name", auxilium: "ex norma importa scribe" } qua ParserErrorNuntius
+            redde creoNuntium("Expected module name", "ex norma importa scribe")
         }
         casu ParserErrorCodice.ExpectaturTextus {
-            redde { textus: "Expected string literal", auxilium: "A quoted string is required." } qua ParserErrorNuntius
+            redde creoNuntium("Expected string literal", "A quoted string is required.")
         }
         casu ParserErrorCodice.ExpectaturTextusPostSed {
-            redde { textus: "Expected pattern after 'sed'", auxilium: "Regex: sed '\\d+' i" } qua ParserErrorNuntius
+            redde creoNuntium("Expected pattern after 'sed'", "Regex: sed '\\d+' i")
         }
 
         # Invalid construct errors
         casu ParserErrorCodice.InvalidumAssignatio {
-            redde { textus: "Invalid assignment target", auxilium: "Only identifiers/members can be assigned." } qua ParserErrorNuntius
+            redde creoNuntium("Invalid assignment target", "Only identifiers/members can be assigned.")
         }
         casu ParserErrorCodice.InvalidumExDeInitium {
-            redde { textus: "For loop requires 'ex' or 'de'", auxilium: "ex items pro i { } or de obj pro k { }" } qua ParserErrorNuntius
+            redde creoNuntium("For loop requires 'ex' or 'de'", "ex items pro i { } or de obj pro k { }")
         }
         casu ParserErrorCodice.InvalidumEligeCasusInitium {
-            redde { textus: "Switch cases need 'casu' or 'ceterum'", auxilium: "elige x { casu 1 { } ceterum { } }" } qua ParserErrorNuntius
+            redde creoNuntium("Switch cases need 'casu' or 'ceterum'", "elige x { casu 1 { } ceterum { } }")
         }
         casu ParserErrorCodice.InvalidumDiscerneCasusInitium {
-            redde { textus: "Match cases need 'casu'", auxilium: "discerne e { casu Variant { } }" } qua ParserErrorNuntius
+            redde creoNuntium("Match cases need 'casu'", "discerne e { casu Variant { } }")
         }
         casu ParserErrorCodice.InvalidumCustodiClausulaInitium {
-            redde { textus: "Guard clauses need 'si'", auxilium: "custodi { si err { redde } }" } qua ParserErrorNuntius
+            redde creoNuntium("Guard clauses need 'si'", "custodi { si err { redde } }")
         }
         casu ParserErrorCodice.InexpectatumSymbolum {
-            redde { textus: "Unexpected token", auxilium: "Check for syntax errors." } qua ParserErrorNuntius
+            redde creoNuntium("Unexpected token", "Check for syntax errors.")
         }
         casu ParserErrorCodice.ExpectaturUncusVelParens {
-            redde { textus: "Expected '{' or '('", auxilium: "praefixum { } or praefixum(expr)" } qua ParserErrorNuntius
+            redde creoNuntium("Expected '{' or '('", "praefixum { } or praefixum(expr)")
         }
         casu ParserErrorCodice.ExpectaturExpressia {
-            redde { textus: "Expected expression", auxilium: "Provide an expression or value here." } qua ParserErrorNuntius
+            redde creoNuntium("Expected expression", "Provide an expression or value here.")
         }
 
         # Generic errors
         casu ParserErrorCodice.ErrorGeneralis {
-            redde { textus: "Syntax error", auxilium: "Check code structure." } qua ParserErrorNuntius
+            redde creoNuntium("Syntax error", "Check code structure.")
         }
         casu ParserErrorCodice.ConflictumPraefixumVerbum {
-            redde { textus: "Cannot combine futura/cursor with fit/fiet", auxilium: "Use arrow with futura/cursor." } qua ParserErrorNuntius
+            redde creoNuntium("Cannot combine futura/cursor with fit/fiet", "Use arrow with futura/cursor.")
         }
 
         # Declaration errors
         casu ParserErrorCodice.DeestFunctioNomen {
-            redde { textus: "Function requires name", auxilium: "functio nomen() { }" } qua ParserErrorNuntius
+            redde creoNuntium("Function requires name", "functio nomen() { }")
         }
         casu ParserErrorCodice.DeestParametrumNomen {
-            redde { textus: "Parameter requires name", auxilium: "functio f(textus nomen)" } qua ParserErrorNuntius
+            redde creoNuntium("Parameter requires name", "functio f(textus nomen)")
         }
         casu ParserErrorCodice.DeestGenusNomen {
-            redde { textus: "Genus requires name", auxilium: "genus Persona { }" } qua ParserErrorNuntius
+            redde creoNuntium("Genus requires name", "genus Persona { }")
         }
         casu ParserErrorCodice.DeestPactumNomen {
-            redde { textus: "Pactum requires name", auxilium: "pactum Legibilis { }" } qua ParserErrorNuntius
+            redde creoNuntium("Pactum requires name", "pactum Legibilis { }")
         }
         casu ParserErrorCodice.DeestTypusNomen {
-            redde { textus: "Typus requires name", auxilium: "typus ID = textus" } qua ParserErrorNuntius
+            redde creoNuntium("Typus requires name", "typus ID = textus")
         }
         casu ParserErrorCodice.DeestVariaNomen {
-            redde { textus: "Variable requires name", auxilium: "varia x = 5" } qua ParserErrorNuntius
+            redde creoNuntium("Variable requires name", "varia x = 5")
         }
         casu ParserErrorCodice.InvalidaRadixForma {
-            redde {
-                textus: "Unknown radix form",
-                auxilium: "Use: imperativus, perfectum, futurum_indicativum, futurum_activum"
-            } qua ParserErrorNuntius
+            redde creoNuntium("Unknown radix form", "Use: imperativus, perfectum, futurum_indicativum, futurum_activum")
         }
 
         # Default fallback
         ceterum {
-            redde { textus: "Unknown error", auxilium: "" } qua ParserErrorNuntius
+            redde creoNuntium("Unknown error", "")
         }
     }
 }
@@ -347,9 +348,9 @@ functio error(ParserErrorCodice codice, Locus locus, si textus contextus) -> Par
         msg = scriptum("§: §", msg, contextus)
     }
 
-    redde {
+    redde novum ParserError de {
         codice: codice,
         nuntius: msg,
         locus: locus
-    } qua ParserError
+    }
 }
