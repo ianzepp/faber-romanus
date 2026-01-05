@@ -71,7 +71,23 @@ functio parseSiSententia(Resolvitor r) -> Sententia {
         alternans = parseSinSententia(r)
     } sin p.probaVerbum("secus") {
         p.procede()
-        alternans = parseCorpusBrevis(r)
+        # Match faber's secus handling: si, block, reddit, ergo, or bare statement
+        si p.probaVerbum("si") {
+            alternans = parseSiSententia(r)
+        } sin p.proba(SymbolumGenus.UncusSin) {
+            alternans = parseMassaSententia(r)
+        } sin p.probaVerbum("reddit") {
+            p.procede()
+            fixum stmtLocus = p.locusActualis()
+            fixum valor = r.expressia()
+            alternans = finge ReddeSententia { locus: stmtLocus, valor: valor } qua Sententia
+        } sin p.probaVerbum("ergo") {
+            p.procede()
+            alternans = r.sententia()
+        } secus {
+            # One-liner: bare statement (no ergo needed)
+            alternans = r.sententia()
+        }
     }
 
     redde finge SiSententia {
@@ -345,7 +361,23 @@ functio parseSinSententia(Resolvitor r) -> Sententia {
         alternans = parseSinSententia(r)
     } sin p.probaVerbum("secus") {
         p.procede()
-        alternans = parseCorpusBrevis(r)
+        # Match faber's secus handling: si, block, reddit, ergo, or bare statement
+        si p.probaVerbum("si") {
+            alternans = parseSiSententia(r)
+        } sin p.proba(SymbolumGenus.UncusSin) {
+            alternans = parseMassaSententia(r)
+        } sin p.probaVerbum("reddit") {
+            p.procede()
+            fixum stmtLocus = p.locusActualis()
+            fixum valor = r.expressia()
+            alternans = finge ReddeSententia { locus: stmtLocus, valor: valor } qua Sententia
+        } sin p.probaVerbum("ergo") {
+            p.procede()
+            alternans = r.sententia()
+        } secus {
+            # One-liner: bare statement (no ergo needed)
+            alternans = r.sententia()
+        }
     }
 
     redde finge SiSententia {
