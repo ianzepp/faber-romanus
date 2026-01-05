@@ -13,11 +13,8 @@ ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa ZigGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genExpressia(Expressia expr, ZigGenerator g) -> textus
-
-@ externa
-functio genTypus(TypusAnnotatio adnotatio, ZigGenerator g) -> textus
+ex "../expressia/index" importa genExpressia
+ex "../typus" importa genTypus
 
 @ publica
 functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignotum valor, bivalens externa, ZigGenerator g) -> textus {

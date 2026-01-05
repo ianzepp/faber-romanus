@@ -12,8 +12,7 @@ ex "../../../ast/sententia" importa Sententia, CapeClausula
 ex "../nucleus" importa TsGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genSententia(Sententia stmt, TsGenerator g) -> textus
+ex "./index" importa genSententia
 
 @ publica
 functio genTempta(Sententia corpus, ignotum cape, ignotum demum, TsGenerator g) -> textus {

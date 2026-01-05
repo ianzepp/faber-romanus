@@ -18,14 +18,9 @@ ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa TsGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genExpressia(ignotum expr, TsGenerator g) -> textus
-
-@ externa
-functio genSententia(Sententia stmt, TsGenerator g) -> textus
-
-@ externa
-functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus
+ex "../expressia/index" importa genExpressia
+ex "./index" importa genSententia
+ex "../typus" importa genTypus
 
 @ publica
 functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> parametra, ignotum reddeVerbum, ignotum typusReditus, ignotum corpus, bivalens asynca, bivalens generator, bivalens structor, ignotum visibilitas, bivalens abstracta, bivalens externa, TsGenerator g) -> textus {

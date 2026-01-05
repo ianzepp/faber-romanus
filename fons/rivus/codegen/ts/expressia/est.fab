@@ -16,8 +16,7 @@ ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa TsGenerator
 
 # External declaration - implementation lives in index.fab
-@ externa
-functio genExpressia(Expressia expr, TsGenerator g) -> textus
+ex "./index" importa genExpressia
 
 # Generate est (type check) expression
 @ publica

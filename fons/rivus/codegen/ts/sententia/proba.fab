@@ -16,8 +16,7 @@ ex "../../../ast/sententia" importa Sententia, ProbaModificator, PraeparaTempus
 ex "../nucleus" importa TsGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genSententia(Sententia stmt, TsGenerator g) -> textus
+ex "./index" importa genSententia
 
 @ publica
 functio genProbandum(textus nomen, lista<Sententia> corpus, TsGenerator g) -> textus {

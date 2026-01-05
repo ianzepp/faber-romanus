@@ -13,8 +13,7 @@ ex "../../../ast/expressia" importa Expressia, LitteraGenus
 ex "../nucleus" importa TsGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genExpressia(Expressia expr, TsGenerator g) -> textus
+ex "../expressia/index" importa genExpressia
 
 @ publica
 functio genIace(bivalens fatale, Expressia argumentum, TsGenerator g) -> textus {

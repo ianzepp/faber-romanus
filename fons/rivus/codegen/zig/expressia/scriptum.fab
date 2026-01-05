@@ -9,8 +9,7 @@ ex "../../../ast/expressia" importa Expressia
 ex "../nucleus" importa ZigGenerator
 
 # External declaration - implementation lives in index.fab
-@ externa
-functio genExpressia(Expressia expr, ZigGenerator g) -> textus
+ex "./index" importa genExpressia
 
 @ publica
 functio genScriptum(textus exemplar, lista<Expressia> argumenta, ZigGenerator g) -> textus {

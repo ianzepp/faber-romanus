@@ -9,8 +9,7 @@ ex "../../../ast/sententia" importa Sententia
 ex "../nucleus" importa ZigGenerator
 
 # External declaration - implementation lives in index.fab
-@ externa
-functio genSententia(Sententia stmt, ZigGenerator g) -> textus
+ex "./index" importa genSententia
 
 @ publica
 functio genIncipit(ignotum corpus, ignotum ergo, ZigGenerator g) -> textus {

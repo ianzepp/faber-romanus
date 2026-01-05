@@ -11,8 +11,7 @@ ex "../../../ast/expressia" importa Expressia
 ex "../nucleus" importa TsGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genExpressia(Expressia expr, TsGenerator g) -> textus
+ex "../expressia/index" importa genExpressia
 
 @ publica
 functio genRedde(ignotum valor, TsGenerator g) -> textus {

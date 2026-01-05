@@ -10,8 +10,7 @@ ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa TsGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus
+ex "../typus" importa genTypus
 
 @ publica
 functio genTypusAlias(textus nomen, TypusAnnotatio adnotatioTypus, ignotum scopusNomen, TsGenerator g) -> textus {

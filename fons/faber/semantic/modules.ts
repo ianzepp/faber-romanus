@@ -312,12 +312,18 @@ export function resolveModule(source: string, ctx: ModuleContext): ModuleResult 
     }
 
     // Check for cycles
+    // WHY: JS/TS handle circular imports at runtime via import hoisting.
+    // Instead of erroring, return empty exports - values resolve when module finishes loading.
+    // This enables patterns like: index.fab exports genExpressia, sibling files import it,
+    // index.fab imports siblings for dispatch. All valid in JS/TS.
     if (ctx.inProgress.has(absolutePath)) {
-        const cycle = [...ctx.inProgress, absolutePath].join(' -> ');
         return {
-            ok: false,
-            error: 'cycle',
-            message: `Circular import detected: ${cycle}`,
+            ok: true,
+            module: {
+                exports: new Map(),
+                program: null as unknown as Program,
+                filePath: absolutePath,
+            },
         };
     }
 

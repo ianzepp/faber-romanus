@@ -14,11 +14,8 @@ ex "../../../ast/expressia" importa Expressia
 ex "../nucleus" importa TsGenerator
 
 # External declarations - implementations live in index.fab
-@ externa
-functio genSententia(Sententia stmt, TsGenerator g) -> textus
-
-@ externa
-functio genExpressia(Expressia expr, TsGenerator g) -> textus
+ex "./index" importa genSententia
+ex "../expressia/index" importa genExpressia
 
 @ publica
 functio genCura(ignotum curatorSpecies, ignotum res, textus vinculum, Sententia corpus, bivalens asynca, ignotum cape, TsGenerator g) -> textus {

@@ -9,8 +9,7 @@
 ex "../../../ast/sententia" importa Sententia
 ex "../nucleus" importa TsGenerator
 
-@ externa
-functio genSententia(Sententia stmt, TsGenerator g) -> textus
+ex "./index" importa genSententia
 
 @ publica
 functio genIncipit(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
