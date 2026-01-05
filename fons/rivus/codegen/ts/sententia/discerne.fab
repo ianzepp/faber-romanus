@@ -1,0 +1,51 @@
+# TypeScript Statement Generator - Discerne (Pattern Matching)
+#
+# TRANSFORMS:
+#   discerne x {                     -> // discerne x
+#     casu A { ... }                    if (x.tag === 'A') { ... }
+#     casu B ut b { ... }               else if (x.tag === 'B') { const b = x; ... }
+#     casu C(a, b) { ... }              else if (x.tag === 'C') { const { a, b } = x; ... }
+#   }
+
+ex "../../../ast/sententia" importa Sententia, VariansCasus
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ externa
+functio genSententia(Sententia stmt, TsGenerator g) -> textus
+
+@ publica
+functio genDiscerne(Expressia discriminans, lista<VariansCasus> casus, TsGenerator g) -> textus {
+    fixum disc = genExpressia(discriminans, g)
+    varia result = scriptum("§// discerne §\n", g.ind(), disc)
+
+    varia first = verum
+    ex casus pro c {
+        si first {
+            result = scriptum("§§if (§.tag === '§') {{\n", result, g.ind(), disc, c.variansNomen)
+            first = falsum
+        } secus {
+            result = scriptum("§§else if (§.tag === '§') {{\n", result, g.ind(), disc, c.variansNomen)
+        }
+
+        g.intraProfundum()
+
+        # Bind alias or fields
+        si nonnihil c.alias {
+            # WHY: 'ut' binds the whole variant for access via alias.
+            result = scriptum("§§const § = §;\n", result, g.ind(), c.alias, disc)
+        } sin c.vincula.longitudo() > 0 {
+            result = scriptum("§§const {{ § }} = §;\n", result, g.ind(), c.vincula.coniunge(", "), disc)
+        }
+
+        result = scriptum("§§\n", result, genSententia(c.consequens, g))
+        g.exiProfundum()
+        result = scriptum("§§}}\n", result, g.ind())
+    }
+
+    redde result
+}

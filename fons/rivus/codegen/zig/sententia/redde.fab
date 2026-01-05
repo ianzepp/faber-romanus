@@ -1,0 +1,20 @@
+# Zig Statement Generator - Return Statements
+#
+# TRANSFORMS:
+#   redde x  -> return x;
+#   redde    -> return;
+
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa ZigGenerator
+
+# External declaration - implementation lives in index.fab
+@ externa
+functio genExpressia(Expressia expr, ZigGenerator g) -> textus
+
+@ publica
+functio genRedde(ignotum valor, ZigGenerator g) -> textus {
+    si nonnihil valor {
+        redde scriptum("§return §;", g.ind(), genExpressia(valor qua Expressia, g))
+    }
+    redde scriptum("§return;", g.ind())
+}

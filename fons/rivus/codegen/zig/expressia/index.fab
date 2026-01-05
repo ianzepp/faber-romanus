@@ -3,10 +3,15 @@
 # Routes expression AST nodes to their specific generators.
 
 ex "../../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum
-ex "../../../ast/sententia" importa Sententia
 ex "../../../ast/typus" importa TypusAnnotatio
 ex "../nucleus" importa ZigGenerator
 ex "../typus" importa genTypus
+
+# Import extracted generators
+ex "./littera" importa genLittera
+ex "./obiectum" importa genObiectum
+ex "./scriptum" importa genScriptum
+ex "./lambda" importa genLambda
 
 # =============================================================================
 # EXPRESSION DISPATCH
@@ -151,107 +156,4 @@ functio genExpressia(Expressia expr, ZigGenerator g) -> textus {
 
     # Fallback
     redde "undefined"
-}
-
-# =============================================================================
-# LITERAL HELPERS
-# =============================================================================
-
-functio genLittera(LitteraGenus species, textus crudus) -> textus {
-    si species == LitteraGenus.Verum {
-        redde "true"
-    }
-    si species == LitteraGenus.Falsum {
-        redde "false"
-    }
-    si species == LitteraGenus.Nihil {
-        redde "null"
-    }
-    si species == LitteraGenus.Textus {
-        # String literals in Zig
-        redde scriptum("\"§\"", crudus)
-    }
-    # Numerus, Fractus pass through raw value
-    redde crudus
-}
-
-# =============================================================================
-# OBJECT LITERAL
-# =============================================================================
-
-functio genObiectum(lista<ObiectumProprietas> proprietates, ZigGenerator g) -> textus {
-    si proprietates.longitudo() == 0 {
-        redde ".{}"
-    }
-
-    varia props = [] qua lista<textus>
-    ex proprietates pro prop {
-        si prop.brevitas {
-            # Shorthand: { name } -> .{ .name = name }
-            fixum nomen = genExpressia(prop.clavis, g)
-            props.adde(scriptum(".§ = §", nomen, nomen))
-        } secus {
-            fixum key = genExpressia(prop.clavis, g)
-            fixum val = genExpressia(prop.valor, g)
-            props.adde(scriptum(".§ = §", key, val))
-        }
-    }
-
-    redde scriptum(".{ § }", props.coniunge(", "))
-}
-
-# =============================================================================
-# FORMAT STRING (scriptum)
-# =============================================================================
-
-functio genScriptum(textus exemplar, lista<Expressia> argumenta, ZigGenerator g) -> textus {
-    # Get current allocator
-    fixum curator = g.curator()
-
-    si argumenta.longitudo() == 0 {
-        redde scriptum("\"§\"", exemplar)
-    }
-
-    # Convert § placeholders to {any} for Zig std.fmt
-    varia format = ""
-    varia i = 0
-    dum i < exemplar.longitudo() {
-        fixum c = exemplar[i]
-        si c == "§" {
-            format = format + "{any}"
-        } secus {
-            format = format + c
-        }
-        i += 1
-    }
-
-    varia args = [] qua lista<textus>
-    ex argumenta pro arg {
-        args.adde(genExpressia(arg, g))
-    }
-
-    redde scriptum("std.fmt.allocPrint(§, \"§\", .{ § }) catch @panic(\"OOM\")", curator, format, args.coniunge(", "))
-}
-
-# =============================================================================
-# LAMBDA
-# =============================================================================
-
-functio genLambda(lista<LambdaParametrum> parametra, ignotum corpus, ZigGenerator g) -> textus {
-    varia params = [] qua lista<textus>
-    ex parametra pro p {
-        si nonnihil p.typus {
-            params.adde(scriptum("§: §", p.nomen, genTypus(p.typus qua TypusAnnotatio, g)))
-        } secus {
-            params.adde(scriptum("§: anytype", p.nomen))
-        }
-    }
-
-    discerne corpus {
-        casu Expressia ut e {
-            redde scriptum("struct { fn f(§) anytype { return §; } }.f", params.coniunge(", "), genExpressia(e, g))
-        }
-    }
-
-    redde scriptum("struct { fn f(§) void {} }.f", params.coniunge(", "))
 }

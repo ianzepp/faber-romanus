@@ -1,0 +1,39 @@
+# TypeScript Expression Generator - Range Expressions
+#
+# TRANSFORMS:
+#   1..10           -> Array.from({length: 10 - 1}, (_, i) => 1 + i)
+#   1...10          -> Array.from({length: 10 - 1 + 1}, (_, i) => 1 + i)
+#   1..10 per 2     -> Array.from({length: Math.ceil((10 - 1) / 2)}, (_, i) => 1 + i * 2)
+#   1...10 per 2    -> Array.from({length: Math.floor((10 - 1) / 2) + 1}, (_, i) => 1 + i * 2)
+
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declaration - implementation lives in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+# Generate range expression as array
+@ publica
+functio genAmbitusExpressia(Expressia expr, TsGenerator g) -> textus {
+    # WHY: Ranges become arrays outside of for-loops.
+    discerne expr {
+        casu AmbitusExpressia ut e {
+            fixum initium = genExpressia(e.initium, g)
+            fixum finis = genExpressia(e.finis, g)
+            fixum adj = (e.inclusivum qua bivalens) sic " + 1" secus ""
+
+            si nonnihil e.gradus {
+                fixum gradus = genExpressia(e.gradus qua Expressia, g)
+                si e.inclusivum qua bivalens {
+                    redde scriptum("Array.from({length: Math.floor((§ - §) / §) + 1}, (_, i) => § + i * §)", finis, initium, gradus, initium, gradus)
+                }
+                redde scriptum("Array.from({length: Math.ceil((§ - §) / §)}, (_, i) => § + i * §)", finis, initium, gradus, initium, gradus)
+            }
+
+            redde scriptum("Array.from({length: § - §§}, (_, i) => § + i)", finis, initium, adj, initium)
+        }
+    }
+
+    redde genExpressia(expr, g)
+}

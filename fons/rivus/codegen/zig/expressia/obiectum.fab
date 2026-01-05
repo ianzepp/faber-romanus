@@ -1,0 +1,34 @@
+# Zig Expression Generator - Object Literals
+#
+# TRANSFORMS:
+#   { x: 1, y: 2 }  -> .{ .x = 1, .y = 2 }
+#   { name }        -> .{ .name = name }
+
+ex "../../../ast/expressia" importa Expressia, ObiectumProprietas
+ex "../nucleus" importa ZigGenerator
+
+# External declaration - implementation lives in index.fab
+@ externa
+functio genExpressia(Expressia expr, ZigGenerator g) -> textus
+
+@ publica
+functio genObiectum(lista<ObiectumProprietas> proprietates, ZigGenerator g) -> textus {
+    si proprietates.longitudo() == 0 {
+        redde ".{}"
+    }
+
+    varia props = [] qua lista<textus>
+    ex proprietates pro prop {
+        si prop.brevitas {
+            # Shorthand: { name } -> .{ .name = name }
+            fixum nomen = genExpressia(prop.clavis, g)
+            props.adde(scriptum(".§ = §", nomen, nomen))
+        } secus {
+            fixum key = genExpressia(prop.clavis, g)
+            fixum val = genExpressia(prop.valor, g)
+            props.adde(scriptum(".§ = §", key, val))
+        }
+    }
+
+    redde scriptum(".{ § }", props.coniunge(", "))
+}

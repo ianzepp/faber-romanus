@@ -11,6 +11,11 @@ ex "../nucleus" importa TsGenerator
 ex "../typus" importa genTypus
 ex "../../../parser/morphologia" importa parseMethodum
 ex "../../radices" importa generaListaMethodum
+ex "./littera" importa genLittera, genLitteraExemplar
+ex "./scriptum" importa genScriptum
+ex "./ambitus" importa genAmbitusExpressia
+ex "./est" importa genEstExpressia, genEstExpressiaNegata
+ex "./obiectum" importa genObiectum
 
 # =============================================================================
 # EXPRESSION DISPATCH
@@ -394,32 +399,8 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 }
 
 # =============================================================================
-# LITERAL HELPERS
+# REGEX/STRING HELPERS
 # =============================================================================
-
-# Generate literal value
-@ publica
-functio genLittera(LitteraGenus species, textus crudus) -> textus {
-    si species == LitteraGenus.Verum {
-        redde "true"
-    }
-    si species == LitteraGenus.Falsum {
-        redde "false"
-    }
-    si species == LitteraGenus.Nihil {
-        redde "null"
-    }
-    si species == LitteraGenus.Textus {
-        # String literals need quotes - lexer strips them
-        redde scriptum("\"§\"", crudus)
-    }
-    si species == LitteraGenus.Exemplar {
-        # Template literals need backticks - lexer strips them
-        redde "`" + crudus + "`"
-    }
-    # Numerus, Fractus pass through raw value
-    redde crudus
-}
 
 # Escape forward slashes for JS regex literals.
 functio escapaRegex(textus pattern) -> textus {
@@ -483,32 +464,8 @@ functio genPraefixumSententia(Sententia stmt, TsGenerator g) -> textus {
 }
 
 # =============================================================================
-# RANGE + BARE EXPRESSIONS
+# CHAIN HELPERS
 # =============================================================================
-
-@ publica
-functio genAmbitusExpressia(Expressia expr, TsGenerator g) -> textus {
-    # WHY: Ranges become arrays outside of for-loops.
-    discerne expr {
-        casu AmbitusExpressia ut e {
-            fixum initium = genExpressia(e.initium, g)
-            fixum finis = genExpressia(e.finis, g)
-            fixum adj = (e.inclusivum qua bivalens) sic " + 1" secus ""
-
-            si nonnihil e.gradus {
-                fixum gradus = genExpressia(e.gradus qua Expressia, g)
-                si e.inclusivum qua bivalens {
-                    redde scriptum("Array.from({length: Math.floor((§ - §) / §) + 1}, (_, i) => § + i * §)", finis, initium, gradus, initium, gradus)
-                }
-                redde scriptum("Array.from({length: Math.ceil((§ - §) / §)}, (_, i) => § + i * §)", finis, initium, gradus, initium, gradus)
-            }
-
-            redde scriptum("Array.from({length: § - §§}, (_, i) => § + i)", finis, initium, adj, initium)
-        }
-    }
-
-    redde genExpressia(expr, g)
-}
 
 functio applicaCatenaGradus(textus fons, lista<CatenaGradus> gradus, TsGenerator g) -> textus {
     varia result = fons
@@ -679,137 +636,4 @@ functio genNudaExpressia(Expressia expr, TsGenerator g) -> textus {
     }
 
     redde genExpressia(expr, g)
-}
-
-# Generate template literal
-@ publica
-functio genLitteraExemplar(lista<textus> partes, lista<Expressia> expressiae, TsGenerator g) -> textus {
-    varia result = "`"
-    varia i = 0
-    ex partes pro pars {
-        result = result + pars
-        si i < expressiae.longitudo() {
-            result = result + "${" + genExpressia(expressiae[i], g) + "}"
-        }
-        i += 1
-    }
-    result = result + "`"
-    redde result
-}
-
-# =============================================================================
-# COMPLEX EXPRESSION HELPERS
-# =============================================================================
-
-# Generate est (type check) expression
-@ publica
-functio genEstExpressia(Expressia expr, TypusAnnotatio scopus, TsGenerator g) -> textus {
-    redde genEstExpressiaCum(expr, scopus, g, falsum)
-}
-
-functio genEstExpressiaNegata(Expressia expr, TypusAnnotatio scopus, TsGenerator g) -> textus {
-    redde genEstExpressiaCum(expr, scopus, g, verum)
-}
-
-functio genEstExpressiaCum(Expressia expr, TypusAnnotatio scopus, TsGenerator g, bivalens negatum) -> textus {
-    fixum val = genExpressia(expr, g)
-
-    # Primitive type checks use typeof
-    si scopus.nomen == "textus" {
-        fixum op = negatum sic "!==" secus "==="
-        fixum check = scriptum("typeof § § \"string\"", val, op)
-        si scopus.nullabilis {
-            redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
-        }
-        redde check
-    }
-    si scopus.nomen == "numerus" aut scopus.nomen == "fractus" {
-        fixum op = negatum sic "!==" secus "==="
-        fixum check = scriptum("typeof § § \"number\"", val, op)
-        si scopus.nullabilis {
-            redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
-        }
-        redde check
-    }
-    si scopus.nomen == "bivalens" {
-        fixum op = negatum sic "!==" secus "==="
-        fixum check = scriptum("typeof § § \"boolean\"", val, op)
-        si scopus.nullabilis {
-            redde negatum sic scriptum("§ && § !== null", check, val) secus scriptum("§ || § === null", check, val)
-        }
-        redde check
-    }
-    si scopus.nomen == "nihil" {
-        fixum op = negatum sic "!==" secus "==="
-        redde scriptum("§ § null", val, op)
-    }
-    si scopus.nomen == "lista" {
-        si negatum {
-            redde scriptum("!Array.isArray(§)", val)
-        }
-        redde scriptum("Array.isArray(§)", val)
-    }
-
-    # User-defined types use instanceof
-    si negatum {
-        redde scriptum("!(§ instanceof §)", val, scopus.nomen)
-    }
-    redde scriptum("§ instanceof §", val, scopus.nomen)
-}
-
-# Generate scriptum (format string) expression
-# Uses § (section sign) as placeholder
-@ publica
-functio genScriptum(textus exemplar, lista<Expressia> argumenta, TsGenerator g) -> textus {
-    # WHY: No-arg scriptum should emit a plain string literal (no template).
-    si argumenta.longitudo() == 0 {
-        redde scriptum("\"§\"", exemplar)
-    }
-
-    # Convert scriptum("Hello, §!", name) to template literal
-    varia result = "`"
-    varia argIndex = 0
-    varia i = 0
-
-    dum i < exemplar.longitudo() {
-        fixum c = exemplar[i]
-        si c == "§" {
-            fixum arg = argIndex < argumenta.longitudo() sic genExpressia(argumenta[argIndex], g) secus "undefined"
-            result = result + "${" + arg + "}"
-            argIndex += 1
-        } secus {
-            result = result + c
-        }
-        i += 1
-    }
-
-    result = result + "`"
-    redde result
-}
-
-# Generate object literal
-@ publica
-functio genObiectum(lista<ObiectumProprietas> proprietates, TsGenerator g) -> textus {
-    si proprietates.longitudo() == 0 {
-        redde "{}"
-    }
-
-    varia props = [] qua lista<textus>
-    ex proprietates pro prop {
-        si prop.dispersum {
-            # WHY: Spread properties lower to ...expr in JS object literals.
-            props.adde(scriptum("...§", genExpressia(prop.valor, g)))
-        } sin prop.brevitas {
-            # Shorthand: { name } -> { name }
-            props.adde(genExpressia(prop.clavis, g))
-        } sin prop.computatum {
-            # Computed: { [expr]: value }
-            props.adde(scriptum("[§]: §", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
-        } secus {
-            # Normal: { key: value }
-            props.adde(scriptum("§: §", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
-        }
-    }
-
-    redde scriptum("{{ § }}", props.coniunge(", "))
 }

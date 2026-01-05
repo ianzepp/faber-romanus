@@ -1,0 +1,46 @@
+# Zig Statement Generator - Conditionals
+#
+# TRANSFORMS:
+#   si cond { } -> if (cond) { }
+#   si cond { } secus { } -> if (cond) { } else { }
+
+ex "../../../ast/sententia" importa Sententia
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa ZigGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, ZigGenerator g) -> textus
+
+@ externa
+functio genSententia(Sententia stmt, ZigGenerator g) -> textus
+
+@ publica
+functio genSi(Expressia condicio, Sententia consequens, ignotum alternans, ZigGenerator g) -> textus {
+    g.intraProfundum()
+    fixum consBody = genSententia(consequens, g)
+    g.exiProfundum()
+
+    varia result = scriptum("§if (§) {\n§\n§}", g.ind(), genExpressia(condicio, g), consBody, g.ind())
+
+    si nonnihil alternans {
+        fixum alt = alternans qua Sententia
+
+        # Check if it's another si (else if chain)
+        si alt.tag == "SiSententia" {
+            fixum altSi = alt
+            g.intraProfundum()
+            fixum elseBody = genSententia(alt, g)
+            g.exiProfundum()
+            # Strip the leading indentation from nested if
+            result = scriptum("§ else §", result, elseBody.sectio(g.indentum.longitudo() * (g.profunditas + 1), elseBody.longitudo()))
+        } secus {
+            g.intraProfundum()
+            fixum elseBody = genSententia(alt, g)
+            g.exiProfundum()
+            result = scriptum("§ else {\n§\n§}", result, elseBody, g.ind())
+        }
+    }
+
+    redde result
+}

@@ -1,0 +1,40 @@
+# TypeScript Statement Generator - Variable Declarations
+#
+# TRANSFORMS:
+#   varia x: numerus = 5      -> let x: number = 5
+#   fixum y: textus = "hello" -> const y: string = "hello"
+#   @ externa fixum z: numerus -> declare const z: number
+
+ex "../../../ast/sententia" importa VariaGenus
+ex "../../../ast/expressia" importa Expressia
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa TsGenerator
+ex "../typus" importa genTypus
+ex "../expressia/index" importa genExpressia
+
+@ publica
+functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignotum valor, bivalens externa, TsGenerator g) -> textus {
+    # External declarations use TypeScript's 'declare' syntax
+    si externa {
+        varia result = scriptum("§declare const §", g.ind(), nomen)
+        si nonnihil adnotatioTypus {
+            result = scriptum("§: §", result, genTypus(adnotatioTypus qua TypusAnnotatio, g))
+        }
+        redde scriptum("§;", result)
+    }
+
+    fixum keyword = species == VariaGenus.Fixum aut species == VariaGenus.Figendum sic "const" secus "let"
+    fixum asyncPrefix = species == VariaGenus.Figendum aut species == VariaGenus.Variandum sic "await " secus ""
+
+    varia result = scriptum("§§ §", g.ind(), keyword, nomen)
+
+    si nonnihil adnotatioTypus {
+        result = scriptum("§: §", result, genTypus(adnotatioTypus qua TypusAnnotatio, g))
+    }
+
+    si nonnihil valor {
+        result = scriptum("§ = §§", result, asyncPrefix, genExpressia(valor qua Expressia, g))
+    }
+
+    redde scriptum("§;", result)
+}

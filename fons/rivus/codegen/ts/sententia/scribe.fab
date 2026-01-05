@@ -1,0 +1,31 @@
+# TypeScript Statement Generator - Console Output
+#
+# TRANSFORMS:
+#   scribe "hello"       -> console.log("hello");
+#   scribe.vide "debug"  -> console.debug("debug");
+#   scribe.mone "warn"   -> console.warn("warn");
+
+ex "../../../ast/sententia" importa ScribeGradus
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ publica
+functio genScribe(ScribeGradus gradus, lista<Expressia> argumenta, TsGenerator g) -> textus {
+    varia args = [] qua lista<textus>
+    ex argumenta pro arg {
+        args.adde(genExpressia(arg, g))
+    }
+
+    varia method = "log"
+    si gradus == ScribeGradus.Vide {
+        method = "debug"
+    } sin gradus == ScribeGradus.Mone {
+        method = "warn"
+    }
+
+    redde scriptum("§console.§(§);", g.ind(), method, args.coniunge(", "))
+}

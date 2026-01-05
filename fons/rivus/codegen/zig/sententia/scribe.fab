@@ -1,0 +1,29 @@
+# Zig Statement Generator - Output Statements
+#
+# TRANSFORMS:
+#   scribe(x, y)  -> std.debug.print("{any} {any}\n", .{ x, y });
+
+ex "../../../ast/sententia" importa ScribeGradus
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa ZigGenerator
+
+# External declaration - implementation lives in index.fab
+@ externa
+functio genExpressia(Expressia expr, ZigGenerator g) -> textus
+
+@ publica
+functio genScribe(ScribeGradus gradus, lista<Expressia> argumenta, ZigGenerator g) -> textus {
+    # Build format string and args
+    varia formatParts = [] qua lista<textus>
+    varia args = [] qua lista<textus>
+
+    ex argumenta pro arg {
+        formatParts.adde("{any}")
+        args.adde(genExpressia(arg, g))
+    }
+
+    fixum format = formatParts.coniunge(" ")
+    fixum argsStr = args.coniunge(", ")
+
+    redde scriptum("§std.debug.print(\"§\\n\", .{ § });", g.ind(), format, argsStr)
+}

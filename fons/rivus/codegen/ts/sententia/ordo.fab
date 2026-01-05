@@ -1,0 +1,46 @@
+# TypeScript Statement Generator - Enum Declarations
+#
+# TRANSFORMS:
+#   ordo Color { Red, Green, Blue }           -> enum Color { Red, Green, Blue }
+#   ordo Status { Active = 1, Inactive = 0 }  -> enum Status { Active = 1, Inactive = 0 }
+
+ex "../../../ast/sententia" importa OrdoMembrum
+ex "../nucleus" importa TsGenerator
+
+@ publica
+functio genOrdo(textus nomen, lista<OrdoMembrum> membra, TsGenerator g) -> textus {
+    varia result = scriptum("§enum § {\n", g.ind(), nomen)
+    g.intraProfundum()
+
+    # If no member has an explicit value, keep them on one line.
+    varia habetValores = falsum
+    ex membra pro membrum {
+        si nonnihil membrum.valor {
+            habetValores = verum
+        }
+    }
+
+    si non habetValores {
+        varia nomina = [] qua lista<textus>
+        ex membra pro membrum {
+            nomina.adde(membrum.nomen)
+        }
+        result = scriptum("§§§\n", result, g.ind(), nomina.coniunge(", "))
+        g.exiProfundum()
+        result = scriptum("§§}", result, g.ind())
+        redde result
+    }
+
+    ex membra pro membrum {
+        si nonnihil membrum.valor {
+            result = scriptum("§§§ = §,\n", result, g.ind(), membrum.nomen, membrum.valor qua textus)
+        } secus {
+            result = scriptum("§§§,\n", result, g.ind(), membrum.nomen)
+        }
+    }
+
+    g.exiProfundum()
+    result = scriptum("§§}", result, g.ind())
+
+    redde result
+}

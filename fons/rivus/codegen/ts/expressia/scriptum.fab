@@ -1,0 +1,43 @@
+# TypeScript Expression Generator - Scriptum
+#
+# TRANSFORMS:
+#   scriptum("Hello, !", name) -> `Hello, ${name}!`
+#   scriptum("x = ", x)        -> `x = ${x}`
+#   scriptum("no args")        -> "no args"
+
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declaration - implementation lives in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+# Generate scriptum (format string) expression
+# Uses section sign as placeholder
+@ publica
+functio genScriptum(textus exemplar, lista<Expressia> argumenta, TsGenerator g) -> textus {
+    # WHY: No-arg scriptum should emit a plain string literal (no template).
+    si argumenta.longitudo() == 0 {
+        redde scriptum("\"§\"", exemplar)
+    }
+
+    # Convert scriptum("Hello, !", name) to template literal
+    varia result = "`"
+    varia argIndex = 0
+    varia i = 0
+
+    dum i < exemplar.longitudo() {
+        fixum c = exemplar[i]
+        si c == "§" {
+            fixum arg = argIndex < argumenta.longitudo() sic genExpressia(argumenta[argIndex], g) secus "undefined"
+            result = result + "${" + arg + "}"
+            argIndex += 1
+        } secus {
+            result = result + c
+        }
+        i += 1
+    }
+
+    result = result + "`"
+    redde result
+}

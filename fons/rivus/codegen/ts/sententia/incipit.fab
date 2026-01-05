@@ -1,0 +1,44 @@
+# TypeScript Statement Generator - Entry Points
+#
+# TRANSFORMS:
+#   incipit { ... }  -> unwrapped body statements
+#   incipiet { ... } -> (async () => { ... })();
+
+ex "../../../ast/sententia" importa Sententia
+ex "../nucleus" importa TsGenerator
+
+@ externa
+functio genSententia(Sententia stmt, TsGenerator g) -> textus
+
+@ publica
+functio genIncipit(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
+    si nonnihil corpus {
+        varia result = genSententia(corpus qua Sententia, g)
+        si nonnihil ergo {
+            result = scriptum("§\n§", result, genSententia(ergo qua Sententia, g))
+        }
+        redde result
+    }
+    si nonnihil ergo {
+        redde genSententia(ergo qua Sententia, g)
+    }
+    redde ""
+}
+
+@ publica
+functio genIncipiet(ignotum corpus, ignotum ergo, TsGenerator g) -> textus {
+    g.intraProfundum()
+    varia body = ""
+    si nonnihil corpus {
+        body = genSententia(corpus qua Sententia, g)
+    }
+    g.exiProfundum()
+
+    varia result = scriptum("§(async () => {{\n§\n§}})();", g.ind(), body, g.ind())
+
+    si nonnihil ergo {
+        result = scriptum("§\n§", result, genSententia(ergo qua Sententia, g))
+    }
+
+    redde result
+}

@@ -1,0 +1,25 @@
+# TypeScript Statement Generator - Return Statements
+#
+# TRANSFORMS:
+#   redde                -> return;
+#   redde valor          -> return valor;
+#   redde valor (flumina) -> yield respond.ok(valor);
+
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ publica
+functio genRedde(ignotum valor, TsGenerator g) -> textus {
+    si g.inFlumina {
+        fixum data = nonnihil valor sic genExpressia(valor qua Expressia, g) secus "undefined"
+        redde scriptum("§yield respond.ok(§);", g.ind(), data)
+    }
+    si nonnihil valor {
+        redde scriptum("§return §;", g.ind(), genExpressia(valor qua Expressia, g))
+    }
+    redde scriptum("§return;", g.ind())
+}

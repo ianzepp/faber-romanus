@@ -1,0 +1,88 @@
+# TypeScript Statement Generator - Test Statements
+#
+# TRANSFORMS:
+#   probandum "suite" { ... }         -> describe("suite", () => { ... })
+#   proba "case" { ... }              -> test("case", () => { ... })
+#   proba @ omitte "skip" { }         -> test.skip("skip", () => { })
+#   proba @ futurum "todo"            -> test.todo("todo")
+#   praepara { ... }                  -> beforeEach(() => { ... })
+#   praepara @ omnia { ... }          -> beforeAll(() => { ... })
+#   postpara { ... }                  -> afterEach(() => { ... })
+#   postpara @ omnia { ... }          -> afterAll(() => { ... })
+
+ex "../../../ast/sententia" importa Sententia, ProbaModificator, PraeparaTempus
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genSententia(Sententia stmt, TsGenerator g) -> textus
+
+@ publica
+functio genProbandum(textus nomen, lista<Sententia> corpus, TsGenerator g) -> textus {
+    varia lines = [] qua lista<textus>
+    lines.adde(scriptum("§describe(\"§\", () => {{", g.ind(), nomen))
+
+    g.intraProfundum()
+    ex corpus pro stmt {
+        lines.adde(genSententia(stmt, g))
+    }
+    g.exiProfundum()
+
+    lines.adde(scriptum("§});", g.ind()))
+    redde lines.coniunge("\n")
+}
+
+@ publica
+functio genProba(textus nomen, ignotum modificator, textus? ratioModificatoris, Sententia corpus, TsGenerator g) -> textus {
+    varia ratio = ""
+    si nonnihil ratioModificatoris {
+        ratio = scriptum("§: ", ratioModificatoris)
+    }
+
+    si nonnihil modificator {
+        fixum mod = modificator qua ProbaModificator
+        fixum titulus = scriptum("§§", ratio, nomen)
+
+        si mod == ProbaModificator.Omitte {
+            g.intraProfundum()
+            fixum body = genSententia(corpus, g)
+            g.exiProfundum()
+            redde scriptum("§test.skip(\"§\", () => {{\n§\n§}});", g.ind(), titulus, body, g.ind())
+        }
+        si mod == ProbaModificator.Futurum {
+            redde scriptum("§test.todo(\"§\");", g.ind(), titulus)
+        }
+    }
+
+    g.intraProfundum()
+    fixum body = genSententia(corpus, g)
+    g.exiProfundum()
+
+    redde scriptum("§test(\"§\", () => {{\n§\n§}});", g.ind(), nomen, body, g.ind())
+}
+
+@ publica
+functio genPraepara(PraeparaTempus tempus, bivalens asynca, bivalens omnia, Sententia corpus, TsGenerator g) -> textus {
+    varia hook = "beforeEach"
+    si tempus == PraeparaTempus.Praepara {
+        si omnia {
+            hook = "beforeAll"
+        } secus {
+            hook = "beforeEach"
+        }
+    } secus {
+        si omnia {
+            hook = "afterAll"
+        } secus {
+            hook = "afterEach"
+        }
+    }
+
+    fixum asyncPrefix = asynca sic "async " secus ""
+
+    g.intraProfundum()
+    fixum body = genSententia(corpus, g)
+    g.exiProfundum()
+
+    redde scriptum("§§(§() => {{\n§\n§}});", g.ind(), hook, asyncPrefix, body, g.ind())
+}

@@ -1,0 +1,75 @@
+# TypeScript Statement Generator - Import and Destructuring
+#
+# TRANSFORMS:
+#   ex "fs" importa readFile       -> import { readFile } from "fs";
+#   ex "fs" importa *              -> import * from "fs";
+#   ex "fs" importa * ut fs        -> import * as fs from "fs";
+#   ex obj importa { a, b }        -> const { a, b } = obj;
+#   ex arr importa [a, , b]        -> const [a, , b] = arr;
+
+ex "../../../ast/sententia" importa ImportaSpecificator, VariaGenus, SeriesDestructuraElementum
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declaration - implementation lives in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ publica
+functio genImporta(textus fons, lista<ImportaSpecificator> specificatores, bivalens totum, ignotum totumAlias, TsGenerator g) -> textus {
+    si totum {
+        si nonnihil totumAlias {
+            redde scriptum("§import * as § from \"§\";", g.ind(), totumAlias qua textus, fons)
+        }
+        redde scriptum("§import * from \"§\";", g.ind(), fons)
+    }
+
+    varia specs = [] qua lista<textus>
+    ex specificatores pro spec {
+        si spec.importatum == spec.locale {
+            specs.adde(spec.importatum)
+        } secus {
+            specs.adde(scriptum("§ as §", spec.importatum, spec.locale))
+        }
+    }
+
+    redde scriptum("§import { § } from \"§\";", g.ind(), specs.coniunge(", "), fons)
+}
+
+@ publica
+functio genDestructura(Expressia fons, VariaGenus species, lista<ImportaSpecificator> specificatores, TsGenerator g) -> textus {
+    fixum keyword = (species == VariaGenus.Fixum aut species == VariaGenus.Figendum) sic "const" secus "let"
+    fixum asyncPrefix = (species == VariaGenus.Figendum aut species == VariaGenus.Variandum) sic "await " secus ""
+
+    varia specs = [] qua lista<textus>
+    ex specificatores pro spec {
+        si spec.residuum {
+            specs.adde(scriptum("...§", spec.locale))
+        } sin spec.importatum == spec.locale {
+            specs.adde(spec.importatum)
+        } secus {
+            specs.adde(scriptum("§: §", spec.importatum, spec.locale))
+        }
+    }
+
+    redde scriptum("§§ { § } = §§;", g.ind(), keyword, specs.coniunge(", "), asyncPrefix, genExpressia(fons, g))
+}
+
+@ publica
+functio genSeriesDestructura(lista<SeriesDestructuraElementum> elementa, Expressia fons, VariaGenus species, TsGenerator g) -> textus {
+    fixum keyword = (species == VariaGenus.Fixum aut species == VariaGenus.Figendum) sic "const" secus "let"
+    fixum asyncPrefix = (species == VariaGenus.Figendum aut species == VariaGenus.Variandum) sic "await " secus ""
+
+    varia items = [] qua lista<textus>
+    ex elementa pro elem {
+        si elem.omissum {
+            items.adde("")
+        } sin elem.residuum {
+            items.adde(scriptum("...§", elem.nomen))
+        } secus {
+            items.adde(elem.nomen)
+        }
+    }
+
+    redde scriptum("§§ [§] = §§;", g.ind(), keyword, items.coniunge(", "), asyncPrefix, genExpressia(fons, g))
+}

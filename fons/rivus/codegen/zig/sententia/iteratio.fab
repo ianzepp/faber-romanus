@@ -1,0 +1,40 @@
+# Zig Statement Generator - Iteration Loops
+#
+# TRANSFORMS:
+#   per x ex lista { }  -> for (lista) |x| { }
+#   per x ex 0..10 { }  -> for (@intCast(0)..@intCast(10)) |x| { }
+
+ex "../../../ast/sententia" importa Sententia, IteratioGenus
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa ZigGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, ZigGenerator g) -> textus
+
+@ externa
+functio genSententia(Sententia stmt, ZigGenerator g) -> textus
+
+@ publica
+functio genIteratio(IteratioGenus species, textus variabilis, Expressia iterabile, Sententia corpus, ZigGenerator g) -> textus {
+    g.intraProfundum()
+    fixum body = genSententia(corpus, g)
+    g.exiProfundum()
+
+    # Check if it's a range expression
+    discerne iterabile {
+        casu AmbitusExpressia ut a {
+            fixum initium = genExpressia(a.initium, g)
+            fixum finis = genExpressia(a.finis, g)
+
+            # Zig range syntax: for (start..end) |i| { }
+            si a.inclusivum qua bivalens {
+                redde scriptum("§for (@intCast(§)..@intCast(§ + 1)) |§| {\n§\n§}", g.ind(), initium, finis, variabilis, body, g.ind())
+            }
+            redde scriptum("§for (@intCast(§)..@intCast(§)) |§| {\n§\n§}", g.ind(), initium, finis, variabilis, body, g.ind())
+        }
+    }
+
+    # Slice iteration
+    redde scriptum("§for (§) |§| {\n§\n§}", g.ind(), genExpressia(iterabile, g), variabilis, body, g.ind())
+}

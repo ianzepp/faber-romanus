@@ -1,0 +1,48 @@
+# TypeScript Statement Generator - Throw Statements
+#
+# TRANSFORMS:
+#   mori "error"              -> throw new Panic("error");
+#   mori expr                 -> throw new Panic(String(expr));
+#   iace "error"              -> throw "error";
+#   iace expr                 -> throw expr;
+#   (in flumina) iace "error" -> yield respond.error("EFAIL", "error"); return;
+
+ex "../../../ast/expressia" importa Expressia, LitteraGenus
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ publica
+functio genIace(bivalens fatale, Expressia argumentum, TsGenerator g) -> textus {
+    fixum expr = genExpressia(argumentum, g)
+
+    si fatale {
+        # WHY: mori is fatal - use Panic and string coercion for non-literals.
+        g.requisita.panic = verum
+        discerne argumentum {
+            casu Littera ut lit {
+                si lit.species == LitteraGenus.Textus {
+                    redde scriptum("§throw new Panic(§);", g.ind(), expr)
+                }
+            }
+        }
+        redde scriptum("§throw new Panic(String(§));", g.ind(), expr)
+    }
+
+    # WHY: In flumina mode, iace yields an error response and exits.
+    si g.inFlumina aut g.inFiunt aut g.inFiet aut g.inFient {
+        varia message = scriptum("String(§)", expr)
+        discerne argumentum {
+            casu Littera ut lit {
+                si lit.species == LitteraGenus.Textus {
+                    message = expr
+                }
+            }
+        }
+        redde scriptum("§yield respond.error(\"EFAIL\", §);\n§return;", g.ind(), message, g.ind())
+    }
+
+    redde scriptum("§throw §;", g.ind(), expr)
+}

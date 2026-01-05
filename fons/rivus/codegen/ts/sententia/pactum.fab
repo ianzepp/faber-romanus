@@ -1,0 +1,68 @@
+# TypeScript Statement Generator - Interface Declarations
+#
+# TRANSFORMS:
+#   pactum Foo { ... }                     -> interface Foo { ... }
+#   pactum Foo<T> { ... }                  -> interface Foo<T> { ... }
+#   pactum Foo { f(): T }                  -> interface Foo { f(): T }
+#   pactum Foo { futura f(): T }           -> interface Foo { f(): Promise<T> }
+#   pactum Foo { cursore f(): T }          -> interface Foo { f(): Generator<T> }
+
+ex "../../../ast/sententia" importa Parametrum, PactumMethodus
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genParametrum(Parametrum param, TsGenerator g) -> textus
+
+@ externa
+functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus
+
+@ publica
+functio genPactum(textus nomen, ignotum generaParametra, lista<PactumMethodus> methodi, TsGenerator g) -> textus {
+    varia result = scriptum("§interface §", g.ind(), nomen)
+
+    si nonnihil generaParametra {
+        fixum gp = generaParametra qua lista<textus>
+        si gp.longitudo() > 0 {
+            result = scriptum("§<§>", result, gp.coniunge(", "))
+        }
+    }
+
+    result = scriptum("§ {{\n", result)
+    g.intraProfundum()
+
+    ex methodi pro methodus {
+        varia params = [] qua lista<textus>
+        ex methodus.parametra pro param {
+            params.adde(genParametrum(param, g))
+        }
+
+        varia line = scriptum("§§(§)", g.ind(), methodus.nomen, params.coniunge(", "))
+        varia reditus = ""
+        si nonnihil methodus.typusReditus {
+            reditus = genTypus(methodus.typusReditus qua TypusAnnotatio, g)
+        }
+
+        si reditus == "" et (methodus.generator aut methodus.asynca) {
+            reditus = "void"
+        }
+
+        si methodus.generator {
+            reditus = methodus.asynca sic scriptum("AsyncGenerator<§>", reditus) secus scriptum("Generator<§>", reditus)
+        } sin methodus.asynca {
+            reditus = scriptum("Promise<§>", reditus)
+        }
+
+        si reditus != "" {
+            line = scriptum("§: §", line, reditus)
+        }
+
+        result = scriptum("§§;\n", result, line)
+    }
+
+    g.exiProfundum()
+    result = scriptum("§§}}", result, g.ind())
+
+    redde result
+}

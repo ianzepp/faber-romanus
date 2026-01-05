@@ -1,0 +1,27 @@
+# TypeScript Statement Generator - Assertions
+#
+# TRANSFORMS:
+#   adfirma x > 0               -> if (!(x > 0)) { throw new Error("Assertion failed: x > 0"); }
+#   adfirma x > 0, "custom msg" -> if (!(x > 0)) { throw new Error("custom msg"); }
+
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ publica
+functio genAdfirma(Expressia condicio, ignotum nuntius, TsGenerator g) -> textus {
+    fixum test = genExpressia(condicio, g)
+
+    varia nuntiusTextus = ""
+    si nonnihil nuntius {
+        nuntiusTextus = genExpressia(nuntius qua Expressia, g)
+    } secus {
+        # WHY: Auto-generate assertion message from expression.
+        nuntiusTextus = scriptum("\"Assertion failed: §\"", test.replace("\"", "\\\""))
+    }
+
+    redde scriptum("§if (!(§)) { throw new Error(§); }", g.ind(), test, nuntiusTextus)
+}

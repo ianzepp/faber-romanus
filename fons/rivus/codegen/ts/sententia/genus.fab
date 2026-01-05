@@ -1,0 +1,178 @@
+# TypeScript Statement Generator - Class Declarations
+#
+# TRANSFORMS:
+#   genus Foo { ... }                     -> class Foo { ... }
+#   genus Foo<T> { ... }                  -> class Foo<T> { ... }
+#   genus Foo extendit Bar { ... }        -> class Foo extends Bar { ... }
+#   genus Foo implet X, Y { ... }         -> class Foo implements X, Y { ... }
+#   @ abstractum genus Foo { ... }        -> abstract class Foo { ... }
+#   campus publicus x: numerus            -> public x: number
+#   campus protectus x: numerus           -> protected x: number
+#   campus privatus x: numerus            -> private x: number
+#   campus staticus x: numerus            -> static x: number
+
+ex "../../../ast/sententia" importa Sententia, CampusDeclaratio, Visibilitas
+ex "../../../ast/expressia" importa Expressia
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ externa
+functio genSententia(Sententia stmt, TsGenerator g) -> textus
+
+@ externa
+functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus
+
+@ publica
+functio genGenus(textus nomen, ignotum generaParametra, ignotum extendit, ignotum implet, bivalens abstractum, lista<CampusDeclaratio> campi, ignotum structor, lista<Sententia> methodi, TsGenerator g) -> textus {
+    varia result = g.ind()
+
+    si abstractum {
+        result = scriptum("§abstract ", result)
+    }
+
+    result = scriptum("§class §", result, nomen)
+
+    # Generics
+    si nonnihil generaParametra {
+        fixum gp = generaParametra qua lista<textus>
+        si gp.longitudo() > 0 {
+            result = scriptum("§<§>", result, gp.coniunge(", "))
+        }
+    }
+
+    # Extends
+    si nonnihil extendit {
+        result = scriptum("§ extends §", result, extendit qua textus)
+    }
+
+    # Implements
+    si nonnihil implet {
+        fixum impl = implet qua lista<textus>
+        si impl.longitudo() > 0 {
+            result = scriptum("§ implements §", result, impl.coniunge(", "))
+        }
+    }
+
+    result = scriptum("§ {{\n", result)
+    g.intraProfundum()
+    g.inGenere = verum
+
+    # Fields
+    ex campi pro campus {
+        result = scriptum("§§\n", result, genCampus(campus, g))
+    }
+
+    # Split creo method from other methods
+    varia creo = nihil qua Sententia?
+    varia ceteri = [] qua lista<Sententia>
+    ex methodi pro m {
+        varia estCreo = falsum
+        discerne m {
+            casu FunctioDeclaratio ut f {
+                si f.structor {
+                    creo = f qua Sententia
+                    estCreo = verum
+                }
+            }
+        }
+        si non estCreo {
+            ceteri.adde(m)
+        }
+    }
+
+    # Constructor (auto-merge)
+    result = scriptum("§§\n", result, genAutoMergeConstructor(campi, nonnihil creo, g))
+
+    # Private creo hook
+    si nonnihil creo {
+        result = scriptum("§§\n", result, genCreoMethod(creo qua Sententia, g))
+    }
+
+    # Methods
+    ex ceteri pro methodus {
+        result = scriptum("§§\n", result, genSententia(methodus, g))
+    }
+
+    g.inGenere = falsum
+    g.exiProfundum()
+    result = scriptum("§§}}", result, g.ind())
+
+    redde result
+}
+
+functio genAutoMergeConstructor(lista<CampusDeclaratio> campi, bivalens hasCreo, TsGenerator g) -> textus {
+    varia lines = [] qua lista<textus>
+    varia instFields = [] qua lista<CampusDeclaratio>
+    ex campi pro campus {
+        si non campus.staticum {
+            instFields.adde(campus)
+        }
+    }
+
+    varia props = [] qua lista<textus>
+    ex instFields pro campus {
+        props.adde(scriptum("§?: §", campus.nomen, genTypus(campus.typus, g)))
+    }
+    fixum overridesType = instFields.longitudo() > 0 sic scriptum("{ § }", props.coniunge(", ")) secus "Record<string, never>"
+
+    lines.adde(scriptum("§constructor(overrides: § = {}) {", g.ind(), overridesType))
+    g.intraProfundum()
+
+    ex instFields pro campus {
+        lines.adde(scriptum("§if (overrides.§ !== undefined) { this.§ = overrides.§; }", g.ind(), campus.nomen, campus.nomen, campus.nomen))
+    }
+    si hasCreo {
+        lines.adde(scriptum("§this.creo();", g.ind()))
+    }
+
+    g.exiProfundum()
+    lines.adde(scriptum("§}", g.ind()))
+
+    redde lines.coniunge("\n")
+}
+
+functio genCreoMethod(Sententia creo, TsGenerator g) -> textus {
+    discerne creo {
+        casu FunctioDeclaratio ut f {
+            varia body = "{}"
+            si nonnihil f.corpus {
+                g.intraProfundum()
+                fixum content = genSententia(f.corpus qua Sententia, g)
+                g.exiProfundum()
+                body = scriptum("{\n§\n§}", content, g.ind())
+            }
+            redde scriptum("§private creo() §", g.ind(), body)
+        }
+    }
+    redde scriptum("§private creo() {}", g.ind())
+}
+
+@ publica
+functio genCampus(CampusDeclaratio campus, TsGenerator g) -> textus {
+    varia result = g.ind()
+
+    # Visibility
+    si campus.visibilitas == Visibilitas.Publica {
+        result = scriptum("§public ", result)
+    } sin campus.visibilitas == Visibilitas.Protecta {
+        result = scriptum("§protected ", result)
+    } secus {
+        result = scriptum("§private ", result)
+    }
+
+    si campus.staticum {
+        result = scriptum("§static ", result)
+    }
+
+    result = scriptum("§§: §", result, campus.nomen, genTypus(campus.typus, g))
+
+    si nonnihil campus.valor {
+        result = scriptum("§ = §", result, genExpressia(campus.valor, g))
+    }
+
+    redde scriptum("§;", result)
+}

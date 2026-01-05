@@ -1,0 +1,41 @@
+# TypeScript Expression Generator - Obiectum (Object Literals)
+#
+# TRANSFORMS:
+#   { prop: value }      -> { prop: value }
+#   { prop }             -> { prop } (shorthand)
+#   { [expr]: value }    -> { [expr]: value } (computed)
+#   { ...expr }          -> { ...expr } (spread)
+
+ex "../../../ast/expressia" importa Expressia, ObiectumProprietas
+ex "../nucleus" importa TsGenerator
+
+# External declaration - implementation lives in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+# Generate object literal
+@ publica
+functio genObiectum(lista<ObiectumProprietas> proprietates, TsGenerator g) -> textus {
+    si proprietates.longitudo() == 0 {
+        redde "{}"
+    }
+
+    varia props = [] qua lista<textus>
+    ex proprietates pro prop {
+        si prop.dispersum {
+            # WHY: Spread properties lower to ...expr in JS object literals.
+            props.adde(scriptum("...§", genExpressia(prop.valor, g)))
+        } sin prop.brevitas {
+            # Shorthand: { name } -> { name }
+            props.adde(genExpressia(prop.clavis, g))
+        } sin prop.computatum {
+            # Computed: { [expr]: value }
+            props.adde(scriptum("[§]: §", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
+        } secus {
+            # Normal: { key: value }
+            props.adde(scriptum("§: §", genExpressia(prop.clavis, g), genExpressia(prop.valor, g)))
+        }
+    }
+
+    redde scriptum("{{ § }}", props.coniunge(", "))
+}

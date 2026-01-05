@@ -1,0 +1,64 @@
+# Zig Statement Generator - Function Declarations
+#
+# TRANSFORMS:
+#   functio foo(x) { }     -> pub fn foo(x: anytype) void { }
+#   @externa functio foo() -> extern fn foo() void;
+
+ex "../../../ast/sententia" importa Sententia, Parametrum
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa ZigGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genSententia(Sententia stmt, ZigGenerator g) -> textus
+
+@ externa
+functio genTypus(TypusAnnotatio adnotatio, ZigGenerator g) -> textus
+
+@ publica
+functio genFunctio(textus nomen, lista<Parametrum> parametra, ignotum typusReditus, ignotum corpus, bivalens externa, ZigGenerator g) -> textus {
+    # Build parameter list
+    varia params = [] qua lista<textus>
+    ex parametra pro param {
+        params.adde(genParametrum(param, g))
+    }
+
+    # Return type
+    varia retType = "void"
+    si nonnihil typusReditus {
+        retType = genTypus(typusReditus qua TypusAnnotatio, g)
+    }
+
+    # External declarations use Zig's 'extern fn' syntax
+    si externa {
+        redde scriptum("§extern fn §(§) §;", g.ind(), nomen, params.coniunge(", "), retType)
+    }
+
+    varia result = scriptum("§pub fn §(§) §", g.ind(), nomen, params.coniunge(", "), retType)
+
+    # Body
+    si nonnihil corpus {
+        g.intraProfundum()
+        fixum body = genSententia(corpus qua Sententia, g)
+        g.exiProfundum()
+
+        si body == "" {
+            result = scriptum("§ {}", result)
+        } secus {
+            result = scriptum("§ {\n§\n§}", result, body, g.ind())
+        }
+    } secus {
+        result = scriptum("§;", result)
+    }
+
+    redde result
+}
+
+@ publica
+functio genParametrum(Parametrum param, ZigGenerator g) -> textus {
+    varia zigTypus = "anytype"
+    si nonnihil param.typus {
+        zigTypus = genTypus(param.typus qua TypusAnnotatio, g)
+    }
+    redde scriptum("§: §", param.nomen, zigTypus)
+}

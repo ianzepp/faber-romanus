@@ -1,0 +1,35 @@
+# Zig Expression Generator - Lambda Expressions
+#
+# TRANSFORMS:
+#   (x) => x + 1  -> struct { fn f(x: anytype) anytype { return x + 1; } }.f
+
+ex "../../../ast/expressia" importa Expressia, LambdaParametrum
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa ZigGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, ZigGenerator g) -> textus
+
+@ externa
+functio genTypus(TypusAnnotatio adnotatio, ZigGenerator g) -> textus
+
+@ publica
+functio genLambda(lista<LambdaParametrum> parametra, ignotum corpus, ZigGenerator g) -> textus {
+    varia params = [] qua lista<textus>
+    ex parametra pro p {
+        si nonnihil p.typus {
+            params.adde(scriptum("§: §", p.nomen, genTypus(p.typus qua TypusAnnotatio, g)))
+        } secus {
+            params.adde(scriptum("§: anytype", p.nomen))
+        }
+    }
+
+    discerne corpus {
+        casu Expressia ut e {
+            redde scriptum("struct { fn f(§) anytype { return §; } }.f", params.coniunge(", "), genExpressia(e, g))
+        }
+    }
+
+    redde scriptum("struct { fn f(§) void {} }.f", params.coniunge(", "))
+}

@@ -1,0 +1,62 @@
+# TypeScript Statement Generator - Guard Clauses
+#
+# TRANSFORMS:
+#   custodi x > 0 { ... }  -> if (x > 0) { ... }
+#
+# WHY: Guard clauses are similar to conditionals but represent early-exit
+#      patterns. Multiple guards emit sequential if statements.
+
+ex "../../../ast/sententia" importa Sententia, CustodiClausula
+ex "../../../ast/expressia" importa Expressia
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genExpressia(Expressia expr, TsGenerator g) -> textus
+
+@ externa
+functio genSententia(Sententia stmt, TsGenerator g) -> textus
+
+@ externa
+functio genMassa(lista<Sententia> corpus, TsGenerator g) -> textus
+
+@ publica
+functio genCustodi(lista<CustodiClausula> clausulae, TsGenerator g) -> textus {
+    varia result = ""
+    ex clausulae pro clausula {
+        varia vacuus = falsum
+        discerne clausula.consequens {
+            casu MassaSententia ut m {
+                si m.corpus.longitudo() == 0 {
+                    vacuus = verum
+                }
+            }
+        }
+
+        si vacuus {
+            # WHY: Empty guard bodies should compact to {} with no blank line.
+            result = scriptum("§§if (§) {}\n", result, g.ind(), genExpressia(clausula.condicio, g))
+            perge
+        }
+
+        g.intraProfundum()
+        varia body = "" qua textus
+        discerne clausula.consequens {
+            casu MassaSententia ut m {
+                body = genMassa(m.corpus, g)
+            }
+        }
+        si body == "" {
+            body = genSententia(clausula.consequens, g)
+        }
+        si body == "" aut body == nihil aut body == "undefined" {
+            # WHY: Defensive fallback if empty bodies stringify poorly.
+            result = scriptum("§§if (§) {}\n", result, g.ind(), genExpressia(clausula.condicio, g))
+            g.exiProfundum()
+            perge
+        }
+        g.exiProfundum()
+        result = scriptum("§§if (§) {\n§\n§}\n", result, g.ind(), genExpressia(clausula.condicio, g), body, g.ind())
+    }
+    redde result
+}

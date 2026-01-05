@@ -1,0 +1,20 @@
+# TypeScript Statement Generator - Type Alias Declarations
+#
+# TRANSFORMS:
+#   typus Foo = textus           -> type Foo = string
+#   typus Foo = typeof Bar       -> type Foo = typeof Bar
+
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa TsGenerator
+
+# External declarations - implementations live in index.fab
+@ externa
+functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus
+
+@ publica
+functio genTypusAlias(textus nomen, TypusAnnotatio adnotatioTypus, ignotum scopusNomen, TsGenerator g) -> textus {
+    si nonnihil scopusNomen {
+        redde scriptum("§type § = typeof §;", g.ind(), nomen, scopusNomen qua textus)
+    }
+    redde scriptum("§type § = §;", g.ind(), nomen, genTypus(adnotatioTypus, g))
+}
