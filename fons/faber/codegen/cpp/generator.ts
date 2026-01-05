@@ -269,6 +269,50 @@ export class CppGenerator {
             case 'QuaExpression':
                 // WHY: C++ can use static_cast for type casts
                 return `static_cast<${this.genType(node.targetType)}>(${this.genExpression(node.expression)})`;
+            case 'InnatumExpression': {
+                // WHY: C++ uses {} initialization for std::map and std::vector
+                const typeName = node.targetType.name;
+                if (typeName === 'tabula') {
+                    const typeParams = node.targetType.typeParameters;
+                    // WHY: TypeParameter can be TypeAnnotation | Literal, only use TypeAnnotation
+                    const keyParam = typeParams?.[0];
+                    const valueParam = typeParams?.[1];
+                    const keyType = keyParam?.type === 'TypeAnnotation' ? this.genType(keyParam) : 'auto';
+                    const valueType = valueParam?.type === 'TypeAnnotation' ? this.genType(valueParam) : 'auto';
+
+                    // Handle non-empty object literal
+                    if (node.expression.type === 'ObjectExpression' && node.expression.properties.length > 0) {
+                        const entries = node.expression.properties.map(prop => {
+                            if (prop.type === 'SpreadElement') {
+                                return this.genExpression(prop.argument);
+                            }
+                            // WHY: key is Identifier | Literal - use name for identifiers, value for literals
+                            const key = prop.key.type === 'Identifier' ? `"${prop.key.name}"` : `"${(prop.key as any).value}"`;
+                            const value = this.genExpression(prop.value);
+                            return `{${key}, ${value}}`;
+                        }).join(', ');
+                        return `std::map<${keyType}, ${valueType}>{${entries}}`;
+                    }
+                    return `std::map<${keyType}, ${valueType}>{}`;
+                }
+                if (typeName === 'lista') {
+                    const typeParams = node.targetType.typeParameters;
+                    const elemParam = typeParams?.[0];
+                    const elemType = elemParam?.type === 'TypeAnnotation' ? this.genType(elemParam) : 'auto';
+
+                    // Handle non-empty array literal
+                    if (node.expression.type === 'ArrayExpression' && node.expression.elements.length > 0) {
+                        // WHY: Filter SpreadElement which C++ doesn't support in initializer list
+                        const elements = node.expression.elements
+                            .filter(el => el.type !== 'SpreadElement')
+                            .map(el => this.genExpression(el as Expression))
+                            .join(', ');
+                        return `std::vector<${elemType}>{${elements}}`;
+                    }
+                    return `std::vector<${elemType}>{}`;
+                }
+                return this.genExpression(node.expression);
+            }
             case 'EstExpression':
                 return genEstExpression(node, this);
             case 'PraefixumExpression':

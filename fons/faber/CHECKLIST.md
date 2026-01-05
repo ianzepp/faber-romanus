@@ -209,6 +209,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `!==` / `non est` (strict ineq.)    |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `est` (instanceof/typeof)           |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
 | `qua` (type cast)                   |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
+| `innatum` (native construction)     |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `aut` (logical or)                  |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `vel` (nullish coalescing)          |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | `praefixum` (comptime expr)         |    [x]     | [x] |  [x]   | [x]  |  [ ]  |

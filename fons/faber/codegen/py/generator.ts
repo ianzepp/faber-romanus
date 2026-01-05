@@ -277,6 +277,10 @@ export class PyGenerator {
             case 'QuaExpression':
                 // WHY: Python is dynamically typed, type casts have no runtime effect.
                 return this.genExpression(node.expression);
+            case 'InnatumExpression':
+                // WHY: Python uses {} for dict (tabula) and [] for list (lista) natively.
+                // Non-empty object literals work directly as dicts.
+                return this.genExpression(node.expression);
             case 'EstExpression':
                 return genEstExpression(node, this);
             case 'PraefixumExpression':

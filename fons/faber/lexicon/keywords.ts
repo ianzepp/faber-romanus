@@ -279,6 +279,10 @@ export const keywords: KeywordEntry[] = [
     { latin: 'per', meaning: 'by/through', category: 'preposition' },
     // WHY: "qua" (as, in the capacity of) for type assertions
     { latin: 'qua', meaning: 'as (type)', category: 'preposition' },
+    // WHY: "innatum" (inborn, innate) for native builtin type construction
+    //      Used to construct empty tabula/lista with proper native initialization
+    //      {} innatum tabula<K,V> → new Map() in TS, HashMap::new() in Rust, etc.
+    { latin: 'innatum', meaning: 'native (construct)', category: 'preposition' },
     // WHY: "ut" (as) for aliasing in imports and destructuring
     //      ex norma importa scribe ut s
     //      ex persona fixum nomen ut n

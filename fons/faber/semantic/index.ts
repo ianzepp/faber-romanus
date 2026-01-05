@@ -80,6 +80,7 @@ import type {
     NovumExpression,
     FingeExpression,
     ArrayExpression,
+    ObjectExpression,
     TypeAnnotation,
     IaceStatement,
     ScribeStatement,
@@ -797,6 +798,35 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
                 // WHY: Type cast asserts a type, resolve inner and return target type
                 resolveExpression(node.expression);
                 const targetType = resolveTypeAnnotation(node.targetType);
+                node.resolvedType = targetType;
+                return targetType;
+            }
+
+            case 'InnatumExpression': {
+                // WHY: Native type construction - validates literal matches builtin type
+                // {} innatum tabula<K,V> -> constructs native Map/HashMap
+                // [] innatum lista<T> -> constructs native array/Vec
+                resolveExpression(node.expression);
+                const targetType = resolveTypeAnnotation(node.targetType);
+
+                // Validate: {} for tabula, [] for lista
+                const typeName = node.targetType.name;
+                const exprType = node.expression.type;
+
+                if (typeName === 'tabula') {
+                    if (exprType !== 'ObjectExpression') {
+                        errors.push({ message: `innatum tabula requires object literal {}, got ${exprType}`, position: node.position });
+                    }
+                }
+                else if (typeName === 'lista') {
+                    if (exprType !== 'ArrayExpression') {
+                        errors.push({ message: `innatum lista requires array literal [], got ${exprType}`, position: node.position });
+                    }
+                }
+                else {
+                    errors.push({ message: `innatum only supports builtin types (tabula, lista), got ${typeName}`, position: node.position });
+                }
+
                 node.resolvedType = targetType;
                 return targetType;
             }

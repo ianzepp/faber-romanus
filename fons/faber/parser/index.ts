@@ -141,6 +141,7 @@ import type {
     FacBlockStatement,
     LambdaExpression,
     QuaExpression,
+    InnatumExpression,
     EstExpression,
     ProbandumStatement,
     ProbaStatement,
@@ -4545,10 +4546,10 @@ export function parse(tokens: Token[]): ParserResult {
     }
 
     /**
-     * Parse type cast expression.
+     * Parse type cast and native construction expressions.
      *
      * GRAMMAR:
-     *   castExpr := call ('qua' typeAnnotation)*
+     *   castExpr := call ('qua' typeAnnotation | 'innatum' typeAnnotation)*
      *
      * PRECEDENCE: Between unary and call. This means:
      *   -x qua T     parses as -(x qua T)    — unary binds looser
@@ -4562,20 +4563,40 @@ export function parse(tokens: Token[]): ParserResult {
      *      - Zig: @as(T, x)
      *      - Rust: x as T
      *      - C++: static_cast<T>(x)
+     *
+     * WHY: Latin 'innatum' (inborn, innate) for native type construction.
+     *      Unlike qua, this constructs the native representation of the type.
+     *      Used for tabula<K,V> and lista<T> which need proper initialization.
+     *      - TypeScript: {} innatum tabula<K,V> -> new Map<K,V>()
+     *      - Python: {} innatum tabula<K,V> -> {}
+     *      - Zig: {} innatum tabula<K,V> -> std.AutoHashMap(...).init(allocator)
+     *      - Rust: {} innatum tabula<K,V> -> HashMap::new()
+     *      - C++: {} innatum tabula<K,V> -> std::map<K,V>{}
      */
     function parseQuaExpression(): Expression {
         let expr = parseCall();
 
-        while (matchKeyword('qua')) {
+        while (matchKeyword('qua') || matchKeyword('innatum')) {
+            const keyword = tokens[current - 1]!.value;
             const position = tokens[current - 1]!.position;
             const targetType = parseTypeAnnotation();
 
-            expr = {
-                type: 'QuaExpression',
-                expression: expr,
-                targetType,
-                position,
-            } as QuaExpression;
+            if (keyword === 'qua') {
+                expr = {
+                    type: 'QuaExpression',
+                    expression: expr,
+                    targetType,
+                    position,
+                } as QuaExpression;
+            }
+            else {
+                expr = {
+                    type: 'InnatumExpression',
+                    expression: expr,
+                    targetType,
+                    position,
+                } as InnatumExpression;
+            }
         }
 
         return expr;

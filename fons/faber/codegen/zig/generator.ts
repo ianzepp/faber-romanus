@@ -417,6 +417,8 @@ export class ZigGenerator {
                 return `if (${this.genExpression(node.test)}) ${this.genExpression(node.consequent)} else ${this.genExpression(node.alternate)}`;
             case 'QuaExpression':
                 return this.genQuaExpression(node);
+            case 'InnatumExpression':
+                return this.genInnatumExpression(node);
             case 'EstExpression':
                 return genEstExpression(node, this);
             case 'PraefixumExpression':
@@ -474,6 +476,72 @@ export class ZigGenerator {
         const expr = this.genExpression(node.expression);
         const targetType = this.genType(node.targetType);
         return `@as(${targetType}, ${expr})`;
+    }
+
+    /**
+     * Generate innatum expression for native type construction.
+     *
+     * TRANSFORMS:
+     *   {} innatum tabula<K,V> -> std.AutoHashMap(K, V).init(alloc)
+     *   [] innatum lista<T> -> Lista(T).init(alloc)
+     *   {a: 1} innatum tabula<K,V> -> blk: { var m = ...; m.put(...); break :blk m; }
+     *
+     * TARGET: Zig requires explicit allocator for dynamic containers.
+     * EDGE: Non-empty literals require block expression with sequential puts.
+     */
+    genInnatumExpression(node: import('../../parser/ast').InnatumExpression): string {
+        const typeName = node.targetType.name;
+        const curator = this.getCurator();
+
+        if (typeName === 'tabula') {
+            this.features.tabula = true;
+            const typeParams = node.targetType.typeParameters;
+            // WHY: TypeParameter can be TypeAnnotation | Literal, only use TypeAnnotation
+            const keyParam = typeParams?.[0];
+            const valueParam = typeParams?.[1];
+            const keyType = keyParam?.type === 'TypeAnnotation' ? this.genType(keyParam) : '[]const u8';
+            const valueType = valueParam?.type === 'TypeAnnotation' ? this.genType(valueParam) : 'anytype';
+
+            // Handle non-empty object literal with block expression
+            if (node.expression.type === 'ObjectExpression' && node.expression.properties.length > 0) {
+                const puts = node.expression.properties.map(prop => {
+                    if (prop.type === 'SpreadElement') {
+                        return `// spread not supported`;
+                    }
+                    // WHY: key is Identifier | Literal - use name for identifiers, value for literals
+                    const key = prop.key.type === 'Identifier' ? `"${prop.key.name}"` : `"${(prop.key as any).value}"`;
+                    const value = this.genExpression(prop.value);
+                    return `_m.put(${key}, ${value}) catch unreachable;`;
+                }).join(' ');
+                return `blk: { var _m = std.AutoHashMap(${keyType}, ${valueType}).init(${curator}); ${puts} break :blk _m; }`;
+            }
+
+            return `std.AutoHashMap(${keyType}, ${valueType}).init(${curator})`;
+        }
+
+        if (typeName === 'lista') {
+            this.features.lista = true;
+            const typeParams = node.targetType.typeParameters;
+            const elemParam = typeParams?.[0];
+            const elementType = elemParam?.type === 'TypeAnnotation' ? this.genType(elemParam) : 'anytype';
+
+            // Handle non-empty array literal
+            if (node.expression.type === 'ArrayExpression' && node.expression.elements.length > 0) {
+                // WHY: Filter SpreadElement which Zig doesn't support in append
+                const appends = node.expression.elements
+                    .filter(el => el.type !== 'SpreadElement')
+                    .map(el => {
+                        const value = this.genExpression(el as import('../../parser/ast').Expression);
+                        return `_l.append(${value}) catch unreachable;`;
+                    }).join(' ');
+                return `blk: { var _l = Lista(${elementType}).init(${curator}); ${appends} break :blk _l; }`;
+            }
+
+            return `Lista(${elementType}).init(${curator})`;
+        }
+
+        // Fallback
+        return this.genExpression(node.expression);
     }
 
     /**

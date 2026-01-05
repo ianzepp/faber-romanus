@@ -1875,6 +1875,7 @@ export type Expression =
     | UnaryExpression
     | EstExpression
     | QuaExpression
+    | InnatumExpression
     | CallExpression
     | MemberExpression
     | AssignmentExpression
@@ -2208,6 +2209,48 @@ export interface EstExpression extends BaseNode {
  */
 export interface QuaExpression extends BaseNode {
     type: 'QuaExpression';
+    expression: Expression;
+    targetType: TypeAnnotation;
+}
+
+// ---------------------------------------------------------------------------
+// Native Type Construction
+// ---------------------------------------------------------------------------
+
+/**
+ * Native type construction expression (innatum operator).
+ *
+ * GRAMMAR (in EBNF):
+ *   innatumExpr := literal 'innatum' typeAnnotation
+ *
+ * INVARIANT: expression is the literal being constructed (empty object or array).
+ * INVARIANT: targetType is the builtin type to construct.
+ *
+ * WHY: Latin 'innatum' (inborn, innate) for constructing native builtin types.
+ *      Unlike 'qua' (cast), this actually constructs the native type.
+ *      Used for tabula<K,V> and lista<T> which need proper initialization.
+ *
+ * Target mappings:
+ *   {} innatum tabula<K,V>:
+ *     TypeScript: new Map<K,V>()
+ *     Python:     {}
+ *     Zig:        std.AutoHashMap(K,V).init(allocator)
+ *     Rust:       HashMap::new()
+ *     C++:        std::map<K,V>{}
+ *
+ *   [] innatum lista<T>:
+ *     TypeScript: []
+ *     Python:     []
+ *     Zig:        std.ArrayList(T).init(allocator)
+ *     Rust:       Vec::new()
+ *     C++:        std::vector<T>{}
+ *
+ * Examples:
+ *   {} innatum tabula<textus, numerus>   -> new Map<string, number>()
+ *   [] innatum lista<textus>             -> [] (array already native in TS)
+ */
+export interface InnatumExpression extends BaseNode {
+    type: 'InnatumExpression';
     expression: Expression;
     targetType: TypeAnnotation;
 }

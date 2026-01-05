@@ -71,6 +71,7 @@ import { genAssignmentExpression } from './expressions/assignment';
 import { genNovumExpression } from './expressions/novum';
 import { genFingeExpression } from './expressions/finge';
 import { genQuaExpression } from './expressions/qua';
+import { genInnatumExpression } from './expressions/innatum';
 import { genEstExpression } from './expressions/est';
 import { genPraefixumExpression } from './expressions/praefixum';
 import { genScriptumExpression } from './expressions/scriptum';
@@ -233,6 +234,8 @@ export class FabGenerator {
                 return `${this.genExpression(node.test)} ? ${this.genExpression(node.consequent)} : ${this.genExpression(node.alternate)}`;
             case 'QuaExpression':
                 return genQuaExpression(node, this);
+            case 'InnatumExpression':
+                return genInnatumExpression(node, this);
             case 'EstExpression':
                 return genEstExpression(node, this);
             case 'PraefixumExpression':
