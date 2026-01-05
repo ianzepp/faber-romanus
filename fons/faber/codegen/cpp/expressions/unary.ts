@@ -26,6 +26,10 @@ export function genUnaryExpression(node: UnaryExpression, g: CppGenerator): stri
             return `(${arg} < 0)`;
         case 'positivum':
             return `(${arg} > 0)`;
+        case 'verum':
+            return `(${arg} == true)`;
+        case 'falsum':
+            return `(${arg} == false)`;
     }
 
     return node.prefix ? `${node.operator}${arg}` : `${arg}${node.operator}`;

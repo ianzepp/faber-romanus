@@ -191,6 +191,8 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `nonnihil x` (is not null)          |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
 | `negativum` (is negative)           |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
 | `positivum` (is positive)           |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
+| `verum x` (is true)                 |    [ ]     | [x] |  [x]   | [x]  |  [ ]  |
+| `falsum x` (is false)               |    [ ]     | [x] |  [x]   | [x]  |  [ ]  |
 | Member access (`.`)                 |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | Optional chaining (`?.`)            |    [x]     | [x] |  [x]   | [x]  |  [x]  |
 | Non-null assertion (`!.`)           |    [x]     | [x] |  [x]   | [x]  |  [x]  |

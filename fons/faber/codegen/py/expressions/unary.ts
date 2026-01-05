@@ -48,6 +48,16 @@ export function genUnaryExpression(node: UnaryExpression, g: PyGenerator): strin
         return `(${arg} > 0)`;
     }
 
+    // verum: strict boolean true check
+    if (node.operator === 'verum') {
+        return `(${arg} is True)`;
+    }
+
+    // falsum: strict boolean false check
+    if (node.operator === 'falsum') {
+        return `(${arg} is False)`;
+    }
+
     // Map ! to not
     if (node.operator === '!') {
         return `not ${arg}`;

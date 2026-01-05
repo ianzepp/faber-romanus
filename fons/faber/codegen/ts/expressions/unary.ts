@@ -46,5 +46,15 @@ export function genUnaryExpression(node: UnaryExpression, g: TsGenerator): strin
         return `(${arg} > 0)`;
     }
 
+    // verum: strict boolean true check
+    if (node.operator === 'verum') {
+        return `(${arg} === true)`;
+    }
+
+    // falsum: strict boolean false check
+    if (node.operator === 'falsum') {
+        return `(${arg} === false)`;
+    }
+
     return node.prefix ? `${node.operator}${arg}` : `${arg}${node.operator}`;
 }
