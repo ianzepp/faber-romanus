@@ -1,11 +1,13 @@
 # TypeScript Statement Generator - Throw Statements
 #
+# Generates throw statements with mori (fatal) vs iace (recoverable) semantics.
+#
 # TRANSFORMS:
-#   mori "error"              -> throw new Panic("error");
-#   mori expr                 -> throw new Panic(String(expr));
-#   iace "error"              -> throw "error";
-#   iace expr                 -> throw expr;
-#   (in flumina) iace "error" -> yield respond.error("EFAIL", "error"); return;
+#   mori "error"       -> throw new Panic("error");
+#   mori expr          -> throw new Panic(String(expr));
+#   iace "error"       -> throw "error";
+#   iace expr          -> throw expr;
+#   (flumina) iace ... -> yield respond.error("EFAIL", ...); return;
 
 ex "../../../ast/expressia" importa Expressia, LitteraGenus
 ex "../nucleus" importa TsGenerator

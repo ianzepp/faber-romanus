@@ -1,10 +1,12 @@
 # TypeScript Expression Generator - Obiectum (Object Literals)
 #
+# Generates JavaScript object literals with shorthand/computed/spread support.
+#
 # TRANSFORMS:
-#   { prop: value }      -> { prop: value }
-#   { prop }             -> { prop } (shorthand)
-#   { [expr]: value }    -> { [expr]: value } (computed)
-#   { ...expr }          -> { ...expr } (spread)
+#   { prop: value } -> { prop: value }
+#   { prop }        -> { prop }
+#   { [expr]: val } -> { [expr]: val }
+#   { ...expr }     -> { ...expr }
 
 ex "../../../ast/expressia" importa Expressia, ObiectumProprietas
 ex "../nucleus" importa TsGenerator

@@ -1,12 +1,10 @@
-# TypeScript Statement Generator - Elige (Pattern Matching)
+# TypeScript Statement Generator - Elige (Switch on Value)
+#
+# Generates if/else chains for value matching.
 #
 # TRANSFORMS:
-#   elige x {                    -> if (x === 1) { ... }
-#     casu 1 { ... }             -> else if (x === 2) { ... }
-#     casu 2 { ... }             -> else { ... }
-#     praedefinitum { ... }
-#   }
-#   elige x cape e { ... }       -> try { if (...) } catch (e) { ... }
+#   elige x { casu 1 {...} casu 2 {...} } -> if (x === 1) {...} else if (x === 2) {...}
+#   elige x cape e { ... }                -> try { if (...) } catch (e) { ... }
 
 ex "../../../ast/sententia" importa Sententia, EligeCasus, CapeClausula
 ex "../../../ast/expressia" importa Expressia

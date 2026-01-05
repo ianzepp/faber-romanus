@@ -1,17 +1,15 @@
 # TypeScript Expression Generator - Est (Type Checks)
 #
-# TRANSFORMS:
-#   expr est Typus      -> expr instanceof Typus / typeof expr === "primitive"
-#   expr non est Typus  -> !(expr instanceof Typus) / typeof expr !== "primitive"
+# Generates runtime type checks using typeof/instanceof.
 #
-# Primitive mappings:
-#   textus    -> typeof === "string"
-#   numerus   -> typeof === "number"
-#   fractus   -> typeof === "number"
-#   bivalens  -> typeof === "boolean"
-#   nihil     -> === null
-#   lista     -> Array.isArray()
-#   User type -> instanceof
+# TRANSFORMS:
+#   expr est Typus      -> expr instanceof Typus
+#   expr non est Typus  -> !(expr instanceof Typus)
+#   expr est textus     -> typeof expr === "string"
+#   expr est numerus    -> typeof expr === "number"
+#   expr est bivalens   -> typeof expr === "boolean"
+#   expr est nihil      -> expr === null
+#   expr est lista      -> Array.isArray(expr)
 
 ex "../../../ast/expressia" importa Expressia
 ex "../../../ast/typus" importa TypusAnnotatio

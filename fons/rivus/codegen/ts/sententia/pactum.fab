@@ -1,11 +1,13 @@
 # TypeScript Statement Generator - Interface Declarations
 #
+# Generates TypeScript interface declarations with method signatures.
+#
 # TRANSFORMS:
-#   pactum Foo { ... }                     -> interface Foo { ... }
-#   pactum Foo<T> { ... }                  -> interface Foo<T> { ... }
-#   pactum Foo { f(): T }                  -> interface Foo { f(): T }
-#   pactum Foo { futura f(): T }           -> interface Foo { f(): Promise<T> }
-#   pactum Foo { cursore f(): T }          -> interface Foo { f(): Generator<T> }
+#   pactum Foo { ... }            -> interface Foo { ... }
+#   pactum Foo<T> { ... }         -> interface Foo<T> { ... }
+#   pactum Foo { f(): T }         -> interface Foo { f(): T }
+#   pactum Foo { futura f(): T }  -> interface Foo { f(): Promise<T> }
+#   pactum Foo { cursore f(): T } -> interface Foo { f(): Generator<T> }
 
 ex "../../../ast/sententia" importa Parametrum, PactumMethodus
 ex "../../../ast/typus" importa TypusAnnotatio

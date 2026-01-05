@@ -1,7 +1,9 @@
 # TypeScript Statement Generator - Entry Points
 #
+# Generates program entry points (sync or async IIFE).
+#
 # TRANSFORMS:
-#   incipit { ... }  -> unwrapped body statements
+#   incipit { ... }  -> (unwrapped body statements)
 #   incipiet { ... } -> (async () => { ... })();
 
 ex "../../../ast/sententia" importa Sententia

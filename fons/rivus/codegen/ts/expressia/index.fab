@@ -1,7 +1,6 @@
-# TypeScript Expression Generator - Dispatch to expression handlers
+# TypeScript Expression Generator - Dispatch
 #
 # Routes expression AST nodes to their specific generators.
-# Uses scriptum() for string formatting for consistency.
 
 ex "../../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum, MorphologiaInvocatio
 ex "../../../ast/expressia" importa AbFiltrum, CatenaGradus

@@ -1,9 +1,11 @@
 # TypeScript Statement Generator - Return Statements
 #
+# Generates return statements with flumina protocol support.
+#
 # TRANSFORMS:
-#   redde                -> return;
-#   redde valor          -> return valor;
-#   redde valor (flumina) -> yield respond.ok(valor);
+#   redde           -> return;
+#   redde valor     -> return valor;
+#   (flumina) redde -> yield respond.ok(valor);
 
 ex "../../../ast/expressia" importa Expressia
 ex "../nucleus" importa TsGenerator

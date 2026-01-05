@@ -23,6 +23,10 @@ ex "../../ast/lexema" importa SymbolumGenus, VerbumId
 ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
 
+# ============================================================================
+# ENTRY POINTS
+# ============================================================================
+
 # Parse incipit (sync entry point) statement
 #
 # GRAMMAR:
@@ -119,6 +123,10 @@ functio parseErgoVelReddit(Resolvitor r) -> Sententia? {
     redde nihil
 }
 
+# ============================================================================
+# RESOURCE MANAGEMENT (cura)
+# ============================================================================
+
 # Parse cura (resource management) statement
 #
 # GRAMMAR:
@@ -206,6 +214,10 @@ functio parseCuraSententia(Resolvitor r) -> Sententia {
         cape: cape
     } qua Sententia
 }
+
+# ============================================================================
+# DISPATCH (ad)
+# ============================================================================
 
 # Parse ad (dispatch) statement
 #
@@ -309,7 +321,11 @@ functio parseAdSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
-# Parse catch clause (helper)
+# ============================================================================
+# HELPERS
+# ============================================================================
+
+# Parse catch clause
 @ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()

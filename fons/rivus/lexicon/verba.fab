@@ -1,33 +1,41 @@
-# Verba - Latin reserved words
+# Verba - Latin Reserved Words
 #
 # Keyword recognition for the lexer and parser.
-# Uses switch-based lookup (no heap allocation).
-#
-# This is the single source of truth for keyword classification.
-# Parser error recovery uses these predicates to find sync points.
+# Single source of truth for keyword classification.
 
 ex "../ast/lexema" importa VerbumId
 
+# ============================================================================
+# DIALECT SELECTION
+# ============================================================================
+
+# Keyword spelling dialect (Latin vs English surface forms)
 @ publicum
 ordo Dialectus {
     Latinus
     Anglicus
 }
 
+# ============================================================================
+# KEYWORD PREDICATES
+# ============================================================================
+
 # Check if a word is a reserved keyword
-#
-# NOTE: This list must stay synchronized with fons/lexicon/keywords.ts
 @ publica
 functio estVerbum(textus v) -> bivalens {
     fixum id = verbumId(v)
     redde id != nihil
 }
 
+# ============================================================================
+# LATIN KEYWORD MAPPING
+# ============================================================================
+
 # Map a Faber (Latin surface) keyword spelling to canonical identity
 @ publica
 functio verbumFaberId(textus v) -> VerbumId? {
     elige v {
-        # Imperium - control flow
+        # ---- Control Flow ----
         casu "si" reddit VerbumId.Si
         casu "secus" reddit VerbumId.Secus
         casu "sin" reddit VerbumId.Sin
@@ -48,7 +56,7 @@ functio verbumFaberId(textus v) -> VerbumId? {
         casu "incipit" reddit VerbumId.Incipit
         casu "incipiet" reddit VerbumId.Incipiet
 
-        # Imperium - testing
+        # ---- Testing ----
         casu "probandum" reddit VerbumId.Probandum
         casu "proba" reddit VerbumId.Proba
         casu "praepara" reddit VerbumId.Praepara
@@ -72,7 +80,7 @@ functio verbumFaberId(textus v) -> VerbumId? {
         casu "scriptum" reddit VerbumId.Scriptum
         casu "cede" reddit VerbumId.Cede
 
-        # Declaratio - declarations
+        # ---- Declarations ----
         casu "varia" reddit VerbumId.Varia
         casu "fixum" reddit VerbumId.Fixum
         casu "figendum" reddit VerbumId.Figendum
@@ -88,7 +96,7 @@ functio verbumFaberId(textus v) -> VerbumId? {
         casu "ordo" reddit VerbumId.Ordo
         casu "discretio" reddit VerbumId.Discretio
 
-        # Modificator - modifiers
+        # ---- Modifiers ----
         casu "futura" reddit VerbumId.Futura
         casu "prae" reddit VerbumId.Prae
         casu "praefixum" reddit VerbumId.Praefixum
@@ -106,7 +114,7 @@ functio verbumFaberId(textus v) -> VerbumId? {
         casu "futurum" reddit VerbumId.Futurum
         casu "omnia" reddit VerbumId.Omnia
 
-        # Operator - operators
+        # ---- Operators ----
         casu "et" reddit VerbumId.Et
         casu "aut" reddit VerbumId.Aut
         casu "non" reddit VerbumId.Non
@@ -129,10 +137,10 @@ functio verbumFaberId(textus v) -> VerbumId? {
         casu "negativum" reddit VerbumId.Negativum
         casu "positivum" reddit VerbumId.Positivum
 
-        # Valor - literal values
+        # ---- Literal Values ----
         casu "ego" reddit VerbumId.Ego
 
-        # Praepositio - prepositions
+        # ---- Prepositions ----
         casu "de" reddit VerbumId.De
         casu "in" reddit VerbumId.In
         casu "ex" reddit VerbumId.Ex
@@ -141,7 +149,7 @@ functio verbumFaberId(textus v) -> VerbumId? {
         casu "qua" reddit VerbumId.Qua
         casu "ut" reddit VerbumId.Ut
 
-        # Dsl - domain specific
+        # ---- Domain Specific (DSL) ----
         casu "ab" reddit VerbumId.Ab
         casu "ubi" reddit VerbumId.Ubi
         casu "prima" reddit VerbumId.Prima
@@ -156,6 +164,10 @@ functio verbumFaberId(textus v) -> VerbumId? {
     }
 }
 
+# ============================================================================
+# ENGLISH KEYWORD MAPPING
+# ============================================================================
+
 # Map an English keyword spelling to canonical identity
 @ publica
 functio verbumAnglicusId(textus v) -> VerbumId? {
@@ -168,10 +180,12 @@ functio verbumAnglicusId(textus v) -> VerbumId? {
     }
 }
 
+# ============================================================================
+# UNIFIED LOOKUP
+# ============================================================================
+
 # Map surface keyword spelling to canonical identity
-#
-# WHY: Enables dialect spellings (e.g., English keywords) without changing
-#      downstream parsing/codegen logic.
+# WHY: Enables dialect spellings without changing downstream parsing/codegen logic
 @ publica
 functio verbumId(textus v, si Dialectus dialectus) -> VerbumId? {
     si nonnihil dialectus et dialectus === Dialectus.Anglicus {
@@ -182,15 +196,16 @@ functio verbumId(textus v, si Dialectus dialectus) -> VerbumId? {
     redde verbumFaberId(v)
 }
 
+# ============================================================================
+# ERROR RECOVERY PREDICATES
+# ============================================================================
+
 # Check if a word starts a statement (for error recovery sync points)
-#
-# WHY: Parser error recovery skips tokens until hitting a statement boundary.
-#      This list defines where the parser can safely resume after an error.
-#      Keeping it here ensures sync points stay aligned with the grammar.
+# WHY: Parser error recovery skips tokens until hitting a statement boundary
 @ publica
 functio estVerbumSententiae(textus v) -> bivalens {
     elige v {
-        # Declarations
+        # ---- Declarations ----
         casu "functio" reddit verum
         casu "varia" reddit verum
         casu "fixum" reddit verum
@@ -202,7 +217,7 @@ functio estVerbumSententiae(textus v) -> bivalens {
         casu "pactum" reddit verum
         casu "discretio" reddit verum
 
-        # Control flow
+        # ---- Control Flow ----
         casu "si" reddit verum
         casu "dum" reddit verum
         casu "ex" reddit verum
@@ -213,7 +228,7 @@ functio estVerbumSententiae(textus v) -> bivalens {
         casu "fac" reddit verum
         casu "in" reddit verum
 
-        # Actions
+        # ---- Actions ----
         casu "redde" reddit verum
         casu "rumpe" reddit verum
         casu "perge" reddit verum
@@ -225,15 +240,15 @@ functio estVerbumSententiae(textus v) -> bivalens {
         casu "mori" reddit verum
         casu "cede" reddit verum
 
-        # Error handling
+        # ---- Error Handling ----
         casu "tempta" reddit verum
         casu "cura" reddit verum
 
-        # Entry points
+        # ---- Entry Points ----
         casu "incipit" reddit verum
         casu "incipiet" reddit verum
 
-        # Testing
+        # ---- Testing ----
         casu "probandum" reddit verum
         casu "proba" reddit verum
         casu "praepara" reddit verum
@@ -244,25 +259,15 @@ functio estVerbumSententiae(textus v) -> bivalens {
 }
 
 # Check if a word starts a genus member (for genus body error recovery)
-#
-# WHY: When parsing a genus body fails, we need to skip to the next
-#      field or method declaration. This defines those boundaries.
+# WHY: When parsing a genus body fails, we skip to the next field/method
 @ publica
 functio estVerbumGeneris(textus v) -> bivalens {
     elige v {
-        # Method declaration
-        casu "functio" reddit verum
-
-        # Visibility modifiers (precede fields/methods)
-        casu "privatus" reddit verum
-        casu "protectus" reddit verum
-
-        # Static modifier
-        casu "generis" reddit verum
-
-        # Abstract modifier
-        casu "abstractus" reddit verum
-
+        casu "functio" reddit verum      # method declaration
+        casu "privatus" reddit verum     # visibility modifier
+        casu "protectus" reddit verum    # visibility modifier
+        casu "generis" reddit verum      # static modifier
+        casu "abstractus" reddit verum   # abstract modifier
         ceterum reddit falsum
     }
 }

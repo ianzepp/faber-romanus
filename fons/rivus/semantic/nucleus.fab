@@ -1,16 +1,6 @@
-# Semantic Analyzer - Core State and Infrastructure
+# Nucleus - Core Analyzer State and Infrastructure
 #
-# This module provides the core Analyzator genus that manages semantic analysis.
-# The analyzer uses a multi-pass approach:
-#
-# Phase 1a - Predeclaration:
-#   All top-level names are registered with placeholder types.
-#
-# Phase 1b - Signature Resolution:
-#   Type annotations are resolved now that all names exist.
-#
-# Phase 2 - Body Analysis:
-#   Function bodies and statements are analyzed with complete symbol table.
+# Provides the Analyzator genus that manages semantic analysis state.
 
 ex "./typi" importa SemanticTypus, TEXTUS, NUMERUS, FRACTUS, BIVALENS, NIHIL, VACUUM, IGNOTUM
 ex "./typi" importa primitivumTypus, genericumTypus, functioTypus, usitatumTypus
@@ -23,9 +13,9 @@ ex "../ast/radix" importa Programma
 ex "../ast/sententia" importa Sententia
 ex "../ast/expressia" importa Expressia
 
-# =============================================================================
+# ============================================================================
 # SEMANTIC ERROR
-# =============================================================================
+# ============================================================================
 
 # A semantic error with source location
 @ publicum
@@ -34,9 +24,9 @@ genus SemanticError {
     Locus locus
 }
 
-# =============================================================================
+# ============================================================================
 # ANALYSIS RESULT
-# =============================================================================
+# ============================================================================
 
 # Result of semantic analysis
 @ publicum
@@ -45,9 +35,9 @@ genus SemanticResultatum {
     lista<SemanticError> errores
 }
 
-# =============================================================================
+# ============================================================================
 # LATIN TYPE MAPPING
-# =============================================================================
+# ============================================================================
 
 # Map Latin type name to semantic type
 @ publica
@@ -63,39 +53,30 @@ functio latinTypusAd(textus nomen) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# Check if a type name is a generic type (lista, tabula, etc.)
+# Check if a type name is a generic type
 @ publica
 functio estGenericusTypus(textus nomen) -> bivalens {
     redde nomen inter ["lista", "tabula", "copia", "promissum", "cursor", "fluxus"]
 }
 
-# =============================================================================
+# ============================================================================
 # ANALYZER STATE
-# =============================================================================
+# ============================================================================
 
 # The semantic analyzer state
 @ publicum
 genus Analyzator {
-    # Collected errors
-    lista<SemanticError> errores
+    lista<SemanticError> errores                                          # collected errors
+    Scopus scopus                                                         # current scope chain
+    SemanticTypus? currentFunctioReditus                                  # for return type checking
+    bivalens currentFunctioAsync                                          # in async function?
+    bivalens currentFunctioGenerator                                      # in generator function?
+    lista<textus> resolvendoTypusAliases                                  # cycle detection
+    tabula<textus, tabula<textus, lista<textus> > > morphologiaRegistra   # receiver -> stem -> forms
 
-    # Current scope chain
-    Scopus scopus
-
-    # Current function context (for return type checking)
-    SemanticTypus? currentFunctioReditus
-    bivalens currentFunctioAsync
-    bivalens currentFunctioGenerator
-
-    # Type aliases being resolved (for cycle detection)
-    lista<textus> resolvendoTypusAliases
-
-    # Morphologia registry: receiver -> stem -> allowed forms
-    tabula<textus, tabula<textus, lista<textus> > > morphologiaRegistra
-
-    # ==========================================================================
+    # ========================================================================
     # ERROR REPORTING
-    # ==========================================================================
+    # ========================================================================
 
     # Report a semantic error
     @ publica
@@ -106,9 +87,9 @@ genus Analyzator {
         } qua SemanticError)
     }
 
-    # ==========================================================================
+    # ========================================================================
     # SCOPE MANAGEMENT
-    # ==========================================================================
+    # ========================================================================
 
     # Enter a new scope
     @ publica
@@ -124,7 +105,7 @@ genus Analyzator {
         }
     }
 
-    # Define a symbol in current scope, reporting error if duplicate
+    # Define a symbol in current scope (reports error if duplicate)
     @ publica
     functio definie(Symbolum symbolum) {
         fixum err = definieSymbolum(ego.scopus, symbolum)
@@ -139,9 +120,9 @@ genus Analyzator {
         redde quaereSymbolum(ego.scopus, nomen)
     }
 
-    # ==========================================================================
+    # ========================================================================
     # BUILTINS
-    # ==========================================================================
+    # ========================================================================
 
     # Define built-in functions (intrinsics) in global scope
     @ publica
@@ -181,9 +162,9 @@ genus Analyzator {
         } qua Symbolum
     }
 
-    # ==========================================================================
+    # ========================================================================
     # MORPHOLOGIA REGISTRY
-    # ==========================================================================
+    # ========================================================================
 
     @ publica
     functio habetMorphologiam(textus recipiens) -> bivalens {
@@ -225,9 +206,9 @@ genus Analyzator {
     }
 }
 
-# =============================================================================
+# ============================================================================
 # FACTORY
-# =============================================================================
+# ============================================================================
 
 # Create a new analyzer
 @ publica

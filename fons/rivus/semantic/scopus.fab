@@ -1,15 +1,6 @@
-# Scope Management - Symbol Tables and Lexical Scoping
+# Scopus - Symbol Tables and Lexical Scoping
 #
-# This module implements lexical scoping with a chain of symbol tables. Each
-# scope contains bindings from names to their semantic information (type,
-# mutability, etc.). Scopes form a parent-child chain representing block nesting.
-#
-# The symbol table tracks:
-# - Variables (varia/fixum declarations)
-# - Functions (functio declarations)
-# - Parameters (within function scope)
-#
-# Lookup walks up the scope chain until a binding is found or we reach global scope.
+# Implements lexical scoping with a chain of symbol tables for name resolution.
 
 ex "./typi" importa SemanticTypus
 ex "../ast/positio" importa Locus
@@ -18,42 +9,42 @@ ex "../ast/positio" importa Locus
 # SYMBOL DEFINITIONS
 # =============================================================================
 
-# What kind of binding this symbol represents
+# Kind of binding this symbol represents
 @ publicus
 ordo SymbolumSpecies {
-    Variabilis      # varia/fixum
-    Functio         # function
-    Parametrum      # function parameter
-    TypusAlias      # type alias
-    Ordo            # enum
-    Genus           # class/struct
-    Pactum          # interface
+    Variabilis                  # varia/fixum
+    Functio                     # function
+    Parametrum                  # function parameter
+    TypusAlias                  # type alias
+    Ordo                        # enum
+    Genus                       # class/struct
+    Pactum                      # interface
 }
 
-# What kind of scope this is
+# Kind of scope this is
 @ publicus
 ordo ScopusSpecies {
-    Globalis        # global/module scope
-    Functio         # function scope
-    Massa           # block scope
+    Globalis                    # global/module scope
+    Functio                     # function scope
+    Massa                       # block scope
 }
 
 # A symbol binding in the symbol table
 @ publicum
 genus Symbolum {
-    textus nomen
-    SemanticTypus semanticTypus
-    SymbolumSpecies species
-    bivalens mutabilis
-    Locus locus
+    textus nomen                    # binding name
+    SemanticTypus semanticTypus     # resolved type
+    SymbolumSpecies species         # kind of symbol
+    bivalens mutabilis              # true if varia (mutable)
+    Locus locus                     # declaration location
 }
 
 # A lexical scope containing symbol bindings
 @ publicum
 genus Scopus {
-    tabula<textus, Symbolum> symbola
-    Scopus? parens
-    ScopusSpecies species
+    tabula<textus, Symbolum> symbola  # name -> symbol bindings
+    Scopus? parens                    # parent scope (nil for global)
+    ScopusSpecies species             # kind of scope
 }
 
 # =============================================================================
@@ -80,8 +71,7 @@ functio creaScopum(Scopus parentScopus, ScopusSpecies scopusSpecies) -> Scopus {
     } qua Scopus
 }
 
-# Define a symbol in the current scope.
-# Returns error message if symbol already defined in this scope, nihil otherwise
+# Define a symbol in current scope (returns error if duplicate)
 @ publica
 functio definieSymbolum(Scopus scopus, Symbolum symbolum) -> textus? {
     fixum existens = scopus.symbola[symbolum.nomen]
@@ -93,8 +83,7 @@ functio definieSymbolum(Scopus scopus, Symbolum symbolum) -> textus? {
     redde nihil
 }
 
-# Look up a symbol by name, walking up the scope chain.
-# Returns the symbol if found, nihil otherwise
+# Look up a symbol by name, walking up the scope chain
 @ publica
 functio quaereSymbolum(Scopus scopus, textus nomen) -> Symbolum? {
     si nonnihil scopus.symbola[nomen] {
@@ -109,8 +98,7 @@ functio quaereSymbolum(Scopus scopus, textus nomen) -> Symbolum? {
     redde nihil
 }
 
-# Look up a symbol only in the current scope (no parent traversal).
-# Used to check for redefinition in the same scope.
+# Look up a symbol only in the current scope (no parent traversal)
 @ publica
 functio quaereSymbolumLocale(Scopus scopus, textus nomen) -> Symbolum? {
     si nonnihil scopus.symbola[nomen] {
@@ -120,10 +108,7 @@ functio quaereSymbolumLocale(Scopus scopus, textus nomen) -> Symbolum? {
     redde nihil
 }
 
-# Update an existing symbol's type in the current scope.
-# Two-pass analysis predeclares symbols with placeholder types,
-# then refines them with real types in a second pass.
-# Returns verum if symbol was updated, falsum if not found
+# Update an existing symbol's type (for two-pass analysis)
 @ publica
 functio renovaSymbolumTypum(Scopus scopus, textus nomen, SemanticTypus novusTypus) -> bivalens {
     si nihil scopus.symbola[nomen] {
@@ -136,8 +121,7 @@ functio renovaSymbolumTypum(Scopus scopus, textus nomen, SemanticTypus novusTypu
     redde verum
 }
 
-# Find the enclosing function scope.
-# Needed for return type checking.
+# Find the enclosing function scope (for return type checking)
 @ publica
 functio inveniScopumFunctionis(Scopus scopus) -> Scopus? {
     si scopus.species == ScopusSpecies.Functio {

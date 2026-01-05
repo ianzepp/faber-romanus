@@ -1,10 +1,11 @@
 # TypeScript Statement Generator - Do-While Blocks
 #
+# Generates do-while loops or plain blocks with optional error handling.
+#
 # TRANSFORMS:
-#   fac { ... }                     -> { ... }
-#   fac { ... } dum x > 0           -> do { ... } while (x > 0);
-#   fac { ... } cape e { ... }      -> try { ... } catch (e) { ... }
-#   fac { ... } dum x > 0 cape e {} -> try { do {...} while (...); } catch (e) {}
+#   fac { ... }                 -> { ... }
+#   fac { ... } dum x > 0       -> do { ... } while (x > 0);
+#   fac { ... } cape e { ... }  -> try { ... } catch (e) { ... }
 
 ex "../../../ast/sententia" importa Sententia, CapeClausula
 ex "../../../ast/expressia" importa Expressia

@@ -1,15 +1,15 @@
 # TypeScript Statement Generator - Class Declarations
 #
+# Generates TypeScript class declarations with inheritance and visibility.
+#
 # TRANSFORMS:
-#   genus Foo { ... }                     -> class Foo { ... }
-#   genus Foo<T> { ... }                  -> class Foo<T> { ... }
-#   genus Foo extendit Bar { ... }        -> class Foo extends Bar { ... }
-#   genus Foo implet X, Y { ... }         -> class Foo implements X, Y { ... }
-#   @ abstractum genus Foo { ... }        -> abstract class Foo { ... }
-#   campus publicus x: numerus            -> public x: number
-#   campus protectus x: numerus           -> protected x: number
-#   campus privatus x: numerus            -> private x: number
-#   campus staticus x: numerus            -> static x: number
+#   genus Foo { ... }               -> class Foo { ... }
+#   genus Foo<T> { ... }            -> class Foo<T> { ... }
+#   genus Foo extendit Bar { ... }  -> class Foo extends Bar { ... }
+#   genus Foo implet X, Y { ... }   -> class Foo implements X, Y { ... }
+#   @ abstractum genus Foo { ... }  -> abstract class Foo { ... }
+#   campus publicus x: numerus      -> public x: number
+#   campus staticus x: numerus      -> static x: number
 
 ex "../../../ast/sententia" importa Sententia, CampusDeclaratio, Visibilitas
 ex "../../../ast/expressia" importa Expressia

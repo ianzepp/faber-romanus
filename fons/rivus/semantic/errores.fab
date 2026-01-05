@@ -1,14 +1,12 @@
-# Semantic Error Catalog
+# Errores - Semantic Error Catalog
 #
-# This module defines all error codes and messages for the semantic analysis
-# phase. Each error has a unique code, user-facing text, and helpful guidance.
+# Defines all error codes and messages for semantic analysis.
 
-# =============================================================================
+# ============================================================================
 # ERROR CODES
-# =============================================================================
+# ============================================================================
 
-# Semantic error codes.
-# S-prefix identifies semantic phase errors at a glance.
+# Semantic error codes (S-prefix identifies semantic phase)
 @ publicus
 ordo SemanticErrorCodice {
     UndefinedVariable       # S001: Undefined variable
@@ -27,22 +25,22 @@ ordo SemanticErrorCodice {
     ModuleParseError        # S014: Failed to parse module
 }
 
-# =============================================================================
+# ============================================================================
 # ERROR MESSAGE STRUCTURE
-# =============================================================================
+# ============================================================================
 
 # Error message with text and help
 @ publicum
 genus SemanticErrorNuntius {
-    textus textus      # User-facing error message
-    textus auxilium    # Helpful guidance
+    textus textus               # user-facing error message
+    textus auxilium             # helpful guidance
 }
 
-# =============================================================================
+# ============================================================================
 # ERROR MESSAGE FUNCTIONS
-# =============================================================================
+# ============================================================================
 
-# Get error message for undefined variable
+# Undefined variable error
 @ publica
 functio undefinedVariableError(textus nomen) -> SemanticErrorNuntius {
     redde {
@@ -51,7 +49,7 @@ functio undefinedVariableError(textus nomen) -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Get error message for already defined
+# Already defined error
 @ publica
 functio alreadyDefinedError(textus nomen, numerus linea) -> SemanticErrorNuntius {
     redde {
@@ -60,7 +58,7 @@ functio alreadyDefinedError(textus nomen, numerus linea) -> SemanticErrorNuntius
     } qua SemanticErrorNuntius
 }
 
-# Get error message for immutable assignment
+# Immutable assignment error
 @ publica
 functio immutableAssignmentError(textus nomen) -> SemanticErrorNuntius {
     redde {
@@ -69,7 +67,7 @@ functio immutableAssignmentError(textus nomen) -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Get error message for type mismatch
+# Type mismatch error
 @ publica
 functio typeMismatchError(textus sourceType, textus targetType) -> SemanticErrorNuntius {
     redde {
@@ -78,7 +76,7 @@ functio typeMismatchError(textus sourceType, textus targetType) -> SemanticError
     } qua SemanticErrorNuntius
 }
 
-# Get error message for return type mismatch
+# Return type mismatch error
 @ publica
 functio returnTypeMismatchError(textus returnType, textus functionType) -> SemanticErrorNuntius {
     redde {
@@ -87,7 +85,7 @@ functio returnTypeMismatchError(textus returnType, textus functionType) -> Seman
     } qua SemanticErrorNuntius
 }
 
-# Get error message for no type or initializer
+# No type or initializer error
 @ publica
 functio noTypeOrInitializerError(textus nomen) -> SemanticErrorNuntius {
     redde {
@@ -96,7 +94,7 @@ functio noTypeOrInitializerError(textus nomen) -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Get error message for not exported from module
+# Not exported from module error
 @ publica
 functio notExportedFromModuleError(textus nomen, textus modulus) -> SemanticErrorNuntius {
     redde {
@@ -105,7 +103,7 @@ functio notExportedFromModuleError(textus nomen, textus modulus) -> SemanticErro
     } qua SemanticErrorNuntius
 }
 
-# Get error message for incompatible comparison
+# Incompatible comparison error
 @ publica
 functio incompatibleComparisonError(textus leftType, textus rightType, textus operator) -> SemanticErrorNuntius {
     redde {
@@ -114,7 +112,7 @@ functio incompatibleComparisonError(textus leftType, textus rightType, textus op
     } qua SemanticErrorNuntius
 }
 
-# Get error message for cede outside async
+# Cede outside async error
 @ publica
 functio cedeOutsideAsyncError() -> SemanticErrorNuntius {
     redde {
@@ -123,7 +121,7 @@ functio cedeOutsideAsyncError() -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Get error message for await outside async
+# Await outside async error
 @ publica
 functio awaitOutsideAsyncError(textus keyword) -> SemanticErrorNuntius {
     redde {
@@ -132,7 +130,7 @@ functio awaitOutsideAsyncError(textus keyword) -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Get error message for default with borrowed param
+# Default with borrowed param error
 @ publica
 functio defaultWithBorrowedParamError(textus preposition) -> SemanticErrorNuntius {
     redde {
@@ -141,7 +139,7 @@ functio defaultWithBorrowedParamError(textus preposition) -> SemanticErrorNuntiu
     } qua SemanticErrorNuntius
 }
 
-# Get error message for module not found
+# Module not found error
 @ publica
 functio moduleNotFoundError(textus path) -> SemanticErrorNuntius {
     redde {
@@ -150,7 +148,7 @@ functio moduleNotFoundError(textus path) -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Get error message for circular import
+# Circular import error
 @ publica
 functio circularImportError(textus path, textus cycle) -> SemanticErrorNuntius {
     redde {
@@ -159,7 +157,7 @@ functio circularImportError(textus path, textus cycle) -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Get error message for module parse error
+# Module parse error
 @ publica
 functio moduleParseError(textus path) -> SemanticErrorNuntius {
     redde {
@@ -168,7 +166,7 @@ functio moduleParseError(textus path) -> SemanticErrorNuntius {
     } qua SemanticErrorNuntius
 }
 
-# Morphologia errors
+# Morphologia stem not declared error
 @ publica
 functio morphologiaRadixNonDeclarataError(textus methodus, textus radix, textus forma, textus recipiens, lista<textus> formae) -> SemanticErrorNuntius {
     fixum aux = formae.longitudo() == 0 sic "Allowed forms for this stem: (none)" secus scriptum("Allowed forms for this stem: §", formae.coniunge(", "))
@@ -178,6 +176,7 @@ functio morphologiaRadixNonDeclarataError(textus methodus, textus radix, textus 
     } qua SemanticErrorNuntius
 }
 
+# Morphologia form not permitted error
 @ publica
 functio morphologiaFormaNonPermissaError(textus methodus, textus radix, textus forma, textus recipiens, lista<textus> formae) -> SemanticErrorNuntius {
     fixum aux = scriptum("Allowed forms for this stem: §", formae.coniunge(", "))

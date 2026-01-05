@@ -29,6 +29,10 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
 
+# ============================================================================
+# CONDITIONAL STATEMENTS
+# ============================================================================
+
 # Parse if statement
 #
 # GRAMMAR:
@@ -78,6 +82,10 @@ functio parseSiSententia(Resolvitor r) -> Sententia {
         cape: cape
     } qua Sententia
 }
+
+# ============================================================================
+# LOOP STATEMENTS
+# ============================================================================
 
 # Parse while statement
 #
@@ -213,6 +221,10 @@ functio parseDeSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
+# ============================================================================
+# MUTATION BLOCK
+# ============================================================================
+
 # Parse mutation block
 #
 # GRAMMAR: inStmt := 'in' expr blockStmt
@@ -238,6 +250,10 @@ functio parseInSententia(Resolvitor r) -> Sententia {
         corpus: corpus
     } qua Sententia
 }
+
+# ============================================================================
+# HELPERS
+# ============================================================================
 
 # Parse catch clause
 #

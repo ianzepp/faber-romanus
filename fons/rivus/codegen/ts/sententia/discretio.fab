@@ -1,7 +1,9 @@
 # TypeScript Statement Generator - Discriminated Union Types
 #
+# Generates TypeScript tagged union types.
+#
 # TRANSFORMS:
-#   discretio Result { ... } -> type Result = { tag: 'Ok'; ... } | { tag: 'Err'; ... }
+#   discretio Result { Ok, Err } -> type Result = { tag: 'Ok'; ... } | { tag: 'Err'; ... }
 
 ex "../../../ast/sententia" importa VariansDeclaratio
 ex "../nucleus" importa TsGenerator

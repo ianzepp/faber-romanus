@@ -1,4 +1,4 @@
-# Zig Statement Generator - Dispatch to statement handlers
+# Zig Statement Generator - Dispatch
 #
 # Routes statement AST nodes to their specific generators.
 

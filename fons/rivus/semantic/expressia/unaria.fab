@@ -1,14 +1,14 @@
-# Unary Expression Resolution
+# Unaria - Unary Expression Resolution
 #
-# Handles: negation (-, !), null checks (nulla, nonnulla)
+# Handles negation and null check operators.
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, NUMERUS, BIVALENS, IGNOTUM
 ex "../../ast/expressia" importa Expressia
 
-# =============================================================================
+# ============================================================================
 # UNARY EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a unary expression
 @ publica
@@ -57,9 +57,9 @@ functio resolveUnaria(Resolvitor r, Expressia unariaExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # HELPERS
-# =============================================================================
+# ============================================================================
 
 @ publica
 functio estNumericum(textus nomen) -> bivalens {

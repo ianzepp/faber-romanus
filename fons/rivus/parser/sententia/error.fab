@@ -22,6 +22,10 @@ ex "../../ast/sententia" importa Sententia, CapeClausula
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
+# ============================================================================
+# TRY-CATCH-FINALLY
+# ============================================================================
+
 # Parse catch clause
 #
 # GRAMMAR: catchClause := 'cape' IDENTIFIER blockStmt
@@ -88,6 +92,10 @@ functio parseTemptaSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
+# ============================================================================
+# FAC BLOCK (explicit scope / do-while)
+# ============================================================================
+
 # Parse fac block statement (explicit scope or do-while)
 #
 # GRAMMAR: facBlockStmt := 'fac' blockStmt ('cape' IDENTIFIER blockStmt)? ('dum' expr)?
@@ -126,6 +134,10 @@ functio parseFacSententia(Resolvitor r) -> Sententia {
         condicio: condicio
     } qua Sententia
 }
+
+# ============================================================================
+# ASSERTIONS
+# ============================================================================
 
 # Parse assert statement
 #

@@ -1,7 +1,9 @@
 # Zig Statement Generator - Output Statements
 #
+# Generates Zig debug print statements.
+#
 # TRANSFORMS:
-#   scribe(x, y)  -> std.debug.print("{any} {any}\n", .{ x, y });
+#   scribe(x, y) -> std.debug.print("{any} {any}\n", .{ x, y });
 
 ex "../../../ast/sententia" importa ScribeGradus
 ex "../../../ast/expressia" importa Expressia

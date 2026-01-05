@@ -1,8 +1,9 @@
 # TypeScript Statement Generator - Mutation Blocks
 #
+# Generates property assignments prefixed with an object.
+#
 # TRANSFORMS:
-#   in obiectum { x = 1 }  -> obiectum.x = 1;
-#   in obiectum { ... }    -> mutation block with property assignments
+#   in obiectum { x = 1 } -> obiectum.x = 1;
 
 ex "../../../ast/sententia" importa Sententia
 ex "../../../ast/expressia" importa Expressia

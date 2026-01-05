@@ -1,7 +1,9 @@
 # Zig Statement Generator - Struct Declarations
 #
+# Generates Zig struct type definitions.
+#
 # TRANSFORMS:
-#   genus Foo { x: numerus }  -> const Foo = struct { x: i64, };
+#   genus Foo { x: numerus } -> const Foo = struct { x: i64, };
 
 ex "../../../ast/sententia" importa CampusDeclaratio
 ex "../../../ast/typus" importa TypusAnnotatio

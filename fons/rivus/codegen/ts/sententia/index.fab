@@ -1,7 +1,8 @@
-# TypeScript Statement Generator - Dispatch to statement handlers
+# TypeScript Statement Generator - Dispatch
 #
 # Routes statement AST nodes to their specific generators.
-# Uses scriptum() for string formatting to avoid method call return type bugs.
+#
+# WHY: Uses scriptum() for string formatting to avoid method call return type bugs.
 
 ex "../../../ast/sententia" importa Sententia, VariaGenus, ScribeGradus, IteratioGenus, CuratorGenus
 ex "../../../ast/sententia" importa Parametrum, CampusDeclaratio, EligeCasus, VariansCasus

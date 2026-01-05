@@ -1,21 +1,16 @@
-# Type System AST Nodes
+# Type AST - Type annotations and type parameters
 #
-# Type annotations, type parameters, and related constructs.
-#
-# LATIN VOCABULARY:
-# - typus = type
-# - adnotatio = annotation
-# - parametrum = parameter
-# - nullabilis = nullable
-# - unio = union
-# - praepositio = preposition (de/in for borrow semantics)
-# - compendium = shorthand
-# - series = array/list
+# WHY: Type annotations appear throughout the AST for typed declarations.
+#      Supports generics, nullable, unions, and borrow semantics.
 
 ex "./positio" importa Locus
 
+# ============================================================================
+# TYPE PARAMETERS
+# ============================================================================
+
 # Type parameter in generic types
-# Can be a type annotation or a literal value (for numeric params like numerus<32>)
+# Example: lista<textus> uses Typus, numerus<32> uses Littera
 @ publicum
 discretio TypusParametrum {
     # Type annotation parameter: lista<textus>
@@ -28,29 +23,33 @@ discretio TypusParametrum {
     }
 }
 
-# Type annotation
+# ============================================================================
+# TYPE ANNOTATION
+# ============================================================================
+
+# Type annotation - represents a type reference
 #
-# Represents a type reference with optional generics, nullable, and union.
-#
-# EXAMPLES:
-#   textus                    -> nomen="textus"
-#   lista<numerus>            -> nomen="lista", typusParametra=[numerus]
-#   textus?                   -> nomen="textus", nullabilis=true
-#   numerus[]                 -> nomen="lista", typusParametra=[numerus], compendiumSeries=true
-#   unio<A, B>                -> nomen="union", unio=[A, B]
-#   de textus                 -> nomen="textus", praepositio="de"
+# Example: textus                    -> nomen="textus"
+# Example: lista<numerus>            -> nomen="lista", typusParametra=[numerus]
+# Example: textus?                   -> nomen="textus", nullabilis=true
+# Example: numerus[]                 -> compendiumSeries=true
+# Example: de textus                 -> praepositio="de" (borrowed)
 @ publicum
 genus TypusAnnotatio {
     Locus locus
-    textus nomen                            # Type name (textus, lista, Persona, etc.)
-    lista<TypusParametrum>? typusParametra  # Generic type parameters
+    textus nomen                            # type name
+    lista<TypusParametrum>? typusParametra  # generic type parameters
     bivalens nullabilis                     # true if T? syntax
-    lista<TypusAnnotatio>? unio             # Union members for unio<A, B>
-    bivalens compendiumSeries               # true if T[] shorthand syntax
+    lista<TypusAnnotatio>? unio             # union members for unio<A, B>
+    bivalens compendiumSeries               # true if T[] shorthand
     textus? praepositio                     # de (borrowed) or in (mutable)
 }
 
-# Factory: create simple type annotation
+# ============================================================================
+# FACTORY FUNCTIONS
+# ============================================================================
+
+# Create simple type annotation
 @ publica
 functio typusSimplicis(textus nomen, Locus locus) -> TypusAnnotatio {
     redde {
@@ -64,7 +63,7 @@ functio typusSimplicis(textus nomen, Locus locus) -> TypusAnnotatio {
     } qua TypusAnnotatio
 }
 
-# Factory: create nullable type annotation
+# Create nullable type annotation
 @ publica
 functio typusNullabilis(textus nomen, Locus locus) -> TypusAnnotatio {
     redde {
@@ -78,7 +77,7 @@ functio typusNullabilis(textus nomen, Locus locus) -> TypusAnnotatio {
     } qua TypusAnnotatio
 }
 
-# Factory: create generic type annotation
+# Create generic type annotation
 @ publica
 functio typusGenericus(textus nomen, lista<TypusParametrum> parametra, Locus locus) -> TypusAnnotatio {
     redde {

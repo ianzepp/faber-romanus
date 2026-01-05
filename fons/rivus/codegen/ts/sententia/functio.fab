@@ -1,5 +1,7 @@
 # TypeScript Statement Generator - Function Declarations
 #
+# Generates TypeScript function declarations with async/generator modifiers.
+#
 # TRANSFORMS:
 #   functio f() { ... }                 -> function f() { ... }
 #   futura functio f() { ... }          -> async function f() { ... }

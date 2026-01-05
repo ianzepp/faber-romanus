@@ -31,6 +31,10 @@ ex "./massa" importa parseMassaSententia
 ex "./varia" importa parseNomenVelVerbum
 ex "./annotatio" importa Annotatio, parseAnnotationes
 
+# ============================================================================
+# FUNCTION DECLARATIONS
+# ============================================================================
+
 # Parse function declaration
 #
 # GRAMMAR:
@@ -117,6 +121,10 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
         morphologia: nihil
     } qua Sententia
 }
+
+# ============================================================================
+# GENUS (CLASS/STRUCT) DECLARATIONS
+# ============================================================================
 
 # Parse genus (class/struct) declaration
 #
@@ -321,6 +329,10 @@ functio parseGenusDeclaratio(Resolvitor r, bivalens abstractum) -> Sententia {
     } qua Sententia
 }
 
+# ============================================================================
+# PACTUM (INTERFACE) DECLARATIONS
+# ============================================================================
+
 # Parse pactum (interface) declaration
 #
 # GRAMMAR: pactumDecl := 'pactum' IDENT genericParams? '{' methods '}'
@@ -414,6 +426,10 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
         methodi: methodi
     } qua Sententia
 }
+
+# ============================================================================
+# ORDO (ENUM) AND DISCRETIO (TAGGED UNION) DECLARATIONS
+# ============================================================================
 
 # Parse ordo (enum) declaration
 #
@@ -582,6 +598,10 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
         variantes: variantes
     } qua Sententia
 }
+
+# ============================================================================
+# TYPE ALIAS DECLARATIONS
+# ============================================================================
 
 # Parse type alias declaration
 #
@@ -769,6 +789,10 @@ functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
 
     redde nomina
 }
+
+# ============================================================================
+# IMPORT DECLARATIONS
+# ============================================================================
 
 # Parse import declaration
 #

@@ -1,10 +1,13 @@
-# TypeScript Statement Generator - Cura (Resource Management) Statements
+# TypeScript Statement Generator - Cura (Resource Management)
+#
+# Generates try/finally blocks for RAII-style resource cleanup.
 #
 # TRANSFORMS:
-#   cura res = expr { ... }                  -> { const res = expr; try { ... } finally { res.solve?.(); } }
-#   cura arena res = expr { ... }            -> (just block contents - GC manages memory)
-#   cura pagina res = expr { ... }           -> (just block contents - GC manages memory)
-#   cura res = expr { ... } cape e { ... }   -> try/catch/finally with resource cleanup
+#   cura res = expr { ... }                -> { const res = expr; try { ... } finally { res.solve?.(); } }
+#   cura arena res = expr { ... }          -> (block contents only - GC manages memory)
+#   cura res = expr { } cape e { }         -> try/catch/finally with resource cleanup
+#
+# WHY: GC targets (arena/page) skip allocator management - memory is automatic.
 
 ex "../../../ast/sententia" importa Sententia, CuratorGenus, CapeClausula
 ex "../../../ast/expressia" importa Expressia

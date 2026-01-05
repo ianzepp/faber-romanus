@@ -1,28 +1,54 @@
-# Annotation Parsing Helpers
+# Annotation Parser - @ Directive Parsing
 #
-# Parses line-based annotations like:
-#   @ futura
-#   @ radix imperativus, perfectum
+# Parses line-based annotations that modify declarations.
 #
-# Morphology annotations only accept identifiers on the same line.
+# GRAMMAR:
+#   annotation := '@' IDENTIFIER arguments?
+#   arguments := IDENTIFIER (',' IDENTIFIER)*  (same line only)
+#
+# Examples:
+#   @ futura                         -> marks function as async
+#   @ radix imperativus, perfectum   -> verb morphology forms
+#   @ publica                        -> visibility modifier
+#   @ externa                        -> external declaration
+#
+# LATIN VOCABULARY:
+# - annotatio = annotation/note
 
 ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
 ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 
-# Parsed annotation
+# ============================================================================
+# TYPES
+# ============================================================================
+
+# Parsed annotation with optional arguments
 @ publicum
 genus Annotatio {
     Locus locus
-    textus nomen
-    lista<textus> argumenta
+    textus nomen                # annotation name (e.g., "futura", "radix")
+    lista<textus> argumenta     # optional arguments (e.g., ["imperativus"])
 }
 
+# ============================================================================
+# HELPERS
+# ============================================================================
+
+# Check if a string is a valid verb form for @ radix
 functio estFormaRadix(textus forma) -> bivalens {
     redde forma inter ["imperativus", "perfectum", "futurum_indicativum", "futurum_activum"]
 }
 
+# ============================================================================
+# PARSER
+# ============================================================================
+
+# Parse all annotations at current position
+#
+# Consumes @ directives until a non-@ token is found.
+# For @ radix, collects comma-separated form names on the same line.
 @ publica
 functio parseAnnotationes(Resolvitor r) -> lista<Annotatio> {
     fixum p = r.parser()

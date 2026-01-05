@@ -1,10 +1,12 @@
 # TypeScript Statement Generator - Try/Catch/Finally Statements
 #
+# Generates try/catch/finally blocks for error handling.
+#
 # TRANSFORMS:
-#   tempta { ... }                        -> try { ... }
-#   tempta { ... } cape e { ... }         -> try { ... } catch (e) { ... }
-#   tempta { ... } demum { ... }          -> try { ... } finally { ... }
-#   tempta { ... } cape e { } demum { }   -> try { ... } catch (e) { } finally { }
+#   tempta { ... }                       -> try { ... }
+#   tempta { ... } cape e { ... }        -> try { ... } catch (e) { ... }
+#   tempta { ... } demum { ... }         -> try { ... } finally { ... }
+#   tempta { ... } cape e { } demum { }  -> try { ... } catch (e) { } finally { }
 
 ex "../../../ast/sententia" importa Sententia, CapeClausula
 ex "../nucleus" importa TsGenerator

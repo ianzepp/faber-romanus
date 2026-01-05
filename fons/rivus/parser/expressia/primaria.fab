@@ -1,22 +1,32 @@
 # Primary Expression Parsers
 #
 # Terminals and grouping: literals, identifiers, parenthesized expressions,
-# arrays, objects, lambdas.
+# arrays, objects, lambdas, and special forms.
 #
 # GRAMMAR:
 #   primary := IDENTIFIER | NUMBER | STRING | TEMPLATE_STRING
 #            | 'ego' | 'verum' | 'falsum' | 'nihil'
 #            | '(' expression ')' | arrayLiteral | objectLiteral
-#            | lambdaExpression
+#            | lambdaExpression | fingeExpression | scriptumExpression
+#            | legeExpression | regexExpression | abExpression | catenaExpression
+#
+# WHY: Primary expressions are the leaves of the expression tree.
+#      Everything else builds on top of these terminals.
 #
 # LATIN VOCABULARY:
 # - primaria = primary
 # - littera = literal
 # - nomen = identifier/name
 # - ego = self/this
-# - verum = true
-# - falsum = false
+# - verum/falsum = true/false
 # - nihil = null
+# - series = array
+# - obiectum = object
+# - scriptum = formatted string
+# - lege = read (stdin)
+# - sed = regex (but/except)
+# - ab = from (collection DSL)
+# - catena = chain (collection DSL)
 
 ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
@@ -27,10 +37,14 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../../ast/sententia" importa Sententia
 ex "../errores" importa ParserErrorCodice
 
+# ============================================================================
+# PRIMARY DISPATCHER
+# ============================================================================
+
 # Parse primary expression
 #
 # Handles terminals: literals, identifiers, ego, grouped expressions.
-# Currently a partial implementation - covers the most common cases.
+# Routes to specialized parsers for compound forms (arrays, objects, lambdas).
 @ publica
 functio parsePrimaria(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -202,7 +216,13 @@ functio parsePrimaria(Resolvitor r) -> Expressia {
     } qua Expressia
 }
 
+# ============================================================================
+# COLLECTION DSL (ex/ab expressions)
+# ============================================================================
+
 # Parse collection DSL expression (ex ... transforms)
+#
+# Example: ex items prima 5 summa
 @ publica
 functio parseCatenaExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -332,9 +352,15 @@ functio parseCatenaGradus(Resolvitor r) -> lista<CatenaGradus> {
     redde gradus
 }
 
+# ============================================================================
+# ARRAY AND OBJECT LITERALS
+# ============================================================================
+
 # Parse array literal
 #
 # GRAMMAR: arrayLiteral := '[' (expression (',' expression)*)? ']'
+#
+# Example: [1, 2, 3], [sparge items, 4, 5]
 @ publica
 functio parseSeriesExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -494,6 +520,10 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
     } qua Expressia
 }
 
+# ============================================================================
+# LAMBDA EXPRESSIONS
+# ============================================================================
+
 # Parse lambda expression
 #
 # GRAMMAR:
@@ -622,9 +652,15 @@ functio parseFingeExpressia(Resolvitor r) -> Expressia {
     } qua Expressia
 }
 
-# Parse praefixum expression
+# ============================================================================
+# COMPILE-TIME AND SPECIAL EXPRESSIONS
+# ============================================================================
+
+# Parse praefixum expression (compile-time evaluation)
 #
 # GRAMMAR: praefixum (blockStmt | '(' expression ')')
+#
+# Example: praefixum(VERSION), praefixum { computeConstant() }
 @ publica
 functio parsePraefixumExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -686,9 +722,11 @@ functio exMassaExpressia(Sententia massa, Locus locus) -> Expressia {
     } qua Expressia
 }
 
-# Parse scriptum expression
+# Parse scriptum expression (format string)
 #
 # GRAMMAR: scriptum '(' STRING (',' expression)* ')'
+#
+# Example: scriptum("Hello, §!", name)
 @ publica
 functio parseScriptumExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -714,9 +752,11 @@ functio parseScriptumExpressia(Resolvitor r) -> Expressia {
     } qua Expressia
 }
 
-# Parse lege expression
+# Parse lege expression (stdin read)
 #
 # GRAMMAR: lege ('lineam')?
+#
+# Example: lege (all stdin), lege lineam (one line)
 @ publica
 functio parseLegeExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()
@@ -739,6 +779,8 @@ functio parseLegeExpressia(Resolvitor r) -> Expressia {
 # Parse regex literal
 #
 # GRAMMAR: sed STRING IDENTIFIER?
+#
+# Example: sed "\\d+" g, sed "[a-z]+" i
 @ publica
 functio parseRegexExpressia(Resolvitor r) -> Expressia {
     fixum p = r.parser()

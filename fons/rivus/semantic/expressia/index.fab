@@ -1,9 +1,6 @@
-# Expression Resolution - Main Dispatcher
+# Expressia - Expression Resolution Dispatcher
 #
 # Routes expression AST nodes to their appropriate resolution functions.
-# Each resolver returns the inferred SemanticTypus.
-#
-# Uses the Resolvitor pactum to break circular imports.
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, TEXTUS, NUMERUS, BIVALENS, NIHIL, IGNOTUM
@@ -12,16 +9,15 @@ ex "../typi" importa formaTypum, assignabileAd
 ex "../errores" importa immutableAssignmentError, typeMismatchError, undefinedVariableError
 ex "../../ast/expressia" importa Expressia
 
-# Import resolvers - no circular dependency since they only use Resolvitor
 ex "./primaria" importa resolveNomen, resolveLittera, resolveSeries, resolveObiectum
 ex "./binaria" importa resolveBinaria
 ex "./unaria" importa resolveUnaria
 ex "./vocatio" importa resolveVocatio, resolveMembrum
 ex "./alia" importa resolveLambda, resolveFingeExpr, resolveCedeExpr, resolveNovumExpr, resolveCondicio
 
-# =============================================================================
+# ============================================================================
 # MAIN DISPATCHER
-# =============================================================================
+# ============================================================================
 
 # Resolve any expression and return its semantic type
 @ publica
@@ -147,9 +143,9 @@ functio resolveExpressia(Resolvitor r, Expressia expr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
-# HELPER RESOLVERS (inline for simple cases)
-# =============================================================================
+# ============================================================================
+# HELPER RESOLVERS
+# ============================================================================
 
 # Resolve assignment expression
 @ publica

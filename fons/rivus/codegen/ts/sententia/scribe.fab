@@ -1,9 +1,11 @@
 # TypeScript Statement Generator - Console Output
 #
+# Generates console log/debug/warn calls.
+#
 # TRANSFORMS:
-#   scribe "hello"       -> console.log("hello");
-#   scribe.vide "debug"  -> console.debug("debug");
-#   scribe.mone "warn"   -> console.warn("warn");
+#   scribe "hello"      -> console.log("hello");
+#   scribe.vide "debug" -> console.debug("debug");
+#   scribe.mone "warn"  -> console.warn("warn");
 
 ex "../../../ast/sententia" importa ScribeGradus
 ex "../../../ast/expressia" importa Expressia

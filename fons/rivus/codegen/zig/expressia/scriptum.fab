@@ -1,7 +1,9 @@
 # Zig Expression Generator - Format Strings
 #
+# Generates Zig format strings using std.fmt.allocPrint.
+#
 # TRANSFORMS:
-#   scriptum("Hello §", name)  -> std.fmt.allocPrint(alloc, "Hello {any}", .{ name })
+#   scriptum("Hello §", name) -> std.fmt.allocPrint(alloc, "Hello {any}", .{ name })
 
 ex "../../../ast/expressia" importa Expressia
 ex "../nucleus" importa ZigGenerator

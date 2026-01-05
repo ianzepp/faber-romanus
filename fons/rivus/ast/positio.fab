@@ -1,7 +1,11 @@
-# Position and Span types for source location tracking
+# Position AST - Source location tracking types
 #
 # WHY: Every AST node and token needs location info for error messages.
 #      Locus is a single point; Tractus is a range.
+
+# ============================================================================
+# POSITION TYPES
+# ============================================================================
 
 # A single point in source code
 @ publicum
@@ -17,6 +21,10 @@ genus Tractus {
     Locus initium
     Locus finis
 }
+
+# ============================================================================
+# FACTORY FUNCTIONS
+# ============================================================================
 
 # Create a position from components
 @ publica

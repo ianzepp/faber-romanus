@@ -1,9 +1,11 @@
 # Zig Statement Generator - Variable Declarations
 #
+# Generates Zig const/var declarations.
+#
 # TRANSFORMS:
-#   fixum x = 1      -> const x = 1;
-#   varia x = 1      -> var x = 1;
-#   @externa fixum x -> extern var x;
+#   fixum x = 1       -> const x = 1;
+#   varia x = 1       -> var x = 1;
+#   @ externa fixum x -> extern var x;
 
 ex "../../../ast/sententia" importa VariaGenus
 ex "../../../ast/expressia" importa Expressia

@@ -1,6 +1,6 @@
 # TypeScript Preamble Generator
 #
-# Assembles preamble snippets based on features used.
+# Assembles runtime preamble snippets based on features used in generated code.
 
 ex "../../typi" importa RequiredFeatures
 

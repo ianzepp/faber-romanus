@@ -1,7 +1,9 @@
 # Zig Code Generator - Public API
 #
 # Entry point for generating Zig from Faber AST.
-# Orchestrates statement generation.
+#
+# TRANSFORMS:
+#   lista<Sententia> -> Zig source code string
 
 ex "../../ast/sententia" importa Sententia
 ex "./nucleus" importa ZigGenerator, creaZigGenerator

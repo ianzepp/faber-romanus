@@ -1,14 +1,16 @@
 # TypeScript Statement Generator - Test Statements
 #
+# Generates Jest-style test blocks and lifecycle hooks.
+#
 # TRANSFORMS:
-#   probandum "suite" { ... }         -> describe("suite", () => { ... })
-#   proba "case" { ... }              -> test("case", () => { ... })
-#   proba @ omitte "skip" { }         -> test.skip("skip", () => { })
-#   proba @ futurum "todo"            -> test.todo("todo")
-#   praepara { ... }                  -> beforeEach(() => { ... })
-#   praepara @ omnia { ... }          -> beforeAll(() => { ... })
-#   postpara { ... }                  -> afterEach(() => { ... })
-#   postpara @ omnia { ... }          -> afterAll(() => { ... })
+#   probandum "suite" { ... }  -> describe("suite", () => { ... })
+#   proba "case" { ... }       -> test("case", () => { ... })
+#   proba @ omitte "skip" { }  -> test.skip("skip", () => { })
+#   proba @ futurum "todo"     -> test.todo("todo")
+#   praepara { ... }           -> beforeEach(() => { ... })
+#   praepara @ omnia { ... }   -> beforeAll(() => { ... })
+#   postpara { ... }           -> afterEach(() => { ... })
+#   postpara @ omnia { ... }   -> afterAll(() => { ... })
 
 ex "../../../ast/sententia" importa Sententia, ProbaModificator, PraeparaTempus
 ex "../nucleus" importa TsGenerator

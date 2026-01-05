@@ -1,5 +1,7 @@
 # Zig Statement Generator - Iteration Loops
 #
+# Generates Zig for-loops with capture syntax.
+#
 # TRANSFORMS:
 #   per x ex lista { }  -> for (lista) |x| { }
 #   per x ex 0..10 { }  -> for (@intCast(0)..@intCast(10)) |x| { }

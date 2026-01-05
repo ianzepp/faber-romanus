@@ -26,7 +26,13 @@ ex "../errores" importa ParserErrorCodice
 ex "../../lexicon/verba" importa estVerbumSententiae
 ex "./primaria" importa parsePrimaria
 
+# ============================================================================
+# UNARY (PREFIX) EXPRESSIONS
+# ============================================================================
+
 # Parse unary expression
+#
+# Handles prefix operators: non, -, ~, nulla, nonnulla, cede, novum
 #
 # GRAMMAR: unary := prefixOp unary | postfix
 @ publica
@@ -141,7 +147,13 @@ functio parseUnaria(Resolvitor r) -> Expressia {
     redde parsePostfix(r)
 }
 
+# ============================================================================
+# POSTFIX EXPRESSIONS
+# ============================================================================
+
 # Parse postfix expression (call, member, type cast)
+#
+# Handles chained suffixes: f(), x.y, x[i], x?.y, x!.y, x qua T
 #
 # GRAMMAR: postfix := primary (callSuffix | memberSuffix | quaSuffix)*
 @ publica
@@ -331,6 +343,10 @@ functio parsePostfix(Resolvitor r) -> Expressia {
     redde expressia
 }
 
+# ============================================================================
+# CONSTRUCTOR AND ARGUMENT PARSING
+# ============================================================================
+
 # Parse novum (constructor) expression
 #
 # GRAMMAR:
@@ -414,6 +430,10 @@ functio parseArgumentum(Resolvitor r) -> Expressia {
 
     redde r.expressia()
 }
+
+# ============================================================================
+# HELPERS
+# ============================================================================
 
 # Parse property name as identifier or keyword
 @ publica

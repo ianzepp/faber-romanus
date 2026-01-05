@@ -1,9 +1,11 @@
 # TypeScript Statement Generator - Iteration Loops
 #
+# Generates for-of/for-in loops with range optimization.
+#
 # TRANSFORMS:
-#   per x de lista { ... }   -> for (const x in lista) { ... }
-#   per x ex lista { ... }   -> for (const x of lista) { ... }
-#   per x ex 0..10 { ... }   -> for (let x = 0; x < 10; x++) { ... }
+#   per x de lista { ... }  -> for (const x in lista) { ... }
+#   per x ex lista { ... }  -> for (const x of lista) { ... }
+#   per x ex 0..10 { ... }  -> for (let x = 0; x < 10; x++) { ... }
 
 ex "../../../ast/sententia" importa Sententia, IteratioGenus, CapeClausula
 ex "../../../ast/expressia" importa Expressia

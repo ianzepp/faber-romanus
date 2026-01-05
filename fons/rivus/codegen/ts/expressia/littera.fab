@@ -1,11 +1,13 @@
 # TypeScript Expression Generator - Literals
 #
+# Generates JavaScript literal values.
+#
 # TRANSFORMS:
-#   verum/falsum  -> true/false
-#   nihil         -> null
-#   "text"        -> "text"
-#   `template`    -> `template`
-#   123, 3.14     -> 123, 3.14
+#   verum/falsum -> true/false
+#   nihil        -> null
+#   "text"       -> "text"
+#   `template`   -> `template`
+#   123          -> 123
 
 ex "../../../ast/expressia" importa LitteraGenus, Expressia
 ex "../nucleus" importa TsGenerator

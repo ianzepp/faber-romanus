@@ -10,6 +10,17 @@
 #   praeparaBlock := ('praepara' | 'praeparabit' | 'postpara' | 'postparabit') 'omnia'? blockStmt
 #
 # WHY: These map 1:1 to the shared proba YAML test suite structure.
+#
+# LATIN VOCABULARY:
+# - probandum = to be tested (gerundive)
+# - proba = test (imperative)
+# - praepara = prepare (imperative - beforeEach)
+# - praeparabit = it will prepare (future - async beforeEach)
+# - postpara = prepare after (afterEach)
+# - postparabit = it will prepare after (async afterEach)
+# - omnia = all (beforeAll/afterAll marker)
+# - omitte = skip
+# - futurum = future/todo
 
 ex "../resolvitor" importa Resolvitor
 ex "../../ast/positio" importa Locus
@@ -18,6 +29,16 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
 
+# ============================================================================
+# TEST SUITE
+# ============================================================================
+
+# Parse test suite (probandum)
+#
+# Example:
+#   probandum "Parser Tests" {
+#       proba "parses literals" { ... }
+#   }
 @ publica
 functio parseProbandumSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
@@ -74,6 +95,16 @@ functio parseProbandumSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
+# ============================================================================
+# TEST CASE
+# ============================================================================
+
+# Parse individual test case (proba)
+#
+# Example:
+#   proba "adds numbers" { adfirma add(1, 2) == 3 }
+#   proba omitte "reason" "skipped test" { }
+#   proba futurum "todo" "future test" { }
 @ publica
 functio parseProbaSententia(Resolvitor r) -> Sententia {
     fixum p = r.parser()
@@ -119,6 +150,17 @@ functio parseProbaSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
+# ============================================================================
+# SETUP/TEARDOWN HOOKS
+# ============================================================================
+
+# Parse setup/teardown hook
+#
+# Examples:
+#   praepara { setup() }           -> beforeEach
+#   praeparabit { cede setup() }   -> async beforeEach
+#   postpara { cleanup() }         -> afterEach
+#   praepara omnia { initOnce() }  -> beforeAll
 @ publica
 functio parsePraeparaMassa(Resolvitor r) -> Sententia {
     fixum p = r.parser()

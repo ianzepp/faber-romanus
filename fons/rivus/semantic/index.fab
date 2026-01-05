@@ -1,11 +1,6 @@
-# Semantic Analyzer - Entry Point
+# Semantic - Entry Point
 #
-# Performs semantic analysis on the AST produced by the parser.
-# Resolves types, builds symbol tables, validates type compatibility.
-#
-# Uses a multi-pass approach for forward references:
-# Phase 1: Predeclaration - register all top-level names
-# Phase 2: Body analysis - analyze function bodies and statements
+# Performs semantic analysis on the AST. Resolves types, builds symbol tables.
 
 ex "./resolvitor" importa Resolvitor
 ex "./nucleus" importa Analyzator, SemanticResultatum, novumAnalyzator
@@ -18,9 +13,9 @@ ex "../ast/expressia" importa Expressia
 ex "../ast/sententia" importa Sententia, MorphologiaDeclaratio
 ex "../parser/morphologia" importa parseMethodum
 
-# =============================================================================
+# ============================================================================
 # RESOLVITOR IMPLEMENTATION
-# =============================================================================
+# ============================================================================
 
 # Concrete implementation of the Resolvitor pactum
 @ publicum
@@ -49,9 +44,9 @@ functio novumResolvitor(Analyzator a) -> Resolvitor {
     redde { a: a } qua ResolvitorImpl qua Resolvitor
 }
 
-# =============================================================================
+# ============================================================================
 # MAIN ENTRY POINT
-# =============================================================================
+# ============================================================================
 
 # Perform semantic analysis on a program
 @ publica
@@ -78,12 +73,11 @@ functio analyze(Programma programma) -> SemanticResultatum {
     } qua SemanticResultatum
 }
 
-# =============================================================================
+# ============================================================================
 # PREDECLARATION
-# =============================================================================
+# ============================================================================
 
-# Predeclare a top-level statement (Phase 1)
-# Registers names with placeholder types for forward reference support
+# Predeclare a top-level statement (registers placeholder types)
 @ publica
 functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
     fixum a = r.analyzator()

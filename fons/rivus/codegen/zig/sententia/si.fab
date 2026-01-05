@@ -1,8 +1,10 @@
 # Zig Statement Generator - Conditionals
 #
+# Generates Zig if/else statements.
+#
 # TRANSFORMS:
-#   si cond { } -> if (cond) { }
-#   si cond { } secus { } -> if (cond) { } else { }
+#   si cond { }            -> if (cond) { }
+#   si cond { } secus { }  -> if (cond) { } else { }
 
 ex "../../../ast/sententia" importa Sententia
 ex "../../../ast/expressia" importa Expressia

@@ -1,6 +1,6 @@
-# Error Handling Statement Analysis
+# Error - Error Handling Statement Analysis
 #
-# Handles: tempta/cape, fac...dum, cura
+# Handles tempta/cape, fac...dum, and cura statements.
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa IGNOTUM

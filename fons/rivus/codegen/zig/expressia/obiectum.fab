@@ -1,8 +1,10 @@
 # Zig Expression Generator - Object Literals
 #
+# Generates Zig anonymous struct literals.
+#
 # TRANSFORMS:
-#   { x: 1, y: 2 }  -> .{ .x = 1, .y = 2 }
-#   { name }        -> .{ .name = name }
+#   { x: 1, y: 2 } -> .{ .x = 1, .y = 2 }
+#   { name }       -> .{ .name = name }
 
 ex "../../../ast/expressia" importa Expressia, ObiectumProprietas
 ex "../nucleus" importa ZigGenerator

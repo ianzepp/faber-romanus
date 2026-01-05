@@ -1,15 +1,15 @@
-# Binary Expression Resolution
+# Binaria - Binary Expression Resolution
 #
-# Handles: arithmetic (+, -, *, /, %), comparison (<, >, ==), logical (et, aut)
+# Handles arithmetic, comparison, and logical operators.
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, TEXTUS, NUMERUS, BIVALENS, IGNOTUM, formaTypum
 ex "../errores" importa incompatibleComparisonError
 ex "../../ast/expressia" importa Expressia
 
-# =============================================================================
+# ============================================================================
 # BINARY EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a binary expression
 @ publica
@@ -94,9 +94,9 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # HELPERS
-# =============================================================================
+# ============================================================================
 
 @ publica
 functio estArithmeticum(textus signum) -> bivalens {

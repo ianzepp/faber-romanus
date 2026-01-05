@@ -1,5 +1,7 @@
 # Zig Statement Generator - While Loops
 #
+# Generates Zig while loops.
+#
 # TRANSFORMS:
 #   dum cond { } -> while (cond) { }
 

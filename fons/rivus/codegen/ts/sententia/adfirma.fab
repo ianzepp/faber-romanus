@@ -1,8 +1,10 @@
 # TypeScript Statement Generator - Assertions
 #
+# Generates assertion checks that throw on failure.
+#
 # TRANSFORMS:
-#   adfirma x > 0               -> if (!(x > 0)) { throw new Error("Assertion failed: x > 0"); }
-#   adfirma x > 0, "custom msg" -> if (!(x > 0)) { throw new Error("custom msg"); }
+#   adfirma x > 0        -> if (!(x > 0)) { throw new Error("Assertion failed: x > 0"); }
+#   adfirma x > 0, "msg" -> if (!(x > 0)) { throw new Error("msg"); }
 
 ex "../../../ast/expressia" importa Expressia
 ex "../nucleus" importa TsGenerator

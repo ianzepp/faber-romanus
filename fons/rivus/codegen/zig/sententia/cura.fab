@@ -1,7 +1,9 @@
 # Zig Statement Generator - Resource Management
 #
+# Generates Zig allocator setup with defer-based cleanup.
+#
 # TRANSFORMS:
-#   cura arena ut alloc { }  -> var alloc_arena = ArenaAllocator.init(...); defer alloc_arena.deinit(); const alloc = alloc_arena.allocator();
+#   cura arena ut alloc { }  -> var alloc_arena = ArenaAllocator.init(...); defer ...; const alloc = ...
 #   cura pagina ut alloc { } -> const alloc = std.heap.page_allocator;
 
 ex "../../../ast/sententia" importa Sententia, CuratorGenus

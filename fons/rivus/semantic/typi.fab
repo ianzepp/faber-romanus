@@ -1,47 +1,44 @@
-# Semantic Types - Type System Definitions
+# Typi - Semantic Type System
 #
-# This module defines the type system used during semantic analysis. Types are
-# resolved from Latin type annotations and inferred from expressions.
+# Defines the type system used during semantic analysis.
 
-# =============================================================================
-# SEMANTIC TYPE (Discriminated Union)
-# =============================================================================
+# ============================================================================
+# SEMANTIC TYPE (DISCRIMINATED UNION)
+# ============================================================================
 
-# SemanticTypus is a discretio covering all possible types in the type system.
-# Each variant carries specific metadata for its kind.
-
+# All possible types in the type system
 @ publicum
 discretio SemanticTypus {
-    # Primitive types (textus, numerus, fractus, decimus, magnus, bivalens, nihil, vacuum, octeti)
+    # Primitive types: textus, numerus, fractus, decimus, magnus, bivalens, nihil, vacuum, octeti
     Primitivum {
-        textus nomen           # "textus" | "numerus" | "fractus" | etc.
-        bivalens nullabilis    # T? types
-        numerus? amplitudo     # Bit width for numerus<32>, etc.
+        textus nomen                                    # "textus" | "numerus" | etc.
+        bivalens nullabilis                             # T? types
+        numerus? amplitudo                              # bit width for numerus<32>
     }
 
-    # Generic types (lista<T>, tabula<K,V>, promissum<T>)
+    # Generic types: lista<T>, tabula<K,V>, promissum<T>
     Genericum {
-        textus nomen                       # "lista" | "tabula" | etc.
-        lista<SemanticTypus> parametri     # Type parameters
+        textus nomen                                    # "lista" | "tabula" | etc.
+        lista<SemanticTypus> parametri                  # type parameters
         bivalens nullabilis
     }
 
     # Function types
     Functio {
-        lista<SemanticTypus> parametriTypi     # Parameter types
-        SemanticTypus reditusTypus             # Return type
-        bivalens asyncronum                    # async function?
-        bivalens habetCuratorem                # Has curator param?
+        lista<SemanticTypus> parametriTypi              # parameter types
+        SemanticTypus reditusTypus                      # return type
+        bivalens asyncronum                             # async function?
+        bivalens habetCuratorem                         # has curator param?
     }
 
-    # Union types (A | B | C)
+    # Union types: A | B | C
     Unio {
         lista<SemanticTypus> typi
     }
 
     # Unknown type for unresolved/error cases
     Ignotum {
-        textus? ratio      # Optional reason for being unknown
+        textus? ratio                                   # reason for being unknown
     }
 
     # User-defined type (class, interface, etc.)
@@ -60,24 +57,24 @@ discretio SemanticTypus {
     # Genus (class/struct) with fields and methods
     Genus {
         textus nomen
-        tabula<textus, SemanticTypus> agri              # Fields
-        tabula<textus, SemanticTypus> methodi           # Methods (FunctionType)
-        tabula<textus, SemanticTypus> agriStatici       # Static fields
-        tabula<textus, SemanticTypus> methodiStatici    # Static methods
+        tabula<textus, SemanticTypus> agri              # fields
+        tabula<textus, SemanticTypus> methodi           # methods
+        tabula<textus, SemanticTypus> agriStatici       # static fields
+        tabula<textus, SemanticTypus> methodiStatici    # static methods
         bivalens nullabilis
     }
 
     # Pactum (interface/protocol) with method signatures
     Pactum {
         textus nomen
-        tabula<textus, SemanticTypus> methodi           # Methods (FunctionType)
+        tabula<textus, SemanticTypus> methodi           # method signatures
         bivalens nullabilis
     }
 }
 
-# =============================================================================
+# ============================================================================
 # TYPE CONSTRUCTORS
-# =============================================================================
+# ============================================================================
 
 # Create a primitive type
 @ publica
@@ -186,9 +183,9 @@ functio pactumTypus(textus nomen, tabula<textus, SemanticTypus> methodi, bivalen
     } qua SemanticTypus
 }
 
-# =============================================================================
+# ============================================================================
 # COMMON TYPE CONSTANTS
-# =============================================================================
+# ============================================================================
 
 @ publicum
 fixum TEXTUS = primitivumTypus("textus", falsum)
@@ -220,9 +217,9 @@ fixum OCTETI = primitivumTypus("octeti", falsum)
 @ publicum
 fixum IGNOTUM = ignotumTypus(nihil)
 
-# =============================================================================
+# ============================================================================
 # TYPE UTILITIES
-# =============================================================================
+# ============================================================================
 
 # Check if two types are equal
 @ publica

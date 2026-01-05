@@ -1,7 +1,9 @@
 # Zig Statement Generator - Entry Point
 #
+# Generates Zig main function wrapper.
+#
 # TRANSFORMS:
-#   incipit { }  -> pub fn main() void { }
+#   incipit { } -> pub fn main() void { }
 
 ex "../../../ast/sententia" importa Sententia
 ex "../nucleus" importa ZigGenerator

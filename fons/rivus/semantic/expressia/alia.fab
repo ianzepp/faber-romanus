@@ -1,6 +1,6 @@
-# Other Expression Resolution
+# Alia - Other Expression Resolution
 #
-# Handles: lambda, finge, cede (await), novum (new), conditional
+# Handles lambda, finge, cede, novum, and conditional expressions.
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, IGNOTUM, VACUUM
@@ -10,9 +10,9 @@ ex "../errores" importa cedeOutsideAsyncError
 ex "../../ast/expressia" importa Expressia
 ex "../../ast/sententia" importa Sententia
 
-# =============================================================================
+# ============================================================================
 # LAMBDA EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a lambda expression (pro x: x + 1)
 @ publica
@@ -79,9 +79,9 @@ functio resolveLambda(Resolvitor r, Expressia lambdaExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # FINGE EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a finge expression (tagged union construction)
 @ publica
@@ -106,9 +106,9 @@ functio resolveFingeExpr(Resolvitor r, Expressia fingeExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # CEDE (AWAIT) EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a cede (await) expression
 @ publica
@@ -141,9 +141,9 @@ functio resolveCedeExpr(Resolvitor r, Expressia cedeExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # NOVUM (NEW) EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a novum (new) expression
 @ publica
@@ -169,9 +169,9 @@ functio resolveNovumExpr(Resolvitor r, Expressia novumExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # CONDITIONAL EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a ternary conditional expression
 @ publica

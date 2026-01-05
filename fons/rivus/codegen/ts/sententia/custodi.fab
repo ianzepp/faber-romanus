@@ -1,10 +1,11 @@
 # TypeScript Statement Generator - Guard Clauses
 #
-# TRANSFORMS:
-#   custodi x > 0 { ... }  -> if (x > 0) { ... }
+# Generates early-exit guard patterns as sequential if statements.
 #
-# WHY: Guard clauses are similar to conditionals but represent early-exit
-#      patterns. Multiple guards emit sequential if statements.
+# TRANSFORMS:
+#   custodi x > 0 { redde } -> if (x > 0) { return; }
+#
+# WHY: Guards represent early-exit patterns; multiple guards emit sequential ifs.
 
 ex "../../../ast/sententia" importa Sententia, CustodiClausula
 ex "../../../ast/expressia" importa Expressia

@@ -1,8 +1,10 @@
 # TypeScript Statement Generator - Enum Declarations
 #
+# Generates TypeScript enum declarations.
+#
 # TRANSFORMS:
-#   ordo Color { Red, Green, Blue }           -> enum Color { Red, Green, Blue }
-#   ordo Status { Active = 1, Inactive = 0 }  -> enum Status { Active = 1, Inactive = 0 }
+#   ordo Color { Red, Green, Blue }          -> enum Color { Red, Green, Blue }
+#   ordo Status { Active = 1, Inactive = 0 } -> enum Status { Active = 1, Inactive = 0 }
 
 ex "../../../ast/sententia" importa OrdoMembrum
 ex "../nucleus" importa TsGenerator

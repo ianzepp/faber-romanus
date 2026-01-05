@@ -1,11 +1,12 @@
 # TypeScript Code Generator - Public API
 #
 # Entry point for generating TypeScript from Faber AST.
-# Orchestrates statement generation.
 #
-# NOTE: Preamble generation skipped for bootstrap. The features that need
-# preambles (panic, decimal, flumina) are not used by the bootstrap compiler.
-# If needed later, preamble text files can be read at runtime.
+# TRANSFORMS:
+#   lista<Sententia> -> TypeScript source code string
+#
+# WHY: Preamble generation skipped for bootstrap - features that need preambles
+# (panic, decimal, flumina) are not used by the bootstrap compiler.
 
 ex "../../ast/sententia" importa Sententia
 ex "./nucleus" importa TsGenerator, creaTsGenerator

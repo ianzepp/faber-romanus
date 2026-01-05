@@ -1,7 +1,9 @@
 # Zig Statement Generator - Enum Declarations
 #
+# Generates Zig enum type definitions.
+#
 # TRANSFORMS:
-#   ordo Color { Red, Green, Blue }  -> const Color = enum { Red, Green, Blue, };
+#   ordo Color { Red, Green, Blue } -> const Color = enum { Red, Green, Blue, };
 
 ex "../../../ast/sententia" importa OrdoMembrum
 ex "../nucleus" importa ZigGenerator

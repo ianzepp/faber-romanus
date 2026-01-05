@@ -1,11 +1,11 @@
-# TypeScript Statement Generator - Discerne (Pattern Matching)
+# TypeScript Statement Generator - Discerne (Variant Matching)
+#
+# Generates if/else chains for discriminated union matching.
 #
 # TRANSFORMS:
-#   discerne x {                     -> // discerne x
-#     casu A { ... }                    if (x.tag === 'A') { ... }
-#     casu B ut b { ... }               else if (x.tag === 'B') { const b = x; ... }
-#     casu C(a, b) { ... }              else if (x.tag === 'C') { const { a, b } = x; ... }
-#   }
+#   discerne x { casu A {...} }      -> if (x.tag === 'A') {...}
+#   discerne x { casu B ut b {...} } -> if (x.tag === 'B') { const b = x; ... }
+#   discerne x { casu C(a, b) {...} } -> if (x.tag === 'C') { const { a, b } = x; ... }
 
 ex "../../../ast/sententia" importa Sententia, VariansCasus
 ex "../../../ast/expressia" importa Expressia

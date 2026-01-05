@@ -1,6 +1,6 @@
-# Call and Member Expression Resolution
+# Vocatio - Call and Member Expression Resolution
 #
-# Handles: function calls, method calls, member access
+# Handles function calls, method calls, and member access.
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, TEXTUS, NUMERUS, BIVALENS, IGNOTUM
@@ -8,9 +8,9 @@ ex "../errores" importa morphologiaRadixNonDeclarataError, morphologiaFormaNonPe
 ex "../../ast/expressia" importa Expressia, MorphologiaInvocatio
 ex "../../parser/morphologia" importa parseMethodum, formaExFlagga
 
-# =============================================================================
+# ============================================================================
 # CALL EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a function call expression
 @ publica
@@ -105,9 +105,9 @@ functio estFormaPermissa(lista<textus> formae, textus forma) -> bivalens {
     redde falsum
 }
 
-# =============================================================================
+# ============================================================================
 # MEMBER EXPRESSION RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a member access expression (obj.prop or obj[key])
 @ publica

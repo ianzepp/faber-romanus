@@ -1,8 +1,10 @@
-# TypeScript Expression Generator - Scriptum
+# TypeScript Expression Generator - Scriptum (Format Strings)
+#
+# Generates template literals with interpolation.
 #
 # TRANSFORMS:
-#   scriptum("Hello, !", name) -> `Hello, ${name}!`
-#   scriptum("x = ", x)        -> `x = ${x}`
+#   scriptum("Hello §!", name) -> `Hello ${name}!`
+#   scriptum("x = §", x)       -> `x = ${x}`
 #   scriptum("no args")        -> "no args"
 
 ex "../../../ast/expressia" importa Expressia

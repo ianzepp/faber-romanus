@@ -1,4 +1,4 @@
-# Zig Expression Generator - Dispatch to expression handlers
+# Zig Expression Generator - Dispatch
 #
 # Routes expression AST nodes to their specific generators.
 

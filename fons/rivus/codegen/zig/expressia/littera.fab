@@ -1,10 +1,12 @@
 # Zig Expression Generator - Literals
 #
+# Generates Zig literal values.
+#
 # TRANSFORMS:
-#   verum/falsum  -> true/false
-#   nihil         -> null
-#   "text"        -> "text"
-#   123, 3.14     -> 123, 3.14
+#   verum/falsum -> true/false
+#   nihil        -> null
+#   "text"       -> "text"
+#   123          -> 123
 
 ex "../../../ast/expressia" importa LitteraGenus
 

@@ -1,29 +1,41 @@
-# Token types and Token structure for lexical analysis
+# Token AST - Token types and structures for lexical analysis
 #
 # WHY: The tokenizer produces a stream of tokens that the parser consumes.
 #      Each token has a type, value, and position.
 
 ex "./positio" importa Locus
 
+# ============================================================================
+# TOKEN TYPES
+# ============================================================================
+
 # Token type enumeration
 @ publicum
 ordo SymbolumGenus {
+    # -------------------------------------------------------------------------
     # Literals
+    # -------------------------------------------------------------------------
     Numerus       # integer literal: 42
     Fractus       # float literal: 3.14
     Textus        # string literal: "hello"
     Exemplar      # template literal: `hello ${x}`
 
-    # Boolean/null literals (as tokens, not keywords)
+    # -------------------------------------------------------------------------
+    # Boolean/Null Literals
+    # -------------------------------------------------------------------------
     Verum         # true
     Falsum        # false
     Nihil         # null
 
-    # Identifiers and keywords
+    # -------------------------------------------------------------------------
+    # Identifiers and Keywords
+    # -------------------------------------------------------------------------
     Nomen         # user-defined name
     Verbum        # reserved word (valor contains which)
 
+    # -------------------------------------------------------------------------
     # Grouping
+    # -------------------------------------------------------------------------
     ParensSin     # (
     ParensDex     # )
     UncusSin      # {
@@ -31,7 +43,9 @@ ordo SymbolumGenus {
     QuadratusSin  # [
     QuadratusDex  # ]
 
-    # Operators - arithmetic
+    # -------------------------------------------------------------------------
+    # Operators - Arithmetic
+    # -------------------------------------------------------------------------
     Plus          # +
     Minus         # -
     Stella        # *
@@ -43,7 +57,9 @@ ordo SymbolumGenus {
     VirgulaAequum # /=
     CentumAequum  # %=
 
-    # Operators - comparison
+    # -------------------------------------------------------------------------
+    # Operators - Comparison
+    # -------------------------------------------------------------------------
     Aequum        # =
     AequumBis     # ==
     AequumTer     # ===
@@ -54,7 +70,9 @@ ordo SymbolumGenus {
     Maior         # >
     MaiorAequum   # >=
 
-    # Operators - logical
+    # -------------------------------------------------------------------------
+    # Operators - Logical
+    # -------------------------------------------------------------------------
     Non           # !
     EtEt          # &&
     VelVel        # ||
@@ -63,7 +81,9 @@ ordo SymbolumGenus {
     RogatioPunctum    # ?.
     NonPunctum        # !.
 
-    # Operators - bitwise
+    # -------------------------------------------------------------------------
+    # Operators - Bitwise
+    # -------------------------------------------------------------------------
     Et            # &
     Vel           # |
     Apex          # ^
@@ -74,7 +94,9 @@ ordo SymbolumGenus {
     EtAequum      # &=
     VelAequum     # |=
 
+    # -------------------------------------------------------------------------
     # Punctuation
+    # -------------------------------------------------------------------------
     Coma          # ,
     Punctum       # .
     Colon         # :
@@ -85,15 +107,23 @@ ordo SymbolumGenus {
     PunctumBis    # ..
     PunctumTer    # ...
 
-    # Comments (preserved for formatting)
+    # -------------------------------------------------------------------------
+    # Comments
+    # -------------------------------------------------------------------------
     NotaLinea     # # comment
     NotaMassa     # /* comment */
     NotaDocens    # # comment
 
+    # -------------------------------------------------------------------------
     # Special
+    # -------------------------------------------------------------------------
     Finis         # end of file
     Malum         # lexer error token
 }
+
+# ============================================================================
+# KEYWORD IDENTITIES
+# ============================================================================
 
 # Keyword identity (canonical, dialect-independent)
 #
@@ -102,7 +132,9 @@ ordo SymbolumGenus {
 #      internal meaning.
 @ publicum
 ordo VerbumId {
-    # Imperium - control flow
+    # -------------------------------------------------------------------------
+    # Control Flow
+    # -------------------------------------------------------------------------
     Si
     Secus
     Sin
@@ -123,7 +155,9 @@ ordo VerbumId {
     Incipit
     Incipiet
 
-    # Imperium - testing
+    # -------------------------------------------------------------------------
+    # Testing
+    # -------------------------------------------------------------------------
     Probandum
     Proba
     Praepara
@@ -146,7 +180,9 @@ ordo VerbumId {
     Scriptum
     Cede
 
-    # Declaratio - declarations
+    # -------------------------------------------------------------------------
+    # Declarations
+    # -------------------------------------------------------------------------
     Varia
     Fixum
     Figendum
@@ -162,7 +198,9 @@ ordo VerbumId {
     Ordo
     Discretio
 
-    # Modificator - modifiers
+    # -------------------------------------------------------------------------
+    # Modifiers
+    # -------------------------------------------------------------------------
     Futura
     Prae
     Praefixum
@@ -180,7 +218,9 @@ ordo VerbumId {
     Futurum
     Omnia
 
-    # Operator - operators
+    # -------------------------------------------------------------------------
+    # Operators
+    # -------------------------------------------------------------------------
     Et
     Aut
     Non
@@ -204,12 +244,16 @@ ordo VerbumId {
     Negativum
     Positivum
 
-    # Valor - literal values
+    # -------------------------------------------------------------------------
+    # Literal Values
+    # -------------------------------------------------------------------------
     Verum
     Falsum
     Ego
 
-    # Praepositio - prepositions
+    # -------------------------------------------------------------------------
+    # Prepositions
+    # -------------------------------------------------------------------------
     De
     In
     Ex
@@ -218,7 +262,9 @@ ordo VerbumId {
     Qua
     Ut
 
-    # Dsl - domain specific
+    # -------------------------------------------------------------------------
+    # Domain Specific (DSL)
+    # -------------------------------------------------------------------------
     Ab
     Ubi
     Prima
@@ -230,15 +276,23 @@ ordo VerbumId {
     Sed
 }
 
+# ============================================================================
+# TOKEN STRUCTURE
+# ============================================================================
+
 # A single token from the source
 @ publicum
 genus Symbolum {
     SymbolumGenus species
     textus valor       # raw text of the token
     Locus locus
-    textus? verbum     # if species == Verbum, which keyword (surface spelling)
-    VerbumId? verbumId # if species == Verbum, canonical keyword identity
+    textus? verbum     # if Verbum, surface spelling
+    VerbumId? verbumId # if Verbum, canonical identity
 }
+
+# ============================================================================
+# FACTORY FUNCTIONS
+# ============================================================================
 
 # Create a token
 @ publica
@@ -269,6 +323,10 @@ functio symbolumVerbumId(textus verbum, VerbumId verbumId, Locus locus) -> Symbo
         verbumId: verbumId
     } qua Symbolum
 }
+
+# ============================================================================
+# QUERY FUNCTIONS
+# ============================================================================
 
 # Check if token is a specific keyword (surface spelling)
 @ publica

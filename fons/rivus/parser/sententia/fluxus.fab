@@ -23,6 +23,10 @@ ex "../../ast/lexema" importa SymbolumGenus
 ex "../errores" importa ParserErrorCodice
 ex "./massa" importa parseMassaSententia
 
+# ============================================================================
+# SWITCH STATEMENT (elige)
+# ============================================================================
+
 # Parse elige (switch) statement
 #
 # GRAMMAR:
@@ -100,6 +104,10 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
         cape: cape
     } qua Sententia
 }
+
+# ============================================================================
+# PATTERN MATCHING (discerne)
+# ============================================================================
 
 # Parse discerne (pattern match) statement
 #
@@ -180,6 +188,10 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
+# ============================================================================
+# GUARD STATEMENT (custodi)
+# ============================================================================
+
 # Parse custodi (guard) statement
 #
 # GRAMMAR:
@@ -232,7 +244,11 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
     } qua Sententia
 }
 
-# Parse catch clause (helper)
+# ============================================================================
+# HELPERS
+# ============================================================================
+
+# Parse catch clause
 @ publica
 functio parseCapeClausula(Resolvitor r) -> CapeClausula {
     fixum p = r.parser()

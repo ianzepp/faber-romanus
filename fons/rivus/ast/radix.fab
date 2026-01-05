@@ -1,10 +1,14 @@
-# Base AST node types shared by all nodes
+# Root AST - Base node types shared by all AST nodes
 #
 # WHY: Every AST node needs position info for error messages.
 #      Comments attach to nodes for formatting preservation.
 
 ex "./positio" importa Locus
 ex "./sententia" importa Sententia
+
+# ============================================================================
+# COMMENT TYPES
+# ============================================================================
 
 # Comment type enumeration
 @ publicum
@@ -21,6 +25,10 @@ genus Nota {
     textus valor
     Locus locus
 }
+
+# ============================================================================
+# BASE NODE TYPES
+# ============================================================================
 
 # Base fields present on all AST nodes
 # WHY: Every node tracks position for error messages,

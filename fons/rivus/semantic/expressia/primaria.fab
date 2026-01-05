@@ -1,6 +1,6 @@
-# Primary Expression Resolution
+# Primaria - Primary Expression Resolution
 #
-# Handles: identifiers, literals, arrays, objects
+# Handles identifiers, literals, arrays, and objects.
 
 ex "../resolvitor" importa Resolvitor
 ex "../typi" importa SemanticTypus, TEXTUS, NUMERUS, FRACTUS, BIVALENS, NIHIL, IGNOTUM
@@ -9,9 +9,9 @@ ex "../scopus" importa quaereSymbolum
 ex "../errores" importa undefinedVariableError
 ex "../../ast/expressia" importa Expressia, LitteraGenus
 
-# =============================================================================
+# ============================================================================
 # IDENTIFIER RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve an identifier (variable reference)
 @ publica
@@ -45,9 +45,9 @@ functio resolveNomen(Resolvitor r, Expressia nomenExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # LITERAL RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve a literal value
 @ publica
@@ -80,9 +80,9 @@ functio resolveLittera(Resolvitor r, Expressia litteraExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # ARRAY RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve an array literal [1, 2, 3]
 @ publica
@@ -109,9 +109,9 @@ functio resolveSeries(Resolvitor r, Expressia seriesExpr) -> SemanticTypus {
     redde IGNOTUM
 }
 
-# =============================================================================
+# ============================================================================
 # OBJECT RESOLUTION
-# =============================================================================
+# ============================================================================
 
 # Resolve an object literal { key: value }
 @ publica
