@@ -2,6 +2,57 @@
 
 A Latin programming language compiler ("The Roman Craftsman").
 
+## Project Layout
+
+```
+fons/                   # Source code ("fons" = source/spring)
+├── faber/              # Reference compiler (TypeScript)
+│   │                   # Uses mixed Latin/English identifiers
+│   ├── codegen/        # Code generators by target
+│   │   └── <target>/   # ts, py, rs, cpp, zig, fab
+│   │       ├── index.ts
+│   │       ├── generator.ts
+│   │       ├── expressions/
+│   │       ├── statements/
+│   │       └── norma/  # Standard library codegen
+│   ├── lexicon/        # Lexer/tokenizer
+│   ├── parser/         # Parser and AST
+│   ├── semantic/       # Type checking and analysis
+│   └── shared/         # Shared utilities
+├── rivus/              # Bootstrap compiler (Faber source)
+│   │                   # Uses Latin exclusively - compiler written in Faber
+│   ├── lexicon/        # Lexer modules (.fab)
+│   ├── parser/         # Parser modules (.fab)
+│   ├── semantic/       # Semantic analysis (.fab)
+│   └── codegen/        # Code generation (.fab)
+├── proba/              # Shared test suite for both compilers
+│   │                   # Maintains feature sync between faber and rivus
+│   ├── parser/         # Parser tests
+│   ├── semantic/       # Semantic analysis tests
+│   └── codegen/        # Codegen tests by target
+├── exempla/            # Example .fab programs
+├── probationes/        # Additional test fixtures
+└── subsidia/           # Helper utilities (e.g., Zig runtime)
+
+opus/                   # Build outputs ("opus" = work/product)
+├── bin/                # Compiled executables (faber, rivus)
+└── rivus/fons/         # Compiled rivus source by target
+    ├── ts/             # TypeScript output
+    └── zig/            # Zig output
+
+consilia/               # Design documents ("consilia" = plans/advice)
+├── futura/             # Proposed features (not yet implemented)
+├── completa/           # Implemented features (reference docs)
+├── archived/           # Superseded or rejected proposals
+└── cleanup/            # Refactoring notes
+
+grammatica/             # Auto-generated grammar documentation
+norma/                  # Standard library modules
+scripta/                # Build and utility scripts
+editors/                # Editor integrations (syntax highlighting, etc.)
+archivum/               # Historical/archived materials
+```
+
 ## Quick Rules (CRITICAL)
 
 - **Type-first syntax**: `textus name` not `name: textus`
@@ -166,37 +217,6 @@ bun run faber check <file.fab>  # Validate before committing
 | `bivalens` | `boolean` | `bool`  | `bool`       | `bool`        | `bool`   |
 | `nihil`    | `null`    | `None`  | `null`       | `nullopt`     | `None`   |
 | `vacuum`   | `void`    | `None`  | `void`       | `void`        | `()`     |
-
-## Directory Structure
-
-```
-fons/
-├── faber/      # TypeScript compiler (lexicon, tokenizer, parser, semantic, codegen)
-├── rivus/      # Faber implementation of compiler (bootstrap)
-├── exempla/    # Example .fab programs
-├── proba/      # Tests mirroring compiler structure
-└── subsidia/   # Helper utilities (e.g., Zig runtime)
-opus/
-├── bin/        # Compiled executables (faber, rivus)
-└── rivus/fons/ # Compiled rivus source by target (ts/, zig/, etc.)
-consilia/       # Design documents
-grammatica/     # Auto-generated grammar docs
-norma/          # Standard library modules
-```
-
-### Codegen Layout
-
-```
-fons/faber/codegen/
-├── index.ts              # Router
-├── types.ts              # Shared types
-└── <target>/             # ts, py, rs, cpp, zig, fab
-    ├── index.ts          # Public API
-    ├── generator.ts      # Main generator
-    ├── expressions/      # Expression handlers
-    ├── statements/       # Statement handlers
-    └── norma/            # Standard library
-```
 
 ## Design Principles
 
