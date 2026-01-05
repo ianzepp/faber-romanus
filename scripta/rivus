@@ -48,10 +48,10 @@ case "$command" in
         done
         
         if [[ -n "$output" ]]; then
-            bun opus/bootstrap/cli.ts < "$input" > "$output"
+            bun opus/rivus/fons/ts/cli.ts < "$input" > "$output"
             echo "Compiled: $input -> $output (ts)"
         else
-            bun opus/bootstrap/cli.ts < "$input"
+            bun opus/rivus/fons/ts/cli.ts < "$input"
         fi
         ;;
     

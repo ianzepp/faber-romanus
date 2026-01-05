@@ -32,7 +32,8 @@ The Faber implementation in `fons/rivus/` - Faber compiler written in Faber itse
 Must be built first with `bun run build:rivus` before use:
 
 ```
-bun run build:rivus                   # Build bootstrap compiler to opus/bootstrap/
+bun run build:rivus                   # Build bootstrap compiler to opus/rivus/fons/ts/
+bun run build:rivus -- -t zig         # Build to opus/rivus/fons/zig/
 bun run rivus compile <file.fab>      # Compile using bootstrap (TS only)
 bun run rivus compile <file.fab> -o out.ts
 bun run test:rivus                    # Run tests against bootstrap compiler
@@ -71,8 +72,9 @@ bun run grammar                       # Regenerate GRAMMAR.md
 ### Build
 
 ```
-bun run build                         # Build faber executable to opus/
-bun run build:rivus                   # Build rivus (bootstrap) to opus/bootstrap/
+bun run build:faber                   # Build faber executable to opus/bin/faber
+bun run build:rivus                   # Build rivus (bootstrap) to opus/rivus/fons/ts/
+bun run build:rivus -- -t zig         # Build rivus to opus/rivus/fons/zig/
 bun run exempla                       # Compile fons/exempla/*.fab to opus/
 bun run exempla -- -t all             # Compile to all targets
 bun run release                       # Release new version
@@ -174,6 +176,9 @@ fons/
 ├── exempla/    # Example .fab programs
 ├── proba/      # Tests mirroring compiler structure
 └── subsidia/   # Helper utilities (e.g., Zig runtime)
+opus/
+├── bin/        # Compiled executables (faber, rivus)
+└── rivus/fons/ # Compiled rivus source by target (ts/, zig/, etc.)
 consilia/       # Design documents
 grammatica/     # Auto-generated grammar docs
 norma/          # Standard library modules

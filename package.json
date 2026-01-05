@@ -10,8 +10,8 @@
     "scripts": {
         "faber": "bun ./fons/faber/cli.ts",
         "rivus": "./scripta/rivus",
-        "build": "./scripta/build",
-        "build:rivus": "./scripta/build-rivus",
+        "build:faber": "bun ./scripta/build-faber.ts",
+        "build:rivus": "bun ./scripta/build-rivus.ts",
         "exempla": "bun ./scripta/exempla.ts",
         "grammar": "bun ./scripta/extract-grammar.ts",
         "lint": "./scripta/lint",

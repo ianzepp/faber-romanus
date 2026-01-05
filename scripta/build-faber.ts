@@ -1,0 +1,28 @@
+#!/usr/bin/env bun
+/**
+ * Build standalone faber executable.
+ */
+
+import { mkdir } from 'fs/promises';
+import { join } from 'path';
+import { $ } from 'bun';
+
+const ROOT = join(import.meta.dir, '..');
+
+async function main() {
+    const start = performance.now();
+
+    const binDir = join(ROOT, 'opus', 'bin');
+    await mkdir(binDir, { recursive: true });
+    const outExe = join(binDir, 'faber');
+    await $`bun build ${join(ROOT, 'fons', 'faber', 'cli.ts')} --compile --outfile=${outExe}`.quiet();
+    await $`bash -c 'rm -f .*.bun-build 2>/dev/null || true'`.quiet();
+
+    const elapsed = performance.now() - start;
+    console.log(`Built opus/bin/faber (${elapsed.toFixed(0)}ms)`);
+}
+
+main().catch(err => {
+    console.error(err);
+    process.exit(1);
+});
