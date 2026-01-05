@@ -857,8 +857,8 @@ functio lexare(textus fons, si Dialectus dialectus) -> LexorResultatum {
         index: 0,               # Start at beginning
         linea: 1,               # Lines are 1-based
         columnaInitium: 0,      # First line starts at offset 0
-        symbola: [] qua lista<Symbolum>,    # Empty token list
-        errores: [] qua lista<LexorError>,  # Empty error list
+        symbola: [] innatum lista<Symbolum>,    # Empty token list
+        errores: [] innatum lista<LexorError>,  # Empty error list
         dialectus: dialectusActualis        # Keyword spelling dialect
     } qua Lexor
 

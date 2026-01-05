@@ -105,7 +105,7 @@ functio genExpressia(Expressia expr, ZigGenerator g) -> textus {
 
         # Function call
         casu VocatioExpressia ut e {
-            varia args = [] qua lista<textus>
+            varia args = [] innatum lista<textus>
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
             }
@@ -131,7 +131,7 @@ functio genExpressia(Expressia expr, ZigGenerator g) -> textus {
 
         # Array literal
         casu SeriesExpressia ut e {
-            varia items = [] qua lista<textus>
+            varia items = [] innatum lista<textus>
             ex (e.elementa qua lista<Expressia>) pro elem {
                 items.adde(genExpressia(elem, g))
             }

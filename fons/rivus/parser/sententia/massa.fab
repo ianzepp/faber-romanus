@@ -42,7 +42,7 @@ functio parseMassaSententia(Resolvitor r) -> Sententia {
     # Expect opening brace
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia corpus = [] qua lista<Sententia>
+    varia corpus = [] innatum lista<Sententia>
 
     # Parse statements until closing brace or end
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
@@ -96,7 +96,7 @@ functio parseExpressiaSententia(Resolvitor r) -> Sententia {
 functio parseProgramma(Resolvitor r) -> Programma {
     fixum p = r.parser()
     fixum locus = p.locusActualis()
-    varia corpus = [] qua lista<Sententia>
+    varia corpus = [] innatum lista<Sententia>
 
     # Parse statements until end of input
     dum non p.estFinis() {

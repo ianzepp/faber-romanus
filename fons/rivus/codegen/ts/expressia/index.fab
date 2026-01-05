@@ -191,7 +191,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 
         # Calls and member access
         casu VocatioExpressia ut e {
-            varia args = [] qua lista<textus>
+            varia args = [] innatum lista<textus>
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
             }
@@ -264,7 +264,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         }
 
         casu NovumExpressia ut e {
-            varia args = [] qua lista<textus>
+            varia args = [] innatum lista<textus>
             ex (e.argumenta qua lista<Expressia>) pro arg {
                 args.adde(genExpressia(arg, g))
             }
@@ -335,7 +335,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 
         # Collections
         casu SeriesExpressia ut e {
-            varia items = [] qua lista<textus>
+            varia items = [] innatum lista<textus>
             ex (e.elementa qua lista<Expressia>) pro elem {
                 items.adde(genExpressia(elem, g))
             }
@@ -352,7 +352,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
 
         # Lambda
         casu LambdaExpressia ut e {
-            varia params = [] qua lista<textus>
+            varia params = [] innatum lista<textus>
             ex (e.parametra qua lista<LambdaParametrum>) pro p {
                 si nonnihil p.typus {
                     params.adde(scriptum("§: §", p.nomen, genTypus(p.typus qua TypusAnnotatio, g)))
@@ -382,7 +382,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
         # Discretio construction
         casu FingeExpressia ut e {
             # finge Click { x: 10 } qua Event -> { tag: 'Click', x: 10 }
-            varia props = [] qua lista<textus>
+            varia props = [] innatum lista<textus>
             props.adde(scriptum("tag: '§'", e.variansNomen))
             ex (e.campi qua lista<ObiectumProprietas>) pro campo {
                 fixum key = genExpressia(campo.clavis, g)
@@ -422,7 +422,7 @@ functio genPraefixumMassa(lista<Sententia> corpus, TsGenerator g) -> textus {
     si corpus.longitudo() == 0 {
         redde ""
     }
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
     ex corpus pro stmt {
         lines.adde(genPraefixumSententia(stmt, g))
     }

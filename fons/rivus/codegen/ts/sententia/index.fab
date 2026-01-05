@@ -218,7 +218,7 @@ functio genMassa(lista<Sententia> corpus, TsGenerator g) -> textus {
         # WHY: Empty blocks should not stringify to undefined.
         redde ""
     }
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
     ex corpus pro stmt {
         lines.adde(genSententia(stmt, g))
     }

@@ -23,7 +23,7 @@ functio generateTs(lista<Sententia> corpus) -> textus {
     fixum g = creaTsGenerator()
 
     # Generate body from statements
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
     ex corpus pro stmt {
         lines.adde(genSententia(stmt, g))
     }

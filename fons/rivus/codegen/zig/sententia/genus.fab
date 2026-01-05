@@ -14,7 +14,7 @@ ex "../typus" importa genTypus
 
 @ publica
 functio genGenus(textus nomen, lista<CampusDeclaratio> campi, ZigGenerator g) -> textus {
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
 
     lines.adde(scriptum("§const § = struct {", g.ind(), nomen))
     g.intraProfundum()

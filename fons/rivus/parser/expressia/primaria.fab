@@ -318,7 +318,7 @@ functio parseAbExpressia(Resolvitor r) -> Expressia {
 @ publica
 functio parseCatenaGradus(Resolvitor r) -> lista<CatenaGradus> {
     fixum p = r.parser()
-    varia gradus = [] qua lista<CatenaGradus>
+    varia gradus = [] innatum lista<CatenaGradus>
 
     functio estCatenaVerbumSym(symbolum) -> bivalens {
         si symbolum.species !== SymbolumGenus.Verbum {
@@ -368,7 +368,7 @@ functio parseSeriesExpressia(Resolvitor r) -> Expressia {
 
     p.expecta(SymbolumGenus.QuadratusSin, ParserErrorCodice.ExpectaturQuadratusSin)
 
-    varia elementa = [] qua lista<Expressia>
+    varia elementa = [] innatum lista<Expressia>
 
     si non p.proba(SymbolumGenus.QuadratusDex) {
         elementa.adde(parseElementumSeries(r))
@@ -431,7 +431,7 @@ functio parseObiectumExpressia(Resolvitor r) -> Expressia {
 
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia proprietates = [] qua lista<ObiectumProprietas>
+    varia proprietates = [] innatum lista<ObiectumProprietas>
 
     # Parse properties until closing brace
     si non p.proba(SymbolumGenus.UncusDex) {
@@ -545,7 +545,7 @@ functio parseLambdaExpressia(Resolvitor r) -> Expressia {
     # Consume 'pro'
     p.expectaVerbum("pro", ParserErrorCodice.ExpectaturPro)
 
-    varia parametra = [] qua lista<LambdaParametrum>
+    varia parametra = [] innatum lista<LambdaParametrum>
 
     # Check for immediate : or -> (zero-param lambda)
     si non p.proba(SymbolumGenus.Colon) et non p.proba(SymbolumGenus.Sagitta) {
@@ -602,7 +602,7 @@ functio parseFingeExpressia(Resolvitor r) -> Expressia {
     fixum variansSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
     fixum variansNomen = variansSym.valor
 
-    varia campi = [] qua lista<ObiectumProprietas>
+    varia campi = [] innatum lista<ObiectumProprietas>
 
     si p.congruet(SymbolumGenus.UncusSin) {
         si non p.proba(SymbolumGenus.UncusDex) {
@@ -738,7 +738,7 @@ functio parseScriptumExpressia(Resolvitor r) -> Expressia {
     fixum exemplarSym = p.expecta(SymbolumGenus.Textus, ParserErrorCodice.ExpectaturTextus)
     fixum exemplar = exemplarSym.valor
 
-    varia argumenta = [] qua lista<Expressia>
+    varia argumenta = [] innatum lista<Expressia>
     dum p.congruet(SymbolumGenus.Coma) {
         argumenta.adde(r.expressia())
     }

@@ -32,7 +32,7 @@ functio genPactum(textus nomen, ignotum generaParametra, lista<PactumMethodus> m
     g.intraProfundum()
 
     ex methodi pro methodus {
-        varia params = [] qua lista<textus>
+        varia params = [] innatum lista<textus>
         ex methodus.parametra pro param {
             params.adde(genParametrum(param, g))
         }

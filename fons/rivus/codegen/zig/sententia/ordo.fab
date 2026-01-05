@@ -10,7 +10,7 @@ ex "../nucleus" importa ZigGenerator
 
 @ publica
 functio genOrdo(textus nomen, lista<OrdoMembrum> membra, ZigGenerator g) -> textus {
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
 
     lines.adde(scriptum("§const § = enum {", g.ind(), nomen))
     g.intraProfundum()

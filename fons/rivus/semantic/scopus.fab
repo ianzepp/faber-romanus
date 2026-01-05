@@ -55,7 +55,7 @@ genus Scopus {
 @ publica
 functio creaScopumGlobalem() -> Scopus {
     redde {
-        symbola: {} qua tabula<textus, Symbolum>,
+        symbola: {} innatum tabula<textus, Symbolum>,
         parens: nihil,
         species: ScopusSpecies.Globalis
     } qua Scopus
@@ -65,7 +65,7 @@ functio creaScopumGlobalem() -> Scopus {
 @ publica
 functio creaScopum(Scopus parentScopus, ScopusSpecies scopusSpecies) -> Scopus {
     redde {
-        symbola: {} qua tabula<textus, Symbolum>,
+        symbola: {} innatum tabula<textus, Symbolum>,
         parens: parentScopus,
         species: scopusSpecies
     } qua Scopus

@@ -16,7 +16,7 @@ ex "./index" importa genSententia
 
 @ publica
 functio genCura(ignotum curatorSpecies, ignotum res, textus vinculum, Sententia corpus, ZigGenerator g) -> textus {
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
 
     si nonnihil curatorSpecies {
         fixum species = curatorSpecies qua CuratorGenus

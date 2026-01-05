@@ -58,7 +58,7 @@ functio parseProbandumSententia(Resolvitor r) -> Sententia {
 
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia corpus = [] qua lista<Sententia>
+    varia corpus = [] innatum lista<Sententia>
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         fixum sym = p.specta(0)

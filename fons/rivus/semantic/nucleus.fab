@@ -136,7 +136,7 @@ genus Analyzator {
         ego.definieIntrinsicaFunctio("_lege", [], TEXTUS, builtinLocus)
 
         # Register morphology for built-in collection types
-        fixum formae = ["imperativus", "perfectum", "futurum_indicativum", "futurum_activum"] qua lista<textus>
+        fixum formae = ["imperativus", "perfectum", "futurum_indicativum", "futurum_activum"] innatum lista<textus>
 
         # lista verb stems
         ego.addeMorphologiam("lista", "add", formae)
@@ -183,12 +183,12 @@ genus Analyzator {
     @ publica
     functio addeMorphologiam(textus recipiens, textus radix, lista<textus> formae) -> vacuum {
         si nihil ego.morphologiaRegistra[recipiens] {
-            ego.morphologiaRegistra[recipiens] = {} qua tabula<textus, lista<textus> >
+            ego.morphologiaRegistra[recipiens] = {} innatum tabula<textus, lista<textus> >
         }
 
         fixum perRecipiens = ego.morphologiaRegistra[recipiens]
         si nihil perRecipiens[radix] {
-            perRecipiens[radix] = [] qua lista<textus>
+            perRecipiens[radix] = [] innatum lista<textus>
         }
 
         fixum existentes = perRecipiens[radix]
@@ -214,13 +214,13 @@ genus Analyzator {
 @ publica
 functio novumAnalyzator() -> Analyzator {
     fixum analyzator = {
-        errores: [] qua lista<SemanticError>,
+        errores: [] innatum lista<SemanticError>,
         scopus: creaScopumGlobalem(),
         currentFunctioReditus: nihil,
         currentFunctioAsync: falsum,
         currentFunctioGenerator: falsum,
-        resolvendoTypusAliases: [] qua lista<textus>,
-        morphologiaRegistra: {} qua tabula<textus, tabula<textus, lista<textus> > >
+        resolvendoTypusAliases: [] innatum lista<textus>,
+        morphologiaRegistra: {} innatum tabula<textus, tabula<textus, lista<textus> > >
     } qua Analyzator
 
     # Define built-in intrinsics

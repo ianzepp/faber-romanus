@@ -135,7 +135,7 @@ functio parseScribeSententia(Resolvitor r, ScribeGradus gradus) -> Sententia {
     # Parse first argument (required)
     # TODO: does this compile if `varia lista<Expressia> argumenta = []`?
     # TODO: or better yet as `varia Expressia[] argumenta = []`?
-    varia argumenta = [] qua lista<Expressia>   
+    varia argumenta = [] innatum lista<Expressia>   
     argumenta.adde(r.expressia())
 
     # Parse additional comma-separated arguments

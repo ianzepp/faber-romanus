@@ -361,7 +361,7 @@ functio parseNovumExpressia(Resolvitor r, Locus locus) -> Expressia {
     fixum vocatum = parseNomenVelVerbum(r)
 
     # Optional arguments
-    varia argumenta = [] qua lista<Expressia>
+    varia argumenta = [] innatum lista<Expressia>
     si p.congruet(SymbolumGenus.ParensSin) {
         argumenta = parseArgumenta(r)
         p.expecta(SymbolumGenus.ParensDex, ParserErrorCodice.ExpectaturParensDex)
@@ -390,7 +390,7 @@ functio parseNovumExpressia(Resolvitor r, Locus locus) -> Expressia {
 @ publica
 functio parseArgumenta(Resolvitor r) -> lista<Expressia> {
     fixum p = r.parser()
-    varia argumenta = [] qua lista<Expressia>
+    varia argumenta = [] innatum lista<Expressia>
 
     # Check for empty arguments
     si p.proba(SymbolumGenus.ParensDex) {

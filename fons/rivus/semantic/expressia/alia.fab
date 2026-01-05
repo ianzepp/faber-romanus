@@ -27,7 +27,7 @@ functio resolveLambda(Resolvitor r, Expressia lambdaExpr) -> SemanticTypus {
             a.intraScopum(ScopusSpecies.Functio)
 
             # Define parameters in scope with resolved types
-            varia paramTypi = [] qua lista<SemanticTypus>
+            varia paramTypi = [] innatum lista<SemanticTypus>
             ex l.parametra pro param {
                 # Resolve parameter type from annotation if present
                 varia paramTypus = IGNOTUM qua SemanticTypus

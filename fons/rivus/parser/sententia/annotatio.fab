@@ -52,7 +52,7 @@ functio estFormaRadix(textus forma) -> bivalens {
 @ publica
 functio parseAnnotationes(Resolvitor r) -> lista<Annotatio> {
     fixum p = r.parser()
-    varia annotationes = [] qua lista<Annotatio>
+    varia annotationes = [] innatum lista<Annotatio>
 
     dum p.congruet(SymbolumGenus.At) {
         fixum locus = p.praevius().locus
@@ -68,7 +68,7 @@ functio parseAnnotationes(Resolvitor r) -> lista<Annotatio> {
             p.procede()
         }
 
-        varia argumenta = [] qua lista<textus>
+        varia argumenta = [] innatum lista<textus>
 
         si nomen == "radix" {
             dum non p.estFinis() {

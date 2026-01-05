@@ -243,7 +243,7 @@ functio parseAdSententia(Resolvitor r) -> Sententia {
     # Parse argument list
     p.expecta(SymbolumGenus.ParensSin, ParserErrorCodice.ExpectaturParensSin)
 
-    varia argumenta = [] qua lista<Expressia>
+    varia argumenta = [] innatum lista<Expressia>
     si non p.proba(SymbolumGenus.ParensDex) {
         fac {
             argumenta.adde(r.expressia())

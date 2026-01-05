@@ -32,7 +32,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         si nonnihil generaParametra {
             fixum gp = generaParametra qua lista<TypusParametrum>
             si gp.longitudo() > 0 {
-                varia names = [] qua lista<textus>
+                varia names = [] innatum lista<textus>
                 ex gp pro p {
                     names.adde(p.nomen)
                 }
@@ -41,7 +41,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         }
 
         # Parameters
-        varia params = [] qua lista<textus>
+        varia params = [] innatum lista<textus>
         ex parametra pro param {
             params.adde(genParametrum(param, g))
         }
@@ -129,7 +129,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
     si nonnihil generaParametra {
         fixum gp = generaParametra qua lista<TypusParametrum>
         si gp.longitudo() > 0 {
-            varia names = [] qua lista<textus>
+            varia names = [] innatum lista<textus>
             ex gp pro p {
                 names.adde(p.nomen)
             }
@@ -138,7 +138,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
     }
 
     # Parameters
-    varia params = [] qua lista<textus>
+    varia params = [] innatum lista<textus>
     ex parametra pro param {
         params.adde(genParametrum(param, g))
     }
@@ -184,7 +184,7 @@ functio genFunctio(textus nomen, ignotum generaParametra, lista<Parametrum> para
         fixum prevInFient = g.inFient
         fixum prevTabula = g.tabulaNominata
 
-        varia localTabula = [] qua lista<textus>
+        varia localTabula = [] innatum lista<textus>
         ex parametra pro param {
             si nonnihil param.typus {
                 fixum typus = param.typus qua TypusAnnotatio

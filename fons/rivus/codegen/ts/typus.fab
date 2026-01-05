@@ -74,7 +74,7 @@ functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
     si nonnihil adnotatio.typusParametra {
         fixum parametra = adnotatio.typusParametra qua lista<TypusParametrum>
         si parametra.longitudo() > 0 {
-            varia params = [] qua lista<textus>
+            varia params = [] innatum lista<textus>
             ex parametra pro param {
                 fixum paramStr = genTypusParametrum(param, g)
                 si nonnihil paramStr {
@@ -96,7 +96,7 @@ functio genTypus(TypusAnnotatio adnotatio, TsGenerator g) -> textus {
     si nonnihil adnotatio.unio {
         fixum unioTypi = adnotatio.unio qua lista<TypusAnnotatio>
         si unioTypi.longitudo() > 0 {
-            varia parts = [] qua lista<textus>
+            varia parts = [] innatum lista<textus>
             ex unioTypi pro u {
                 parts.adde(genTypus(u, g))
             }

@@ -20,7 +20,7 @@ ex "./index" importa genSententia
 
 @ publica
 functio genProbandum(textus nomen, lista<Sententia> corpus, TsGenerator g) -> textus {
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
     lines.adde(scriptum("§describe(\"§\", () => {{", g.ind(), nomen))
 
     g.intraProfundum()

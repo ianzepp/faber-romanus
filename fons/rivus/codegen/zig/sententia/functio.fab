@@ -17,7 +17,7 @@ ex "../typus" importa genTypus
 @ publica
 functio genFunctio(textus nomen, lista<Parametrum> parametra, ignotum typusReditus, ignotum corpus, bivalens externa, ZigGenerator g) -> textus {
     # Build parameter list
-    varia params = [] qua lista<textus>
+    varia params = [] innatum lista<textus>
     ex parametra pro param {
         params.adde(genParametrum(param, g))
     }

@@ -8,7 +8,7 @@ fixum FLUMINA = "type Responsum<T = unknown> =\n  | { op: 'bene'; data: T }\n  |
 
 @ publica
 functio genPreamble(RequiredFeatures requisita) -> textus {
-    varia definitions = [] qua lista<textus>
+    varia definitions = [] innatum lista<textus>
 
     si requisita.flumina {
         definitions.adde(FLUMINA)

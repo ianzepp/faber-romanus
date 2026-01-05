@@ -432,7 +432,7 @@ functio formaTypum(SemanticTypus t) -> textus {
 
         casu Genericum ut g {
             # Build parameter list
-            varia params = [] qua lista<textus>
+            varia params = [] innatum lista<textus>
             ex g.parametri pro typ {
                 params.adde(formaTypum(typ))
             }
@@ -445,7 +445,7 @@ functio formaTypum(SemanticTypus t) -> textus {
 
         casu Functio ut f {
             # Build parameter list
-            varia params = [] qua lista<textus>
+            varia params = [] innatum lista<textus>
             ex f.parametriTypi pro typ {
                 params.adde(formaTypum(typ))
             }
@@ -454,7 +454,7 @@ functio formaTypum(SemanticTypus t) -> textus {
         }
 
         casu Unio ut u {
-            varia parts = [] qua lista<textus>
+            varia parts = [] innatum lista<textus>
             ex u.typi pro typ {
                 parts.adde(formaTypum(typ))
             }

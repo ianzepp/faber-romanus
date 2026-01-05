@@ -21,7 +21,7 @@ functio genObiectum(lista<ObiectumProprietas> proprietates, TsGenerator g) -> te
         redde "{}"
     }
 
-    varia props = [] qua lista<textus>
+    varia props = [] innatum lista<textus>
     ex proprietates pro prop {
         si prop.dispersum {
             # WHY: Spread properties lower to ...expr in JS object literals.

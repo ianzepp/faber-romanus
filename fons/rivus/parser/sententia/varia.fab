@@ -81,7 +81,7 @@ functio parseDestructuraSententia(Resolvitor r) -> Sententia {
     }
     p.procede()
 
-    varia specificatores = [] qua lista<ImportaSpecificator>
+    varia specificatores = [] innatum lista<ImportaSpecificator>
 
     fac {
         fixum specLocus = p.locusActualis()
@@ -124,7 +124,7 @@ functio parseSeriesDestructura(Resolvitor r) -> lista<SeriesDestructuraElementum
 
     p.expecta(SymbolumGenus.QuadratusSin, ParserErrorCodice.ExpectaturQuadratusSin)
 
-    varia elementa = [] qua lista<SeriesDestructuraElementum>
+    varia elementa = [] innatum lista<SeriesDestructuraElementum>
     si non p.proba(SymbolumGenus.QuadratusDex) {
         fac {
             fixum locus = p.locusActualis()

@@ -20,7 +20,7 @@ functio resolveTypusAnnotatio(Resolvitor r, TypusAnnotatio annotatio) -> Semanti
 
     # Union type: unio<A, B>
     si nonnihil annotatio.unio {
-        varia typi = [] qua lista<SemanticTypus>
+        varia typi = [] innatum lista<SemanticTypus>
         ex (annotatio.unio qua lista<TypusAnnotatio>) pro t {
             typi.adde(resolveTypusAnnotatio(r, t))
         }
@@ -31,7 +31,7 @@ functio resolveTypusAnnotatio(Resolvitor r, TypusAnnotatio annotatio) -> Semanti
     }
 
     # Generic types: lista<T>, tabula<K,V>, etc.
-    varia resolvedParametri = [] qua lista<SemanticTypus>
+    varia resolvedParametri = [] innatum lista<SemanticTypus>
     si nonnihil annotatio.typusParametra {
         ex (annotatio.typusParametra qua lista<TypusParametrum>) pro p {
             discerne p {
@@ -128,7 +128,7 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
     discerne functioStmt {
         casu FunctioDeclaratio ut f {
             # Build parameter types
-            varia paramTypi = [] qua lista<SemanticTypus>
+            varia paramTypi = [] innatum lista<SemanticTypus>
             ex f.parametra pro param {
                 si nonnihil param.typus {
                     paramTypi.adde(resolveTypusAnnotatio(r, param.typus qua TypusAnnotatio))
@@ -212,8 +212,8 @@ functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
     discerne genusStmt {
         casu GenusDeclaratio ut g {
             # Build field type maps
-            varia agri = {} qua tabula<textus, SemanticTypus>
-            varia agriStatici = {} qua tabula<textus, SemanticTypus>
+            varia agri = {} innatum tabula<textus, SemanticTypus>
+            varia agriStatici = {} innatum tabula<textus, SemanticTypus>
 
             ex g.campi pro campo {
                 fixum campoTypus = resolveTypusAnnotatio(r, campo.typus)
@@ -225,14 +225,14 @@ functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
             }
 
             # Build method type maps
-            varia methodi = {} qua tabula<textus, SemanticTypus>
-            varia methodiStatici = {} qua tabula<textus, SemanticTypus>
+            varia methodi = {} innatum tabula<textus, SemanticTypus>
+            varia methodiStatici = {} innatum tabula<textus, SemanticTypus>
 
             ex g.methodi pro methodusStmt {
                 discerne methodusStmt {
                     casu FunctioDeclaratio ut m {
                         # Build parameter types
-                        varia paramTypi = [] qua lista<SemanticTypus>
+                        varia paramTypi = [] innatum lista<SemanticTypus>
                         ex m.parametra pro param {
                             si nonnihil param.typus {
                                 paramTypi.adde(resolveTypusAnnotatio(r, param.typus qua TypusAnnotatio))
@@ -280,11 +280,11 @@ functio analyzePactumDeclaratio(Resolvitor r, Sententia pactumStmt) -> vacuum {
     discerne pactumStmt {
         casu PactumDeclaratio ut p {
             # Build method signature map
-            varia methodi = {} qua tabula<textus, SemanticTypus>
+            varia methodi = {} innatum tabula<textus, SemanticTypus>
 
             ex p.methodi pro methodSignum {
                 # Build parameter types
-                varia paramTypi = [] qua lista<SemanticTypus>
+                varia paramTypi = [] innatum lista<SemanticTypus>
                 ex methodSignum.parametra pro param {
                     si nonnihil param.typus {
                         paramTypi.adde(resolveTypusAnnotatio(r, param.typus qua TypusAnnotatio))
@@ -327,7 +327,7 @@ functio analyzeOrdoDeclaratio(Resolvitor r, Sententia ordoStmt) -> vacuum {
     discerne ordoStmt {
         casu OrdoDeclaratio ut o {
             # Build member type map (all members are NUMERUS for standard enums)
-            varia membra = {} qua tabula<textus, SemanticTypus>
+            varia membra = {} innatum tabula<textus, SemanticTypus>
             ex o.membra pro membrum {
                 membra[membrum.nomen] = NUMERUS
             }
@@ -370,7 +370,7 @@ functio analyzeDiscretioDeclaratio(Resolvitor r, Sententia discretioStmt) -> vac
             # WHY: Each variant is registered as a nested type (Discretio.Variant) for pattern matching
             ex d.variantes pro variante {
                 # Build variant field map (empty for unit variants)
-                varia campi = {} qua tabula<textus, SemanticTypus>
+                varia campi = {} innatum tabula<textus, SemanticTypus>
                 ex variante.campi pro campo {
                     campi[campo.nomen] = resolveTypusAnnotatio(r, campo.typus)
                 }
@@ -379,9 +379,9 @@ functio analyzeDiscretioDeclaratio(Resolvitor r, Sententia discretioStmt) -> vac
                 fixum variantTypus = genusTypus(
                     variante.nomen,
                     campi,
-                    {} qua tabula<textus, SemanticTypus>,
-                    {} qua tabula<textus, SemanticTypus>,
-                    {} qua tabula<textus, SemanticTypus>,
+                    {} innatum tabula<textus, SemanticTypus>,
+                    {} innatum tabula<textus, SemanticTypus>,
+                    {} innatum tabula<textus, SemanticTypus>,
                     falsum
                 )
 

@@ -23,7 +23,7 @@ functio genOrdo(textus nomen, lista<OrdoMembrum> membra, TsGenerator g) -> textu
     }
 
     si non habetValores {
-        varia nomina = [] qua lista<textus>
+        varia nomina = [] innatum lista<textus>
         ex membra pro membrum {
             nomina.adde(membrum.nomen)
         }

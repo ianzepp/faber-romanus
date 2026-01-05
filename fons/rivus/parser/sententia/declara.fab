@@ -63,7 +63,7 @@ functio parseFunctioDeclaratio(Resolvitor r) -> Sententia {
         generaParametra = parseTypusParametra(r)
     } sin p.congruet(SymbolumGenus.Minor) {
         fixum nomina = parseGenericaNomina(r)
-        generaParametra = [] qua lista<TypusParametrum>
+        generaParametra = [] innatum lista<TypusParametrum>
         ex nomina pro n {
             generaParametra.adde({ locus: locus, nomen: n } qua TypusParametrum)
         }
@@ -163,7 +163,7 @@ functio parseGenusDeclaratio(Resolvitor r, bivalens abstractum) -> Sententia {
     # Optional implements
     varia implet = nihil qua lista<textus>?
     si p.congruetVerbum("implet") {
-        implet = [] qua lista<textus>
+        implet = [] innatum lista<textus>
         fac {
             fixum ifaceSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
             implet.adde(ifaceSym.valor)
@@ -173,8 +173,8 @@ functio parseGenusDeclaratio(Resolvitor r, bivalens abstractum) -> Sententia {
     # Parse body
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia campi = [] qua lista<CampusDeclaratio>
-    varia methodi = [] qua lista<Sententia>
+    varia campi = [] innatum lista<CampusDeclaratio>
+    varia methodi = [] innatum lista<Sententia>
     varia structor = nihil qua Sententia?
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
@@ -361,7 +361,7 @@ functio parsePactumDeclaratio(Resolvitor r) -> Sententia {
     # Parse body
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia methodi = [] qua lista<PactumMethodus>
+    varia methodi = [] innatum lista<PactumMethodus>
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         # Optional annotations (e.g., @ futura, @ radix)
@@ -453,7 +453,7 @@ functio parseOrdoDeclaratio(Resolvitor r) -> Sententia {
     # Parse body
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia membra = [] qua lista<OrdoMembrum>
+    varia membra = [] innatum lista<OrdoMembrum>
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         fixum membrumLocus = p.locusActualis()
@@ -524,14 +524,14 @@ functio parseDiscretioDeclaratio(Resolvitor r) -> Sententia {
     # Parse body
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia variantes = [] qua lista<VariansDeclaratio>
+    varia variantes = [] innatum lista<VariansDeclaratio>
 
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
         fixum variansLocus = p.locusActualis()
         fixum variansNomenSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
         fixum variansNomen = variansNomenSym.valor
 
-        varia campi = [] qua lista<VariansCampus>
+        varia campi = [] innatum lista<VariansCampus>
 
         # Optional fields in braces or parens
         si p.congruet(SymbolumGenus.UncusSin) {
@@ -670,7 +670,7 @@ functio morphologiaEx(lista<Annotatio> annotationes) -> MorphologiaDeclaratio? {
 @ publica
 functio parseParametra(Resolvitor r) -> lista<Parametrum> {
     fixum p = r.parser()
-    varia parametra = [] qua lista<Parametrum>
+    varia parametra = [] innatum lista<Parametrum>
 
     si p.proba(SymbolumGenus.ParensDex) {
         redde parametra
@@ -755,7 +755,7 @@ functio parseParametra(Resolvitor r) -> lista<Parametrum> {
 @ publica
 functio parseTypusParametra(Resolvitor r) -> lista<TypusParametrum> {
     fixum p = r.parser()
-    varia parametra = [] qua lista<TypusParametrum>
+    varia parametra = [] innatum lista<TypusParametrum>
 
     # Already consumed 'prae', expect 'typus'
     p.expectaVerbum("typus", ParserErrorCodice.ExpectaturTypus)
@@ -777,7 +777,7 @@ functio parseTypusParametra(Resolvitor r) -> lista<TypusParametrum> {
 @ publica
 functio parseGenericaNomina(Resolvitor r) -> lista<textus> {
     fixum p = r.parser()
-    varia nomina = [] qua lista<textus>
+    varia nomina = [] innatum lista<textus>
 
     # Already consumed '<'
     fac {
@@ -831,7 +831,7 @@ functio parseImportaSententia(Resolvitor r) -> Sententia {
     # Check for wildcard import: * or * ut alias
     varia totum = falsum
     varia totumAlias = nihil qua textus?
-    varia specificatores = [] qua lista<ImportaSpecificator>
+    varia specificatores = [] innatum lista<ImportaSpecificator>
 
     si p.congruet(SymbolumGenus.Stella) {
         totum = verum

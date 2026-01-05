@@ -17,7 +17,7 @@ ex "../typus" importa genTypus
 
 @ publica
 functio genLambda(lista<LambdaParametrum> parametra, ignotum corpus, ZigGenerator g) -> textus {
-    varia params = [] qua lista<textus>
+    varia params = [] innatum lista<textus>
     ex parametra pro p {
         si nonnihil p.typus {
             params.adde(scriptum("§: §", p.nomen, genTypus(p.typus qua TypusAnnotatio, g)))

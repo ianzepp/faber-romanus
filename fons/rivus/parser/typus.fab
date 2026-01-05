@@ -72,7 +72,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
     varia typusParametra = nihil qua lista<TypusParametrum>?
 
     si p.congruet(SymbolumGenus.Minor) {
-        typusParametra = [] qua lista<TypusParametrum>
+        typusParametra = [] innatum lista<TypusParametrum>
         fixum parametra = typusParametra qua lista<TypusParametrum>
 
         # Parse first type parameter
@@ -131,12 +131,12 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
                 nomen: "union",
                 typusParametra: nihil,
                 nullabilis: nullabilis,
-                unio: [] qua lista<TypusAnnotatio>,
+                unio: [] innatum lista<TypusAnnotatio>,
                 compendiumSeries: falsum,
                 praepositio: praepositio
             } qua TypusAnnotatio
         }
-        varia unioParametra = [] qua lista<TypusAnnotatio>
+        varia unioParametra = [] innatum lista<TypusAnnotatio>
         ex parametra pro param {
             discerne param {
                 casu Typus ut t {

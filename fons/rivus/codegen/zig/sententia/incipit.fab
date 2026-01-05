@@ -13,7 +13,7 @@ ex "./index" importa genSententia
 
 @ publica
 functio genIncipit(ignotum corpus, ignotum ergo, ZigGenerator g) -> textus {
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
 
     lines.adde(scriptum("§pub fn main() void {", g.ind()))
     g.intraProfundum()

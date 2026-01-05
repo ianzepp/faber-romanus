@@ -112,7 +112,7 @@ functio genMassa(lista<Sententia> corpus, ZigGenerator g) -> textus {
     si corpus.longitudo() == 0 {
         redde ""
     }
-    varia lines = [] qua lista<textus>
+    varia lines = [] innatum lista<textus>
     ex corpus pro stmt {
         lines.adde(genSententia(stmt, g))
     }

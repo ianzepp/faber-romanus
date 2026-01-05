@@ -63,7 +63,7 @@ functio genGenus(textus nomen, ignotum generaParametra, ignotum extendit, ignotu
 
     # Split creo method from other methods
     varia creo = nihil qua Sententia?
-    varia ceteri = [] qua lista<Sententia>
+    varia ceteri = [] innatum lista<Sententia>
     ex methodi pro m {
         varia estCreo = falsum
         discerne m {
@@ -100,15 +100,15 @@ functio genGenus(textus nomen, ignotum generaParametra, ignotum extendit, ignotu
 }
 
 functio genAutoMergeConstructor(lista<CampusDeclaratio> campi, bivalens hasCreo, TsGenerator g) -> textus {
-    varia lines = [] qua lista<textus>
-    varia instFields = [] qua lista<CampusDeclaratio>
+    varia lines = [] innatum lista<textus>
+    varia instFields = [] innatum lista<CampusDeclaratio>
     ex campi pro campus {
         si non campus.staticum {
             instFields.adde(campus)
         }
     }
 
-    varia props = [] qua lista<textus>
+    varia props = [] innatum lista<textus>
     ex instFields pro campus {
         props.adde(scriptum("§?: §", campus.nomen, genTypus(campus.typus, g)))
     }

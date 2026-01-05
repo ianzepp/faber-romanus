@@ -112,7 +112,7 @@ functio creaTsGenerator() -> TsGenerator {
         inFient: falsum,
         inGenere: falsum,
         requisita: creaRequiredFeatures(),
-        tabulaNominata: [] qua lista<textus>
+        tabulaNominata: [] innatum lista<textus>
     } qua TsGenerator
 }
 
@@ -129,6 +129,6 @@ functio creaTsGeneratorCum(textus indentum) -> TsGenerator {
         inFient: falsum,
         inGenere: falsum,
         requisita: creaRequiredFeatures(),
-        tabulaNominata: [] qua lista<textus>
+        tabulaNominata: [] innatum lista<textus>
     } qua TsGenerator
 }

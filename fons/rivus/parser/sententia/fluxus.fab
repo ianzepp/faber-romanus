@@ -53,7 +53,7 @@ functio parseEligeSententia(Resolvitor r) -> Sententia {
     # Expect opening brace
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia casus = [] qua lista<EligeCasus>
+    varia casus = [] innatum lista<EligeCasus>
     varia praedefinitum = nihil qua Sententia?
 
     # Parse cases until closing brace
@@ -135,7 +135,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
     # Expect opening brace
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia casus = [] qua lista<VariansCasus>
+    varia casus = [] innatum lista<VariansCasus>
 
     # Parse variant cases
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {
@@ -150,7 +150,7 @@ functio parseDiscerneSententia(Resolvitor r) -> Sententia {
             # Parse optional bindings: ut alias OR pro x, y, z
             # WHY: 'ut' binds the whole variant, 'pro' binds fields positionally.
             varia alias = nihil qua textus?
-            varia vincula = [] qua lista<textus>
+            varia vincula = [] innatum lista<textus>
             si p.probaVerbum("ut") {
                 p.procede()
                 fixum aliasSym = p.expecta(SymbolumGenus.Nomen, ParserErrorCodice.ExpectaturNomen)
@@ -214,7 +214,7 @@ functio parseCustodiSententia(Resolvitor r) -> Sententia {
     # Expect opening brace
     p.expecta(SymbolumGenus.UncusSin, ParserErrorCodice.ExpectaturUncusSin)
 
-    varia clausulae = [] qua lista<CustodiClausula>
+    varia clausulae = [] innatum lista<CustodiClausula>
 
     # Parse guard clauses
     dum non p.proba(SymbolumGenus.UncusDex) et non p.estFinis() {

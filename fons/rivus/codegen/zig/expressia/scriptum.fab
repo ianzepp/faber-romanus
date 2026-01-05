@@ -33,7 +33,7 @@ functio genScriptum(textus exemplar, lista<Expressia> argumenta, ZigGenerator g)
         i += 1
     }
 
-    varia args = [] qua lista<textus>
+    varia args = [] innatum lista<textus>
     ex argumenta pro arg {
         args.adde(genExpressia(arg, g))
     }

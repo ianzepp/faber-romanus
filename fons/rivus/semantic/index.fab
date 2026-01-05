@@ -86,7 +86,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         # Function declaration - register name with function type
         casu FunctioDeclaratio ut f {
             # Build placeholder function type
-            varia paramTypi = [] qua lista<SemanticTypus>
+            varia paramTypi = [] innatum lista<SemanticTypus>
             ex f.parametra pro param {
                 paramTypi.adde(IGNOTUM)
             }

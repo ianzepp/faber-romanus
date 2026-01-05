@@ -114,7 +114,7 @@ functio creaZigGenerator() -> ZigGenerator {
     redde {
         profunditas: 0,
         indentum: "    ",
-        curatores: [] qua lista<textus>,
+        curatores: [] innatum lista<textus>,
         requisita: creaRequiredFeatures(),
         inFlumina: falsum,
         inFiunt: falsum,

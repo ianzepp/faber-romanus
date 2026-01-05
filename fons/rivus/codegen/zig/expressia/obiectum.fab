@@ -18,7 +18,7 @@ functio genObiectum(lista<ObiectumProprietas> proprietates, ZigGenerator g) -> t
         redde ".{}"
     }
 
-    varia props = [] qua lista<textus>
+    varia props = [] innatum lista<textus>
     ex proprietates pro prop {
         si prop.brevitas {
             # Shorthand: { name } -> .{ .name = name }

@@ -17,7 +17,7 @@ ex "./index" importa genSententia
 functio genIn(Expressia obiectum, Sententia corpus, TsGenerator g) -> textus {
     discerne corpus {
         casu MassaSententia ut m {
-            varia lines = [] qua lista<textus>
+            varia lines = [] innatum lista<textus>
             ex m.corpus pro stmt {
                 lines.adde(genInSententia(stmt, obiectum, g))
             }

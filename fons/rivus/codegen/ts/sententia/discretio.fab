@@ -19,7 +19,7 @@ functio genDiscretio(textus nomen, ignotum generaParametra, lista<VariansDeclara
         params = scriptum("<§>", p.coniunge(", "))
     }
 
-    varia variants = [] qua lista<textus>
+    varia variants = [] innatum lista<textus>
     ex variantes pro varians {
         varia member = scriptum("{ tag: '§'", varians.nomen)
         ex varians.campi pro campus {
