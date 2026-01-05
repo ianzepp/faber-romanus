@@ -1,0 +1,417 @@
+# Zig Statement Generator - Dispatch to statement handlers
+#
+# Routes statement AST nodes to their specific generators.
+
+ex "../../../ast/sententia" importa Sententia, VariaGenus, ScribeGradus, IteratioGenus, CuratorGenus
+ex "../../../ast/sententia" importa Parametrum, CampusDeclaratio, EligeCasus
+ex "../../../ast/sententia" importa CapeClausula, OrdoMembrum, VariansDeclaratio
+ex "../../../ast/sententia" importa TypusParametrum, ReddeVerbum
+ex "../../../ast/expressia" importa Expressia
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa ZigGenerator
+ex "../typus" importa genTypus
+ex "../expressia/index" importa genExpressia
+
+# =============================================================================
+# STATEMENT DISPATCH
+# =============================================================================
+
+# Generate Zig code for a statement
+@ publica
+functio genSententia(Sententia stmt, ZigGenerator g) -> textus {
+    discerne stmt {
+        # Block
+        casu MassaSententia ut s {
+            redde genMassa(s.corpus qua lista<Sententia>, g)
+        }
+
+        # Variable declarations
+        casu VariaSententia ut s {
+            redde genVaria(s.species qua VariaGenus, s.nomen qua textus, s.typus, s.valor, g)
+        }
+
+        # Function declaration
+        casu FunctioDeclaratio ut f {
+            redde genFunctio(f.nomen qua textus, f.parametra qua lista<Parametrum>, f.typusReditus, f.corpus, g)
+        }
+
+        # Control flow
+        casu SiSententia ut s {
+            redde genSi(s.condicio, s.consequens qua Sententia, s.alternans, g)
+        }
+
+        casu DumSententia ut s {
+            redde genDum(s.condicio, s.corpus qua Sententia, g)
+        }
+
+        casu IteratioSententia ut s {
+            redde genIteratio(s.species qua IteratioGenus, s.variabilis qua textus, s.iterabile, s.corpus qua Sententia, g)
+        }
+
+        # Return
+        casu ReddeSententia ut s {
+            redde genRedde(s.valor, g)
+        }
+
+        casu RumpeSententia {
+            redde scriptum("§break;", g.ind())
+        }
+
+        casu PergeSententia {
+            redde scriptum("§continue;", g.ind())
+        }
+
+        # Output
+        casu ScribeSententia ut s {
+            redde genScribe(s.gradus qua ScribeGradus, s.argumenta qua lista<Expressia>, g)
+        }
+
+        # Resource management (allocators)
+        casu CuraSententia ut s {
+            redde genCura(s.curatorSpecies, s.res, s.vinculum qua textus, s.corpus qua Sententia, g)
+        }
+
+        # Expression statement
+        casu ExpressiaSententia ut s {
+            redde genExpressiaSententia(s.expressia, g)
+        }
+
+        # Entry point
+        casu IncipitSententia ut s {
+            redde genIncipit(s.corpus, s.ergo, g)
+        }
+
+        # Type declarations (stubs for now)
+        casu GenusDeclaratio ut s {
+            redde genGenus(s.nomen qua textus, s.campi qua lista<CampusDeclaratio>, g)
+        }
+
+        casu OrdoDeclaratio ut s {
+            redde genOrdo(s.nomen qua textus, s.membra qua lista<OrdoMembrum>, g)
+        }
+    }
+
+    redde scriptum("§// TODO: unknown statement", g.ind())
+}
+
+# =============================================================================
+# BLOCK
+# =============================================================================
+
+@ publica
+functio genMassa(lista<Sententia> corpus, ZigGenerator g) -> textus {
+    si corpus.longitudo() == 0 {
+        redde ""
+    }
+    varia lines = [] qua lista<textus>
+    ex corpus pro stmt {
+        lines.adde(genSententia(stmt, g))
+    }
+    redde lines.coniunge("\n")
+}
+
+# =============================================================================
+# VARIABLE DECLARATIONS
+# =============================================================================
+
+@ publica
+functio genVaria(VariaGenus species, textus nomen, ignotum adnotatioTypus, ignotum valor, ZigGenerator g) -> textus {
+    fixum keyword = species == VariaGenus.Fixum sic "const" secus "var"
+
+    varia result = scriptum("§§ §", g.ind(), keyword, nomen)
+
+    si nonnihil adnotatioTypus {
+        result = scriptum("§: §", result, genTypus(adnotatioTypus qua TypusAnnotatio, g))
+    }
+
+    si nonnihil valor {
+        result = scriptum("§ = §", result, genExpressia(valor qua Expressia, g))
+    }
+
+    redde scriptum("§;", result)
+}
+
+# =============================================================================
+# FUNCTION DECLARATION
+# =============================================================================
+
+@ publica
+functio genFunctio(textus nomen, lista<Parametrum> parametra, ignotum typusReditus, ignotum corpus, ZigGenerator g) -> textus {
+    # Build parameter list
+    varia params = [] qua lista<textus>
+    ex parametra pro param {
+        params.adde(genParametrum(param, g))
+    }
+
+    # Return type
+    varia retType = "void"
+    si nonnihil typusReditus {
+        retType = genTypus(typusReditus qua TypusAnnotatio, g)
+    }
+
+    varia result = scriptum("§pub fn §(§) §", g.ind(), nomen, params.coniunge(", "), retType)
+
+    # Body
+    si nonnihil corpus {
+        g.intraProfundum()
+        fixum body = genSententia(corpus qua Sententia, g)
+        g.exiProfundum()
+
+        si body == "" {
+            result = scriptum("§ {{}}", result)
+        } secus {
+            result = scriptum("§ {\n§\n§}", result, body, g.ind())
+        }
+    } secus {
+        result = scriptum("§;", result)
+    }
+
+    redde result
+}
+
+@ publica
+functio genParametrum(Parametrum param, ZigGenerator g) -> textus {
+    varia zigTypus = "anytype"
+    si nonnihil param.typus {
+        zigTypus = genTypus(param.typus qua TypusAnnotatio, g)
+    }
+    redde scriptum("§: §", param.nomen, zigTypus)
+}
+
+# =============================================================================
+# CONTROL FLOW
+# =============================================================================
+
+@ publica
+functio genSi(Expressia condicio, Sententia consequens, ignotum alternans, ZigGenerator g) -> textus {
+    g.intraProfundum()
+    fixum consBody = genSententia(consequens, g)
+    g.exiProfundum()
+
+    varia result = scriptum("§if (§) {\n§\n§}", g.ind(), genExpressia(condicio, g), consBody, g.ind())
+
+    si nonnihil alternans {
+        fixum alt = alternans qua Sententia
+
+        # Check if it's another si (else if chain)
+        si alt.tag == "SiSententia" {
+            fixum altSi = alt
+            g.intraProfundum()
+            fixum elseBody = genSententia(alt, g)
+            g.exiProfundum()
+            # Strip the leading indentation from nested if
+            result = scriptum("§ else §", result, elseBody.sectio(g.indentum.longitudo() * (g.profunditas + 1), elseBody.longitudo()))
+        } secus {
+            g.intraProfundum()
+            fixum elseBody = genSententia(alt, g)
+            g.exiProfundum()
+            result = scriptum("§ else {\n§\n§}", result, elseBody, g.ind())
+        }
+    }
+
+    redde result
+}
+
+@ publica
+functio genDum(Expressia condicio, Sententia corpus, ZigGenerator g) -> textus {
+    g.intraProfundum()
+    fixum body = genSententia(corpus, g)
+    g.exiProfundum()
+
+    redde scriptum("§while (§) {\n§\n§}", g.ind(), genExpressia(condicio, g), body, g.ind())
+}
+
+@ publica
+functio genIteratio(IteratioGenus species, textus variabilis, Expressia iterabile, Sententia corpus, ZigGenerator g) -> textus {
+    g.intraProfundum()
+    fixum body = genSententia(corpus, g)
+    g.exiProfundum()
+
+    # Check if it's a range expression
+    discerne iterabile {
+        casu AmbitusExpressia ut a {
+            fixum initium = genExpressia(a.initium, g)
+            fixum finis = genExpressia(a.finis, g)
+
+            # Zig range syntax: for (start..end) |i| { }
+            si a.inclusivum qua bivalens {
+                redde scriptum("§for (@intCast(§)..@intCast(§ + 1)) |§| {\n§\n§}", g.ind(), initium, finis, variabilis, body, g.ind())
+            }
+            redde scriptum("§for (@intCast(§)..@intCast(§)) |§| {\n§\n§}", g.ind(), initium, finis, variabilis, body, g.ind())
+        }
+    }
+
+    # Slice iteration
+    redde scriptum("§for (§) |§| {\n§\n§}", g.ind(), genExpressia(iterabile, g), variabilis, body, g.ind())
+}
+
+# =============================================================================
+# RETURN
+# =============================================================================
+
+@ publica
+functio genRedde(ignotum valor, ZigGenerator g) -> textus {
+    si nonnihil valor {
+        redde scriptum("§return §;", g.ind(), genExpressia(valor qua Expressia, g))
+    }
+    redde scriptum("§return;", g.ind())
+}
+
+# =============================================================================
+# OUTPUT
+# =============================================================================
+
+@ publica
+functio genScribe(ScribeGradus gradus, lista<Expressia> argumenta, ZigGenerator g) -> textus {
+    # Build format string and args
+    varia formatParts = [] qua lista<textus>
+    varia args = [] qua lista<textus>
+
+    ex argumenta pro arg {
+        formatParts.adde("{any}")
+        args.adde(genExpressia(arg, g))
+    }
+
+    fixum format = formatParts.coniunge(" ")
+    fixum argsStr = args.coniunge(", ")
+
+    redde scriptum("§std.debug.print(\"§\\n\", .{ § });", g.ind(), format, argsStr)
+}
+
+# =============================================================================
+# RESOURCE MANAGEMENT (ALLOCATORS)
+# =============================================================================
+
+@ publica
+functio genCura(ignotum curatorSpecies, ignotum res, textus vinculum, Sententia corpus, ZigGenerator g) -> textus {
+    varia lines = [] qua lista<textus>
+
+    si nonnihil curatorSpecies {
+        fixum species = curatorSpecies qua CuratorGenus
+
+        si species == CuratorGenus.Arena {
+            # Arena allocator: create arena, defer cleanup, get allocator
+            fixum arenaVar = scriptum("§_arena", vinculum)
+            lines.adde(scriptum("§var § = std.heap.ArenaAllocator.init(std.heap.page_allocator);", g.ind(), arenaVar))
+            lines.adde(scriptum("§defer §.deinit();", g.ind(), arenaVar))
+            lines.adde(scriptum("§const § = §.allocator();", g.ind(), vinculum, arenaVar))
+
+            # Push allocator for nested code
+            g.imponeCuratorem(vinculum)
+
+            # Generate body
+            lines.adde(genSententia(corpus, g))
+
+            # Pop allocator
+            g.deponeCuratorem()
+
+            redde lines.coniunge("\n")
+        }
+
+        si species == CuratorGenus.Pagina {
+            # Page allocator: direct reference
+            lines.adde(scriptum("§const § = std.heap.page_allocator;", g.ind(), vinculum))
+
+            g.imponeCuratorem(vinculum)
+            lines.adde(genSententia(corpus, g))
+            g.deponeCuratorem()
+
+            redde lines.coniunge("\n")
+        }
+    }
+
+    # Generic resource with defer
+    si nonnihil res {
+        lines.adde(scriptum("§const § = §;", g.ind(), vinculum, genExpressia(res qua Expressia, g)))
+        lines.adde(scriptum("§defer §.deinit();", g.ind(), vinculum))
+    }
+
+    lines.adde(genSententia(corpus, g))
+    redde lines.coniunge("\n")
+}
+
+# =============================================================================
+# EXPRESSION STATEMENT
+# =============================================================================
+
+@ publica
+functio genExpressiaSententia(Expressia expr, ZigGenerator g) -> textus {
+    fixum e = genExpressia(expr, g)
+
+    # Zig requires discarding unused values with _ =
+    discerne expr {
+        casu VocatioExpressia {
+            redde scriptum("§§;", g.ind(), e)
+        }
+        casu AssignatioExpressia {
+            redde scriptum("§§;", g.ind(), e)
+        }
+    }
+
+    redde scriptum("§_ = §;", g.ind(), e)
+}
+
+# =============================================================================
+# ENTRY POINT
+# =============================================================================
+
+@ publica
+functio genIncipit(ignotum corpus, ignotum ergo, ZigGenerator g) -> textus {
+    varia lines = [] qua lista<textus>
+
+    lines.adde(scriptum("§pub fn main() void {", g.ind()))
+    g.intraProfundum()
+
+    si nonnihil ergo {
+        lines.adde(genSententia(ergo qua Sententia, g))
+    } sin nonnihil corpus {
+        lines.adde(genSententia(corpus qua Sententia, g))
+    }
+
+    g.exiProfundum()
+    lines.adde(scriptum("§}", g.ind()))
+
+    redde lines.coniunge("\n")
+}
+
+# =============================================================================
+# TYPE DECLARATIONS (STUBS)
+# =============================================================================
+
+@ publica
+functio genGenus(textus nomen, lista<CampusDeclaratio> campi, ZigGenerator g) -> textus {
+    varia lines = [] qua lista<textus>
+
+    lines.adde(scriptum("§const § = struct {", g.ind(), nomen))
+    g.intraProfundum()
+
+    ex campi pro campus {
+        varia zigTypus = "anytype"
+        si nonnihil campus.typus {
+            zigTypus = genTypus(campus.typus, g)
+        }
+        lines.adde(scriptum("§§: §,", g.ind(), campus.nomen, zigTypus))
+    }
+
+    g.exiProfundum()
+    lines.adde(scriptum("§};", g.ind()))
+
+    redde lines.coniunge("\n")
+}
+
+@ publica
+functio genOrdo(textus nomen, lista<OrdoMembrum> membra, ZigGenerator g) -> textus {
+    varia lines = [] qua lista<textus>
+
+    lines.adde(scriptum("§const § = enum {", g.ind(), nomen))
+    g.intraProfundum()
+
+    ex membra pro membrum {
+        lines.adde(scriptum("§§,", g.ind(), membrum.nomen))
+    }
+
+    g.exiProfundum()
+    lines.adde(scriptum("§};", g.ind()))
+
+    redde lines.coniunge("\n")
+}

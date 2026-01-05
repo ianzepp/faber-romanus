@@ -1,0 +1,264 @@
+# Zig Expression Generator - Dispatch to expression handlers
+#
+# Routes expression AST nodes to their specific generators.
+
+ex "../../../ast/expressia" importa Expressia, LitteraGenus, ObiectumProprietas, LambdaParametrum
+ex "../../../ast/sententia" importa Sententia
+ex "../../../ast/typus" importa TypusAnnotatio
+ex "../nucleus" importa ZigGenerator
+ex "../typus" importa genTypus
+
+# =============================================================================
+# EXPRESSION DISPATCH
+# =============================================================================
+
+# Generate Zig code for an expression
+@ publica
+functio genExpressia(Expressia expr, ZigGenerator g) -> textus {
+    discerne expr {
+        # Identifiers
+        casu Nomen ut e {
+            redde e.valor qua textus
+        }
+
+        casu EgoExpressia {
+            # Zig doesn't have 'this' - context-dependent
+            redde "self"
+        }
+
+        # Literals
+        casu Littera ut e {
+            redde genLittera(e.species qua LitteraGenus, e.crudus qua textus)
+        }
+
+        # Binary operations
+        casu BinariaExpressia ut e {
+            fixum sinister = genExpressia(e.sinister, g)
+            fixum dexter = genExpressia(e.dexter, g)
+            varia signum = e.signum qua textus
+
+            # Normalize keyword operators to Zig equivalents
+            elige signum {
+                casu "et" { signum = "and" }
+                casu "aut" { signum = "or" }
+                casu "==" { signum = "==" }
+                casu "!=" { signum = "!=" }
+            }
+
+            redde scriptum("(§ § §)", sinister, signum, dexter)
+        }
+
+        # Unary operations
+        casu UnariaExpressia ut e {
+            fixum arg = genExpressia(e.argumentum, g)
+
+            elige e.signum qua textus {
+                casu "nihil" {
+                    redde scriptum("(§ == null)", arg)
+                }
+                casu "nonnihil" {
+                    redde scriptum("(§ != null)", arg)
+                }
+                casu "negativum" {
+                    redde scriptum("(§ < 0)", arg)
+                }
+                casu "positivum" {
+                    redde scriptum("(§ > 0)", arg)
+                }
+            }
+
+            redde scriptum("§§", e.signum, arg)
+        }
+
+        # Assignment
+        casu AssignatioExpressia ut e {
+            redde scriptum("§ § §", genExpressia(e.sinister, g), e.signum, genExpressia(e.dexter, g))
+        }
+
+        # Ternary conditional
+        casu CondicioExpressia ut e {
+            redde scriptum("if (§) § else §", genExpressia(e.condicio, g), genExpressia(e.consequens, g), genExpressia(e.alternans, g))
+        }
+
+        # Range
+        casu AmbitusExpressia ut e {
+            fixum initium = genExpressia(e.initium, g)
+            fixum finis = genExpressia(e.finis, g)
+            # Zig uses start..end syntax
+            si e.inclusivum qua bivalens {
+                redde scriptum("§..§ + 1", initium, finis)
+            }
+            redde scriptum("§..§", initium, finis)
+        }
+
+        # Type cast
+        casu QuaExpressia ut e {
+            fixum zigExpr = genExpressia(e.expressia, g)
+            fixum zigTypus = genTypus(e.scopus qua TypusAnnotatio, g)
+            redde scriptum("@as(§, §)", zigTypus, zigExpr)
+        }
+
+        # Function call
+        casu VocatioExpressia ut e {
+            varia args = [] qua lista<textus>
+            ex (e.argumenta qua lista<Expressia>) pro arg {
+                args.adde(genExpressia(arg, g))
+            }
+            redde scriptum("§(§)", genExpressia(e.vocatum, g), args.coniunge(", "))
+        }
+
+        # Member access
+        casu MembrumExpressia ut e {
+            fixum obj = genExpressia(e.obiectum, g)
+            si e.computatum qua bivalens {
+                # Computed access: obj[prop]
+                fixum idx = genExpressia(e.proprietas, g)
+                redde scriptum("§[§]", obj, idx)
+            }
+            # Dot access
+            fixum prop = genExpressia(e.proprietas, g)
+            si e.optivum qua bivalens {
+                # Optional chaining: use orelse
+                redde scriptum("(§.§ orelse null)", obj, prop)
+            }
+            redde scriptum("§.§", obj, prop)
+        }
+
+        # Array literal
+        casu SeriesExpressia ut e {
+            varia items = [] qua lista<textus>
+            ex (e.elementa qua lista<Expressia>) pro elem {
+                items.adde(genExpressia(elem, g))
+            }
+            redde scriptum(".{ § }", items.coniunge(", "))
+        }
+
+        # Object literal (anonymous struct)
+        casu ObiectumExpressia ut e {
+            redde genObiectum(e.proprietates qua lista<ObiectumProprietas>, g)
+        }
+
+        # Format string
+        casu ScriptumExpressia ut e {
+            redde genScriptum(e.exemplar qua textus, e.argumenta qua lista<Expressia>, g)
+        }
+
+        # Lambda (Zig anonymous functions)
+        casu LambdaExpressia ut e {
+            redde genLambda(e.parametra qua lista<LambdaParametrum>, e.corpus, g)
+        }
+    }
+
+    # Fallback
+    redde "undefined"
+}
+
+# =============================================================================
+# LITERAL HELPERS
+# =============================================================================
+
+@ publica
+functio genLittera(LitteraGenus species, textus crudus) -> textus {
+    si species == LitteraGenus.Verum {
+        redde "true"
+    }
+    si species == LitteraGenus.Falsum {
+        redde "false"
+    }
+    si species == LitteraGenus.Nihil {
+        redde "null"
+    }
+    si species == LitteraGenus.Textus {
+        # String literals in Zig
+        redde scriptum("\"§\"", crudus)
+    }
+    # Numerus, Fractus pass through raw value
+    redde crudus
+}
+
+# =============================================================================
+# OBJECT LITERAL
+# =============================================================================
+
+@ publica
+functio genObiectum(lista<ObiectumProprietas> proprietates, ZigGenerator g) -> textus {
+    si proprietates.longitudo() == 0 {
+        redde ".{}"
+    }
+
+    varia props = [] qua lista<textus>
+    ex proprietates pro prop {
+        si prop.brevitas {
+            # Shorthand: { name } -> .{ .name = name }
+            fixum nomen = genExpressia(prop.clavis, g)
+            props.adde(scriptum(".§ = §", nomen, nomen))
+        } secus {
+            fixum key = genExpressia(prop.clavis, g)
+            fixum val = genExpressia(prop.valor, g)
+            props.adde(scriptum(".§ = §", key, val))
+        }
+    }
+
+    redde scriptum(".{ § }", props.coniunge(", "))
+}
+
+# =============================================================================
+# FORMAT STRING (scriptum)
+# =============================================================================
+
+@ publica
+functio genScriptum(textus exemplar, lista<Expressia> argumenta, ZigGenerator g) -> textus {
+    # Get current allocator
+    fixum curator = g.curator()
+
+    si argumenta.longitudo() == 0 {
+        redde scriptum("\"§\"", exemplar)
+    }
+
+    # Convert § placeholders to {any} for Zig std.fmt
+    varia format = ""
+    varia i = 0
+    dum i < exemplar.longitudo() {
+        fixum c = exemplar[i]
+        si c == "§" {
+            format = format + "{any}"
+        } sin c == "{" et i + 1 < exemplar.longitudo() et exemplar[i + 1] == "}" {
+            format = format + "{any}"
+            i += 1
+        } secus {
+            format = format + c
+        }
+        i += 1
+    }
+
+    varia args = [] qua lista<textus>
+    ex argumenta pro arg {
+        args.adde(genExpressia(arg, g))
+    }
+
+    redde scriptum("std.fmt.allocPrint(§, \"§\", .{ § }) catch @panic(\"OOM\")", curator, format, args.coniunge(", "))
+}
+
+# =============================================================================
+# LAMBDA
+# =============================================================================
+
+@ publica
+functio genLambda(lista<LambdaParametrum> parametra, ignotum corpus, ZigGenerator g) -> textus {
+    varia params = [] qua lista<textus>
+    ex parametra pro p {
+        si nonnihil p.typus {
+            params.adde(scriptum("§: §", p.nomen, genTypus(p.typus qua TypusAnnotatio, g)))
+        } secus {
+            params.adde(scriptum("§: anytype", p.nomen))
+        }
+    }
+
+    discerne corpus {
+        casu Expressia ut e {
+            redde scriptum("struct { fn f(§) anytype { return §; } }.f", params.coniunge(", "), genExpressia(e, g))
+        }
+    }
+
+    redde scriptum("struct { fn f(§) void {{}} }.f", params.coniunge(", "))
+}

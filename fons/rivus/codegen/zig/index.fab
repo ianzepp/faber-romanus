@@ -5,6 +5,7 @@
 
 ex "../../ast/sententia" importa Sententia
 ex "./nucleus" importa ZigGenerator, creaZigGenerator
+ex "./sententia/index" importa genSententia
 
 # =============================================================================
 # PUBLIC API
@@ -15,15 +16,16 @@ ex "./nucleus" importa ZigGenerator, creaZigGenerator
 functio generateZig(lista<Sententia> corpus) -> textus {
     fixum g = creaZigGenerator()
 
+    # Generate preamble (std import)
+    fixum preamble = "const std = @import(\"std\");\n\n"
+
     # Generate body from statements
     varia lines = [] qua lista<textus>
     ex corpus pro stmt {
-        # TODO: genSententia not yet implemented
-        lines.adde("// TODO: statement codegen")
+        lines.adde(genSententia(stmt, g))
     }
 
     fixum body = lines.coniunge("\n")
 
-    # TODO: Add preamble generation (std imports, Responsum type, etc.)
-    redde body
+    redde scriptum("§§", preamble, body)
 }
