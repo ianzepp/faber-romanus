@@ -169,6 +169,33 @@ describe('Semantic Analyzer', () => {
             expect(errors.length).toBeGreaterThan(0);
             expect(errors[0]!.message).toContain('not assignable');
         });
+
+        it('reports error for function without body (not externa)', () => {
+            const { errors } = analyzeSource(`functio f() -> numerus`);
+
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0]!.message).toContain('has no body');
+        });
+
+        it('allows function without body when @ externa', () => {
+            const source = `
+                @ externa
+                functio require(textus path) -> ignotum
+            `;
+            const { errors } = analyzeSource(source);
+
+            expect(errors).toHaveLength(0);
+        });
+
+        it('allows variable without initializer when @ externa', () => {
+            const source = `
+                @ externa
+                fixum ignotum Bun
+            `;
+            const { errors } = analyzeSource(source);
+
+            expect(errors).toHaveLength(0);
+        });
     });
 
     describe('Scope Management', () => {

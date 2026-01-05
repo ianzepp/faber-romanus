@@ -17,9 +17,16 @@
 
 import type { VariaDeclaration } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
-import { getVisibilityFromAnnotations } from '../../types';
+import { getVisibilityFromAnnotations, isExternaFromAnnotations } from '../../types';
 
 export function genVariaDeclaration(node: VariaDeclaration, g: TsGenerator, semi: boolean): string {
+    // External declarations use TypeScript's 'declare' syntax
+    if (isExternaFromAnnotations(node.annotations)) {
+        const name = node.name.type === 'ArrayPattern' ? '[destructure]' : node.name.name;
+        const typeAnno = node.typeAnnotation ? `: ${g.genType(node.typeAnnotation)}` : '';
+        return `${g.ind()}declare const ${name}${typeAnno}${semi ? ';' : ''}`;
+    }
+
     // Map kind to JS keyword and determine if async
     const isAsync = node.kind === 'figendum' || node.kind === 'variandum';
     const kind = node.kind === 'varia' || node.kind === 'variandum' ? 'let' : 'const';

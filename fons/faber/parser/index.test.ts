@@ -2537,10 +2537,14 @@ describe('parser', () => {
             expect(program!.body[0]).toBeDefined();
         });
 
-        test('missing function body', () => {
-            const { errors } = parseCode('functio f()');
+        test('missing function body parses successfully (validated semantically)', () => {
+            // WHY: Function bodies are optional at parse time to support @ externa declarations.
+            // The semantic analyzer validates that non-externa functions have bodies.
+            const { program, errors } = parseCode('functio f()');
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(errors.length).toBe(0);
+            expect(program.body[0]?.type).toBe('FunctioDeclaration');
+            expect((program.body[0] as any).body).toBeUndefined();
         });
 
         test('missing condition in if', () => {
@@ -2592,10 +2596,15 @@ describe('parser', () => {
             expect(errors.length).toBeGreaterThan(0);
         });
 
-        test('missing arrow in function return type', () => {
-            const { errors } = parseCode('functio f() textus { }');
+        test('missing arrow in function return type parses as separate statements', () => {
+            // WHY: With optional function bodies (for @ externa), 'functio f() textus { }'
+            // parses as three statements: function declaration, expression, block.
+            // The semantic analyzer catches missing body on non-externa functions.
+            const { program, errors } = parseCode('functio f() textus { }');
 
-            expect(errors.length).toBeGreaterThan(0);
+            expect(errors.length).toBe(0);
+            expect(program.body.length).toBe(3);
+            expect(program.body[0]?.type).toBe('FunctioDeclaration');
         });
 
         test('incomplete genus declaration', () => {

@@ -152,6 +152,20 @@ function isGeneratorFromAnnotations(annotations?: Annotation[]): boolean {
     return false;
 }
 
+/**
+ * Check if annotations include external declaration modifier (externa).
+ *
+ * WHY: External declarations tell the compiler the symbol exists but is
+ *      provided elsewhere (runtime, FFI, linker). No initializer or body required.
+ */
+function isExternaFromAnnotations(annotations?: Annotation[]): boolean {
+    if (!annotations) return false;
+    for (const ann of annotations) {
+        if (ann.name === 'externa') return true;
+    }
+    return false;
+}
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -1565,6 +1579,7 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
         // Standard variable declaration - resolve type
         let type: SemanticType;
+        const isExterna = isExternaFromAnnotations(node.annotations);
 
         if (node.typeAnnotation) {
             type = resolveTypeAnnotation(node.typeAnnotation);
@@ -1573,9 +1588,12 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
         } else {
             type = UNKNOWN;
 
-            const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NoTypeOrInitializer];
-
-            error(`${text(node.name.name)}\n${help}`, node.position);
+            // External declarations require type annotation but no initializer
+            // Non-externa without type or initializer is an error
+            if (!isExterna) {
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NoTypeOrInitializer];
+                error(`${text(node.name.name)}\n${help}`, node.position);
+            }
         }
 
         // Check initializer type compatibility
@@ -1673,7 +1691,14 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             });
         }
 
-        // Abstract methods have no body
+        // Functions must have body unless abstract or externa
+        const isExterna = isExternaFromAnnotations(node.annotations);
+        if (!node.body && !node.isAbstract && !isExterna) {
+            const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.MissingFunctionBody];
+            error(`${text(node.name.name)}\n${help}`, node.position);
+        }
+
+        // Analyze body if present
         if (node.body) {
             analyzeBlock(node.body);
         }

@@ -1393,7 +1393,12 @@ export function parse(tokens: Token[]): ParserResult {
         const async: boolean = verbAsync ?? false;
         const generator: boolean = verbGenerator ?? false;
 
-        const body = parseBlockStatement();
+        // WHY: Body is optional for @ externa declarations (external functions have no body)
+        // If no opening brace, function has no body (validated in semantic phase)
+        let body: BlockStatement | undefined;
+        if (check('LBRACE')) {
+            body = parseBlockStatement();
+        }
 
         return {
             type: 'FunctioDeclaration',

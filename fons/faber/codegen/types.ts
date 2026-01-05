@@ -266,6 +266,25 @@ export function isStaticFromAnnotations(annotations?: Annotation[]): boolean {
 }
 
 /**
+ * Check if annotations include external declaration modifier.
+ *
+ * WHY: External declarations tell the compiler the symbol exists but is
+ *      provided elsewhere (runtime, FFI, linker). No initializer or body required.
+ *
+ * @param annotations - Array of annotations from an AST node
+ * @returns true if externa is present
+ */
+export function isExternaFromAnnotations(annotations?: Annotation[]): boolean {
+    if (!annotations) return false;
+
+    for (const ann of annotations) {
+        if (ann.name === 'externa') return true;
+    }
+
+    return false;
+}
+
+/**
  * Comment syntax configuration per target.
  *
  * WHY: Different targets have different comment syntax:

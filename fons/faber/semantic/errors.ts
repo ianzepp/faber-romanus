@@ -49,6 +49,7 @@ export enum SemanticErrorCode {
     AwaitOutsideAsync = 'S010',
     DefaultWithBorrowedParam = 'S011',
     RequiredAfterOptional = 'S015',
+    MissingFunctionBody = 'S016',
     // Import resolution errors
     ModuleNotFound = 'S012',
     CircularImport = 'S013',
@@ -125,5 +126,9 @@ export const SEMANTIC_ERRORS = {
     [SemanticErrorCode.ModuleParseError]: {
         text: (path: string) => `Failed to parse module '${path}'`,
         help: 'Fix the syntax errors in the imported module before importing it.',
+    },
+    [SemanticErrorCode.MissingFunctionBody]: {
+        text: (name: string) => `Function '${name}' has no body`,
+        help: "Regular functions require a body. Use '@ externa' annotation for external declarations.",
     },
 } as const;

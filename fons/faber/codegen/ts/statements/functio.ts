@@ -24,6 +24,7 @@ import {
     getVisibilityFromAnnotations,
     isAbstractFromAnnotations,
     isAsyncFromAnnotations,
+    isExternaFromAnnotations,
     isGeneratorFromAnnotations,
     isStaticFromAnnotations,
 } from '../../types';
@@ -43,6 +44,12 @@ export function genFunctioDeclaration(node: FunctioDeclaration, g: TsGenerator):
     // WHY: @ futura and @ cursor annotations are equivalent to inline futura/cursor modifiers
     const isAsync = node.async || isAsyncFromAnnotations(node.annotations);
     const isGenerator = node.generator || isGeneratorFromAnnotations(node.annotations);
+
+    // External declarations use TypeScript's 'declare' syntax
+    if (isExternaFromAnnotations(node.annotations)) {
+        const returnType = node.returnType ? `: ${g.genType(node.returnType)}` : '';
+        return `${g.ind()}declare function ${name}${typeParams}(${params})${returnType};`;
+    }
 
     // Handle abstract methods (no body)
     if (node.isAbstract || !node.body) {

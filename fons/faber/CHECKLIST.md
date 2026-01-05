@@ -94,6 +94,7 @@ Status key: `[x]` implemented, `[~]` partial, `[ ]` not implemented, `[-]` not a
 | `fiunt T` (generator return)       |    [x]     | [ ] |  [x]   | [-]  |  [-]  |
 | `fient T` (async generator return) |    [x]     | [ ] |  [x]   | [-]  |  [-]  |
 | `prae` (comptime type param)       |    [x]     | [x] |  [x]   | [x]  |  [ ]  |
+| `@ externa` (external decl)        |    [x]     | [ ] |  [ ]   | [ ]  |  [ ]  |
 
 ## Control Flow Statements
 
