@@ -222,9 +222,6 @@ functio genScriptum(textus exemplar, lista<Expressia> argumenta, ZigGenerator g)
         fixum c = exemplar[i]
         si c == "§" {
             format = format + "{any}"
-        } sin c == "{" et i + 1 < exemplar.longitudo() et exemplar[i + 1] == "}" {
-            format = format + "{any}"
-            i += 1
         } secus {
             format = format + c
         }

@@ -37,7 +37,7 @@ functio createUser(name, email, age, curator alloc) -> textus {
         }
     }
 
-    redde scriptum("User created: {}", name)
+    redde scriptum("User created: §", name)
 }
 
 # Guards can throw instead of returning

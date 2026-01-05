@@ -9,14 +9,14 @@
 # Optional parameter without default (receives nihil if omitted)
 functio greet(textus nomen, si textus titulus) -> textus {
     si titulus est nihil {
-        redde scriptum("Salve, {}!", nomen)
+        redde scriptum("Salve, §!", nomen)
     }
-    redde scriptum("Salve, {} {}!", titulus, nomen)
+    redde scriptum("Salve, § §!", titulus, nomen)
 }
 
 # Optional parameter with default value
 functio paginate(si numerus pagina vel 1, si numerus per_pagina vel 10) -> textus {
-    redde scriptum("Page {} with {} items", pagina, per_pagina)
+    redde scriptum("Page § with § items", pagina, per_pagina)
 }
 
 # Preposition with optional: de si (borrowed, optional without default)
@@ -29,7 +29,7 @@ functio analyze(textus source, de si numerus depth) -> numerus {
 
 # Mixed required and optional parameters
 functio createUser(textus nomen, si numerus aetas vel 0, si bivalens activus vel verum) -> textus {
-    redde scriptum("User: {}, age: {}, active: {}", nomen, aetas, activus)
+    redde scriptum("User: §, age: §, active: §", nomen, aetas, activus)
 }
 
 incipit {

@@ -2,7 +2,6 @@
  * Python Code Generator - Scriptum Expression (format string)
  *
  * TRANSFORMS:
- *   scriptum("Hello, {}!", name) -> "Hello, {}!".format(name)
  *   scriptum("Hello, §!", name) -> "Hello, {}!".format(name)
  *
  * TARGET: Python's str.format() method for string formatting.

@@ -4,7 +4,7 @@
 # The incipit block calls them as needed.
 
 functio greet(textus name) -> textus {
-    redde scriptum("Salve, {}!", name)
+    redde scriptum("Salve, §!", name)
 }
 
 functio add(numerus a, numerus b) -> numerus {

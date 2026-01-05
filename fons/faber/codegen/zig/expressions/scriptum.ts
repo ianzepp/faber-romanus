@@ -2,7 +2,6 @@
  * Zig Code Generator - Scriptum Expression (format string)
  *
  * TRANSFORMS:
- *   scriptum("Hello, {s}!", name) -> std.fmt.allocPrint(alloc, "Hello, {s}!", .{name}) catch @panic("OOM")
  *   scriptum("Hello, §!", name) -> std.fmt.allocPrint(alloc, "Hello, {any}!", .{name}) catch @panic("OOM")
  *
  * TARGET: Zig's std.fmt.allocPrint for runtime string formatting.

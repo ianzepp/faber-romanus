@@ -1,12 +1,10 @@
 # Scriptum expressions - format string functionality
 # Maps Faber scriptum() to target-language format string equivalents
 #
-# Faber supports two placeholder syntaxes:
-#   {} - traditional placeholder (compatible with most format string libraries)
-#   §  - section sign placeholder (preferred, avoids escaping issues with braces)
+# Faber uses § (section sign) as its placeholder syntax.
 
 - name: scriptum with single argument
-  faber: 'scriptum("Hello, {}", name)'
+  faber: 'scriptum("Hello, §", name)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -18,12 +16,12 @@
       cpp:
           - 'std::format("Hello, {}", name)'
       zig:
-          - 'std.fmt.allocPrint(alloc, "Hello, {}", .{ name }) catch @panic("OOM")'
+          - 'std.fmt.allocPrint(alloc, "Hello, {any}", .{ name }) catch @panic("OOM")'
       fab:
-          - 'scriptum("Hello, {}", name)'
+          - 'scriptum("Hello, §", name)'
 
 - name: scriptum with multiple arguments
-  faber: 'scriptum("{} + {} = {}", a, b, c)'
+  faber: 'scriptum("§ + § = §", a, b, c)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -35,9 +33,9 @@
       cpp:
           - 'std::format("{} + {} = {}", a, b, c)'
       zig:
-          - 'std.fmt.allocPrint(alloc, "{} + {} = {}", .{ a, b, c }) catch @panic("OOM")'
+          - 'std.fmt.allocPrint(alloc, "{any} + {any} = {any}", .{ a, b, c }) catch @panic("OOM")'
       fab:
-          - 'scriptum("{} + {} = {}", a, b, c)'
+          - 'scriptum("§ + § = §", a, b, c)'
 
 - name: scriptum with no arguments (constant string)
   faber: 'scriptum("Hello, World!")'
@@ -57,7 +55,7 @@
           - 'scriptum("Hello, World!")'
 
 - name: scriptum in variable assignment
-  faber: 'fixum greeting = scriptum("Hello, {}", name)'
+  faber: 'fixum greeting = scriptum("Hello, §", name)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -69,12 +67,12 @@
       cpp:
           - 'const auto greeting = std::format("Hello, {}", name)'
       zig:
-          - 'const greeting = std.fmt.allocPrint(alloc, "Hello, {}", .{ name }) catch @panic("OOM")'
+          - 'const greeting = std.fmt.allocPrint(alloc, "Hello, {any}", .{ name }) catch @panic("OOM")'
       fab:
-          - 'fixum greeting = scriptum("Hello, {}", name)'
+          - 'fixum greeting = scriptum("Hello, §", name)'
 
 - name: scriptum with expression argument
-  faber: 'scriptum("Result: {}", a + b)'
+  faber: 'scriptum("Result: §", a + b)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -86,13 +84,11 @@
       cpp:
           - 'std::format("Result: {}", (a + b))'
       zig:
-          - 'std.fmt.allocPrint(alloc, "Result: {}", .{ (a + b) }) catch @panic("OOM")'
+          - 'std.fmt.allocPrint(alloc, "Result: {any}", .{ (a + b) }) catch @panic("OOM")'
       fab:
-          - 'scriptum("Result: {}", a + b)'
+          - 'scriptum("Result: §", a + b)'
 
-# Section sign (§) placeholder tests
-
-- name: scriptum with section sign placeholder
+- name: scriptum with punctuation after placeholder
   faber: 'scriptum("Hello, §!", name)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
@@ -108,20 +104,3 @@
           - 'std.fmt.allocPrint(alloc, "Hello, {any}!", .{ name }) catch @panic("OOM")'
       fab:
           - 'scriptum("Hello, §!", name)'
-
-- name: scriptum with multiple section sign placeholders
-  faber: 'scriptum("§ + § = §", a, b, c)'
-  wrap: 'cura arena fit alloc { $ }'
-  expect:
-      ts:
-          - '`${a} + ${b} = ${c}`'
-      py:
-          - '"{} + {} = {}".format(a, b, c)'
-      rs:
-          - 'format!("{} + {} = {}", a, b, c)'
-      cpp:
-          - 'std::format("{} + {} = {}", a, b, c)'
-      zig:
-          - 'std.fmt.allocPrint(alloc, "{any} + {any} = {any}", .{ a, b, c }) catch @panic("OOM")'
-      fab:
-          - 'scriptum("§ + § = §", a, b, c)'

@@ -14,7 +14,7 @@ functio adde(numerus a, numerus b) -> numerus {
 
 # Mixed types
 functio describe(textus nomen, numerus aetas) -> textus {
-    redde scriptum("{} habet {} annos", nomen, aetas)
+    redde scriptum("§ habet § annos", nomen, aetas)
 }
 
 # Boolean parameter and return

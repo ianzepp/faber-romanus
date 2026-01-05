@@ -2,7 +2,7 @@
 
 # A simple greeting function
 functio greet(textus name) -> textus {
-    redde scriptum("Hello, {}!", name)
+    redde scriptum("Hello, §!", name)
 }
 
 # A constant value

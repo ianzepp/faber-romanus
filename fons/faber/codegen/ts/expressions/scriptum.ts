@@ -2,22 +2,12 @@
  * TypeScript Code Generator - Scriptum Expression (format string)
  *
  * TRANSFORMS:
- *   scriptum("Hello, {}!", name) -> `Hello, ${name}!`
  *   scriptum("Hello, §!", name) -> `Hello, ${name}!`
- *   scriptum("obj = {{ {} }}", val) -> `obj = { ${val} }`
  *
  * TARGET: TypeScript template literals for string interpolation.
  *
- * WHY: TS has native template literals, so we transform placeholders
+ * WHY: TS has native template literals, so we transform § placeholders
  *      into ${arg} interpolations. This provides the most idiomatic output.
- *
- * PLACEHOLDERS:
- *   {} -> placeholder for next argument (traditional)
- *   §  -> placeholder for next argument (section sign, preferred)
- *
- * ESCAPING:
- *   {{ -> literal {
- *   }} -> literal }
  *
  * NOTE: Placeholder count must match argument count. Extra args are ignored,
  *       missing args produce undefined. Faber does not validate at compile time.
@@ -30,59 +20,21 @@ export function genScriptumExpression(node: ScriptumExpression, g: TsGenerator):
     const format = node.format.value as string;
 
     if (node.arguments.length === 0) {
-        // No args - just return the format string as a regular string
-        // Still need to unescape {{ and }}
-        const unescaped = format.replace(/\{\{/g, '{').replace(/\}\}/g, '}');
-        return `"${unescaped}"`;
+        return `"${format}"`;
     }
 
-    // Transform format string with {} placeholders into template literal
+    // Transform format string with § placeholders into template literal
     const args = node.arguments.map(arg => g.genExpression(arg));
     let argIndex = 0;
 
-    // Process the format string character by character to handle escaping
     let template = '';
-    let i = 0;
-    while (i < format.length) {
+    for (let i = 0; i < format.length; i++) {
         if (format[i] === '§') {
-            // § -> placeholder (section sign, preferred)
             const arg = args[argIndex++] ?? 'undefined';
             template += `\${${arg}}`;
-            i++;
-        }
-        else if (format[i] === '{') {
-            if (format[i + 1] === '{') {
-                // {{ -> literal {
-                template += '{';
-                i += 2;
-            }
-            else if (format[i + 1] === '}') {
-                // {} -> placeholder (traditional)
-                const arg = args[argIndex++] ?? 'undefined';
-                template += `\${${arg}}`;
-                i += 2;
-            }
-            else {
-                // lone { - pass through
-                template += '{';
-                i++;
-            }
-        }
-        else if (format[i] === '}') {
-            if (format[i + 1] === '}') {
-                // }} -> literal }
-                template += '}';
-                i += 2;
-            }
-            else {
-                // lone } - pass through
-                template += '}';
-                i++;
-            }
         }
         else {
             template += format[i];
-            i++;
         }
     }
 

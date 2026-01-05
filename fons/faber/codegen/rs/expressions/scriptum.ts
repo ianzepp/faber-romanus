@@ -2,7 +2,6 @@
  * Rust Code Generator - Scriptum Expression (format string)
  *
  * TRANSFORMS:
- *   scriptum("Hello, {}!", name) -> format!("Hello, {}!", name)
  *   scriptum("Hello, §!", name) -> format!("Hello, {}!", name)
  *
  * TARGET: Rust's format! macro for string formatting.

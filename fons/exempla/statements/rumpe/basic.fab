@@ -24,7 +24,7 @@ incipit ergo cura arena {
             si inner == 2 {
                 rumpe
             }
-            scribe scriptum("outer={}, inner={}", outer, inner)
+            scribe scriptum("outer=§, inner=§", outer, inner)
             inner = inner + 1
         }
 

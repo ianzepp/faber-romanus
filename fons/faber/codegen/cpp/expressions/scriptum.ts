@@ -2,7 +2,6 @@
  * C++23 Code Generator - Scriptum Expression (format string)
  *
  * TRANSFORMS:
- *   scriptum("Hello, {}!", name) -> std::format("Hello, {}!", name)
  *   scriptum("Hello, §!", name) -> std::format("Hello, {}!", name)
  *
  * TARGET: C++20's std::format for string formatting.
