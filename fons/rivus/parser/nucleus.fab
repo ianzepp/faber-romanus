@@ -382,13 +382,26 @@ genus Parser {
         # Skip current problematic token
         ego.procede()
 
-        # Keep advancing until we hit a statement-starting keyword
-        dum non ego.estFinis() {
+        # Keep advancing until we hit a statement-starting keyword or block boundary
+        # WHY: Conservative iteration limit prevents infinite loop on malformed input
+        #      containing no statement keywords (e.g., sequences of numeric literals)
+        varia iterationes = 0
+        fixum maxIterationes = 1000
+
+        dum non ego.estFinis() et iterationes < maxIterationes {
+            # Stop at block boundaries (closing brace ends current scope)
+            si ego.proba(SymbolumGenus.UncusDex) {
+                redde
+            }
+
+            # Stop at statement-starting keywords
             fixum s = ego.specta(0)
             si s.species === SymbolumGenus.Verbum et estVerbumSententiae(s.verbum) {
                 redde
             }
+
             ego.procede()
+            iterationes += 1
         }
     }
 

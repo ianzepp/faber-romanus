@@ -28,8 +28,8 @@ The rivus bootstrap compiler is a Faber implementation of the Faber compiler its
 | File | Severity | Primary Issue |
 |------|----------|---------------|
 | `semantic/index.fab` | 🟠 High | Incomplete type inference |
-| `semantic/sententia/declara.fab` | 🟠 High | TODOs in type declarations |
-| `parser/nucleus.fab` | 🟡 Medium | Potential infinite loops |
+| ~~`semantic/sententia/declara.fab`~~ | ~~🟠 High~~ | ~~TODOs in type declarations~~ **FIXED** |
+| ~~`parser/nucleus.fab`~~ | ~~🟡 Medium~~ | ~~Potential infinite loops~~ **FIXED** |
 | `lexor/index.fab` | 🟡 Medium | Incomplete template handling |
 | `parser/expressia/primaria.fab` | 🟡 Medium | Incomplete keyword handling |
 | `semantic/typi.fab` | 🟡 Medium | Large discriminated union |
@@ -447,13 +447,16 @@ Both exist and represent the `nihil` keyword, but serve different purposes.
 
 ### P0 — Blocking for Self-Host (Must Fix)
 
-1. **Complete semantic analysis for genus/pactum members**
+1. ~~**Complete semantic analysis for genus/pactum members**~~ **FIXED 2025-01-05**
    - Files: `semantic/sententia/declara.fab`
    - Reason: The compiler uses genus and pactum extensively
+   - Resolution: Implemented field/method analysis for genus, method signatures for pactum, member analysis for ordo, variant registration for discretio, and type resolution for typus aliases.
+   - Known limitation: `FunctioDeclaratio` AST doesn't have `staticum` field, so genus methods are all treated as instance methods.
 
-2. **Fix parser infinite loop issue**
+2. ~~**Fix parser infinite loop issue**~~ **FIXED 2025-01-05**
    - Files: `parser/nucleus.fab`
    - Reason: Parser hangs on some malformed inputs
+   - Resolution: Added iteration limit (1000) and block boundary detection (`}`) to `synchrona()` function.
 
 ### P1 — Important (Should Fix Soon)
 
