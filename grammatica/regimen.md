@@ -456,23 +456,50 @@ elige status {
 ### Discerne Statement
 
 ```ebnf
-discerneStmt := 'discerne' expression '{' variantCase* '}'
-variantCase := 'casu' IDENTIFIER (('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*))? (blockStmt | 'ergo' statement | 'reddit' expression)
+discerneStmt := 'discerne' discriminants '{' variantCase* '}'
+discriminants := expression (',' expression)*
+variantCase := 'casu' patterns (blockStmt | 'ergo' statement | 'reddit' expression)
+patterns := pattern (',' pattern)*
+pattern := '_' | (IDENTIFIER patternBind?)
+patternBind := ('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*)
 ```
 
 > 'discerne' (distinguish!) pairs with 'discretio' (the tagged union type).
-> Uses 'casu' for match arms, 'ut' to bind whole variants, and 'pro' to introduce positional bindings.
-> 'ergo' for one-liners, 'reddit' for early return one-liners.
+> Uses 'casu' for match arms, 'ut' to bind whole variants, and 'pro' for positional bindings.
+> Multi-discriminant matching reduces nesting when comparing multiple values.
 
 **Examples:**
 
 ```fab
+# Single discriminant
 discerne event {
     casu Click pro x, y { scribe "clicked at " + x + ", " + y }
     casu Keypress pro key reddit key
     casu Quit ergo mori "goodbye"
 }
+
+# Multi-discriminant
+discerne left, right {
+    casu Primitivum ut l, Primitivum ut r { redde l.nomen == r.nomen }
+    casu _, _ { redde falsum }
+}
 ```
+
+### Variant Pattern
+
+```ebnf
+pattern := '_' | (IDENTIFIER patternBind?)
+patternBind := ('ut' IDENTIFIER) | ('pro' IDENTIFIER (',' IDENTIFIER)*)
+```
+
+> Patterns match against discriminants in discerne statements.
+> Wildcard '_' matches any variant without binding.
+> 'ut' binds the whole variant, 'pro' destructures fields.
+> 
+> DISAMBIGUATION: After 'pro', commas separate bindings until we see:
+> - '_' (wildcard pattern)
+> - An identifier followed by 'ut' or 'pro' (new pattern with binding)
+> - '{', 'ergo', 'reddit' (end of patterns)
 
 ### Custodi Statement
 
