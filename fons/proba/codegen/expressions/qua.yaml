@@ -6,7 +6,7 @@
 # Note: Faber uses Latin type names (textus, numerus, logicum) which get mapped
 
 - name: cast to string
-  faber: fixum name = data qua textus
+  source: fixum name = data qua textus
   expect:
       ts: 'const name = (data as string);'
       py: 'name = data'
@@ -16,7 +16,7 @@
           - 'fixum name = data qua textus'
 
 - name: cast member expression
-  faber: fixum body = response.body qua objectum
+  source: fixum body = response.body qua objectum
   expect:
       ts: 'const body = (response.body as object);'
       py: 'body = response.body'
@@ -26,7 +26,7 @@
           - 'fixum body = response.body qua objectum'
 
 - name: cast to number
-  faber: fixum num = input qua numerus
+  source: fixum num = input qua numerus
   expect:
       ts: 'const num = (input as number);'
       py: 'num = input'
@@ -36,7 +36,7 @@
           - 'fixum num = input qua numerus'
 
 - name: cast call result
-  faber: fixum result = getData() qua textus
+  source: fixum result = getData() qua textus
   expect:
       ts: 'const result = (getData() as string);'
       py: 'result = getData()'
@@ -46,7 +46,7 @@
           - 'fixum result = getData() qua textus'
 
 - name: cast to boolean type
-  faber: fixum flag = value qua logicum
+  source: fixum flag = value qua logicum
   expect:
       ts: 'const flag = (value as logicum);'
       py: 'flag = value'
@@ -56,7 +56,7 @@
           - 'fixum flag = value qua logicum'
 
 - name: cast to array type
-  faber: fixum items = data qua lista<textus>
+  source: fixum items = data qua lista<textus>
   expect:
       ts: 'const items = (data as Array<string>);'
       py: 'items = data'
@@ -66,7 +66,7 @@
           - 'fixum items = data qua lista<textus>'
 
 - name: cast to user-defined type
-  faber: fixum user = obj qua UserType
+  source: fixum user = obj qua UserType
   expect:
       ts: 'const user = (obj as UserType);'
       py: 'user = obj'
@@ -76,7 +76,7 @@
           - 'fixum user = obj qua UserType'
 
 - name: cast on optional chain
-  faber: fixum name = user?.name qua textus
+  source: fixum name = user?.name qua textus
   expect:
       ts: 'const name = (user?.name as string);'
       py: 'name = (user.name if user is not None else None)'
@@ -86,7 +86,7 @@
           - 'fixum name = user?.name qua textus'
 
 - name: cast in expression
-  faber: fixum len = (data qua textus).length
+  source: fixum len = (data qua textus).length
   expect:
       ts: 'const len = (data as string).length;'
       py: 'len = len(data)'
@@ -96,7 +96,7 @@
           - 'fixum len = (data qua textus).length'
 
 - name: cast with call result
-  faber: fixum str = getValue() qua textus
+  source: fixum str = getValue() qua textus
   expect:
       ts: 'const str = (getValue() as string);'
       py: 'str = getValue()'
@@ -106,7 +106,7 @@
           - 'fixum str = getValue() qua textus'
 
 - name: cast to nullable
-  faber: fixum maybe = value qua numerus?
+  source: fixum maybe = value qua numerus?
   expect:
       ts: 'const maybe = (value as number | null);'
       py: 'maybe = value'

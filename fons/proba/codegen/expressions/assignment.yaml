@@ -2,7 +2,7 @@
 # Maps Faber assignment syntax to target-language equivalents
 
 - name: simple assignment
-  faber: x = 5
+  source: x = 5
   expect:
       ts: 'x = 5;'
       py: 'x = 5'
@@ -16,7 +16,7 @@
           - 'x = 5'
 
 - name: addition assignment
-  faber: x += 1
+  source: x += 1
   expect:
       ts: 'x += 1;'
       py: 'x += 1'
@@ -30,7 +30,7 @@
           - 'x += 1'
 
 - name: subtraction assignment
-  faber: x -= 1
+  source: x -= 1
   expect:
       ts: 'x -= 1;'
       py: 'x -= 1'
@@ -44,7 +44,7 @@
           - 'x -= 1'
 
 - name: multiplication assignment
-  faber: x *= 2
+  source: x *= 2
   expect:
       ts: 'x *= 2;'
       py: 'x *= 2'
@@ -58,7 +58,7 @@
           - 'x *= 2'
 
 - name: division assignment
-  faber: x /= 2
+  source: x /= 2
   expect:
       ts: 'x /= 2;'
       py: 'x /= 2'
@@ -72,7 +72,7 @@
           - 'x /= 2'
 
 - name: member assignment
-  faber: obj.prop = value
+  source: obj.prop = value
   expect:
       ts: 'obj.prop = value;'
       py: 'obj.prop = value'
@@ -86,7 +86,7 @@
           - 'obj.prop = value'
 
 - name: modulo assignment
-  faber: x %= 3
+  source: x %= 3
   expect:
       ts: 'x %= 3;'
       py: 'x %= 3'
@@ -100,7 +100,7 @@
           - 'x %= 3'
 
 - name: deeply nested member assignment
-  faber: a.b.c.d.e = 5
+  source: a.b.c.d.e = 5
   expect:
       ts: 'a.b.c.d.e = 5;'
       py: 'a.b.c.d.e = 5'
@@ -114,7 +114,7 @@
           - 'a.b.c.d.e = 5'
 
 - name: assignment to array index
-  faber: arr[i] = newValue
+  source: arr[i] = newValue
   expect:
       ts: 'arr[i] = newValue;'
       py: 'arr[i] = newValue'
@@ -128,7 +128,7 @@
           - 'arr[i] = newValue'
 
 - name: assignment to tabula index (typed)
-  faber: 'm["a"] = 1'
+  source: 'm["a"] = 1'
   wrap: 'functio f(tabula<textus, numerus> m) { $ }'
   expect:
       ts:
@@ -136,7 +136,7 @@
           - 'm.set("a", __next)'
 
 - name: assignment with expression index
-  faber: arr[i + 1] = value
+  source: arr[i + 1] = value
   expect:
       ts: 'arr[i + 1] = value;'
       py: 'arr[i + 1] = value'
@@ -150,7 +150,7 @@
           - 'arr[i + 1] = value'
 
 - name: assignment with call on right side
-  faber: result = compute()
+  source: result = compute()
   expect:
       ts: 'result = compute();'
       py: 'result = compute()'
@@ -164,7 +164,7 @@
           - 'result = compute()'
 
 - name: assignment with binary expression
-  faber: total = a + b + c
+  source: total = a + b + c
   expect:
       ts: 'total = a + b + c;'
       py: 'total = a + b + c'
@@ -178,7 +178,7 @@
           - 'total = a + b + c'
 
 - name: compound with member
-  faber: obj.count += 1
+  source: obj.count += 1
   expect:
       ts: 'obj.count += 1;'
       py: 'obj.count += 1'

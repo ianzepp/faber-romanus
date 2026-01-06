@@ -13,7 +13,7 @@
 
 # adde mutates the list by appending (push_back in C++)
 - name: 'adde -> push_back'
-  input: 'items.adde(1)'
+  source: 'items.adde(1)'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - '.push_back(1)'
@@ -28,7 +28,7 @@
 
 # addita returns a new list with the element appended (copy + push_back)
 - name: 'addita -> copy and push_back'
-  input: 'items.addita(1)'
+  source: 'items.addita(1)'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'auto v = items'
@@ -46,7 +46,7 @@
 
 # praepone inserts at the beginning
 - name: 'praepone -> insert at begin'
-  input: 'items.praepone(1)'
+  source: 'items.praepone(1)'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - '.insert('
@@ -66,7 +66,7 @@
 
 # remove pops and returns the last element
 - name: 'remove -> pop_back with return'
-  input: 'items.remove()'
+  source: 'items.remove()'
   cpp:
       - '.back()'
       - '.pop_back()'
@@ -81,7 +81,7 @@
 
 # decapita removes and returns the first element
 - name: 'decapita -> erase at begin'
-  input: 'items.decapita()'
+  source: 'items.decapita()'
   cpp:
       - '.front()'
       - '.erase('
@@ -96,7 +96,7 @@
 
 # purga clears the entire list
 - name: 'purga -> clear'
-  input: 'items.purga()'
+  source: 'items.purga()'
   cpp:
       - '.clear()'
   ts:
@@ -114,7 +114,7 @@
 
 # primus returns the first element
 - name: 'primus -> front'
-  input: 'items.primus()'
+  source: 'items.primus()'
   cpp:
       - '.front()'
   ts:
@@ -128,7 +128,7 @@
 
 # ultimus returns the last element
 - name: 'ultimus -> back'
-  input: 'items.ultimus()'
+  source: 'items.ultimus()'
   cpp:
       - '.back()'
   ts:
@@ -142,7 +142,7 @@
 
 # accipe returns element at index (bounds-checked)
 - name: 'accipe -> at'
-  input: 'items.accipe(0)'
+  source: 'items.accipe(0)'
   cpp:
       - '.at(0)'
   ts:
@@ -156,7 +156,7 @@
 
 # longitudo returns the size
 - name: 'longitudo -> size'
-  input: 'items.longitudo()'
+  source: 'items.longitudo()'
   cpp:
       - '.size()'
   ts:
@@ -170,7 +170,7 @@
 
 # vacua returns whether the list is empty
 - name: 'vacua -> empty'
-  input: 'items.vacua()'
+  source: 'items.vacua()'
   cpp:
       - '.empty()'
   ts:
@@ -188,7 +188,7 @@
 
 # continet checks if element exists
 - name: 'continet -> std::find'
-  input: 'items.continet(5)'
+  source: 'items.continet(5)'
   cpp:
       - 'std::find('
       - '!= items.end()'
@@ -203,7 +203,7 @@
 
 # indiceDe returns the index of an element
 - name: 'indiceDe -> std::find with distance'
-  input: 'items.indiceDe(5)'
+  source: 'items.indiceDe(5)'
   cpp:
       - 'std::find('
       - 'std::distance('
@@ -222,7 +222,7 @@
 
 # filtrata returns filtered copy using views::filter
 - name: 'filtrata -> views::filter'
-  input: 'items.filtrata(pro x: x > 0)'
+  source: 'items.filtrata(pro x: x > 0)'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::filter'
@@ -239,7 +239,7 @@
 
 # mappata transforms elements using views::transform
 - name: 'mappata -> views::transform'
-  input: 'items.mappata(pro x: x * 2)'
+  source: 'items.mappata(pro x: x * 2)'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::transform'
@@ -256,7 +256,7 @@
 
 # inversa returns reversed copy
 - name: 'inversa -> views::reverse'
-  input: 'items.inversa()'
+  source: 'items.inversa()'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::reverse'
@@ -273,7 +273,7 @@
 
 # prima takes first n elements
 - name: 'prima -> views::take'
-  input: 'items.prima(5)'
+  source: 'items.prima(5)'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::take(5)'
@@ -290,7 +290,7 @@
 
 # omitte drops first n elements
 - name: 'omitte -> views::drop'
-  input: 'items.omitte(2)'
+  source: 'items.omitte(2)'
   wrap: 'cura arena fit alloc { $ }'
   cpp:
       - 'std::views::drop(2)'
@@ -311,7 +311,7 @@
 
 # omnes checks if all elements match predicate
 - name: 'omnes -> ranges::all_of'
-  input: 'items.omnes(pro x: x > 0)'
+  source: 'items.omnes(pro x: x > 0)'
   cpp:
       - 'std::ranges::all_of('
   ts:
@@ -325,7 +325,7 @@
 
 # aliquis checks if any element matches predicate
 - name: 'aliquis -> ranges::any_of'
-  input: 'items.aliquis(pro x: x > 0)'
+  source: 'items.aliquis(pro x: x > 0)'
   cpp:
       - 'std::ranges::any_of('
   ts:
@@ -343,7 +343,7 @@
 
 # ordina sorts the list in-place
 - name: 'ordina -> ranges::sort'
-  input: 'items.ordina()'
+  source: 'items.ordina()'
   cpp:
       - 'std::ranges::sort(items)'
   ts:
@@ -357,7 +357,7 @@
 
 # inverte reverses the list in-place
 - name: 'inverte -> ranges::reverse'
-  input: 'items.inverte()'
+  source: 'items.inverte()'
   cpp:
       - 'std::ranges::reverse(items)'
   ts:
@@ -375,7 +375,7 @@
 
 # summa returns the sum of all elements
 - name: 'summa -> std::accumulate'
-  input: 'nums.summa()'
+  source: 'nums.summa()'
   cpp:
       - 'std::accumulate('
   ts:
@@ -389,7 +389,7 @@
 
 # minimus returns the minimum element
 - name: 'minimus -> ranges::min_element'
-  input: 'nums.minimus()'
+  source: 'nums.minimus()'
   cpp:
       - 'std::ranges::min_element('
   ts:
@@ -403,7 +403,7 @@
 
 # maximus returns the maximum element
 - name: 'maximus -> ranges::max_element'
-  input: 'nums.maximus()'
+  source: 'nums.maximus()'
   cpp:
       - 'std::ranges::max_element('
   ts:
@@ -421,7 +421,7 @@
 
 # perambula iterates over all elements
 - name: 'perambula -> ranges::for_each'
-  input: 'items.perambula(pro x { scribe x })'
+  source: 'items.perambula(pro x { scribe x })'
   cpp:
       - 'std::ranges::for_each('
   ts:
@@ -439,7 +439,7 @@
 
 # Algorithm methods add algorithm header
 - name: 'algorithm methods add algorithm header'
-  input: 'items.continet(5)'
+  source: 'items.continet(5)'
   cpp:
       - '#include <algorithm>'
   ts:
@@ -452,7 +452,7 @@
 
 # Ranges methods add ranges header
 - name: 'ranges methods add ranges header'
-  input: 'items.filtrata(pro x: x > 0)'
+  source: 'items.filtrata(pro x: x > 0)'
   cpp:
       - '#include <ranges>'
   ts:
@@ -465,7 +465,7 @@
 
 # Numeric methods add numeric header
 - name: 'numeric methods add numeric header'
-  input: 'nums.summa()'
+  source: 'nums.summa()'
   cpp:
       - '#include <numeric>'
   ts:
@@ -482,7 +482,7 @@
 
 # DSL prima in iteration context
 - name: 'DSL prima in iteration'
-  input: 'ex items prima 5 pro x { scribe x }'
+  source: 'ex items prima 5 pro x { scribe x }'
   ts:
       - 'for (const x of items.slice(0, 5))'
   fab:
@@ -492,7 +492,7 @@
 
 # DSL ultima in iteration context
 - name: 'DSL ultima in iteration'
-  input: 'ex items ultima 3 pro x { scribe x }'
+  source: 'ex items ultima 3 pro x { scribe x }'
   ts:
       - 'for (const x of items.slice(-3))'
   fab:
@@ -502,7 +502,7 @@
 
 # DSL prima as expression
 - name: 'DSL prima as expression'
-  input: 'fixum top = ex items prima 5'
+  source: 'fixum top = ex items prima 5'
   ts:
       - 'const top = items.slice(0, 5)'
   fab:
@@ -511,7 +511,7 @@
 
 # DSL summa as expression
 - name: 'DSL summa as expression'
-  input: 'fixum total = ex nums summa'
+  source: 'fixum total = ex nums summa'
   ts:
       - 'const total = nums.reduce((a, b) => a + b, 0)'
   fab:
@@ -520,7 +520,7 @@
 
 # DSL chained transforms
 - name: 'DSL chained transforms'
-  input: 'fixum result = ex items prima 10, ultima 3'
+  source: 'fixum result = ex items prima 10, ultima 3'
   ts:
       - 'const result = items.slice(0, 10).slice(-3)'
   fab:

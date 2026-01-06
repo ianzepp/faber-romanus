@@ -11,7 +11,7 @@
 
 # pone inserts or updates a key-value pair
 - name: 'pone -> insert_or_assign'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.pone("key", 42)
   wrap: 'cura arena fit alloc { $ }'
@@ -30,7 +30,7 @@
 
 # accipe retrieves a value by key (throws if not found)
 - name: 'accipe -> at'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.accipe("key")
   cpp:
@@ -48,7 +48,7 @@
 
 # habet checks if key exists
 - name: 'habet -> contains'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.habet("key")
   cpp:
@@ -66,7 +66,7 @@
 
 # dele removes a key-value pair
 - name: 'dele -> erase'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.dele("key")
   cpp:
@@ -84,7 +84,7 @@
 
 # longitudo returns the number of entries
 - name: 'longitudo -> size'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.longitudo()
   cpp:
@@ -102,7 +102,7 @@
 
 # vacua checks if the map is empty
 - name: 'vacua -> empty'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.vacua()
   cpp:
@@ -120,7 +120,7 @@
 
 # purga clears the entire map
 - name: 'purga -> clear'
-  input: |
+  source: |
       varia tabula<textus, numerus> map = {}
       map.purga()
   cpp:
@@ -142,7 +142,7 @@
 
 # claves returns a view of all keys
 - name: 'claves -> views::keys'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.claves()
   cpp:
@@ -160,7 +160,7 @@
 
 # valores returns a view of all values
 - name: 'valores -> views::values'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.valores()
   cpp:
@@ -182,7 +182,7 @@
 
 # accipeAut returns value if exists, otherwise default
 - name: 'accipeAut -> contains + at with default'
-  input: |
+  source: |
       fixum tabula<textus, numerus> map = {}
       map.accipeAut("key", 0)
   cpp:
@@ -202,7 +202,7 @@
 
 # confla merges another map into this one
 - name: 'confla -> merge maps'
-  input: |
+  source: |
       varia tabula<textus, numerus> map = {}
       varia tabula<textus, numerus> other = {}
       map.confla(other)
@@ -222,7 +222,7 @@
 
 # inLista converts map entries to a vector
 - name: 'inLista -> vector from map'
-  input: |
+  source: |
       varia tabula<textus, numerus> map = {}
       map.inLista()
   wrap: 'cura arena fit alloc { $ }'

@@ -4,7 +4,7 @@
 # Note: ts/py use exact match; cpp/rs/zig use contains (they wrap in main)
 
 - name: boolean true
-  faber: verum
+  source: verum
   expect:
       ts: 'true;'
       py: 'True'
@@ -18,7 +18,7 @@
           - 'verum'
 
 - name: boolean false
-  faber: falsum
+  source: falsum
   expect:
       ts: 'false;'
       py: 'False'
@@ -32,7 +32,7 @@
           - 'falsum'
 
 - name: null literal
-  faber: nihil
+  source: nihil
   expect:
       ts: 'null;'
       py: 'None'
@@ -46,7 +46,7 @@
           - 'nihil'
 
 - name: underscore prefix identifier
-  faber: fixum _private = 1
+  source: fixum _private = 1
   expect:
       ts: 'const _private = 1;'
       py: '_private = 1'
@@ -54,7 +54,7 @@
           - 'fixum _private = 1'
 
 - name: numeric suffix identifier
-  faber: fixum item1 = "first"
+  source: fixum item1 = "first"
   expect:
       ts: 'const item1 = "first";'
       py: 'item1 = "first"'
@@ -62,7 +62,7 @@
           - 'fixum item1 = "first"'
 
 - name: long identifier
-  faber: fixum veryLongIdentifierName = 1
+  source: fixum veryLongIdentifierName = 1
   expect:
       ts: 'const veryLongIdentifierName = 1;'
       py: 'veryLongIdentifierName = 1'
@@ -70,7 +70,7 @@
           - 'fixum veryLongIdentifierName = 1'
 
 - name: camelCase identifier
-  faber: fixum myVariableName = 42
+  source: fixum myVariableName = 42
   expect:
       ts: 'const myVariableName = 42;'
       py: 'myVariableName = 42'
@@ -78,7 +78,7 @@
           - 'fixum myVariableName = 42'
 
 - name: all caps identifier
-  faber: fixum MAX_VALUE = 100
+  source: fixum MAX_VALUE = 100
   expect:
       ts: 'const MAX_VALUE = 100;'
       py: 'MAX_VALUE = 100'
@@ -86,7 +86,7 @@
           - 'fixum MAX_VALUE = 100'
 
 - name: single letter identifier
-  faber: fixum x = 1
+  source: fixum x = 1
   expect:
       ts: 'const x = 1;'
       py: 'x = 1'
@@ -94,7 +94,7 @@
           - 'fixum x = 1'
 
 - name: latin-like identifier
-  faber: fixum verbum = "word"
+  source: fixum verbum = "word"
   expect:
       ts: 'const verbum = "word";'
       py: 'verbum = "word"'

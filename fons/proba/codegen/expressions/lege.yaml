@@ -2,7 +2,7 @@
 # Maps Faber lege/lege lineam to target-language stdin reading
 
 - name: lege basic (read all)
-  faber: 'lege'
+  source: 'lege'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -14,7 +14,7 @@
   skip: [py, rs, cpp]
 
 - name: lege assigned to variable
-  faber: 'fixum source = lege'
+  source: 'fixum source = lege'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -26,7 +26,7 @@
   skip: [py, rs, cpp]
 
 - name: lege lineam (read one line)
-  faber: 'lege lineam'
+  source: 'lege lineam'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -40,7 +40,7 @@
   skip: [py, rs, cpp]
 
 - name: lege lineam assigned to variable
-  faber: 'fixum line = lege lineam'
+  source: 'fixum line = lege lineam'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:

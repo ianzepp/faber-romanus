@@ -2,7 +2,7 @@
 # Maps Faber array syntax to target-language equivalents
 
 - name: empty array
-  faber: fixum arr = []
+  source: fixum arr = []
   expect:
       ts: 'const arr = [];'
       py: 'arr = []'
@@ -16,7 +16,7 @@
           - 'fixum arr = []'
 
 - name: array with elements
-  faber: fixum nums = [1, 2, 3]
+  source: fixum nums = [1, 2, 3]
   expect:
       ts: 'const nums = [1, 2, 3];'
       py: 'nums = [1, 2, 3]'
@@ -30,7 +30,7 @@
           - 'fixum nums = [1, 2, 3]'
 
 - name: array with string elements
-  faber: fixum names = ["a", "b", "c"]
+  source: fixum names = ["a", "b", "c"]
   expect:
       ts: 'const names = ["a", "b", "c"];'
       py: 'names = ["a", "b", "c"]'
@@ -44,7 +44,7 @@
           - 'fixum names = ["a", "b", "c"]'
 
 - name: spread in array
-  faber: fixum combined = [sparge a, sparge b]
+  source: fixum combined = [sparge a, sparge b]
   expect:
       ts: 'const combined = [...a, ...b];'
       py: 'combined = [*a, *b]'
@@ -59,7 +59,7 @@
           - '...b'
 
 - name: deeply nested arrays (3 levels)
-  faber: fixum matrix = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+  source: fixum matrix = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
   expect:
       ts: 'const matrix = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]];'
       py: 'matrix = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]'
@@ -73,7 +73,7 @@
           - 'fixum matrix = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]'
 
 - name: single element array
-  faber: fixum single = [42]
+  source: fixum single = [42]
   expect:
       ts: 'const single = [42];'
       py: 'single = [42]'
@@ -87,7 +87,7 @@
           - 'fixum single = [42]'
 
 - name: spread in middle of array
-  faber: fixum arr = [1, sparge middle, 2]
+  source: fixum arr = [1, sparge middle, 2]
   expect:
       ts: 'const arr = [1, ...middle, 2];'
       py: 'arr = [1, *middle, 2]'
@@ -103,7 +103,7 @@
           - '...middle'
 
 - name: spread with function call
-  faber: fixum arr = [sparge getItems(), 99]
+  source: fixum arr = [sparge getItems(), 99]
   expect:
       ts: 'const arr = [...getItems(), 99];'
       py: 'arr = [*getItems(), 99]'
@@ -120,7 +120,7 @@
           - '99'
 
 - name: mixed types in array
-  faber: fixum mixed = [1, "text", verum, nihil]
+  source: fixum mixed = [1, "text", verum, nihil]
   skip: [cpp, rs, zig] # These targets don't support mixed-type arrays
   expect:
       ts: 'const mixed = [1, "text", true, null];'
@@ -129,7 +129,7 @@
           - 'fixum mixed = [1, "text", verum, nihil]'
 
 - name: array with trailing comma
-  faber: fixum arr = [1, 2, 3,]
+  source: fixum arr = [1, 2, 3,]
   expect:
       ts: 'const arr = [1, 2, 3];'
       py: 'arr = [1, 2, 3]'
@@ -143,7 +143,7 @@
           - 'fixum arr = [1, 2, 3]'
 
 - name: nested spread
-  faber: fixum arr = [[sparge inner], outer]
+  source: fixum arr = [[sparge inner], outer]
   expect:
       ts: 'const arr = [[...inner], outer];'
       py: 'arr = [[*inner], outer]'
@@ -160,7 +160,7 @@
           - 'outer'
 
 - name: array of arrays
-  faber: fixum grid = [[1, 2], [3, 4], [5, 6]]
+  source: fixum grid = [[1, 2], [3, 4], [5, 6]]
   expect:
       ts: 'const grid = [[1, 2], [3, 4], [5, 6]];'
       py: 'grid = [[1, 2], [3, 4], [5, 6]]'
@@ -174,7 +174,7 @@
           - 'fixum grid = [[1, 2], [3, 4], [5, 6]]'
 
 - name: large array (many elements)
-  faber: fixum nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  source: fixum nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   expect:
       ts: 'const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];'
       py: 'nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]'

@@ -8,7 +8,7 @@
 
 # scribe is the print statement (console.log in TS, print in Python)
 - name: 'scribe single arg'
-  input: 'scribe x'
+  source: 'scribe x'
   ts: 'console.log(x);'
   py: 'print(x)'
   cpp:
@@ -18,7 +18,7 @@
 
 # Multiple arguments are comma-separated
 - name: 'scribe multiple args'
-  input: 'scribe "a", "b", "c"'
+  source: 'scribe "a", "b", "c"'
   ts: 'console.log("a", "b", "c");'
   py: 'print("a", "b", "c")'
   cpp:
@@ -32,7 +32,7 @@
 
 # Expressions are evaluated before printing
 - name: 'scribe with expression'
-  input: 'scribe x + y'
+  source: 'scribe x + y'
   ts:
       - 'console.log'
       - 'x + y'
@@ -51,7 +51,7 @@
 
 # scribe generates required includes for print and string
 - name: 'cpp generates required includes'
-  input: 'scribe "hello"'
+  source: 'scribe "hello"'
   cpp:
       - '#include <print>'
       - '#include <string>'
@@ -61,7 +61,7 @@
 
 # adfirma adds cassert include
 - name: 'cpp optional includes added when used'
-  input: 'adfirma verum'
+  source: 'adfirma verum'
   cpp:
       - '#include <cassert>'
   rs:
@@ -74,7 +74,7 @@
 
 # incipit generates target-appropriate main function
 - name: 'incipit generates main function'
-  input: |
+  source: |
       incipit {
         scribe "hello"
       }
@@ -99,7 +99,7 @@
 
 # Declarations outside incipit, call inside
 - name: 'declarations outside incipit'
-  input: |
+  source: |
       functio greet() {
         scribe "hi"
       }
@@ -139,7 +139,7 @@
 
 # Function B calls function A, but A is defined later in the file
 - name: 'forward function reference'
-  input: |
+  source: |
       functio b() {
         a()
       }
@@ -186,7 +186,7 @@
 
 # Mutual recursion: isEven calls isOdd and vice versa
 - name: 'mutual recursion'
-  input: |
+  source: |
       functio isEven(numerus n) fit bivalens {
         si n == 0 { redde verum }
         redde isOdd(n - 1)
@@ -228,7 +228,7 @@
 
 # Forward type reference: function uses genus defined later
 - name: 'forward type reference in function param'
-  input: |
+  source: |
       functio process(User u) fit textus {
         redde u.name
       }
@@ -268,7 +268,7 @@
 
 # Keywords can be used as variable names
 - name: 'keyword typus as variable name'
-  input: |
+  source: |
       fixum numerus typus = 42
       scribe typus
   ts:
@@ -291,7 +291,7 @@
       - 'scribe typus'
 
 - name: 'keyword genus as variable name'
-  input: |
+  source: |
       fixum textus genus = "species"
       scribe genus
   ts:

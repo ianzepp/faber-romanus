@@ -47,7 +47,7 @@ Each YAML file contains an array of test cases:
 ```yaml
 # Modern format (preferred)
 - name: descriptive test name
-  faber: |
+  source: |
       fixum x = 1 + 2
   expect:
       ts: 'const x = (1 + 2);'
@@ -60,19 +60,27 @@ Each YAML file contains an array of test cases:
           exact: 'const x = (1 + 2);'
   skip: [cpp] # optional: skip specific targets
 
-# Legacy format (still supported)
+# Legacy format (top-level expectations)
 - name: test name
-  input: 'fixum x = 1'
+  source: 'fixum x = 1'
   ts: 'const x = 1;'
   py: 'x = 1'
 ```
 
 ### Input Fields
 
-| Field   | Description                          |
-| ------- | ------------------------------------ |
-| `faber` | Modern: Faber source code to compile |
-| `input` | Legacy: same as `faber`              |
+| Field    | Description                     |
+| -------- | ------------------------------- |
+| `source` | Faber source code to compile    |
+
+### Compiler Skip Flags
+
+| Field   | Description                             |
+| ------- | --------------------------------------- |
+| `faber` | Set to `false` to skip for faber tests  |
+| `rivus` | Set to `false` to skip for rivus tests  |
+
+Use these when a feature exists in one compiler but not the other.
 
 ### Expectation Formats
 
@@ -104,17 +112,17 @@ Test that invalid code produces expected errors:
 
 ```yaml
 - name: undefined variable
-  faber: 'fixum x = unknownVar'
+  source: 'fixum x = unknownVar'
   errata:
       - 'Semantic errors'
       - 'Undefined variable'
 
 - name: any tokenizer error
-  faber: 'fixum x = "unterminated'
+  source: 'fixum x = "unterminated'
   errata: true # any error is acceptable
 
 - name: exact error message
-  faber: 'bad code'
+  source: 'bad code'
   errata: "Parse errors: P001: Expected ')'"
 ```
 
@@ -141,9 +149,9 @@ Errata tests use strict compilation (tokenizer + parser + semantic errors all ca
 ### Test Execution Flow
 
 ```
-tokenize(faber) -> parse(tokens) -> analyze(program) -> generate(program, target)
-                                                              |
-                                              compare output to expectation
+tokenize(source) -> parse(tokens) -> analyze(program) -> generate(program, target)
+                                                               |
+                                               compare output to expectation
 ```
 
 Lenient mode (normal tests) ignores semantic errors to allow snippet testing with undefined variables. Strict mode (errata tests) fails on any tokenizer, parse, or semantic error.
@@ -171,10 +179,11 @@ Use `COVERAGE_DETAILS=1` for per-suite breakdown with specific test names.
 ## Adding New Tests
 
 1. Find or create the appropriate YAML file based on what you're testing
-2. Add a test case with `faber` source and `expect` block
+2. Add a test case with `source` and `expect` block
 3. Include expectations for all targets you want to verify
 4. Use `skip` for targets that genuinely can't support the feature
-5. Run `bun test -t "your test name"` to verify
+5. Use `faber: false` or `rivus: false` for compiler-specific features
+6. Run `bun test -t "your test name"` to verify
 
 Example workflow:
 

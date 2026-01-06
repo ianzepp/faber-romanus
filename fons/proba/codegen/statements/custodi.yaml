@@ -16,7 +16,7 @@
 
 # Single guard clause with return
 - name: single guard with return
-  faber: |
+  source: |
       custodi {
         si x == nihil { redde }
       }
@@ -43,7 +43,7 @@
 
 # Multiple guard clauses
 - name: multiple guard clauses
-  faber: |
+  source: |
       custodi {
         si user == nihil { redde nihil }
         si user.age < 0 { iace "Invalid age" }
@@ -86,7 +86,7 @@
 
 # Guard with logical operators
 - name: guard with logical and
-  faber: |
+  source: |
       custodi {
         si x < 0 aut x > 100 { redde falsum }
       }
@@ -113,7 +113,7 @@
 
 # Guard with method call
 - name: guard with method call
-  faber: |
+  source: |
       custodi {
         si non isValid(data) { redde }
       }
@@ -144,7 +144,7 @@
 
 # Guard with throw instead of return
 - name: guard with throw
-  faber: |
+  source: |
       custodi {
         si count < 1 { iace "Count must be positive" }
       }
@@ -171,7 +171,7 @@
 
 # Guard with continue
 - name: guard with continue in loop
-  faber: |
+  source: |
       dum verum {
         custodi {
           si skip { perge }
@@ -218,7 +218,7 @@
 
 # Guard with multiple exit statements
 - name: guard with multiple statements
-  faber: |
+  source: |
       custodi {
         si error {
           mone "Error occurred"
@@ -267,7 +267,7 @@
 
 # Empty guard (should generate valid code but is unusual)
 - name: guard with empty body
-  faber: |
+  source: |
       custodi {
         si dangerous { }
       }
@@ -290,7 +290,7 @@
 
 # Three guards in sequence
 - name: three sequential guards
-  faber: |
+  source: |
       custodi {
         si a { redde 1 }
         si b { redde 2 }
@@ -341,7 +341,7 @@
 
 # Guard with type check using non est
 - name: guard with type check
-  faber: |
+  source: |
       custodi {
         si user non est AuthenticatedUser { redde nihil }
       }
@@ -359,7 +359,7 @@
 
 # Guard with rumpe (break) in loop context
 - name: guard with rumpe in loop
-  faber: |
+  source: |
       ex items pro item {
         custodi {
           si item == nihil { rumpe }
@@ -387,7 +387,7 @@
 
 # Deeply nested null checks (3 levels)
 - name: deeply nested null checks
-  faber: |
+  source: |
       custodi {
         si x == nihil { redde }
         si x.data == nihil { redde }
@@ -417,7 +417,7 @@
 
 # Guard with multiple conditions per guard
 - name: guard with multiple conditions
-  faber: |
+  source: |
       custodi {
         si a == nihil aut b == nihil { redde }
       }
@@ -435,7 +435,7 @@
 
 # Guard with function call condition
 - name: guard with function call condition
-  faber: |
+  source: |
       custodi {
         si non isValid(input) { redde nihil }
       }
@@ -453,7 +453,7 @@
 
 # Guard at start of function
 - name: guard at start of function
-  faber: |
+  source: |
       functio validate(textus input) -> textus? {
         custodi {
           si input == nihil { redde nihil }
@@ -491,7 +491,7 @@
 
 # Guard with reddit (early return shorthand)
 - name: guard with reddit
-  faber: |
+  source: |
       custodi {
         si x == nihil reddit nihil
         si y == nihil reddit nihil
@@ -517,7 +517,7 @@
 
 # Guard with ergo (one-liner action)
 - name: guard with ergo
-  faber: |
+  source: |
       custodi {
         si count < 0 ergo iace "Invalid count"
         si name == "" ergo iace "Name required"
@@ -543,7 +543,7 @@
 
 # Guard mixing reddit, ergo, and blocks
 - name: guard with mixed styles
-  faber: |
+  source: |
       custodi {
         si a == nihil reddit nihil
         si b < 0 ergo iace "Invalid b"

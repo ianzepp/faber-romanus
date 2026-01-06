@@ -18,7 +18,7 @@
 
 # Basic interface with one method
 - name: simple pactum with one method
-  faber: 'pactum Greeter { functio greet() -> textus }'
+  source: 'pactum Greeter { functio greet() -> textus }'
   expect:
       ts:
           - 'interface Greeter'
@@ -43,7 +43,7 @@
 # Multiple methods
 # WHY: 'lege' is now a reserved keyword for stdin reading, using 'accipe' (receive) instead
 - name: pactum with multiple methods
-  faber: |
+  source: |
       pactum Readable {
         functio accipe() -> textus
         functio claude() -> vacuum
@@ -76,7 +76,7 @@
 
 # Method with typed parameter
 - name: pactum method with parameter
-  faber: 'pactum Comparable { functio compare(numerus other) -> numerus }'
+  source: 'pactum Comparable { functio compare(numerus other) -> numerus }'
   expect:
       ts:
           - 'interface Comparable'
@@ -101,7 +101,7 @@
 
 # Generic pactum with type parameter
 - name: pactum with type parameter
-  faber: 'pactum Container<T> { functio adde(T item) -> vacuum }'
+  source: 'pactum Container<T> { functio adde(T item) -> vacuum }'
   expect:
       ts:
           - 'interface Container<T>'
@@ -126,7 +126,7 @@
 
 # Async method (@ futura annotation)
 - name: pactum with async method
-  faber: |
+  source: |
       pactum Fetcher {
           @ futura
           functio fetch() -> textus
@@ -156,7 +156,7 @@
 
 # Empty pactum (marker interface)
 - name: empty pactum
-  faber: 'pactum Marker { }'
+  source: 'pactum Marker { }'
   expect:
       ts:
           - 'interface Marker {'
@@ -180,7 +180,7 @@
 
 # Pactum with getter method (simulates property access)
 - name: pactum with getter method
-  faber: |
+  source: |
       pactum Entity {
         functio id() -> textus
       }
@@ -204,7 +204,7 @@
 
 # Pactum with multiple type parameters
 - name: pactum with multiple type parameters
-  faber: 'pactum Mapper<K, V> { functio map(K key) -> V }'
+  source: 'pactum Mapper<K, V> { functio map(K key) -> V }'
   expect:
       ts:
           - 'interface Mapper<K, V>'
@@ -226,7 +226,7 @@
 # Pactum with many methods (CRUD operations)
 # WHY: 'lege' is now a reserved keyword for stdin reading, using 'accipe' (receive) instead
 - name: pactum with many methods
-  faber: |
+  source: |
       pactum Repository {
         functio crea() -> vacuum
         functio accipe() -> textus
@@ -270,7 +270,7 @@
 
 # Pactum with mixed async and sync methods
 - name: pactum with mixed async and sync methods
-  faber: |
+  source: |
       pactum DataService {
         functio sync() -> textus
         @ futura
@@ -301,7 +301,7 @@
 
 # Pactum with generic constraint
 - name: pactum with generic constraint
-  faber: 'pactum Comparable<T> { functio compare(T other) -> numerus }'
+  source: 'pactum Comparable<T> { functio compare(T other) -> numerus }'
   expect:
       ts:
           - 'interface Comparable<T>'
@@ -322,7 +322,7 @@
 
 # Pactum with void and value-returning methods
 - name: pactum with void and value-returning methods
-  faber: |
+  source: |
       pactum Service {
         functio start() -> vacuum
         functio status() -> textus

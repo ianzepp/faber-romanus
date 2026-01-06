@@ -21,7 +21,7 @@
 
 # Basic test suite
 - name: simple probandum
-  faber: |
+  source: |
       probandum "Calculator" {
         proba "adds numbers" { adfirma verum }
       }
@@ -42,7 +42,7 @@
 
 # Multiple tests in suite
 - name: probandum with multiple tests
-  faber: |
+  source: |
       probandum "Math" {
         proba "adds" { adfirma verum }
         proba "subtracts" { adfirma verum }
@@ -70,7 +70,7 @@
 
 # Suite with beforeEach setup
 - name: probandum with praepara
-  faber: |
+  source: |
       probandum "Lexer" {
         praepara { lexer = init() }
         proba "parses" { adfirma verum }
@@ -94,7 +94,7 @@
 
 # Suite with afterEach teardown
 - name: probandum with postpara
-  faber: |
+  source: |
       probandum "Database" {
         postpara { cleanup() }
         proba "inserts" { adfirma verum }
@@ -116,7 +116,7 @@
 
 # Suite with beforeAll and afterAll
 - name: probandum with praepara omnia and postpara omnia
-  faber: |
+  source: |
       probandum "Server" {
         praepara omnia { server = start() }
         postpara omnia { server.stop() }
@@ -143,7 +143,7 @@
 
 # Async setup with praeparabit
 - name: probandum with praeparabit omnia
-  faber: |
+  source: |
       probandum "AsyncServer" {
         praeparabit omnia { db = cede connect() }
         proba "responds" { adfirma verum }
@@ -165,7 +165,7 @@
 
 # Async teardown with postparabit
 - name: probandum with postparabit omnia
-  faber: |
+  source: |
       probandum "AsyncCleanup" {
         proba "runs" { adfirma verum }
         postparabit omnia { cede db.close() }
@@ -191,7 +191,7 @@
 
 # Nested probandum
 - name: nested probandum
-  faber: |
+  source: |
       probandum "Outer" {
         probandum "Inner" {
           proba "test" { adfirma verum }
@@ -221,7 +221,7 @@
 
 # Suite with setup, teardown, and multiple tests
 - name: probandum with mixed content
-  faber: |
+  source: |
       probandum "Complete" {
         praepara { setup() }
         proba "first" { adfirma verum }
@@ -256,7 +256,7 @@
 
 # Deeply nested suites (3 levels)
 - name: deeply nested probandum (3 levels)
-  faber: |
+  source: |
       probandum "Level1" {
         probandum "Level2" {
           probandum "Level3" {
@@ -284,7 +284,7 @@
 
 # Suite with many tests (5+)
 - name: probandum with many tests
-  faber: |
+  source: |
       probandum "ManyTests" {
         proba "test1" { adfirma verum }
         proba "test2" { adfirma verum }
@@ -317,7 +317,7 @@
 
 # Suite with setup initializing shared state
 - name: probandum with setup initializing state
-  faber: |
+  source: |
       probandum "SharedState" {
         praepara { counter = 0 }
         proba "increments" { counter = counter + 1 }
@@ -345,7 +345,7 @@
 
 # Suite with all hook types
 - name: probandum with all hook types
-  faber: |
+  source: |
       probandum "AllHooks" {
         praepara omnia { globalSetup() }
         praepara { eachSetup() }
@@ -383,7 +383,7 @@
 
 # Empty suite
 - name: empty probandum
-  faber: probandum "Empty" { }
+  source: probandum "Empty" { }
   expect:
       ts:
           - 'describe("Empty", () => {'

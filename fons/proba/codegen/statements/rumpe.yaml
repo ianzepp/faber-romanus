@@ -10,7 +10,7 @@
 
 # Simple break statement
 - name: simple break
-  faber: 'rumpe'
+  source: 'rumpe'
   expect:
       ts:
           - 'break;'
@@ -27,7 +27,7 @@
 
 # Break in loop context
 - name: break in while loop
-  faber: |
+  source: |
       dum verum {
         si x > 10 {
           rumpe

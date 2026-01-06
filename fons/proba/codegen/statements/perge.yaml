@@ -10,7 +10,7 @@
 
 # Simple continue statement
 - name: simple continue
-  faber: 'perge'
+  source: 'perge'
   expect:
       ts:
           - 'continue;'
@@ -27,7 +27,7 @@
 
 # Continue in loop context
 - name: continue in while loop
-  faber: |
+  source: |
       dum verum {
         si x < 0 {
           perge

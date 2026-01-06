@@ -20,7 +20,7 @@
 # Basic scoped resource with fit binding (liber = file handle)
 - name: cura with fit binding
   skip: [ts, py, rs, cpp, zig, fab]
-  faber: |
+  source: |
       cura liber aperi("file.txt") fit fd {
         read(fd)
       }
@@ -29,14 +29,14 @@
 # Async resource with fiet (conexio = connection)
 - name: cura with async resource
   skip: [ts, py, rs, cpp, zig, fab]
-  faber: |
+  source: |
       cura conexio connect(url) fiet conn {
         cede conn.query(sql)
       }
 
 # Resource with catch clause
 - name: cura with cape clause
-  faber: |
+  source: |
       cura resource() fit r {
         use(r)
       }
@@ -70,7 +70,7 @@
 
 # Nested resource management
 - name: nested cura statements
-  faber: |
+  source: |
       cura openFile("input.txt") fit inFile {
         cura openFile("output.txt") fit outFile {
           copy(inFile, outFile)
@@ -106,7 +106,7 @@
 
 # Multiple statements in resource body
 - name: cura with multiple body statements
-  faber: |
+  source: |
       cura mutex.lock() fit guard {
         counter += 1
         scribe counter
@@ -141,7 +141,7 @@
 
 # Resource with complex expression
 - name: cura with complex resource expression
-  faber: |
+  source: |
       cura novum Database(config.url) fit db {
         db.init()
       }
@@ -166,7 +166,7 @@
 
 # Empty resource body
 - name: cura with empty body
-  faber: 'cura getResource() fit r { }'
+  source: 'cura getResource() fit r { }'
   expect:
       ts:
           - 'const r = getResource();'
@@ -185,7 +185,7 @@
 
 # Async resource with catch and multiple operations
 - name: async cura with cape and operations
-  faber: |
+  source: |
       cura acquire(lock) fiet handle {
         varia data = cede fetch()
         process(data)
@@ -234,7 +234,7 @@
 
 # Arena allocator - TS/RS strip it (GC), Zig emits ArenaAllocator
 - name: cura arena basic
-  faber: |
+  source: |
       cura arena fit mem {
         varia x = 42
         process(x)
@@ -258,7 +258,7 @@
 
 # Page allocator - TS/RS strip it (GC), Zig emits page_allocator
 - name: cura page basic
-  faber: |
+  source: |
       cura page fit mem {
         fixum buffer = allocate(1024)
       }
@@ -277,7 +277,7 @@
 
 # Nested arena blocks
 - name: nested cura arena
-  faber: |
+  source: |
       cura arena fit outer {
         varia a = 1
         process(a)
@@ -316,7 +316,7 @@
 
 # Arena with pro binding (neutral)
 - name: cura arena with pro
-  faber: |
+  source: |
       cura arena pro alloc {
         process(alloc)
       }

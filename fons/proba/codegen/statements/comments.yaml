@@ -15,7 +15,7 @@
 
 # Single leading comment
 - name: leading line comment
-  faber: |
+  source: |
       # This is a comment
       fixum x = 5
   expect:
@@ -40,7 +40,7 @@
 
 # Multiple leading comments
 - name: multiple leading comments
-  faber: |
+  source: |
       # First comment
       # Second comment
       fixum y = 10
@@ -64,7 +64,7 @@
 
 # Trailing comment on same line
 - name: trailing line comment
-  faber: 'fixum z = 42  # magic number'
+  source: 'fixum z = 42  # magic number'
   expect:
       ts:
           - 'const z = 42; // magic number'
@@ -85,7 +85,7 @@
 
 # Multiple comment lines
 - name: multi-line comment
-  faber: |
+  source: |
       # This is line one
       # This is line two
       fixum a = 1
@@ -118,7 +118,7 @@
 
 # Comment before function
 - name: comment on function
-  faber: |
+  source: |
       # Greets the user
       functio greet() {
           scribe "Hello"
@@ -142,7 +142,7 @@
 
 # Comment before if statement
 - name: comment before if
-  faber: |
+  source: |
       # Check condition
       si verum {
           scribe "yes"

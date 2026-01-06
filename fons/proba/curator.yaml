@@ -8,7 +8,7 @@
 
 # curator maps to std.mem.Allocator in Zig
 - name: 'curator type annotation'
-  input: 'functio process(curator alloc) { }'
+  source: 'functio process(curator alloc) { }'
   zig:
       - 'fn process(alloc: std.mem.Allocator) void'
   rs:
@@ -19,7 +19,7 @@
 
 # curator param with other params
 - name: 'curator with other params'
-  input: 'functio build(curator mem, textus name) { }'
+  source: 'functio build(curator mem, textus name) { }'
   zig:
       - 'fn build(mem: std.mem.Allocator, name: []const u8) void'
   rs:
@@ -30,7 +30,7 @@
 
 # curator with return type
 - name: 'curator with return type'
-  input: 'functio create(curator alloc) -> numerus { redde 42 }'
+  source: 'functio create(curator alloc) -> numerus { redde 42 }'
   zig:
       - 'fn create(alloc: std.mem.Allocator) i64'
       - 'return 42;'
@@ -49,7 +49,7 @@
 # Inside function with curator param, Lista methods receive allocator explicitly
 # WHY: Methods that grow/allocate need current allocator from curatorStack
 - name: 'lista.adde uses curator param'
-  input: |
+  source: |
       functio build(curator memoria) {
         varia items = []
         items.adde(1)
@@ -69,7 +69,7 @@
 # Without curator param, GC languages work but Zig requires cura block
 # WHY: Zig has no implicit global allocator; skip Zig for this test
 - name: 'lista.adde without curator param'
-  input: |
+  source: |
       varia items = []
       items.adde(1)
   rs:
@@ -82,7 +82,7 @@
 
 # praepone - Lista methods receive allocator explicitly
 - name: 'lista.praepone uses curator param'
-  input: |
+  source: |
       functio build(curator mem) {
         varia items = []
         items.praepone(1)
@@ -109,7 +109,7 @@
 
 # tabula.pone without type annotation - falls through to regular method call
 - name: 'tabula.pone uses curator param'
-  input: |
+  source: |
       functio build(curator a) {
         varia m = {}
         m.pone("key", 42)
@@ -131,7 +131,7 @@
 # WHY: Without type annotation, {} is inferred as objectum, not tabula
 # WHY: Skip Zig - without curator, allocating ops fail
 - name: 'tabula.pone without type annotation'
-  input: |
+  source: |
       varia m = {}
       m.pone("key", 42)
   rs:
@@ -152,7 +152,7 @@
 # copia.adde uses curator - falls back to lista.adde due to type inference
 # WHY: Lista methods receive allocator explicitly
 - name: 'copia.adde uses curator param'
-  input: |
+  source: |
       functio build(curator allocator) {
         varia s = {}
         s.adde("item")
@@ -171,7 +171,7 @@
 
 # copia.adde without curator param - skip Zig (requires cura block)
 - name: 'copia.adde without curator param'
-  input: |
+  source: |
       varia s = {}
       s.adde("item")
   rs:
@@ -188,7 +188,7 @@
 
 # Each function uses its own curator param - methods receive that curator
 - name: 'different curator names in different functions'
-  input: |
+  source: |
       functio first(curator a) {
         varia x = []
         x.adde(1)
@@ -220,7 +220,7 @@
 
 # Curator should be tracked correctly in nested blocks - methods receive curator
 - name: 'curator in nested if block'
-  input: |
+  source: |
       functio process(curator mem) {
         varia items = []
         si verum {
@@ -243,7 +243,7 @@
 
 # Curator in loop body - methods receive curator
 - name: 'curator in loop body'
-  input: |
+  source: |
       functio process(curator mem) {
         varia items = []
         dum verum {
@@ -273,7 +273,7 @@
 
 # Array literal - methods receive curator
 - name: 'array literal with curator'
-  input: |
+  source: |
       functio build(curator m) {
         varia nums = [1, 2, 3]
         nums.adde(4)
@@ -292,7 +292,7 @@
 
 # Array literal without curator param - skip Zig (requires cura block)
 - name: 'array literal without curator param'
-  input: |
+  source: |
       varia nums = [1, 2, 3]
       nums.adde(4)
   rs:
@@ -309,7 +309,7 @@
 
 # Function without curator param - skip Zig (requires cura block)
 - name: 'function without curator param'
-  input: |
+  source: |
       functio noAlloc() {
         varia items = []
         items.adde(1)
@@ -326,7 +326,7 @@
 
 # Curator isolation between functions - skip Zig (second function has no allocator)
 - name: 'curator does not leak between functions'
-  input: |
+  source: |
       functio withCurator(curator custom) {
         varia a = []
         a.adde(1)

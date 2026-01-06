@@ -18,7 +18,7 @@
 
 # Basic enum without explicit values
 - name: simple ordo without values
-  faber: 'ordo Color { rubrum, viridis, caeruleum }'
+  source: 'ordo Color { rubrum, viridis, caeruleum }'
   expect:
       ts:
           - 'enum Color'
@@ -51,7 +51,7 @@
 
 # Enum with explicit numeric values
 - name: ordo with numeric values
-  faber: 'ordo Status { pendens = 0, actum = 1, finitum = 2 }'
+  source: 'ordo Status { pendens = 0, actum = 1, finitum = 2 }'
   expect:
       ts:
           - 'enum Status'
@@ -87,7 +87,7 @@
 
 # Enum with string values (TypeScript/Python/Rust)
 - name: ordo with string values
-  faber: 'ordo Direction { north = "N", south = "S", east = "E", west = "W" }'
+  source: 'ordo Direction { north = "N", south = "S", east = "E", west = "W" }'
   expect:
       ts:
           - 'enum Direction'
@@ -118,7 +118,7 @@
 
 # Some members with values, some without
 - name: ordo with mixed values
-  faber: 'ordo Priority { low = 1, medium, high = 10 }'
+  source: 'ordo Priority { low = 1, medium, high = 10 }'
   expect:
       ts:
           - 'enum Priority'
@@ -154,7 +154,7 @@
 
 # Ordo with single member
 - name: ordo with single member
-  faber: 'ordo Singleton { OnlyOne }'
+  source: 'ordo Singleton { OnlyOne }'
   expect:
       ts:
           - 'enum Singleton'
@@ -168,7 +168,7 @@
 
 # Ordo with many members (10+)
 - name: ordo with many members
-  faber: 'ordo Month { Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec }'
+  source: 'ordo Month { Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec }'
   expect:
       ts:
           - 'enum Month'
@@ -183,7 +183,7 @@
 
 # Ordo with bitflag values
 - name: ordo with bitflag values
-  faber: 'ordo Flags { Read = 1, Write = 2, Execute = 4 }'
+  source: 'ordo Flags { Read = 1, Write = 2, Execute = 4 }'
   expect:
       ts:
           - 'enum Flags'
@@ -203,7 +203,7 @@
 
 # Ordo with negative values
 - name: ordo with negative values
-  faber: 'ordo Offset { Before = -1, At = 0, After = 1 }'
+  source: 'ordo Offset { Before = -1, At = 0, After = 1 }'
   expect:
       ts:
           - 'enum Offset'
@@ -223,7 +223,7 @@
 
 # Ordo with large values
 - name: ordo with large values
-  faber: 'ordo HttpStatus { OK = 200, NotFound = 404, ServerError = 500 }'
+  source: 'ordo HttpStatus { OK = 200, NotFound = 404, ServerError = 500 }'
   expect:
       ts:
           - 'enum HttpStatus'
@@ -243,7 +243,7 @@
 
 # Ordo with sequential implicit values
 - name: ordo with sequential implicit values
-  faber: 'ordo Priority { Low, Medium, High, Critical }'
+  source: 'ordo Priority { Low, Medium, High, Critical }'
   expect:
       ts:
           - 'enum Priority'

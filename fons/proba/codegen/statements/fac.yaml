@@ -20,7 +20,7 @@
 
 # Simple scope block
 - name: simple fac block
-  faber: |
+  source: |
       fac {
         fixum x = 42
       }
@@ -48,7 +48,7 @@
 
 # Do block with statement
 - name: fac block with statement
-  faber: 'fac { scribe "test" }'
+  source: 'fac { scribe "test" }'
   expect:
       ts:
           - '{'
@@ -79,7 +79,7 @@
 
 # Do-catch block
 - name: fac with cape clause
-  faber: |
+  source: |
       fac {
         riskyCall()
       } cape err {
@@ -119,7 +119,7 @@
 
 # Do-catch with multiple statements
 - name: fac with multiple statements and cape
-  faber: |
+  source: |
       fac {
         fixum x = compute()
         redde x
@@ -167,7 +167,7 @@
 
 # Simple do-while
 - name: simple do-while loop
-  faber: |
+  source: |
       fac {
         process()
       } dum hasMore()
@@ -204,7 +204,7 @@
 
 # Do-while with comparison
 - name: do-while with comparison condition
-  faber: 'fac { x = x + 1 } dum x < 10'
+  source: 'fac { x = x + 1 } dum x < 10'
   expect:
       ts:
           - 'do {'
@@ -237,7 +237,7 @@
 
 # Do-while with cape (error handling)
 - name: do-while with error handling
-  faber: |
+  source: |
       fac {
         tryOperation()
       } cape e {

@@ -12,7 +12,7 @@
 
 # Simple type alias for string
 - name: type alias for string
-  faber: 'typus ID = textus'
+  source: 'typus ID = textus'
   expect:
       ts:
           - 'type ID = string;'
@@ -29,7 +29,7 @@
 
 # Type alias for number
 - name: type alias for number
-  faber: 'typus Count = numerus'
+  source: 'typus Count = numerus'
   expect:
       ts:
           - 'type Count = number;'
@@ -46,7 +46,7 @@
 
 # Type alias for boolean
 - name: type alias for boolean
-  faber: 'typus Flag = bivalens'
+  source: 'typus Flag = bivalens'
   expect:
       ts:
           - 'type Flag = boolean;'
@@ -67,7 +67,7 @@
 
 # Type alias for array/list
 - name: type alias for array
-  faber: 'typus Items = lista<textus>'
+  source: 'typus Items = lista<textus>'
   expect:
       ts:
           - 'type Items = Array<string>;'
@@ -84,7 +84,7 @@
 
 # Type alias for map/dictionary (StringHashMap for string keys)
 - name: type alias for map
-  faber: 'typus Cache = tabula<textus, numerus>'
+  source: 'typus Cache = tabula<textus, numerus>'
   expect:
       ts:
           - 'type Cache = Map<string, number>;'
@@ -105,7 +105,7 @@
 
 # Type alias using typeof (not yet implemented for Python/Rust/C++/Zig, falls back to ignotum/anytype)
 - name: type alias with typeof
-  faber: 'typus ConfigType = typus config'
+  source: 'typus ConfigType = typus config'
   expect:
       ts:
           - 'type ConfigType = typeof config;'
@@ -128,7 +128,7 @@
 # TODO: Parser doesn't yet support union types in type expressions
 - name: type alias for union
   skip: [ts, py, rs, cpp, zig] # Parser limitation
-  faber: 'typus StringOrNumber = textus | numerus'
+  source: 'typus StringOrNumber = textus | numerus'
   expect:
       ts:
           - 'type StringOrNumber = string | number;'
@@ -145,7 +145,7 @@
 # TODO: Parser doesn't yet support function types in type expressions
 - name: type alias for function type
   skip: [ts, py, rs, cpp, zig] # Parser limitation
-  faber: 'typus Handler = (textus, numerus) -> vacuum'
+  source: 'typus Handler = (textus, numerus) -> vacuum'
   expect:
       ts:
           - 'type Handler = (arg0: string, arg1: number) => void;'
@@ -160,7 +160,7 @@
 
 # Type alias for nullable type
 - name: type alias for nullable
-  faber: 'typus OptionalString = textus?'
+  source: 'typus OptionalString = textus?'
   expect:
       ts:
           - 'type OptionalString = string | null;'
@@ -175,7 +175,7 @@
 
 # Type alias for list/array (additional test case)
 - name: type alias for string list
-  faber: 'typus StringList = lista<textus>'
+  source: 'typus StringList = lista<textus>'
   expect:
       ts:
           - 'type StringList = Array<string>;'
@@ -192,7 +192,7 @@
 # TODO: Parser doesn't yet support generic parameters on type alias definitions
 - name: type alias with multiple generics
   skip: [ts, py, rs, cpp, zig] # Parser limitation
-  faber: 'typus Pair<A, B> = (A, B)'
+  source: 'typus Pair<A, B> = (A, B)'
   expect:
       ts:
           - 'type Pair<A, B> = [A, B];'
@@ -209,7 +209,7 @@
 # TODO: Parser doesn't yet support inline object shape types
 - name: type alias for object shape
   skip: [ts, py, rs, cpp, zig] # Parser limitation
-  faber: 'typus Config = { host: textus, port: numerus }'
+  source: 'typus Config = { host: textus, port: numerus }'
   expect:
       ts:
           - 'type Config = { host: string; port: number };'

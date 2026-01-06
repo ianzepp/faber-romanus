@@ -19,7 +19,7 @@
 
 # Basic try/catch
 - name: tempta with cape
-  faber: |
+  source: |
       tempta {
         riskyOperation()
       }
@@ -58,7 +58,7 @@
 
 # Multiple statements in try block
 - name: tempta with multiple statements
-  faber: |
+  source: |
       tempta {
         varia x = compute()
         process(x)
@@ -113,7 +113,7 @@
 
 # Try with finally only
 - name: tempta with demum only
-  faber: |
+  source: |
       tempta {
         openResource()
       }
@@ -155,7 +155,7 @@
 
 # Full try/catch/finally
 - name: tempta with cape and demum
-  faber: |
+  source: |
       tempta {
         riskyCall()
       }
@@ -203,7 +203,7 @@
 
 # Multiple statements in all blocks
 - name: tempta with multiple statements in all blocks
-  faber: |
+  source: |
       tempta {
         varia fd = open()
         write(fd, data)
@@ -266,7 +266,7 @@
 
 # Empty try block
 - name: tempta with empty try block
-  faber: |
+  source: |
       tempta { }
       cape e { handle(e) }
   expect:
@@ -295,7 +295,7 @@
 
 # Empty catch block
 - name: tempta with empty catch block
-  faber: |
+  source: |
       tempta {
         mayFail()
       }
@@ -328,7 +328,7 @@
 
 # Nested try blocks
 - name: nested tempta blocks
-  faber: |
+  source: |
       tempta {
         tempta {
           innerRisky()
@@ -386,7 +386,7 @@
 
 # Rethrow caught error
 - name: tempta with rethrow
-  faber: |
+  source: |
       tempta {
         risky()
       }
@@ -429,7 +429,7 @@
 
 # Return in finally block
 - name: tempta with return in finally
-  faber: |
+  source: |
       tempta {
         redde compute()
       }
@@ -467,7 +467,7 @@
 
 # Tempta inside loop with break
 - name: tempta in loop with break
-  faber: |
+  source: |
       dum verum {
         tempta {
           result = tryConnect()
@@ -519,7 +519,7 @@
 
 # Multiple statements in all three blocks
 - name: tempta with multiple statements in each block
-  faber: |
+  source: |
       tempta {
         varia conn = openConnection()
         varia data = fetchData(conn)
@@ -597,7 +597,7 @@
 
 # Deeply nested tempta blocks
 - name: deeply nested tempta blocks
-  faber: |
+  source: |
       tempta {
         tempta {
           dangerousOp()
@@ -666,7 +666,7 @@
 
 # Condition inside catch block
 - name: tempta with condition in catch
-  faber: |
+  source: |
       tempta {
         riskyOperation()
       }

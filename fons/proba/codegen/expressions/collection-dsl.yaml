@@ -5,7 +5,7 @@
 # Note: Collection DSL is only implemented in TypeScript target currently
 
 - name: prima as expression
-  faber: fixum top = ex items prima 5
+  source: fixum top = ex items prima 5
   expect:
       ts: 'const top = items.slice(0, 5);'
       fab:
@@ -13,7 +13,7 @@
   skip: [py, rs, cpp, zig]
 
 - name: ultima as expression
-  faber: fixum last = ex items ultima 3
+  source: fixum last = ex items ultima 3
   expect:
       ts: 'const last = items.slice(-3);'
       fab:
@@ -21,7 +21,7 @@
   skip: [py, rs, cpp, zig]
 
 - name: summa reduction
-  faber: fixum total = ex nums summa
+  source: fixum total = ex nums summa
   expect:
       ts: 'const total = nums.reduce((a, b) => a + b, 0);'
       fab:
@@ -29,7 +29,7 @@
   skip: [py, rs, cpp, zig]
 
 - name: chained transforms prima then ultima
-  faber: fixum result = ex items prima 10, ultima 3
+  source: fixum result = ex items prima 10, ultima 3
   expect:
       ts: 'const result = items.slice(0, 10).slice(-3);'
       fab:
@@ -38,7 +38,7 @@
   skip: [py, rs, cpp, zig]
 
 - name: chained transforms ultima then prima
-  faber: fixum result = ex items ultima 5, prima 2
+  source: fixum result = ex items ultima 5, prima 2
   expect:
       ts: 'const result = items.slice(-5).slice(0, 2);'
       fab:

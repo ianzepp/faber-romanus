@@ -8,7 +8,7 @@
 
 # est with primitive uses typeof in TS, isinstance in Python
 - name: 'est with primitive'
-  input: 'fixum check = x est textus'
+  source: 'fixum check = x est textus'
   ts:
       - 'typeof x === "string"'
   py:
@@ -20,7 +20,7 @@
 
 # non est negates the type check
 - name: 'non est with primitive'
-  input: 'fixum check = x non est numerus'
+  source: 'fixum check = x non est numerus'
   ts:
       - 'typeof x !== "number"'
   py:
@@ -32,7 +32,7 @@
 
 # est with user type uses instanceof in both targets
 - name: 'est with user type'
-  input: 'fixum check = obj est Persona'
+  source: 'fixum check = obj est Persona'
   ts:
       - 'instanceof Persona'
   py:

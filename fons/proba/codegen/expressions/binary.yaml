@@ -2,7 +2,7 @@
 # Maps Faber binary operators to target-language equivalents
 
 - name: addition
-  faber: 1 + 2
+  source: 1 + 2
   expect:
       ts: '(1 + 2);'
       py: '(1 + 2)'
@@ -16,7 +16,7 @@
           - '1 + 2'
 
 - name: subtraction
-  faber: 5 - 3
+  source: 5 - 3
   expect:
       ts: '(5 - 3);'
       py: '(5 - 3)'
@@ -30,7 +30,7 @@
           - '5 - 3'
 
 - name: multiplication
-  faber: 4 * 2
+  source: 4 * 2
   expect:
       ts: '(4 * 2);'
       py: '(4 * 2)'
@@ -44,7 +44,7 @@
           - '4 * 2'
 
 - name: division
-  faber: 10 / 2
+  source: 10 / 2
   expect:
       ts: '(10 / 2);'
       py: '(10 / 2)'
@@ -58,7 +58,7 @@
           - '10 / 2'
 
 - name: equality comparison
-  faber: a == b
+  source: a == b
   expect:
       ts: '(a == b);'
       py: '(a == b)'
@@ -70,7 +70,7 @@
           - 'a == b'
 
 - name: logical and with et
-  faber: a et b
+  source: a et b
   expect:
       ts: '(a && b);'
       py: '(a and b)'
@@ -84,7 +84,7 @@
           - 'a && b'
 
 - name: operator precedence - multiplication before addition
-  faber: 1 + 2 * 3
+  source: 1 + 2 * 3
   expect:
       ts: '(1 + (2 * 3));'
       py: '(1 + (2 * 3))'
@@ -98,7 +98,7 @@
           - '1 + 2 * 3'
 
 - name: operator precedence with parentheses
-  faber: (1 + 2) * 3
+  source: (1 + 2) * 3
   expect:
       ts: '((1 + 2) * 3);'
       py: '((1 + 2) * 3)'
@@ -112,7 +112,7 @@
           - '(1 + 2) * 3'
 
 - name: logical aut (OR) operator
-  faber: a aut b
+  source: a aut b
   expect:
       ts: '(a || b);'
       py: '(a or b)'
@@ -126,7 +126,7 @@
           - 'a || b'
 
 - name: inequality comparison
-  faber: a != b
+  source: a != b
   expect:
       ts: '(a != b);'
       py: '(a != b)'
@@ -140,7 +140,7 @@
           - 'a != b'
 
 - name: less than or equal
-  faber: a <= b
+  source: a <= b
   expect:
       ts: '(a <= b);'
       py: '(a <= b)'
@@ -154,7 +154,7 @@
           - 'a <= b'
 
 - name: greater than or equal
-  faber: a >= b
+  source: a >= b
   expect:
       ts: '(a >= b);'
       py: '(a >= b)'
@@ -168,7 +168,7 @@
           - 'a >= b'
 
 - name: mixed logical operators (precedence)
-  faber: a et b aut c
+  source: a et b aut c
   expect:
       ts: '((a && b) || c);'
       py: '((a and b) or c)'
@@ -182,7 +182,7 @@
           - 'a && b || c'
 
 - name: chained comparisons pattern
-  faber: a < b et b < c
+  source: a < b et b < c
   expect:
       ts: '((a < b) && (b < c));'
       py: '((a < b) and (b < c))'
@@ -196,7 +196,7 @@
           - 'a < b && b < c'
 
 - name: deeply nested binary expressions
-  faber: ((a + b) * (c - d)) / ((e + f) - (g * h))
+  source: ((a + b) * (c - d)) / ((e + f) - (g * h))
   expect:
       ts: '(((a + b) * (c - d)) / ((e + f) - (g * h)));'
       py: '(((a + b) * (c - d)) / ((e + f) - (g * h)))'
@@ -213,7 +213,7 @@
 #      Users should use scriptum() for formatted strings instead.
 #      See proba/codegen/expressions/scriptum.yaml for Zig string formatting tests.
 - name: string concatenation
-  faber: '"hello" + " " + "world"'
+  source: '"hello" + " " + "world"'
   skip: [zig]
   expect:
       ts: '(("hello" + " ") + "world");'
@@ -226,7 +226,7 @@
           - '"hello" + " " + "world"'
 
 - name: modulo operator
-  faber: 10 % 3
+  source: 10 % 3
   expect:
       ts: '(10 % 3);'
       py: '(10 % 3)'
@@ -240,7 +240,7 @@
           - '10 % 3'
 
 - name: nullish coalescing (vel)
-  faber: value vel defaultValue
+  source: value vel defaultValue
   expect:
       ts: '(value ?? defaultValue);'
       py: '(value if value is not None else defaultValue)'
@@ -254,7 +254,7 @@
           - 'value ?? defaultValue'
 
 - name: range containment with intra (exclusive end)
-  faber: x intra 0..100
+  source: x intra 0..100
   expect:
       ts: '(x >= 0 && x < 100);'
       py: '(x >= 0 and x < 100)'
@@ -268,7 +268,7 @@
           - 'x intra 0..100'
 
 - name: range containment with intra (inclusive end with usque)
-  faber: age intra 18 usque 65
+  source: age intra 18 usque 65
   expect:
       ts: '(age >= 18 && age <= 65);'
       py: '(age >= 18 and age <= 65)'
@@ -282,7 +282,7 @@
           - 'age intra 18 usque 65'
 
 - name: range containment with intra (explicit exclusive with ante)
-  faber: x intra 0 ante 10
+  source: x intra 0 ante 10
   expect:
       ts: '(x >= 0 && x < 10);'
       py: '(x >= 0 and x < 10)'
@@ -296,7 +296,7 @@
           - 'x intra 0 ante 10'
 
 - name: set membership with inter (numeric array)
-  faber: age inter [18, 21, 65]
+  source: age inter [18, 21, 65]
   expect:
       ts: '[18, 21, 65].includes(age);'
       py: 'age in [18, 21, 65]'
@@ -310,7 +310,7 @@
           - 'age inter [18, 21, 65]'
 
 - name: set membership with inter (string array)
-  faber: status inter ["pending", "active", "paused"]
+  source: status inter ["pending", "active", "paused"]
   expect:
       ts: '["pending", "active", "paused"].includes(status);'
       py: 'status in ["pending", "active", "paused"]'
@@ -324,7 +324,7 @@
           - 'status inter ["pending", "active", "paused"]'
 
 - name: character range containment with intra (exclusive)
-  faber: c intra "a".."z"
+  source: c intra "a".."z"
   expect:
       ts: '(c >= "a" && c < "z");'
       py: '(c >= "a" and c < "z")'
@@ -338,7 +338,7 @@
           - 'c intra "a".."z"'
 
 - name: character range containment with intra (inclusive)
-  faber: c intra "a" usque "z"
+  source: c intra "a" usque "z"
   expect:
       ts: '(c >= "a" && c <= "z");'
       py: '(c >= "a" and c <= "z")'
@@ -352,7 +352,7 @@
           - 'c intra "a" usque "z"'
 
 - name: character range containment for hex digits
-  faber: c intra "0".."9" aut c intra "a".."f" aut c intra "A".."F"
+  source: c intra "0".."9" aut c intra "a".."f" aut c intra "A".."F"
   expect:
       ts: '(((c >= "0" && c < "9") || (c >= "a" && c < "f")) || (c >= "A" && c < "F"));'
       py: '(((c >= "0" and c < "9") or (c >= "a" and c < "f")) or (c >= "A" and c < "F"))'

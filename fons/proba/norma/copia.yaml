@@ -11,7 +11,7 @@
 
 # adde inserts an element into the set
 - name: 'adde -> insert'
-  input: |
+  source: |
       varia copia<numerus> set = {}
       set.adde(5)
   wrap: 'cura arena fit alloc { $ }'
@@ -30,7 +30,7 @@
 
 # habet checks if element exists in set
 - name: 'habet -> contains'
-  input: |
+  source: |
       fixum copia<numerus> set = {}
       set.habet(5)
   cpp:
@@ -48,7 +48,7 @@
 
 # dele removes an element from the set
 - name: 'dele -> erase'
-  input: |
+  source: |
       varia copia<numerus> set = {}
       set.dele(5)
   cpp:
@@ -66,7 +66,7 @@
 
 # longitudo returns the number of elements
 - name: 'longitudo -> size'
-  input: |
+  source: |
       fixum copia<numerus> set = {}
       set.longitudo()
   cpp:
@@ -84,7 +84,7 @@
 
 # vacua checks if the set is empty
 - name: 'vacua -> empty'
-  input: |
+  source: |
       fixum copia<numerus> set = {}
       set.vacua()
   cpp:
@@ -102,7 +102,7 @@
 
 # purga clears the entire set
 - name: 'purga -> clear'
-  input: |
+  source: |
       varia copia<numerus> set = {}
       set.purga()
   cpp:
@@ -124,7 +124,7 @@
 
 # unio returns the union of two sets
 - name: 'unio -> set union'
-  input: |
+  source: |
       fixum copia<numerus> setA = {}
       fixum copia<numerus> setB = {}
       setA.unio(setB)
@@ -143,7 +143,7 @@
 
 # intersectio returns the intersection of two sets
 - name: 'intersectio -> set intersection'
-  input: |
+  source: |
       fixum copia<numerus> setA = {}
       fixum copia<numerus> setB = {}
       setA.intersectio(setB)
@@ -162,7 +162,7 @@
 
 # differentia returns elements in A but not in B
 - name: 'differentia -> set difference'
-  input: |
+  source: |
       fixum copia<numerus> setA = {}
       fixum copia<numerus> setB = {}
       setA.differentia(setB)
@@ -181,7 +181,7 @@
 
 # symmetrica returns elements in either set but not both
 - name: 'symmetrica -> symmetric difference'
-  input: |
+  source: |
       fixum copia<numerus> setA = {}
       fixum copia<numerus> setB = {}
       setA.symmetrica(setB)
@@ -204,7 +204,7 @@
 
 # subcopia checks if A is a subset of B
 - name: 'subcopia -> all_of with contains'
-  input: |
+  source: |
       fixum copia<numerus> setA = {}
       fixum copia<numerus> setB = {}
       setA.subcopia(setB)
@@ -223,7 +223,7 @@
 
 # supercopia checks if A is a superset of B
 - name: 'supercopia -> all_of reversed'
-  input: |
+  source: |
       fixum copia<numerus> setA = {}
       fixum copia<numerus> setB = {}
       setA.supercopia(setB)
@@ -245,7 +245,7 @@
 
 # inLista converts the set to a vector
 - name: 'inLista -> vector from set'
-  input: |
+  source: |
       fixum copia<numerus> set = {}
       set.inLista()
   cpp:
@@ -265,7 +265,7 @@
 
 # perambula iterates over all elements
 - name: 'perambula -> ranges::for_each'
-  input: |
+  source: |
       fixum copia<numerus> set = {}
       set.perambula(pro x { scribe x })
   cpp:

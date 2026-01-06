@@ -4,7 +4,7 @@
 # Faber uses § (section sign) as its placeholder syntax.
 
 - name: scriptum with single argument
-  faber: 'scriptum("Hello, §", name)'
+  source: 'scriptum("Hello, §", name)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -21,7 +21,7 @@
           - 'scriptum("Hello, §", name)'
 
 - name: scriptum with multiple arguments
-  faber: 'scriptum("§ + § = §", a, b, c)'
+  source: 'scriptum("§ + § = §", a, b, c)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -38,7 +38,7 @@
           - 'scriptum("§ + § = §", a, b, c)'
 
 - name: scriptum with no arguments (constant string)
-  faber: 'scriptum("Hello, World!")'
+  source: 'scriptum("Hello, World!")'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -55,7 +55,7 @@
           - 'scriptum("Hello, World!")'
 
 - name: scriptum in variable assignment
-  faber: 'fixum greeting = scriptum("Hello, §", name)'
+  source: 'fixum greeting = scriptum("Hello, §", name)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -72,7 +72,7 @@
           - 'fixum greeting = scriptum("Hello, §", name)'
 
 - name: scriptum with expression argument
-  faber: 'scriptum("Result: §", a + b)'
+  source: 'scriptum("Result: §", a + b)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:
@@ -89,7 +89,7 @@
           - 'scriptum("Result: §", a + b)'
 
 - name: scriptum with punctuation after placeholder
-  faber: 'scriptum("Hello, §!", name)'
+  source: 'scriptum("Hello, §!", name)'
   wrap: 'cura arena fit alloc { $ }'
   expect:
       ts:

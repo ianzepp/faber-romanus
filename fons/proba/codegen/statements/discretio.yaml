@@ -19,7 +19,7 @@
 
 # Unit variants only (no payload)
 - name: discretio with unit variants
-  faber: 'discretio Status { Active, Inactive, Pending }'
+  source: 'discretio Status { Active, Inactive, Pending }'
   expect:
       ts:
           - 'type Status ='
@@ -60,7 +60,7 @@
 
 # Mixed unit and payload variants
 - name: discretio with payload variants
-  faber: |
+  source: |
       discretio Event {
         Click { numerus x, numerus y }
         Keypress { textus key }
@@ -112,7 +112,7 @@
 
 # Generic tagged union (Option<T> pattern)
 - name: discretio with type parameter
-  faber: |
+  source: |
       discretio Option<T> {
         Some { T value }
         None
@@ -151,7 +151,7 @@
 
 # Variant with single field
 - name: discretio with single field variant
-  faber: 'discretio Result { Success { textus message }, Failure { textus error } }'
+  source: 'discretio Result { Success { textus message }, Failure { textus error } }'
   expect:
       ts:
           - 'type Result ='
@@ -186,7 +186,7 @@
 
 # Multiple type parameters
 - name: discretio with multiple type params
-  faber: 'discretio Either<L, R> { Left { L value }, Right { R value } }'
+  source: 'discretio Either<L, R> { Left { L value }, Right { R value } }'
   expect:
       ts:
           - 'type Either<L, R> ='
@@ -205,7 +205,7 @@
 
 # Variant with many fields (4+)
 - name: discretio with many fields per variant
-  faber: |
+  source: |
       discretio Shape {
         Rectangle { numerus x, numerus y, numerus width, numerus height }
         Circle { numerus cx, numerus cy, numerus radius }
@@ -232,7 +232,7 @@
 
 # Single variant only
 - name: discretio with single variant
-  faber: 'discretio Wrapper { Value { numerus x } }'
+  source: 'discretio Wrapper { Value { numerus x } }'
   expect:
       ts:
           - 'type Wrapper ='
@@ -247,7 +247,7 @@
 
 # Mixed unit and payload variants
 - name: discretio with mixed unit and payload variants
-  faber: |
+  source: |
       discretio Message {
         Text { textus content }
         Image { textus url, numerus width, numerus height }
@@ -284,7 +284,7 @@
 
 # Many variants (6+)
 - name: discretio with many variants
-  faber: |
+  source: |
       discretio Day {
         Monday
         Tuesday

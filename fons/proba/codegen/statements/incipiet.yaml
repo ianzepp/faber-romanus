@@ -2,7 +2,7 @@
 # Generates async main() or equivalent for each target
 
 - name: basic incipiet with body
-  faber: |
+  source: |
       incipiet {
         scribe "Hello"
       }
@@ -30,7 +30,7 @@
   skip: [zig]
 
 - name: incipiet ergo cura arena
-  faber: |
+  source: |
       incipiet ergo cura arena {
         scribe "Hello"
       }
@@ -58,7 +58,7 @@
   skip: [zig]
 
 - name: incipiet with await
-  faber: |
+  source: |
       incipiet {
         fixum data = cede fetch()
         scribe data

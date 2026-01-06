@@ -2,7 +2,7 @@
 # Maps Faber regex literals to target-language equivalents
 
 - name: simple regex pattern
-  faber: 'fixum pattern = sed "\d+"'
+  source: 'fixum pattern = sed "\d+"'
   expect:
       ts: 'const pattern = /\d+/;'
       py:
@@ -19,7 +19,7 @@
           - 'fixum pattern = sed "\d+"'
 
 - name: regex with case insensitive flag
-  faber: fixum word = sed "hello" i
+  source: fixum word = sed "hello" i
   expect:
       ts: 'const word = /hello/i;'
       py:
@@ -34,7 +34,7 @@
           - 'fixum word = sed "hello" i'
 
 - name: regex with multiple flags
-  faber: fixum lines = sed "^start" im
+  source: fixum lines = sed "^start" im
   expect:
       ts: 'const lines = /^start/im;'
       py:
@@ -49,7 +49,7 @@
           - 'fixum lines = sed "^start" im'
 
 - name: regex with forward slashes
-  faber: fixum paths = sed "/usr/local/.*"
+  source: fixum paths = sed "/usr/local/.*"
   expect:
       ts: 'const paths = /\/usr\/local\/.*/;'
       py:
@@ -64,7 +64,7 @@
           - 'fixum paths = sed "/usr/local/.*"'
 
 - name: email pattern
-  faber: fixum email = sed "[^@]+@[^@]+"
+  source: fixum email = sed "[^@]+@[^@]+"
   expect:
       ts: 'const email = /[^@]+@[^@]+/;'
       py:

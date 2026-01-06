@@ -1,7 +1,7 @@
 # Morphologia - receiver-bound semantic dispatch
 
 - name: morphologia lista filtra dispatch
-  faber: |
+  source: |
     genus lista {
     @ radix imperativus, perfectum
     functio filtra(ignotum pred) { }
@@ -19,7 +19,7 @@
               - "items.filtrata("
 
 - name: morphologia ignores non-enabled receiver
-  faber: |
+  source: |
     genus Calculator {
     functio adde(numerus x) { }
     }
@@ -33,7 +33,7 @@
               - ".push("
 
 - name: morphologia rejects undeclared form
-  faber: |
+  source: |
     genus lista {
     @ radix imperativus
     functio filtra(ignotum pred) { }
@@ -50,7 +50,7 @@
   rivus: false
 
 - name: morphologia rejects unknown radix form
-  faber: |
+  source: |
     @ radix imperativus, bogus
     functio filtra() { }
   errata:

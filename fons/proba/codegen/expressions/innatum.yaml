@@ -6,7 +6,7 @@
 # Note: C++ uses std::map{} and std::vector{}
 
 - name: empty tabula with types
-  faber: varia x = {} innatum tabula<textus, numerus>
+  source: varia x = {} innatum tabula<textus, numerus>
   expect:
       ts: 'let x = new Map<string, number>();'
       py: 'x = {}'
@@ -20,7 +20,7 @@
           - 'varia x = {} innatum tabula<textus, numerus>'
 
 - name: empty lista with type
-  faber: varia items = [] innatum lista<textus>
+  source: varia items = [] innatum lista<textus>
   expect:
       ts: 'let items = ([] as string[]);'
       py: 'items = []'
@@ -34,7 +34,7 @@
           - 'varia items = [] innatum lista<textus>'
 
 - name: const tabula
-  faber: fixum cache = {} innatum tabula<textus, bivalens>
+  source: fixum cache = {} innatum tabula<textus, bivalens>
   expect:
       ts: 'const cache = new Map<string, boolean>();'
       py: 'cache = {}'
@@ -48,7 +48,7 @@
           - 'fixum cache = {} innatum tabula<textus, bivalens>'
 
 - name: const lista
-  faber: fixum names = [] innatum lista<textus>
+  source: fixum names = [] innatum lista<textus>
   expect:
       ts: 'const names = ([] as string[]);'
       py: 'names = []'
@@ -62,7 +62,7 @@
           - 'fixum names = [] innatum lista<textus>'
 
 - name: tabula with fractus value type
-  faber: varia scores = {} innatum tabula<textus, fractus>
+  source: varia scores = {} innatum tabula<textus, fractus>
   expect:
       ts: 'let scores = new Map<string, number>();'
       py: 'scores = {}'
@@ -76,7 +76,7 @@
           - 'varia scores = {} innatum tabula<textus, fractus>'
 
 - name: lista of numerus
-  faber: varia numbers = [] innatum lista<numerus>
+  source: varia numbers = [] innatum lista<numerus>
   expect:
       ts: 'let numbers = ([] as number[]);'
       py: 'numbers = []'
@@ -90,7 +90,7 @@
           - 'varia numbers = [] innatum lista<numerus>'
 
 - name: non-empty tabula
-  faber: 'varia data = {a: 1, b: 2} innatum tabula<textus, numerus>'
+  source: 'varia data = {a: 1, b: 2} innatum tabula<textus, numerus>'
   expect:
       ts: 'let data = new Map<string, number>([["a", 1], ["b", 2]]);'
       py: 'data = {"a": 1, "b": 2}'
@@ -106,7 +106,7 @@
           - 'varia data = {a: 1, b: 2} innatum tabula<textus, numerus>'
 
 - name: non-empty lista
-  faber: varia items = [1, 2, 3] innatum lista<numerus>
+  source: varia items = [1, 2, 3] innatum lista<numerus>
   expect:
       ts: 'let items = [1, 2, 3];'
       py: 'items = [1, 2, 3]'

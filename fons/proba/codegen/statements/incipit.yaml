@@ -2,7 +2,7 @@
 # Generates main() or equivalent for each target
 
 - name: basic incipit with body
-  faber: |
+  source: |
       incipit {
         scribe "Hello"
       }
@@ -29,7 +29,7 @@
           - 'scribe "Hello"'
 
 - name: incipit ergo cura arena
-  faber: |
+  source: |
       incipit ergo cura arena {
         scribe "Hello"
       }
@@ -58,7 +58,7 @@
           - 'scribe "Hello"'
 
 - name: incipit with multiple statements
-  faber: |
+  source: |
       incipit {
         fixum x = 42
         scribe x

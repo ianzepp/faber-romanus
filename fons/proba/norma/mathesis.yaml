@@ -9,7 +9,7 @@
 # =============================================================================
 
 - name: pavimentum (floor)
-  faber: |
+  source: |
       fixum x = pavimentum(3.7)
   expect:
       ts: 'const x = Math.floor(3.7);'
@@ -25,7 +25,7 @@
           - 'const auto x = std::floor(3.7);'
 
 - name: tectum (ceiling)
-  faber: |
+  source: |
       fixum x = tectum(3.2)
   expect:
       ts: 'const x = Math.ceil(3.2);'
@@ -41,7 +41,7 @@
           - 'const auto x = std::ceil(3.2);'
 
 - name: rotundum (round)
-  faber: |
+  source: |
       fixum x = rotundum(3.5)
   expect:
       ts: 'const x = Math.round(3.5);'
@@ -55,7 +55,7 @@
           - 'const auto x = std::round(3.5);'
 
 - name: truncatum (truncate)
-  faber: |
+  source: |
       fixum x = truncatum(3.9)
   expect:
       ts: 'const x = Math.trunc(3.9);'
@@ -75,7 +75,7 @@
 # =============================================================================
 
 - name: radix (sqrt)
-  faber: |
+  source: |
       fixum x = radix(16)
   expect:
       ts: 'const x = Math.sqrt(16);'
@@ -91,7 +91,7 @@
           - 'const auto x = std::sqrt(16);'
 
 - name: potentia (pow)
-  faber: |
+  source: |
       fixum x = potentia(2, 8)
   expect:
       ts: 'const x = Math.pow(2, 8);'
@@ -107,7 +107,7 @@
           - 'const auto x = std::pow(2, 8);'
 
 - name: logarithmus (natural log)
-  faber: |
+  source: |
       fixum x = logarithmus(10)
   expect:
       ts: 'const x = Math.log(10);'
@@ -123,7 +123,7 @@
           - 'const auto x = std::log(10);'
 
 - name: logarithmus10 (log base 10)
-  faber: |
+  source: |
       fixum x = logarithmus10(100)
   expect:
       ts: 'const x = Math.log10(100);'
@@ -139,7 +139,7 @@
           - 'const auto x = std::log10(100);'
 
 - name: exponens (e^x)
-  faber: |
+  source: |
       fixum x = exponens(1)
   expect:
       ts: 'const x = Math.exp(1);'
@@ -159,7 +159,7 @@
 # =============================================================================
 
 - name: sinus (sin)
-  faber: |
+  source: |
       fixum x = sinus(0)
   expect:
       ts: 'const x = Math.sin(0);'
@@ -175,7 +175,7 @@
           - 'const auto x = std::sin(0);'
 
 - name: cosinus (cos)
-  faber: |
+  source: |
       fixum x = cosinus(0)
   expect:
       ts: 'const x = Math.cos(0);'
@@ -191,7 +191,7 @@
           - 'const auto x = std::cos(0);'
 
 - name: tangens (tan)
-  faber: |
+  source: |
       fixum x = tangens(0)
   expect:
       ts: 'const x = Math.tan(0);'
@@ -211,7 +211,7 @@
 # =============================================================================
 
 - name: absolutum (abs)
-  faber: |
+  source: |
       fixum x = absolutum(-5)
   expect:
       ts: 'const x = Math.abs(-5);'
@@ -225,7 +225,7 @@
           - 'const auto x = std::abs(-5);'
 
 - name: signum (sign)
-  faber: |
+  source: |
       fixum x = signum(-5)
   expect:
       ts: 'const x = Math.sign(-5);'
@@ -243,7 +243,7 @@
 # =============================================================================
 
 - name: minimus (min)
-  faber: |
+  source: |
       fixum x = minimus(3, 7)
   expect:
       ts: 'const x = Math.min(3, 7);'
@@ -257,7 +257,7 @@
           - 'const auto x = std::min(3, 7);'
 
 - name: maximus (max)
-  faber: |
+  source: |
       fixum x = maximus(3, 7)
   expect:
       ts: 'const x = Math.max(3, 7);'
@@ -271,7 +271,7 @@
           - 'const auto x = std::max(3, 7);'
 
 - name: constringens (clamp)
-  faber: |
+  source: |
       fixum x = constringens(5, 0, 10)
   expect:
       ts: 'const x = Math.min(Math.max(5, 0), 10);'
@@ -289,7 +289,7 @@
 # =============================================================================
 
 - name: PI constant
-  faber: |
+  source: |
       fixum x = PI
   expect:
       ts: 'const x = Math.PI;'
@@ -305,7 +305,7 @@
           - 'const auto x = std::numbers::pi;'
 
 - name: E constant
-  faber: |
+  source: |
       fixum x = E
   expect:
       ts: 'const x = Math.E;'
@@ -321,7 +321,7 @@
           - 'const auto x = std::numbers::e;'
 
 - name: TAU constant
-  faber: |
+  source: |
       fixum x = TAU
   expect:
       ts: 'const x = (Math.PI * 2);'
@@ -341,7 +341,7 @@
 # =============================================================================
 
 - name: area of circle with PI
-  faber: |
+  source: |
       fixum r = 5
       fixum area = PI * r * r
   expect:
@@ -358,7 +358,7 @@
           - 'const auto area = ((std::numbers::pi * r) * r);'
 
 - name: pythagorean theorem with radix
-  faber: |
+  source: |
       fixum a = 3
       fixum b = 4
       fixum c = radix(a * a + b * b)

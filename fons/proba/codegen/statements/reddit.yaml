@@ -17,7 +17,7 @@
 # =============================================================================
 
 - name: si with reddit - simple
-  faber: |
+  source: |
       functio check(numerus x) -> bivalens {
           si x < 0 reddit falsum
           redde verum
@@ -49,7 +49,7 @@
           - 'redde verum'
 
 - name: si with reddit - expression
-  faber: |
+  source: |
       functio double(numerus x) -> numerus {
           si x > 100 reddit x * 2
           redde x
@@ -69,7 +69,7 @@
           - 'redde x'
 
 - name: si chain with reddit
-  faber: |
+  source: |
       functio grade(numerus score) -> textus {
           si score >= 90 reddit "A"
           si score >= 80 reddit "B"
@@ -107,7 +107,7 @@
 # =============================================================================
 
 - name: elige with reddit cases
-  faber: |
+  source: |
       functio getType(textus name) -> numerus {
           elige name {
               casu "textus" reddit 1
@@ -140,7 +140,7 @@
           - 'redde 0'
 
 - name: elige with mixed reddit and blocks
-  faber: |
+  source: |
       functio process(numerus code) -> textus {
           elige code {
               casu 1 reddit "one"
@@ -178,7 +178,7 @@
 # =============================================================================
 
 - name: ex pro with reddit - find first
-  faber: |
+  source: |
       functio findFirst(lista<numerus> items, numerus target) -> numerus? {
           ex items pro item {
               si item == target reddit item
@@ -203,7 +203,7 @@
           - 'redde nihil'
 
 - name: de pro with reddit - has key
-  faber: |
+  source: |
       functio hasKey(tabula<textus, numerus> obj, textus key) -> bivalens {
           de obj pro k {
               si k == key reddit verum
@@ -232,7 +232,7 @@
 # =============================================================================
 
 - name: discerne with reddit
-  faber: |
+  source: |
       discretio Option {
           Some(numerus)
           None
@@ -261,7 +261,7 @@
 # =============================================================================
 
 - name: sin secus chain with reddit
-  faber: |
+  source: |
       functio classify(numerus x) -> textus {
           si x < 0 reddit "negative"
           sin x == 0 reddit "zero"
@@ -295,7 +295,7 @@
 # =============================================================================
 
 - name: incipit reddit exit code
-  faber: 'incipit reddit 0'
+  source: 'incipit reddit 0'
   expect:
       ts:
           - 'return 0'
@@ -316,7 +316,7 @@
 # =============================================================================
 
 - name: reddit nihil for nullable return
-  faber: |
+  source: |
       functio divide(numerus a, numerus b) -> numerus? {
           si b == 0 reddit nihil
           redde a / b

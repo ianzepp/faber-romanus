@@ -12,7 +12,7 @@
 
 # Simple while with boolean
 - name: while with boolean
-  faber: 'dum verum { scribe "loop" }'
+  source: 'dum verum { scribe "loop" }'
   expect:
       ts:
           - 'while (true)'
@@ -34,7 +34,7 @@
 
 # While with comparison
 - name: while with comparison
-  faber: 'dum x > 0 { x = x - 1 }'
+  source: 'dum x > 0 { x = x - 1 }'
   expect:
       ts:
           - 'while ((x > 0))'
@@ -57,7 +57,7 @@
 
 # While with variable test
 - name: while with variable condition
-  faber: 'dum running { process() }'
+  source: 'dum running { process() }'
   expect:
       ts:
           - 'while (running)'
@@ -84,7 +84,7 @@
 
 # While with break
 - name: while with break
-  faber: |
+  source: |
       dum verum {
         si done { rumpe }
       }
@@ -116,7 +116,7 @@
 
 # While with continue
 - name: while with continue
-  faber: |
+  source: |
       dum running {
         si skip { perge }
         work()
@@ -159,7 +159,7 @@
 
 # While with catch clause
 - name: while with catch clause
-  faber: |
+  source: |
       dum hasNext() {
         processItem()
       } cape err {
@@ -199,7 +199,7 @@
 
 # While with complex exit condition
 - name: while with complex exit condition
-  faber: |
+  source: |
       dum verum {
         process()
         si done { rumpe }
@@ -228,7 +228,7 @@
 
 # While with iterator pattern
 - name: while with iterator pattern
-  faber: 'dum iterator.hasNext() { process(iterator.next()) }'
+  source: 'dum iterator.hasNext() { process(iterator.next()) }'
   expect:
       ts:
           - 'while (iterator.hasNext())'
@@ -245,7 +245,7 @@
 
 # Nested while loops
 - name: nested while loops
-  faber: |
+  source: |
       dum x > 0 {
         dum y > 0 {
           process()
@@ -281,7 +281,7 @@
 
 # While with multiple conditions
 - name: while with multiple conditions
-  faber: 'dum x > 0 et y < 100 { process() }'
+  source: 'dum x > 0 et y < 100 { process() }'
   expect:
       ts:
           - 'while (((x > 0) && (y < 100)))'
@@ -298,7 +298,7 @@
 
 # While with method call condition
 - name: while with method call condition
-  faber: 'dum queue.nonEmpty() { process(queue.pop()) }'
+  source: 'dum queue.nonEmpty() { process(queue.pop()) }'
   expect:
       ts:
           - 'while (queue.nonEmpty())'
@@ -315,7 +315,7 @@
 
 # While with decrement (countdown pattern)
 - name: while with decrement
-  faber: |
+  source: |
       dum count > 0 {
         scribe count
         count = count - 1
@@ -340,7 +340,7 @@
 
 # While with perge and rumpe together
 - name: while with perge and rumpe together
-  faber: |
+  source: |
       dum verum {
         si skip { perge }
         si done { rumpe }
@@ -378,7 +378,7 @@
 
 # Empty while body
 - name: empty while body
-  faber: 'dum condition { }'
+  source: 'dum condition { }'
   expect:
       ts:
           - 'while (condition)'

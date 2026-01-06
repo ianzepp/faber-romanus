@@ -21,7 +21,7 @@
 
 # Simple elige with numeric cases
 - name: elige with numeric cases
-  faber: |
+  source: |
       elige x {
         casu 1 { a() }
         casu 2 { b() }
@@ -64,7 +64,7 @@
 
 # Elige with default case (ceterum)
 - name: elige with default case
-  faber: |
+  source: |
       elige status {
         casu 1 { active() }
         ceterum { inactive() }
@@ -111,7 +111,7 @@
 
 # Elige with string literals
 - name: elige with string cases
-  faber: |
+  source: |
       elige cmd {
         casu "start" { begin() }
         casu "stop" { end() }
@@ -168,7 +168,7 @@
 
 # Case with multiple statements
 - name: elige case with multiple statements
-  faber: |
+  source: |
       elige mode {
         casu 1 {
           varia x = init()
@@ -232,7 +232,7 @@
 
 # Discriminant is expression, not just variable
 - name: elige with expression discriminant
-  faber: |
+  source: |
       elige getValue() {
         casu 0 { zero() }
         casu 1 { one() }
@@ -277,7 +277,7 @@
 
 # Elige wrapped in try/catch
 - name: elige with cape clause
-  faber: |
+  source: |
       elige riskyValue() {
         casu 1 { action() }
       }
@@ -311,7 +311,7 @@
 
 # Elige with only default case
 - name: elige with only default case
-  faber: |
+  source: |
       elige x {
         ceterum { fallback() }
       }
@@ -340,7 +340,7 @@
 
 # Empty case body
 - name: elige with empty case
-  faber: |
+  source: |
       elige x {
         casu 1 { }
         ceterum { action() }
@@ -378,7 +378,7 @@
 
 # Elige with many cases (10+)
 - name: elige with many cases month mapping
-  faber: |
+  source: |
       elige month {
         casu 1 { redde "Jan" }
         casu 2 { redde "Feb" }
@@ -436,7 +436,7 @@
 
 # Elige as potential expression (return in every case)
 - name: elige with return in every case
-  faber: |
+  source: |
       elige level {
         casu 1 { redde "low" }
         casu 2 { redde "medium" }
@@ -492,7 +492,7 @@
 
 # Elige with boolean cases
 - name: elige with boolean cases
-  faber: 'elige flag { casu verum { yes() } casu falsum { no() } }'
+  source: 'elige flag { casu verum { yes() } casu falsum { no() } }'
   expect:
       ts:
           - 'if (flag === true)'
@@ -524,7 +524,7 @@
 
 # Elige with nested conditionals
 - name: elige with nested si inside case
-  faber: |
+  source: |
       elige mode {
         casu 1 {
           si x > 0 {
@@ -584,7 +584,7 @@
 
 # Elige with member expression discriminant
 - name: elige with member expression discriminant
-  faber: 'elige obj.status { casu 1 { active() } casu 0 { inactive() } }'
+  source: 'elige obj.status { casu 1 { active() } casu 0 { inactive() } }'
   expect:
       ts:
           - 'if (obj.status === 1)'
@@ -616,7 +616,7 @@
 
 # Elige with call returning each case
 - name: elige with function calls returning in cases
-  faber: |
+  source: |
       elige priority {
         casu 1 { redde getLow() }
         casu 2 { redde getMedium() }
@@ -662,7 +662,7 @@
 
 # Consecutive elige statements (single-line avoids parser issue with multiline consecutive elige)
 - name: consecutive elige statements
-  faber: "elige a { casu 1 { first() } casu 2 { second() } }\nelige b { casu 3 { third() } casu 4 { fourth() } }"
+  source: "elige a { casu 1 { first() } casu 2 { second() } }\nelige b { casu 3 { third() } casu 4 { fourth() } }"
   expect:
       ts:
           - 'if (a === 1)'

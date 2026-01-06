@@ -9,7 +9,7 @@
 # =============================================================================
 
 - name: nunc (milliseconds)
-  faber: |
+  source: |
       fixum t = nunc()
   expect:
       ts: 'const t = Date.now();'
@@ -25,7 +25,7 @@
           - 'const t = std.time.milliTimestamp();'
 
 - name: nunc_nano (nanoseconds)
-  faber: |
+  source: |
       fixum t = nunc_nano()
   expect:
       ts: 'const t = BigInt(Date.now()) * 1000000n;'
@@ -41,7 +41,7 @@
           - 'const t = std.time.nanoTimestamp();'
 
 - name: nunc_secunda (seconds)
-  faber: |
+  source: |
       fixum t = nunc_secunda()
   expect:
       ts: 'const t = Math.floor(Date.now() / 1000);'
@@ -57,7 +57,7 @@
           - 'const t = std.time.timestamp();'
 
 - name: dormi (sleep)
-  faber: |
+  source: |
       dormi(100)
   expect:
       ts: 'new Promise(r => setTimeout(r, 100));'
@@ -78,7 +78,7 @@
 # =============================================================================
 
 - name: MILLISECUNDUM constant
-  faber: |
+  source: |
       fixum d = MILLISECUNDUM
   expect:
       ts: 'const d = 1;'
@@ -91,7 +91,7 @@
           - 'const d = 1;'
 
 - name: SECUNDUM constant
-  faber: |
+  source: |
       fixum d = SECUNDUM
   expect:
       ts: 'const d = 1000;'
@@ -104,7 +104,7 @@
           - 'const d = 1000;'
 
 - name: MINUTUM constant
-  faber: |
+  source: |
       fixum d = MINUTUM
   expect:
       ts: 'const d = 60000;'
@@ -117,7 +117,7 @@
           - 'const d = 60000;'
 
 - name: HORA constant
-  faber: |
+  source: |
       fixum d = HORA
   expect:
       ts: 'const d = 3600000;'
@@ -130,7 +130,7 @@
           - 'const d = 3600000;'
 
 - name: DIES constant
-  faber: |
+  source: |
       fixum d = DIES
   expect:
       ts: 'const d = 86400000;'
@@ -147,7 +147,7 @@
 # =============================================================================
 
 - name: sleep for one second
-  faber: |
+  source: |
       dormi(SECUNDUM)
   expect:
       ts: 'new Promise(r => setTimeout(r, 1000));'

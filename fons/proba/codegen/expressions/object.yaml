@@ -4,7 +4,7 @@
 # Note: ts/py use exact match; rs/cpp/zig use contains (they wrap in main)
 
 - name: empty object
-  faber: 'fixum obj = {}'
+  source: 'fixum obj = {}'
   expect:
       ts: 'const obj = {};'
       py: 'obj = {}'
@@ -18,7 +18,7 @@
           - 'fixum obj = {}'
 
 - name: object with string property
-  faber: |
+  source: |
       fixum user = { nomen: "Marcus" }
   expect:
       ts: 'const user = { nomen: "Marcus" };'
@@ -33,7 +33,7 @@
           - 'fixum user = { nomen: "Marcus" }'
 
 - name: object with multiple properties
-  faber: |
+  source: |
       fixum data = { x: 1, y: 2, z: 3 }
   expect:
       ts: 'const data = { x: 1, y: 2, z: 3 };'
@@ -54,7 +54,7 @@
           - 'fixum data = { x: 1, y: 2, z: 3 }'
 
 - name: object with expression values
-  faber: |
+  source: |
       fixum calc = { sum: 1 + 2, active: verum }
   expect:
       ts:
@@ -77,7 +77,7 @@
           - 'active: verum'
 
 - name: object with spread
-  faber: |
+  source: |
       fixum merged = { sparge defaults, extra: 42 }
   expect:
       ts: 'const merged = { ...defaults, extra: 42 };'
@@ -90,7 +90,7 @@
           - 'extra: 42'
 
 - name: method in object (lambda as property)
-  faber: |
+  source: |
       fixum obj = { greet: pro name: name }
   expect:
       ts:
@@ -101,7 +101,7 @@
           - 'greet: pro name: name'
 
 - name: deeply nested objects (4 levels)
-  faber: |
+  source: |
       fixum deep = { a: { b: { c: { d: 1 } } } }
   expect:
       ts: 'const deep = { a: { b: { c: { d: 1 } } } };'
@@ -110,7 +110,7 @@
           - 'a: { b: { c: { d: 1 } } }'
 
 - name: multiple spreads in object
-  faber: |
+  source: |
       fixum obj = { a: 1, sparge middle, b: 2, sparge end }
   expect:
       ts: 'const obj = { a: 1, ...middle, b: 2, ...end };'
@@ -122,7 +122,7 @@
           - 'sparge end'
 
 - name: object with many properties (6+)
-  faber: |
+  source: |
       fixum obj = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 }
   expect:
       ts: 'const obj = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 };'
@@ -131,7 +131,7 @@
           - 'a: 1, b: 2, c: 3, d: 4, e: 5, f: 6'
 
 - name: object with arithmetic expression values
-  faber: |
+  source: |
       fixum obj = { sum: a + b, product: a * b }
   expect:
       ts:

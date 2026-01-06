@@ -34,47 +34,33 @@ interface TargetExpectation {
 
 type ErrataExpectation = true | string | string[];
 
-interface LegacyTestCase {
+interface TestCase {
     name: string;
-    input: string;
-    wrap?: string;
-    ts?: string | string[] | TargetExpectation;
-    skip?: string[];
-    errata?: ErrataExpectation;
-}
-
-interface ModernTestCase {
-    name: string;
-    faber: string;
+    source: string;
     wrap?: string;
     expect?: {
         ts?: string | string[] | TargetExpectation;
     };
+    // Legacy top-level expectation (deprecated)
+    ts?: string | string[] | TargetExpectation;
     skip?: string[];
     errata?: ErrataExpectation;
-    rivus?: boolean;
+    rivus?: boolean; // Set to false to skip this test for rivus compiler
 }
-
-type TestCase = LegacyTestCase | ModernTestCase;
 
 // =============================================================================
 // HELPERS
 // =============================================================================
 
-function isModernTestCase(tc: TestCase): tc is ModernTestCase {
-    return 'faber' in tc;
-}
-
-function getInput(tc: TestCase): string {
-    const raw = isModernTestCase(tc) ? tc.faber : tc.input;
+function getSource(tc: TestCase): string {
     if (tc.wrap) {
-        return tc.wrap.replace('$', raw);
+        return tc.wrap.replace('$', tc.source);
     }
-    return raw;
+    return tc.source;
 }
 
 function getExpectation(tc: TestCase): string | string[] | TargetExpectation | undefined {
-    return isModernTestCase(tc) ? tc.expect?.ts : tc.ts;
+    return tc.expect?.ts ?? tc.ts;
 }
 
 function hasErrata(tc: TestCase): boolean {
@@ -83,7 +69,7 @@ function hasErrata(tc: TestCase): boolean {
 
 function shouldSkip(tc: TestCase): boolean {
     if (tc.skip?.includes('ts')) return true;
-    if (isModernTestCase(tc) && tc.rivus === false) return true;
+    if (tc.rivus === false) return true;
     return false;
 }
 
@@ -237,7 +223,7 @@ for (const { file, cases, meta } of yamlFiles) {
             }
 
             test(`${tc.name} @ts`, async () => {
-                const input = getInput(tc);
+                const input = getSource(tc);
 
                 if (hasErrata(tc)) {
                     try {

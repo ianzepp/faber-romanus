@@ -18,7 +18,7 @@
 
 # Basic function with untyped parameter
 - name: simple function with param
-  faber: |
+  source: |
       functio salve(nomen) {
         redde nomen
       }
@@ -44,7 +44,7 @@
 
 # Function with explicit return type annotation
 - name: function with return type
-  faber: 'functio greet() -> textus { redde "hello" }'
+  source: 'functio greet() -> textus { redde "hello" }'
   expect:
       ts:
           - 'function greet(): string'
@@ -67,7 +67,7 @@
 
 # Empty function body - Python requires pass, others allow {}
 - name: empty function body
-  faber: 'functio noop() {}'
+  source: 'functio noop() {}'
   expect:
       ts: 'function noop() {}'
       py:
@@ -88,7 +88,7 @@
 
 # Function with typed parameter (type-first syntax)
 - name: typed parameter
-  faber: 'functio greet(textus name) { redde name }'
+  source: 'functio greet(textus name) { redde name }'
   expect:
       ts:
           - 'function greet(name: string)'
@@ -106,7 +106,7 @@
 
 # Function with multiple typed parameters
 - name: multiple typed parameters
-  faber: 'functio add(numerus a, numerus b) -> numerus { redde a + b }'
+  source: 'functio add(numerus a, numerus b) -> numerus { redde a + b }'
   expect:
       ts:
           - 'function add(a: number, b: number): number'
@@ -124,7 +124,7 @@
 
 # Function with user-defined array type parameter (Point[] syntax)
 - name: user-defined array type parameter
-  faber: 'functio process(Point[] points) { scribe points }'
+  source: 'functio process(Point[] points) { scribe points }'
   expect:
       ts:
           - 'function process(points: Array<Point>)'
@@ -142,7 +142,7 @@
 
 # Nested array type (matrix)
 - name: nested array type parameter
-  faber: 'functio process(textus[][] matrix) { scribe matrix }'
+  source: 'functio process(textus[][] matrix) { scribe matrix }'
   expect:
       ts:
           - 'function process(matrix: Array<Array<string>>)'
@@ -160,7 +160,7 @@
 
 # Array type with de preposition (borrowed)
 - name: array type with de preposition
-  faber: 'functio read(de Point[] points) { scribe points }'
+  source: 'functio read(de Point[] points) { scribe points }'
   expect:
       ts:
           - 'function read(points: Array<Point>)'
@@ -178,7 +178,7 @@
 
 # Array type with in preposition (mutable borrow)
 - name: array type with in preposition
-  faber: 'functio modify(in numerus[] items) { scribe items }'
+  source: 'functio modify(in numerus[] items) { scribe items }'
   expect:
       ts:
           - 'function modify(items: Array<number>)'
@@ -196,7 +196,7 @@
 
 # Array type with ut alias
 - name: array type with ut alias
-  faber: 'functio process(Point[] points ut p) { scribe p }'
+  source: 'functio process(Point[] points ut p) { scribe p }'
   expect:
       ts:
           - 'function process(p: Array<Point>)'
@@ -214,7 +214,7 @@
 
 # Array type with vel default
 - name: array type with vel default
-  faber: 'functio process(textus[] items vel []) { scribe items }'
+  source: 'functio process(textus[] items vel []) { scribe items }'
   expect:
       ts:
           - 'function process(items: Array<string> = [])'
@@ -232,7 +232,7 @@
 
 # Generic type with array type parameter (copia<textus[]>)
 - name: generic type with array type parameter
-  faber: 'functio process(copia<textus[]> items) { scribe items }'
+  source: 'functio process(copia<textus[]> items) { scribe items }'
   expect:
       ts:
           - 'function process(items: Set<Array<string>>)'
@@ -250,7 +250,7 @@
 
 # Map type with array value (tabula<textus, numerus[]>)
 - name: map type with array value
-  faber: 'functio process(tabula<textus, numerus[]> map) { scribe map }'
+  source: 'functio process(tabula<textus, numerus[]> map) { scribe map }'
   expect:
       ts:
           - 'function process(map: Map<string, Array<number>>)'
@@ -268,7 +268,7 @@
 
 # Array of generic type (copia<textus>[])
 - name: array of generic type
-  faber: 'functio process(copia<textus>[] items) { scribe items }'
+  source: 'functio process(copia<textus>[] items) { scribe items }'
   expect:
       ts:
           - 'function process(items: Array<Set<string>>)'
@@ -290,7 +290,7 @@
 
 # @ futura annotation makes a function async
 - name: async function with futura annotation
-  faber: |
+  source: |
       @ futura
       functio fetch(url) {
         redde data
@@ -313,7 +313,7 @@
 
 # fiet = async + return type (wraps in Promise/Awaitable)
 - name: async function with fiet return type
-  faber: 'functio fetch() fiet textus { redde "data" }'
+  source: 'functio fetch() fiet textus { redde "data" }'
   expect:
       ts:
           - 'async function fetch(): Promise<string>'
@@ -335,7 +335,7 @@
 
 # fiunt makes a function a generator (wraps return in Generator/Iterator)
 - name: generator function with fiunt
-  faber: 'functio range() fiunt numerus { redde 1 }'
+  source: 'functio range() fiunt numerus { redde 1 }'
   expect:
       ts:
           - 'function* range(): Generator<number>'
@@ -353,7 +353,7 @@
 
 # fient = async generator (wraps in AsyncGenerator/AsyncIterator)
 - name: async generator function with fient
-  faber: 'functio stream() fient textus { redde "chunk" }'
+  source: 'functio stream() fient textus { redde "chunk" }'
   expect:
       ts:
           - 'async function* stream(): AsyncGenerator<string>'
@@ -375,7 +375,7 @@
 
 # cede in generator context becomes yield respond.item() (Responsum protocol)
 - name: cede as yield in generator
-  faber: 'functio range() fiunt numerus { cede 1 }'
+  source: 'functio range() fiunt numerus { cede 1 }'
   expect:
       ts:
           - 'yield respond.item(1)'
@@ -394,7 +394,7 @@
 
 # cede in async context becomes await
 - name: cede as await in async function
-  faber: 'functio fetch() fiet textus { cede getData() }'
+  source: 'functio fetch() fiet textus { cede getData() }'
   expect:
       ts:
           - 'await getData()'
@@ -416,7 +416,7 @@
 
 # ceteri collects variadic arguments
 - name: rest parameter with ceteri
-  faber: 'functio sum(ceteri numerus[] nums) { redde 0 }'
+  source: 'functio sum(ceteri numerus[] nums) { redde 0 }'
   expect:
       ts:
           - '...nums: Array<number>'
@@ -443,7 +443,7 @@
 
 # de = borrowed, read-only parameter
 - name: de preposition (read-only borrow)
-  faber: 'functio process(de textus source) { redde source }'
+  source: 'functio process(de textus source) { redde source }'
   expect:
       ts:
           - 'function process(source: string)'
@@ -461,7 +461,7 @@
 
 # in = mutable borrow parameter
 - name: in preposition (mutable borrow)
-  faber: 'functio mutate(in textus target) { redde target }'
+  source: 'functio mutate(in textus target) { redde target }'
   expect:
       ts:
           - 'function mutate(target: string)'
@@ -479,7 +479,7 @@
 
 # Mixed: regular and prepositional parameters
 - name: mixed regular and prepositional parameters
-  faber: 'functio update(de textus source, in textus target) { redde target }'
+  source: 'functio update(de textus source, in textus target) { redde target }'
   expect:
       ts:
           - 'function update(source: string, target: string)'
@@ -506,7 +506,7 @@
 # WHY: Tests default parameter syntax (type name: value)
 # NOTE: Currently codegen doesn't emit function signature for expression-only mode
 - name: function with default parameter
-  faber: 'functio greet(textus name: "World") -> textus { redde name }'
+  source: 'functio greet(textus name: "World") -> textus { redde name }'
   expect:
       ts:
           - 'return name'
@@ -525,7 +525,7 @@
 # Recursive function (factorial)
 # WHY: Tests self-referential function calls
 - name: recursive function
-  faber: |
+  source: |
       functio factorial(numerus n) -> numerus {
         si n <= 1 {
           redde 1
@@ -567,7 +567,7 @@
 # Function with many parameters (6+)
 # WHY: Stress test for parameter lists
 - name: function with many parameters
-  faber: 'functio many(a, b, c, d, e, f) { redde a }'
+  source: 'functio many(a, b, c, d, e, f) { redde a }'
   expect:
       ts:
           - 'function many(a, b, c, d, e, f)'
@@ -592,7 +592,7 @@
 # WHY: Tests generic/template syntax
 # NOTE: Generics may not be fully implemented in all targets
 - name: generic function
-  faber: 'functio identity<T>(T value) -> T { redde value }'
+  source: 'functio identity<T>(T value) -> T { redde value }'
   expect:
       ts:
           - 'return value'
@@ -611,7 +611,7 @@
 # Function returning lambda
 # WHY: Tests lambda expression as return value
 - name: function returning lambda
-  faber: 'functio makeAdder(numerus x) { redde pro y: x + y }'
+  source: 'functio makeAdder(numerus x) { redde pro y: x + y }'
   expect:
       ts:
           - 'function makeAdder(x: number)'
@@ -635,7 +635,7 @@
 # Nested function definition
 # WHY: Tests function declarations inside function bodies
 - name: nested function
-  faber: |
+  source: |
       functio outer(numerus x) -> numerus {
         functio inner(numerus y) -> numerus {
           redde y * 2
@@ -677,7 +677,7 @@
 # Function with optional (nullable) parameter
 # WHY: Tests nullable type syntax (textus?)
 - name: function with optional parameter
-  faber: 'functio process(textus? input) { redde input }'
+  source: 'functio process(textus? input) { redde input }'
   expect:
       ts:
           - 'function process(input: string | null)'
@@ -701,7 +701,7 @@
 # Function with both regular and rest params
 # WHY: Tests mixed regular and variadic parameters
 - name: function with regular and rest params
-  faber: 'functio log(textus prefix, ceteri args) { scribe prefix }'
+  source: 'functio log(textus prefix, ceteri args) { scribe prefix }'
   expect:
       ts:
           - 'function log(prefix: string, ...args)'
@@ -730,7 +730,7 @@
 
 # Basic dual naming - internal name used in body
 - name: dual parameter naming with ut
-  faber: 'functio greet(textus location ut loc) { scribe loc }'
+  source: 'functio greet(textus location ut loc) { scribe loc }'
   expect:
       ts:
           - 'function greet(loc: string)'
@@ -753,7 +753,7 @@
 
 # Dual naming with preposition
 - name: dual parameter naming with preposition
-  faber: 'functio process(de textus source ut src) { redde src }'
+  source: 'functio process(de textus source ut src) { redde src }'
   expect:
       ts:
           - 'function process(src: string)'
@@ -776,7 +776,7 @@
 
 # Mixed aliased and non-aliased params
 - name: mixed aliased and non-aliased parameters
-  faber: 'functio copy(textus from ut source, textus to) { scribe source }'
+  source: 'functio copy(textus from ut source, textus to) { scribe source }'
   expect:
       ts:
           - 'function copy(source: string, to: string)'
@@ -802,7 +802,7 @@
 
 # Basic default value - string
 - name: default parameter value string
-  faber: 'functio greet(textus name vel "World") { scribe name }'
+  source: 'functio greet(textus name vel "World") { scribe name }'
   expect:
       ts:
           - 'function greet(name: string = "World")'
@@ -824,7 +824,7 @@
 
 # Default value - numeric
 - name: default parameter value numeric
-  faber: 'functio count(numerus n vel 10) -> numerus { redde n }'
+  source: 'functio count(numerus n vel 10) -> numerus { redde n }'
   expect:
       ts:
           - 'function count(n: number = 10): number'
@@ -844,7 +844,7 @@
 
 # Default with dual naming
 - name: default with dual naming
-  faber: 'functio greet(textus location ut loc vel "Roma") { scribe loc }'
+  source: 'functio greet(textus location ut loc vel "Roma") { scribe loc }'
   expect:
       ts:
           - 'function greet(loc: string = "Roma")'
@@ -864,7 +864,7 @@
 
 # Mixed default and non-default params
 - name: mixed default and non-default parameters
-  faber: 'functio greet(textus greeting, textus name vel "World") { scribe greeting }'
+  source: 'functio greet(textus greeting, textus name vel "World") { scribe greeting }'
   expect:
       ts:
           - 'function greet(greeting: string, name: string = "World")'
@@ -889,7 +889,7 @@
 
 # Optional parameter without default (becomes nullable)
 - name: optional parameter without default
-  faber: 'functio greet(textus name, si textus title) { scribe name }'
+  source: 'functio greet(textus name, si textus title) { scribe name }'
   expect:
       ts:
           - 'function greet(name: string, title?: string)'
@@ -907,7 +907,7 @@
 
 # Optional parameter with default value
 - name: optional parameter with default value
-  faber: 'functio greet(si textus name vel "World") { scribe name }'
+  source: 'functio greet(si textus name vel "World") { scribe name }'
   expect:
       ts:
           - 'function greet(name: string = "World")'
@@ -927,7 +927,7 @@
 
 # Optional numeric parameter with default
 - name: optional numeric parameter with default
-  faber: 'functio paginate(si numerus page vel 1, si numerus limit vel 10) -> textus { redde "ok" }'
+  source: 'functio paginate(si numerus page vel 1, si numerus limit vel 10) -> textus { redde "ok" }'
   expect:
       ts:
           - 'function paginate(page: number = 1, limit: number = 10): string'
@@ -945,7 +945,7 @@
 
 # Mixed required and optional parameters
 - name: mixed required and optional parameters
-  faber: 'functio create(textus name, si numerus age, si bivalens active vel verum) { scribe name }'
+  source: 'functio create(textus name, si numerus age, si bivalens active vel verum) { scribe name }'
   expect:
       ts:
           - 'function create(name: string, age?: number, active: boolean = true)'
@@ -963,7 +963,7 @@
 
 # Preposition with optional (de si - borrowed optional)
 - name: preposition with optional parameter
-  faber: 'functio analyze(textus source, de si numerus depth) { scribe source }'
+  source: 'functio analyze(textus source, de si numerus depth) { scribe source }'
   expect:
       ts:
           - 'function analyze(source: string, depth?: number)'

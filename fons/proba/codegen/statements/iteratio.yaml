@@ -14,7 +14,7 @@
 
 # Iterate over array
 - name: iterate over array
-  faber: 'ex items pro item { process(item) }'
+  source: 'ex items pro item { process(item) }'
   expect:
       ts:
           - 'for (const item of items)'
@@ -41,7 +41,7 @@
 
 # Exclusive range (0..10 means 0-9)
 - name: exclusive range loop
-  faber: 'ex 0..10 pro i { scribe i }'
+  source: 'ex 0..10 pro i { scribe i }'
   expect:
       ts:
           - 'for (let i = 0; i < 10; i++)'
@@ -63,7 +63,7 @@
 
 # Inclusive range (0 usque 10 means 0-10)
 - name: inclusive range loop
-  faber: 'ex 0 usque 10 pro i { scribe i }'
+  source: 'ex 0 usque 10 pro i { scribe i }'
   expect:
       ts:
           - 'for (let i = 0; i <= 10; i++)'
@@ -85,7 +85,7 @@
 
 # Range with step
 - name: range loop with step
-  faber: 'ex 0..10 per 2 pro i { scribe i }'
+  source: 'ex 0..10 per 2 pro i { scribe i }'
   expect:
       ts:
           - 'for (let i = 0; i < 10; i += 2)'
@@ -111,7 +111,7 @@
 
 # Async for-await-of
 - name: async for-await loop
-  faber: 'ex stream fiet chunk { process(chunk) }'
+  source: 'ex stream fiet chunk { process(chunk) }'
   expect:
       ts:
           - 'for await (const chunk of stream)'
@@ -138,7 +138,7 @@
 
 # Loop with break
 - name: loop with break
-  faber: |
+  source: |
       ex items pro item {
         si done { rumpe }
       }
@@ -170,7 +170,7 @@
 
 # Loop with continue
 - name: loop with continue
-  faber: |
+  source: |
       ex items pro item {
         si skip { perge }
         process(item)
@@ -213,7 +213,7 @@
 
 # Iterate over string characters
 - name: iterate over string characters
-  faber: 'ex "hello" pro char { scribe char }'
+  source: 'ex "hello" pro char { scribe char }'
   expect:
       ts:
           - 'for (const char of "hello")'
@@ -227,7 +227,7 @@
 
 # Nested iteration (2 levels)
 - name: nested iteration
-  faber: |
+  source: |
       ex outer pro a {
         ex inner pro b {
           process(a, b)
@@ -249,7 +249,7 @@
 
 # Iterate with descending range
 - name: descending range loop
-  faber: 'ex 10..0 per -1 pro i { scribe i }'
+  source: 'ex 10..0 per -1 pro i { scribe i }'
   expect:
       ts:
           - 'for (let i = 10; i < 0; i += -1)'
@@ -263,7 +263,7 @@
 
 # Iterate over member expression
 - name: iterate over member expression
-  faber: 'ex obj.items pro item { process(item) }'
+  source: 'ex obj.items pro item { process(item) }'
   expect:
       ts:
           - 'for (const item of obj.items)'
@@ -277,7 +277,7 @@
 
 # Iterate over function result
 - name: iterate over function result
-  faber: 'ex getItems() pro item { process(item) }'
+  source: 'ex getItems() pro item { process(item) }'
   expect:
       ts:
           - 'for (const item of getItems())'
@@ -291,7 +291,7 @@
 
 # Iteration with rumpe in nested loop
 - name: break in nested loop
-  faber: |
+  source: |
       ex outer pro a {
         ex inner pro b {
           si found { rumpe }
@@ -316,7 +316,7 @@
 
 # Iteration with perge (continue with condition)
 - name: continue with condition
-  faber: 'ex items pro item { si item.skip { perge } process(item) }'
+  source: 'ex items pro item { si item.skip { perge } process(item) }'
   expect:
       ts:
           - 'for (const item of items)'
@@ -336,7 +336,7 @@
 
 # Empty range iteration
 - name: empty range iteration
-  faber: 'ex 5..5 pro i { scribe i }'
+  source: 'ex 5..5 pro i { scribe i }'
   expect:
       ts:
           - 'for (let i = 5; i < 5; i++)'
@@ -350,7 +350,7 @@
 
 # Large range iteration
 - name: large range iteration
-  faber: 'ex 0..1000 pro i { process(i) }'
+  source: 'ex 0..1000 pro i { process(i) }'
   expect:
       ts:
           - 'for (let i = 0; i < 1000; i++)'

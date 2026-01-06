@@ -30,7 +30,7 @@
  *
  * YAML TEST FORMAT
  *   - name: test name
- *     faber: |
+ *     source: |
  *       fixum x = 1 + 2
  *     wrap: 'cura arena fit alloc { $ }'  # optional: wrap input ($ = placeholder)
  *     expect:
@@ -45,10 +45,11 @@
  *       zig:
  *         exact: "const x = (1 + 2);"
  *     skip: [cpp]  # optional: skip specific targets
+ *     faber: false # optional: skip this test for faber compiler
  *
  * ERROR TEST FORMAT (errata)
  *   - name: error test
- *     faber: 'invalid code'
+ *     source: 'invalid code'
  *     errata: true                    # any error
  *     errata: 'exact error message'   # exact match
  *     errata: ['fragment1', 'frag2']  # all fragments must be present
@@ -110,52 +111,44 @@ interface TargetExpectation {
 // Error expectation: true (any error), string (exact), or string[] (contains all)
 type ErrataExpectation = true | string | string[];
 
-// Legacy format: input + top-level target keys
-interface LegacyTestCase {
+interface TestCase {
     name: string;
-    input: string;
+    source: string;
     wrap?: string;
-    ts?: string | string[] | TargetExpectation;
-    py?: string | string[] | TargetExpectation;
-    zig?: string | string[] | TargetExpectation;
-    cpp?: string | string[] | TargetExpectation;
-    rs?: string | string[] | TargetExpectation;
-    skip?: Target[];
-    errata?: ErrataExpectation;
-}
-
-// New format: faber + expect object
-interface ModernTestCase {
-    name: string;
-    faber: string;
-    wrap?: string;
+    // Expectations: either in expect object (modern) or top-level (legacy)
     expect?: {
         ts?: string | string[] | TargetExpectation;
         py?: string | string[] | TargetExpectation;
         zig?: string | string[] | TargetExpectation;
         cpp?: string | string[] | TargetExpectation;
         rs?: string | string[] | TargetExpectation;
+        fab?: string | string[] | TargetExpectation;
     };
+    // Legacy top-level expectations (deprecated)
+    ts?: string | string[] | TargetExpectation;
+    py?: string | string[] | TargetExpectation;
+    zig?: string | string[] | TargetExpectation;
+    cpp?: string | string[] | TargetExpectation;
+    rs?: string | string[] | TargetExpectation;
+    fab?: string | string[] | TargetExpectation;
     skip?: Target[];
     errata?: ErrataExpectation;
+    faber?: boolean; // Set to false to skip this test for faber compiler
 }
 
-type TestCase = LegacyTestCase | ModernTestCase;
-
-function isModernTestCase(tc: TestCase): tc is ModernTestCase {
-    return 'faber' in tc;
-}
-
-function getInput(tc: TestCase): string {
-    const raw = isModernTestCase(tc) ? tc.faber : tc.input;
+function getSource(tc: TestCase): string {
     if (tc.wrap) {
-        return tc.wrap.replace('$', raw);
+        return tc.wrap.replace('$', tc.source);
     }
-    return raw;
+    return tc.source;
 }
 
 function getExpectation(tc: TestCase, target: Target): string | string[] | TargetExpectation | undefined {
-    return isModernTestCase(tc) ? tc.expect?.[target] : tc[target];
+    return tc.expect?.[target] ?? tc[target];
+}
+
+function shouldSkipFaber(tc: TestCase): boolean {
+    return tc.faber === false;
 }
 
 function hasErrata(tc: TestCase): tc is TestCase & { errata: ErrataExpectation } {
@@ -285,10 +278,11 @@ function runTestFile(filePath: string, suiteName: string): void {
         describe('errata', () => {
             for (const tc of cases) {
                 if (!hasErrata(tc)) continue;
+                if (shouldSkipFaber(tc)) continue;
 
                 test(tc.name, () => {
                     testsRun.add(testKey(suiteName, tc.name));
-                    const input = getInput(tc);
+                    const input = getSource(tc);
 
                     try {
                         compileStrict(input.trim());
@@ -311,6 +305,7 @@ function runTestFile(filePath: string, suiteName: string): void {
                 for (const tc of cases) {
                     // Skip errata tests in per-target loop
                     if (hasErrata(tc)) continue;
+                    if (shouldSkipFaber(tc)) continue;
 
                     const expected = getExpectation(tc, target);
                     const isSkipped = tc.skip?.includes(target);
@@ -334,7 +329,7 @@ function runTestFile(filePath: string, suiteName: string): void {
 
                     test(tc.name, () => {
                         testsRun.add(testKey(suiteName, tc.name));
-                        const input = getInput(tc);
+                        const input = getSource(tc);
                         const output = compile(input.trim(), target);
                         checkOutput(output, expected);
                     });

@@ -9,7 +9,7 @@
 # =============================================================================
 
 - name: fractus (random float 0-1)
-  faber: |
+  source: |
       fixum x = fractus()
   expect:
       ts: 'const x = Math.random();'
@@ -28,7 +28,7 @@
           - '.float(f64)'
 
 - name: inter (random integer in range)
-  faber: |
+  source: |
       fixum x = inter(1, 100)
   expect:
       ts:
@@ -46,7 +46,7 @@
           - 'intRangeAtMost(i64, 1, 100)'
 
 - name: octeti (random bytes)
-  faber: |
+  source: |
       fixum bytes = octeti(16)
   expect:
       ts: 'const bytes = crypto.getRandomValues(new Uint8Array(16));'
@@ -65,7 +65,7 @@
           - 'std.crypto.random.bytes'
 
 - name: uuid (UUID v4)
-  faber: |
+  source: |
       fixum id = uuid()
   expect:
       ts: 'const id = crypto.randomUUID();'
@@ -87,7 +87,7 @@
 # =============================================================================
 
 - name: selige (random pick from list)
-  faber: |
+  source: |
       fixum item = selige(items)
   expect:
       ts: 'const item = items[Math.floor(Math.random() * items.length)];'
@@ -104,7 +104,7 @@
           - 'uintLessThan(usize, items.len)'
 
 - name: misce (shuffle list)
-  faber: |
+  source: |
       fixum shuffled = misce(items)
   expect:
       ts:
@@ -132,7 +132,7 @@
 # =============================================================================
 
 - name: semen (seed RNG)
-  faber: |
+  source: |
       semen(42)
   expect:
       ts:
@@ -155,7 +155,7 @@
 # =============================================================================
 
 - name: random dice roll
-  faber: |
+  source: |
       fixum die1 = inter(1, 6)
       fixum die2 = inter(1, 6)
       fixum total = die1 + die2

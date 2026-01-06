@@ -2,7 +2,7 @@
 # Maps Faber pro: syntax to target-language lambda equivalents
 
 - name: lambda with return type (expression body)
-  faber: 'pro x -> numerus: x * 2'
+  source: 'pro x -> numerus: x * 2'
   expect:
       ts: '(x): number => (x * 2);'
       py: 'lambda x: (x * 2)'
@@ -17,7 +17,7 @@
           - 'x * 2'
 
 - name: lambda with return type (block body)
-  faber: |
+  source: |
       pro x -> numerus {
           redde x * 2
       }
@@ -42,7 +42,7 @@
           - 'redde x * 2'
 
 - name: single param lambda
-  faber: 'pro x: x * 2'
+  source: 'pro x: x * 2'
   expect:
       ts: '(x) => (x * 2);'
       py: 'lambda x: (x * 2)'
@@ -57,7 +57,7 @@
           - 'x * 2'
 
 - name: multi param lambda
-  faber: 'pro x, y: x + y'
+  source: 'pro x, y: x + y'
   expect:
       ts: '(x, y) => (x + y);'
       py: 'lambda x, y: (x + y)'
@@ -72,7 +72,7 @@
           - 'x + y'
 
 - name: zero param lambda
-  faber: 'pro: 42'
+  source: 'pro: 42'
   expect:
       ts: '() => 42;'
       py: 'lambda : 42'
@@ -87,7 +87,7 @@
           - '42'
 
 - name: lambda in variable
-  faber: 'fixum double = pro x: x * 2'
+  source: 'fixum double = pro x: x * 2'
   expect:
       ts: 'const double = (x) => (x * 2);'
       py: 'double = lambda x: (x * 2)'
@@ -102,7 +102,7 @@
           - 'x * 2'
 
 - name: lambda as callback
-  faber: |
+  source: |
       fixum items = [1, 2, 3]
       items.filtrata(pro x: x > 0)
   expect:
@@ -125,7 +125,7 @@
           - 'x > 0'
 
 - name: lambda returning lambda (curried)
-  faber: 'fixum curry = pro x: pro y: x + y'
+  source: 'fixum curry = pro x: pro y: x + y'
   expect:
       ts: 'const curry = (x) => (y) => (x + y);'
       py: 'curry = lambda x: lambda y: (x + y)'
@@ -142,7 +142,7 @@
           - 'x + y'
 
 - name: lambda with block and multiple statements
-  faber: |
+  source: |
       pro x {
         varia r = x * 2
         redde r
@@ -177,7 +177,7 @@
           - 'redde r'
 
 - name: triple nested lambda
-  faber: 'fixum nested = pro a: pro b: pro c: a + b + c'
+  source: 'fixum nested = pro a: pro b: pro c: a + b + c'
   expect:
       ts: 'const nested = (a) => (b) => (c) => ((a + b) + c);'
       py: 'nested = lambda a: lambda b: lambda c: ((a + b) + c)'
@@ -195,7 +195,7 @@
           - 'a + b + c'
 
 - name: lambda capturing outer variable (closure)
-  faber: |
+  source: |
       fixum multiplier = 3
       fixum scale = pro x: x * multiplier
   expect:
@@ -221,7 +221,7 @@
           - 'x * multiplier'
 
 - name: lambda immediately invoked
-  faber: 'fixum result = (pro x: x * 2)(5)'
+  source: 'fixum result = (pro x: x * 2)(5)'
   expect:
       ts: 'const result = (x) => (x * 2)(5);'
       py: 'result = lambda x: (x * 2)(5)'

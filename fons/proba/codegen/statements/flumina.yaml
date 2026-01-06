@@ -15,7 +15,7 @@
 # =============================================================================
 
 - name: fit function with redde
-  faber: |
+  source: |
       functio getId() fit textus {
         redde "abc"
       }
@@ -32,7 +32,7 @@
               - 'redde "abc"'
 
 - name: fit function with redde and param
-  faber: |
+  source: |
       functio greet(textus name) fit textus {
         redde name
       }
@@ -49,7 +49,7 @@
               - 'redde name'
 
 - name: fit function with no return value
-  faber: |
+  source: |
       functio doWork() fit vacuum {
         redde
       }
@@ -69,7 +69,7 @@
 # =============================================================================
 
 - name: fit function with iace
-  faber: |
+  source: |
       functio mightFail() fit textus {
         iace "not found"
       }
@@ -87,7 +87,7 @@
               - 'iace "not found"'
 
 - name: fit function with mori unchanged
-  faber: |
+  source: |
       functio mustWork() fit textus {
         mori "fatal error"
       }
@@ -108,7 +108,7 @@
 # =============================================================================
 
 - name: fit function with conditional return
-  faber: |
+  source: |
       functio check(bivalens ok) fit textus {
         si ok {
           redde "success"
@@ -131,7 +131,7 @@
               - 'redde "failure"'
 
 - name: fit function with conditional error
-  faber: |
+  source: |
       functio validate(numerus x) fit numerus {
         si x < 0 {
           iace "negative not allowed"
@@ -157,7 +157,7 @@
 # =============================================================================
 
 - name: arrow async function not transformed
-  faber: |
+  source: |
       @ futura
       functio fetchData() -> textus {
         redde "data"
@@ -182,7 +182,7 @@
 # =============================================================================
 
 - name: fiunt function with cede
-  faber: |
+  source: |
       functio items() fiunt numerus {
         cede 1
         cede 2
@@ -203,7 +203,7 @@
               - 'cede 2'
 
 - name: fiunt function with single cede
-  faber: |
+  source: |
       functio single() fiunt textus {
         cede "hello"
       }
@@ -220,7 +220,7 @@
               - 'cede "hello"'
 
 - name: fiunt function with iace
-  faber: |
+  source: |
       functio mayFail() fiunt numerus {
         cede 1
         iace "error occurred"
@@ -239,7 +239,7 @@
               - 'iace "error occurred"'
 
 - name: fiunt function with mori unchanged
-  faber: |
+  source: |
       functio mustWork() fiunt numerus {
         cede 1
         mori "fatal"
@@ -259,7 +259,7 @@
               - 'mori "fatal"'
 
 - name: fiunt function with conditional cede
-  faber: |
+  source: |
       functio conditional(bivalens flag) fiunt numerus {
         si flag {
           cede 1
@@ -283,7 +283,7 @@
               - 'cede 2'
 
 - name: fiunt function with loop
-  faber: |
+  source: |
       functio range(numerus n) fiunt numerus {
         varia numerus i = 0
         dum i < n {
@@ -313,7 +313,7 @@
 # =============================================================================
 
 - name: fiet function with redde
-  faber: |
+  source: |
       functio fetchData() fiet textus {
         redde "data"
       }
@@ -330,7 +330,7 @@
               - 'redde "data"'
 
 - name: fiet function with cede and redde
-  faber: |
+  source: |
       functio fetchAndReturn() fiet textus {
         fixum result = cede getData()
         redde result
@@ -350,7 +350,7 @@
               - 'redde result'
 
 - name: fiet function with iace
-  faber: |
+  source: |
       functio mightFail() fiet textus {
         iace "network error"
       }
@@ -367,7 +367,7 @@
               - 'iace "network error"'
 
 - name: fiet function with mori unchanged
-  faber: |
+  source: |
       functio mustWork() fiet textus {
         mori "fatal"
       }
@@ -388,7 +388,7 @@
 # =============================================================================
 
 - name: fient function with cede
-  faber: |
+  source: |
       functio fetchItems() fient textus {
         cede fetch("a")
         cede fetch("b")
@@ -409,7 +409,7 @@
               - 'cede fetch("b")'
 
 - name: fient function with iace
-  faber: |
+  source: |
       functio fetchMayFail() fient textus {
         cede fetch("a")
         iace "failed"
@@ -429,7 +429,7 @@
               - 'iace "failed"'
 
 - name: fient function with loop
-  faber: |
+  source: |
       functio fetchAll(lista<textus> urls) fient textus {
         ex urls pro url {
           cede fetch(url)

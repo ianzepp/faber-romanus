@@ -20,7 +20,7 @@
 
 # Pattern matching unit variants (no bindings)
 - name: discerne with unit variants
-  faber: |
+  source: |
       discerne status {
         casu Active { scribe "active" }
         casu Inactive { scribe "inactive" }
@@ -63,7 +63,7 @@
 
 # Pattern matching with field extraction
 - name: discerne with bindings
-  faber: |
+  source: |
       discerne event {
         casu Click pro x, y {
           scribe x
@@ -117,7 +117,7 @@
 
 # Pattern match with single field binding
 - name: discerne with single binding
-  faber: |
+  source: |
       discerne result {
         casu Success pro message {
           scribe message
@@ -163,7 +163,7 @@
 
 # Pattern matching with alias binding - bind whole variant to a name
 - name: discerne with alias binding
-  faber: |
+  source: |
       discerne event {
         casu Click ut c {
           scribe c.x
@@ -210,7 +210,7 @@
 
 # Three or more variant cases
 - name: discerne with multiple cases
-  faber: |
+  source: |
       discerne action {
         casu Move pro x, y { scribe x }
         casu Rotate pro angle { scribe angle }
@@ -257,7 +257,7 @@
 
 # Wildcard pattern for catch-all cases
 - name: discerne with wildcard pattern
-  faber: |
+  source: |
       discerne status {
         casu Active { scribe "active" }
         casu _ { scribe "other" }
@@ -293,7 +293,7 @@
 
 # Two discriminants with matching types
 - name: discerne with two discriminants
-  faber: |
+  source: |
       discerne left, right {
         casu A ut l, A ut r { scribe "both A" }
         casu B ut l, B ut r { scribe "both B" }
@@ -317,7 +317,7 @@
 
 # Mixed patterns - one specific, one wildcard
 - name: discerne with mixed wildcard
-  faber: |
+  source: |
       discerne a, b {
         casu Active, _ { scribe "a is active" }
         casu _, Active { scribe "b is active" }

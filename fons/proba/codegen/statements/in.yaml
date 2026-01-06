@@ -12,7 +12,7 @@
 
 # Single field mutation
 - name: mutate single field
-  faber: 'in user { nomen = "Marcus" }'
+  source: 'in user { nomen = "Marcus" }'
   expect:
       ts:
           - 'user.nomen = "Marcus";'
@@ -31,7 +31,7 @@
 
 # Multiple field mutations
 - name: mutate multiple fields
-  faber: |
+  source: |
       in user {
         nomen = "Marcus"
         aetas = 42
@@ -64,7 +64,7 @@
 
 # Increment field
 - name: increment field
-  faber: 'in stats { count += 1 }'
+  source: 'in stats { count += 1 }'
   expect:
       ts:
           - 'stats.count += 1;'
@@ -83,7 +83,7 @@
 
 # String concatenation
 - name: append to string field
-  faber: 'in message { text += " world" }'
+  source: 'in message { text += " world" }'
   expect:
       ts:
           - 'message.text += " world";'
@@ -106,7 +106,7 @@
 
 # Mutate nested object via member access (left side is Identifier, not MemberExpression)
 - name: mutate through member access
-  faber: 'in config { server.port = 8080 }'
+  source: 'in config { server.port = 8080 }'
   expect:
       ts:
           - 'server.port = 8080;'
@@ -129,7 +129,7 @@
 
 # Call method on mutated object (method calls not prefixed with context)
 - name: method call in mutation block
-  faber: |
+  source: |
       in user {
         nomen = "Marcus"
         validate()

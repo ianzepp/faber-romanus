@@ -17,7 +17,7 @@
 
 # Basic if with boolean literal
 - name: simple if with verum
-  faber: |
+  source: |
       si verum {
         scribe "yes"
       }
@@ -41,7 +41,7 @@
 
 # If with comparison expression
 - name: if with comparison
-  faber: 'si x > 0 { scribe "positive" }'
+  source: 'si x > 0 { scribe "positive" }'
   expect:
       ts:
           - 'if ((x > 0))'
@@ -63,7 +63,7 @@
 
 # Basic if-else using secus
 - name: if-else with secus
-  faber: |
+  source: |
       si falsum {
         a()
       }
@@ -94,7 +94,7 @@
 
 # Poetic else using secus
 - name: if-else with secus (poetic)
-  faber: |
+  source: |
       si falsum {
         a()
       }
@@ -129,7 +129,7 @@
 
 # Literal style: sin
 - name: if-elif-else with sin
-  faber: |
+  source: |
       si x == 1 { a() }
       sin x == 2 { b() }
       secus { c() }
@@ -164,7 +164,7 @@
 
 # Poetic style: sin (= "but if")
 - name: if-elif-else with sin (poetic)
-  faber: |
+  source: |
       si x == 1 { a() }
       sin x == 2 { b() }
       secus { c() }
@@ -199,7 +199,7 @@
 
 # Mixed styles (allowed per grammar)
 - name: mixed literal and poetic style
-  faber: |
+  source: |
       si x == 1 { a() }
       sin x == 2 { b() }
       secus { c() }
@@ -226,7 +226,7 @@
 # si with cape wraps in try-catch (TypeScript/Python only)
 
 - name: if with cape clause
-  faber: |
+  source: |
       si riskyCall() {
         process()
       } cape err {
@@ -254,7 +254,7 @@
 # =============================================================================
 
 - name: nested if statements
-  faber: |
+  source: |
       si a {
         si b {
           inner()
@@ -283,7 +283,7 @@
 # =============================================================================
 
 - name: si with type check (est)
-  faber: 'si x est textus { scribe x }'
+  source: 'si x est textus { scribe x }'
   expect:
       ts:
           - 'typeof x === "string"'
@@ -298,7 +298,7 @@
           - 'scribe x'
 
 - name: si with negated type check
-  faber: 'si x non est numerus { redde }'
+  source: 'si x non est numerus { redde }'
   expect:
       ts:
           - 'typeof x !== "number"'
@@ -318,7 +318,7 @@
 # =============================================================================
 
 - name: very long elif chain (5 branches)
-  faber: |
+  source: |
       si x == 1 { a() }
       sin x == 2 { b() }
       sin x == 3 { c() }
@@ -366,7 +366,7 @@
 # =============================================================================
 
 - name: si with complex grouped boolean
-  faber: 'si (a et b) aut (c et d) { action() }'
+  source: 'si (a et b) aut (c et d) { action() }'
   expect:
       ts:
           - '(a && b) || (c && d)'
@@ -382,7 +382,7 @@
           - 'action()'
 
 - name: si with logical not
-  faber: 'si non condition { fallback() }'
+  source: 'si non condition { fallback() }'
   expect:
       ts:
           - 'if (!condition)'
@@ -402,7 +402,7 @@
 # =============================================================================
 
 - name: deeply nested si (3 levels)
-  faber: |
+  source: |
       si a {
         si b {
           si c {
@@ -437,7 +437,7 @@
 # =============================================================================
 
 - name: si with function call condition
-  faber: 'si isValid(data) { process(data) }'
+  source: 'si isValid(data) { process(data) }'
   expect:
       ts:
           - 'if (isValid(data))'
@@ -453,7 +453,7 @@
           - 'process(data)'
 
 - name: si with member access condition
-  faber: 'si user.isActive et user.hasPermission { allow() }'
+  source: 'si user.isActive et user.hasPermission { allow() }'
   expect:
       ts:
           - 'if ((user.isActive && user.hasPermission))'
@@ -473,7 +473,7 @@
 # =============================================================================
 
 - name: empty if body with else
-  faber: 'si condition { } secus { fallback() }'
+  source: 'si condition { } secus { fallback() }'
   expect:
       ts:
           - 'if (condition)'
