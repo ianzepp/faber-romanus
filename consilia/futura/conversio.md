@@ -222,7 +222,7 @@ export interface ConversionExpression extends BaseNode {
 ## Implementation Checklist
 
 ### Phase 1: Keywords
-- [ ] `fons/faber/lexicon/keywords.ts` — Add conversion operator keywords (~line 280, Prepositions section):
+- [x] `fons/faber/lexicon/keywords.ts` — Add conversion operator keywords (~line 280, Prepositions section):
   ```typescript
   { latin: 'numeratum', meaning: 'to number', category: 'operator' },
   { latin: 'fractatum', meaning: 'to float', category: 'operator' },
@@ -235,7 +235,7 @@ export interface ConversionExpression extends BaseNode {
   ```
 
 ### Phase 2: AST
-- [ ] `fons/faber/parser/ast.ts` — Add `ConversionExpression` interface (~line 2304, after `InnatumExpression`):
+- [x] `fons/faber/parser/ast.ts` — Add `ConversionExpression` interface (~line 2304, after `InnatumExpression`):
   ```typescript
   export interface ConversionExpression extends BaseNode {
       type: 'ConversionExpression';
@@ -246,10 +246,10 @@ export interface ConversionExpression extends BaseNode {
       fallback?: Expression;
   }
   ```
-- [ ] `fons/faber/parser/ast.ts` — Add `ConversionExpression` to `Expression` union type
+- [x] `fons/faber/parser/ast.ts` — Add `ConversionExpression` to `Expression` union type
 
 ### Phase 3: Parser
-- [ ] `fons/faber/parser/index.ts` — Extend `parseQuaExpression()` (~line 4869, after `innatum` case):
+- [x] `fons/faber/parser/index.ts` — Extend `parseQuaExpression()` (~line 4869, after `innatum` case):
   ```typescript
   else if (matchKeyword('numeratum') || matchKeyword('fractatum') ||
            matchKeyword('textatum') || matchKeyword('bivalentum')) {

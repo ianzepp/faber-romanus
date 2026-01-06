@@ -142,6 +142,7 @@ import type {
     LambdaExpression,
     QuaExpression,
     InnatumExpression,
+    ConversionExpression,
     EstExpression,
     ProbandumStatement,
     ProbaStatement,
@@ -4846,12 +4847,14 @@ export function parse(tokens: Token[]): ParserResult {
     function parseQuaExpression(): Expression {
         let expr = parseCall();
 
-        while (matchKeyword('qua') || matchKeyword('innatum')) {
+        while (matchKeyword('qua') || matchKeyword('innatum') ||
+               matchKeyword('numeratum') || matchKeyword('fractatum') ||
+               matchKeyword('textatum') || matchKeyword('bivalentum')) {
             const keyword = tokens[current - 1]!.value;
             const position = tokens[current - 1]!.position;
-            const targetType = parseTypeAnnotation();
 
             if (keyword === 'qua') {
+                const targetType = parseTypeAnnotation();
                 expr = {
                     type: 'QuaExpression',
                     expression: expr,
@@ -4859,13 +4862,56 @@ export function parse(tokens: Token[]): ParserResult {
                     position,
                 } as QuaExpression;
             }
-            else {
+            else if (keyword === 'innatum') {
+                const targetType = parseTypeAnnotation();
                 expr = {
                     type: 'InnatumExpression',
                     expression: expr,
                     targetType,
                     position,
                 } as InnatumExpression;
+            }
+            else {
+                // Conversion operators: numeratum, fractatum, textatum, bivalentum
+                const conversion = keyword as ConversionExpression['conversion'];
+                let targetType: TypeAnnotation | undefined;
+                let radix: ConversionExpression['radix'];
+                let fallback: Expression | undefined;
+
+                // Parse optional type parameters for numeratum/fractatum
+                if ((conversion === 'numeratum' || conversion === 'fractatum') && match('LESS')) {
+                    targetType = parseTypeAnnotation();
+                    if (match('COMMA')) {
+                        // Radix type: Dec, Hex, Oct, Bin
+                        const radixToken = tokens[current];
+                        if (radixToken && ['Dec', 'Hex', 'Oct', 'Bin'].includes(radixToken.value)) {
+                            radix = advance().value as ConversionExpression['radix'];
+                        }
+                        else {
+                            errors.push({
+                                code: ParserErrorCode.UnexpectedToken,
+                                message: `Expected radix type (Dec, Hex, Oct, Bin), got '${radixToken?.value}'`,
+                                position: radixToken?.position ?? position,
+                            });
+                        }
+                    }
+                    expect('GREATER', ParserErrorCode.ExpectedClosingAngle);
+                }
+
+                // Parse optional fallback with 'vel'
+                if (matchKeyword('vel')) {
+                    fallback = parseUnary();
+                }
+
+                expr = {
+                    type: 'ConversionExpression',
+                    expression: expr,
+                    conversion,
+                    targetType,
+                    radix,
+                    fallback,
+                    position,
+                } as ConversionExpression;
             }
         }
 

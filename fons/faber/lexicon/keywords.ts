@@ -263,6 +263,12 @@ export const keywords: KeywordEntry[] = [
     { latin: 'nihil', meaning: 'null', category: 'value' },
     // WHY: "ego" (I) for self-reference in methods - like "this" or "self"
     { latin: 'ego', meaning: 'this/self', category: 'value' },
+    // WHY: Radix types for numeratum/fractatum parsing
+    //      Used as second type parameter: "ff" numeratum<i32, Hex>
+    { latin: 'Dec', meaning: 'decimal (base 10)', category: 'value' },
+    { latin: 'Hex', meaning: 'hexadecimal (base 16)', category: 'value' },
+    { latin: 'Oct', meaning: 'octal (base 8)', category: 'value' },
+    { latin: 'Bin', meaning: 'binary (base 2)', category: 'value' },
 
     // ---------------------------------------------------------------------------
     // Prepositions
@@ -283,6 +289,13 @@ export const keywords: KeywordEntry[] = [
     //      Used to construct empty tabula/lista with proper native initialization
     //      {} innatum tabula<K,V> → new Map() in TS, HashMap::new() in Rust, etc.
     { latin: 'innatum', meaning: 'native (construct)', category: 'preposition' },
+    // WHY: Conversion operators use -atum suffix (perfect passive participle)
+    //      "having been made into X" — postfix like qua/innatum
+    //      numeratum/fractatum can fail (use vel for fallback), textatum/bivalentum are infallible
+    { latin: 'numeratum', meaning: 'to number', category: 'operator' },
+    { latin: 'fractatum', meaning: 'to float', category: 'operator' },
+    { latin: 'textatum', meaning: 'to string', category: 'operator' },
+    { latin: 'bivalentum', meaning: 'to boolean', category: 'operator' },
     // WHY: "ut" (as) for aliasing in imports and destructuring
     //      ex norma importa scribe ut s
     //      ex persona fixum nomen ut n

@@ -1923,6 +1923,7 @@ export type Expression =
     | EstExpression
     | QuaExpression
     | InnatumExpression
+    | ConversionExpression
     | CallExpression
     | MemberExpression
     | AssignmentExpression
@@ -2300,6 +2301,37 @@ export interface InnatumExpression extends BaseNode {
     type: 'InnatumExpression';
     expression: Expression;
     targetType: TypeAnnotation;
+}
+
+/**
+ * Type conversion expression.
+ *
+ * GRAMMAR (in EBNF):
+ *   conversionExpr := expression ('numeratum' | 'fractatum' | 'textatum' | 'bivalentum')
+ *                     typeParams? ('vel' expression)?
+ *   typeParams := '<' typeAnnotation (',' radixType)? '>'
+ *   radixType := 'Dec' | 'Hex' | 'Oct' | 'Bin'
+ *
+ * SEMANTICS:
+ *   - numeratum: string/value to integer (can fail, use vel for fallback)
+ *   - fractatum: string/value to float (can fail, use vel for fallback)
+ *   - textatum: any to string (infallible)
+ *   - bivalentum: any to boolean (infallible, follows nonnulla semantics)
+ *
+ * EXAMPLES:
+ *   "42" numeratum              // parse to number, panic on failure
+ *   "42" numeratum vel 0        // parse with fallback
+ *   "ff" numeratum<i32, Hex>    // parse hex string to i32
+ *   42 textatum                 // convert to string
+ *   x bivalentum                // convert to boolean (truthiness)
+ */
+export interface ConversionExpression extends BaseNode {
+    type: 'ConversionExpression';
+    expression: Expression;
+    conversion: 'numeratum' | 'fractatum' | 'textatum' | 'bivalentum';
+    targetType?: TypeAnnotation;
+    radix?: 'Dec' | 'Hex' | 'Oct' | 'Bin';
+    fallback?: Expression;
 }
 
 // ---------------------------------------------------------------------------
