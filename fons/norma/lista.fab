@@ -1,0 +1,34 @@
+# lista.fab - Standard Library lista<T> Definition
+#
+# Vertical slice: just `adde` for now to prove the annotation-driven codegen.
+# See consilia/futura/norma-faber.md for the full design.
+
+# =============================================================================
+# TYPE MAPPING
+# =============================================================================
+
+@ innatum ts "Array", py "list", rs "Vec", cpp "std::vector", zig "Lista"
+genus lista { }
+
+# =============================================================================
+# ADDING ELEMENTS
+# =============================================================================
+
+# Add element to end (mutates in place)
+@ radix add, imperativus, perfectum
+@ verte ts "push"
+@ verte py "append"
+@ verte rs "push"
+@ verte cpp "push_back"
+@ verte zig (ego, elem, alloc) -> "S.adde(S, S)"
+@ externa
+functio adde()
+
+# Add element to end (returns new list)
+@ verte ts (ego, elem) -> "[...S, S]"
+@ verte py (ego, elem) -> "[*S, S]"
+@ verte rs (ego, elem) -> "{ let mut v = S.clone(); v.push(S); v }"
+@ verte cpp (ego, elem) -> "[&]{ auto v = S; v.push_back(S); return v; }()"
+@ verte zig (ego, elem, alloc) -> "S.addita(S, S)"
+@ externa
+functio addita()
