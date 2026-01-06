@@ -378,3 +378,97 @@ Faber's type system reflects several deliberate choices:
 **No classes, no constructors.** The `genus` keyword names a type of thing, not a blueprint for objects. Construction happens through `novum` with declarative field specification, not imperative constructor logic.
 
 These choices produce code that is explicit about data flow and honest about computation. The Roman craftsman built things to last; Faber aims for code that remains comprehensible as it evolves.
+
+---
+
+## Stdlib Annotations
+
+Faber's standard library uses specialized annotations to define how Latin-named methods map to target language implementations. These annotations enable the compiler to generate appropriate code for each target (TypeScript, Python, Zig, etc.) from a single source definition.
+
+### @ innatum (Native Type Mapping)
+
+The `@ innatum` annotation (Latin "inborn, innate") declares how a `genus` maps to native types in each target language:
+
+```fab
+@ innatum ts "Array", py "list", zig "Lista", rs "Vec", cpp "std::vector"
+genus lista<T> { }
+```
+
+This tells the compiler that `lista<T>` should compile to `Array` in TypeScript, `list` in Python, and so on. The native type receives the methods defined on the genus.
+
+### @ subsidia (External Implementation)
+
+The `@ subsidia` annotation (Latin "support, aid") specifies external implementation files for targets where inline code generation is insufficient:
+
+```fab
+@ innatum ts "Array", py "list", zig "Lista"
+@ subsidia zig "subsidia/zig/lista.zig"
+genus lista<T> { }
+```
+
+When the compiler encounters a method without an inline `@ verte` for a target, it falls back to the subsidia file. This is useful for targets like Zig where allocator threading and memory management require substantial wrapper code.
+
+### @ radix (Morphology Declaration)
+
+The `@ radix` annotation (Latin "root, stem") declares the morphological stem and valid verb forms for a method:
+
+```fab
+@ radix filtr, imperativus, perfectum
+functio filtra<T>(ego lista<T>, praedicatum: functio(T) fit bivalens) fit vacuum
+functio filtrata<T>(ego lista<T>, praedicatum: functio(T) fit bivalens) fit lista<T>
+```
+
+The first identifier is the verb stem (`filtr-`), followed by valid conjugation forms:
+
+| Form | Ending | Semantics |
+|------|--------|-----------|
+| `imperativus` | `-a`, `-e`, `-i` | Mutates in place, synchronous |
+| `perfectum` | `-ata`, `-ita`, `-ta` | Returns new value, synchronous |
+| `futurum_indicativum` | `-abit`, `-ebit` | Mutates in place, asynchronous |
+| `futurum_activum` | `-atura`, `-itura` | Returns new value, asynchronous |
+| `generator` | `-ans`, `-ens` | Yields values (streaming) |
+
+The compiler validates that called method names match declared forms. Calling `items.filtratura(pred)` would error if only `imperativus, perfectum` are declared.
+
+### @ verte (Codegen Transform)
+
+The `@ verte` annotation (Latin "turn, transform") defines how a method call transforms to target code. Two forms are supported:
+
+**Simple method rename:**
+
+```fab
+@ verte ts "push"
+@ verte py "append"
+functio adde<T>(ego lista<T>, elem: T) fit vacuum
+```
+
+This compiles `items.adde(x)` to `items.push(x)` in TypeScript and `items.append(x)` in Python.
+
+**Template with placeholders:**
+
+```fab
+@ verte ts (ego, elem) -> "[...§, §]"
+@ verte py (ego, elem) -> "[*§, §]"
+@ verte zig (ego, elem, alloc) -> "§.addita(§, §)"
+functio addita<T>(ego lista<T>, elem: T) fit lista<T>
+```
+
+The `§` placeholders are filled positionally with the parameter values. For Zig, the allocator parameter comes last when needed.
+
+Each `@ verte` specifies exactly one target. Use multiple annotations for multiple targets:
+
+```fab
+@ radix add, imperativus, perfectum
+@ verte ts "push"
+@ verte py "append"
+@ verte rs "push"
+@ verte cpp "push_back"
+@ verte zig (ego, elem, alloc) -> "§.adde(§, §)"
+functio adde<T>(ego lista<T>, elem: T) fit vacuum
+```
+
+### Design Philosophy
+
+These annotations serve a specific purpose: defining the standard library in Faber source rather than scattered target-specific registries. User code typically does not need these annotations; they exist for stdlib authors and advanced library developers who want to provide optimized implementations across multiple targets.
+
+The morphology system (`@ radix`) reflects Faber's Latin-first thesis: verb conjugations encode semantic information that modern languages express through ad-hoc naming conventions. Rather than memorizing `sort`/`sorted`, `reverse`/`reversed`, users learn that imperative forms mutate and participle forms return new values.

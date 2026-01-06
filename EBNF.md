@@ -56,8 +56,24 @@ genusDecl    := 'abstractus'? 'genus' IDENTIFIER typeParams? ('sub' IDENTIFIER)?
 genusMember  := annotation* (fieldDecl | methodDecl)
 fieldDecl    := 'generis'? 'nexum'? typeAnnotation IDENTIFIER (':' expression)?
 methodDecl   := 'functio' IDENTIFIER '(' paramList ')' funcModifier* returnClause? blockStmt?
-annotation   := '@' IDENTIFIER+
+annotation   := '@' IDENTIFIER+ | stdlibAnnotation
 ```
+
+### Stdlib Annotations
+
+```ebnf
+stdlibAnnotation := innatumAnnotation | subsidiaAnnotation | radixAnnotation | verteAnnotation
+innatumAnnotation := '@' 'innatum' targetMapping (',' targetMapping)*
+subsidiaAnnotation := '@' 'subsidia' targetMapping (',' targetMapping)*
+radixAnnotation := '@' 'radix' IDENTIFIER (',' IDENTIFIER)*
+verteAnnotation := '@' 'verte' IDENTIFIER (STRING | '(' IDENTIFIER (',' IDENTIFIER)* ')' '->' STRING)
+targetMapping := IDENTIFIER STRING
+```
+
+- `@ innatum` maps a genus to native types per target
+- `@ subsidia` specifies external implementation files
+- `@ radix` declares morphological stem and valid verb forms
+- `@ verte` defines codegen transformation (method name or template)
 
 - `sub` = extends, `implet` = implements
 - `generis` = static, `nexum` = bound/property
