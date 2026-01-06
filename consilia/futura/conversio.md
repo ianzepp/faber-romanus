@@ -283,7 +283,7 @@ export interface ConversionExpression extends BaseNode {
   ```
 
 ### Phase 4: Semantic Analysis
-- [ ] `fons/faber/semantic/index.ts` — Add `ConversionExpression` case in `resolveExpression()` (~line 834):
+- [x] `fons/faber/semantic/index.ts` — Add `ConversionExpression` case in `resolveExpression()` (~line 834):
   - Resolve source expression type
   - Validate source → target conversion is valid (see Type Compatibility table)
   - If `fallback` present, validate fallback type matches result type

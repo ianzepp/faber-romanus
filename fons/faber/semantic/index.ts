@@ -96,6 +96,7 @@ import type {
     IncipitStatement,
     IncipietStatement,
     AdStatement,
+    ConversionExpression,
 } from '../parser/ast';
 import type { Position } from '../tokenizer/types';
 import type { Scope, Symbol } from './scope';
@@ -829,6 +830,49 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
                 node.resolvedType = targetType;
                 return targetType;
+            }
+
+            case 'ConversionExpression': {
+                // WHY: Type conversion operators transform values between primitive types
+                // numeratum -> NUMERUS, fractatum -> FRACTUS, textatum -> TEXTUS, bivalentum -> BIVALENS
+                resolveExpression(node.expression);
+
+                // Determine result type based on conversion operator
+                let resultType: SemanticType;
+                switch (node.conversion) {
+                    case 'numeratum':
+                        // Use targetType if specified (e.g., i32, u64, magnus), otherwise default to NUMERUS
+                        resultType = node.targetType ? resolveTypeAnnotation(node.targetType) : NUMERUS;
+                        break;
+                    case 'fractatum':
+                        resultType = node.targetType ? resolveTypeAnnotation(node.targetType) : FRACTUS;
+                        break;
+                    case 'textatum':
+                        resultType = TEXTUS;
+                        break;
+                    case 'bivalentum':
+                        resultType = BIVALENS;
+                        break;
+                }
+
+                // Validate fallback if present
+                if (node.fallback) {
+                    const fallbackType = resolveExpression(node.fallback);
+
+                    // Check if fallback is nihil - result becomes nullable
+                    if (node.fallback.type === 'Literal' && (node.fallback as Literal).value === null) {
+                        resultType = { ...resultType, nullable: true };
+                    }
+                    else if (!isAssignableTo(fallbackType, resultType)) {
+                        errors.push({
+                            message: `Conversion fallback type ${formatType(fallbackType)} is not assignable to ${formatType(resultType)}`,
+                            position: node.fallback.position,
+                        });
+                    }
+                }
+
+                node.resolvedType = resultType;
+                return resultType;
             }
 
             case 'PraefixumExpression':
