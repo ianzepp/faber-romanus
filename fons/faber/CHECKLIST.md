@@ -233,6 +233,10 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 | `est` (instanceof/typeof)           |    ●     | ● |  ●   | ●  |  ○  |
 | `qua` (type cast)                   |    ●     | ● |  ●   | ●  |  ○  |
 | `innatum` (native construction)     |    ●     | ● |  ●   | ●  |  ●  |
+| `numeratum` (to integer)            |    ●     | ● |  ●   | ●  |  ●  |
+| `fractatum` (to float)              |    ●     | ● |  ●   | ●  |  ●  |
+| `textatum` (to string)              |    ●     | ● |  ●   | ●  |  ●  |
+| `bivalentum` (to boolean)           |    ●     | ● |  ●   | ●  |  ●  |
 | `aut` (logical or)                  |    ●     | ● |  ●   | ●  |  ●  |
 | `vel` (nullish coalescing)          |    ●     | ● |  ●   | ●  |  ●  |
 | `praefixum` (comptime expr)         |    ●     | ● |  ●   | ●  |  ○  |
