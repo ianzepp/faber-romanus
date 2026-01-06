@@ -223,7 +223,7 @@
 # =============================================================================
 # Catch Clause (cape)
 # =============================================================================
-# si with cape wraps in try-catch (TypeScript/Python only)
+# si with cape wraps the consequent block in try-catch (inside the if)
 
 - name: if with cape clause
   source: |
@@ -234,20 +234,42 @@
       }
   expect:
       ts:
+          - 'if (riskyCall()) {'
           - 'try {'
-          - 'if (riskyCall())'
+          - 'process()'
           - '} catch (err)'
-          - 'handleError(err)'
-      py:
-          - 'try:'
-          - 'if riskyCall():'
-          - 'except Exception as err:'
           - 'handleError(err)'
       fab:
           - 'si riskyCall()'
           - 'process()'
           - 'cape err'
           - 'handleError(err)'
+
+- name: if with cape and else
+  source: |
+      si riskyCall() {
+        process()
+      } cape err {
+        handleError(err)
+      } secus {
+        fallback()
+      }
+  expect:
+      ts:
+          - 'if (riskyCall()) {'
+          - 'try {'
+          - 'process()'
+          - '} catch (err)'
+          - 'handleError(err)'
+          - '} else {'
+          - 'fallback()'
+      fab:
+          - 'si riskyCall()'
+          - 'process()'
+          - 'cape err'
+          - 'handleError(err)'
+          - 'secus'
+          - 'fallback()'
 
 # =============================================================================
 # Nested Conditionals

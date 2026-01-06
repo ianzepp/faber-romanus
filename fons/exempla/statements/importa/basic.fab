@@ -17,9 +17,9 @@ ex "@std/crypto" importa * ut crypto
 ex "@oak/oak" importa Application
 ex "std/path" importa join, resolve
 
-# Relative imports
-ex "./utils" importa helper
-ex "../shared/utils" importa formatter
+# Relative imports (commented out - modules don't exist in exempla)
+# ex "./utils" importa helper
+# ex "../shared/utils" importa formatter
 
 # Many named items
 ex "helpers" importa a, b, c, d, e, f

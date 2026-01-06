@@ -4630,6 +4630,40 @@ export function parse(tokens: Token[]): ParserResult {
             return { type: 'UnaryExpression', operator: 'nonnihil', argument, prefix: true, position };
         }
 
+        // WHY: 'verum x' checks if x === true (strict boolean true check)
+        //      But 'verum' alone is the true literal (handled in parsePrimary)
+        if (checkKeyword('verum')) {
+            const next = peek(1);
+            const isUnaryOperand =
+                next?.type === 'IDENTIFIER' ||
+                (next?.type === 'KEYWORD' &&
+                    ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value));
+            if (isUnaryOperand) {
+                advance(); // consume 'verum'
+                const position = tokens[current - 1]!.position;
+                const argument = parseUnary();
+
+                return { type: 'UnaryExpression', operator: 'verum', argument, prefix: true, position };
+            }
+        }
+
+        // WHY: 'falsum x' checks if x === false (strict boolean false check)
+        //      But 'falsum' alone is the false literal (handled in parsePrimary)
+        if (checkKeyword('falsum')) {
+            const next = peek(1);
+            const isUnaryOperand =
+                next?.type === 'IDENTIFIER' ||
+                (next?.type === 'KEYWORD' &&
+                    ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value));
+            if (isUnaryOperand) {
+                advance(); // consume 'falsum'
+                const position = tokens[current - 1]!.position;
+                const argument = parseUnary();
+
+                return { type: 'UnaryExpression', operator: 'falsum', argument, prefix: true, position };
+            }
+        }
+
         if (matchKeyword('negativum')) {
             const position = tokens[current - 1]!.position;
             const argument = parseUnary();
