@@ -287,6 +287,91 @@ Etymology: `inter` means "among" or "between" in Latin.
 
 ---
 
+## Type Conversion
+
+Faber provides postfix operators for converting values between primitive types. These operators use the Latin perfect passive participle form (`-atum`), meaning "having been made into."
+
+### numeratum (to integer)
+
+Parse a string to an integer, or convert other types to integer:
+
+```fab
+fixum n = "42" numeratum              # 42
+fixum hex = "ff" numeratum<i32, Hex>  # 255 (hexadecimal)
+fixum bin = "101" numeratum<u8, Bin>  # 5 (binary)
+fixum oct = "777" numeratum<i32, Oct> # 511 (octal)
+```
+
+Without a fallback, parse failure causes a panic. Use `vel` to provide a default:
+
+```fab
+fixum n = "bad" numeratum vel 0       # 0 (fallback on parse failure)
+fixum n = userInput numeratum vel -1  # -1 if input is not a valid number
+```
+
+Etymology: from `numerus` (number) + `-atum` (made into).
+
+### fractatum (to float)
+
+Parse a string to a floating-point number:
+
+```fab
+fixum f = "3.14" fractatum            # 3.14
+fixum f = "bad" fractatum vel 0.0     # 0.0 (fallback)
+```
+
+Etymology: from `fractus` (broken, fraction) + `-atum` (made into).
+
+### textatum (to string)
+
+Convert any value to its string representation. This conversion is infallible:
+
+```fab
+fixum s = 42 textatum                 # "42"
+fixum s = 3.14 textatum               # "3.14"
+fixum s = verum textatum              # "verum"
+```
+
+Etymology: from `textus` (text) + `-atum` (made into).
+
+### bivalentum (to boolean)
+
+Convert any value to a boolean based on "truthiness." This follows the same semantics as `nonnulla`:
+
+```fab
+fixum b = 0 bivalentum                # falsum (zero)
+fixum b = 42 bivalentum               # verum (non-zero)
+fixum b = "" bivalentum               # falsum (empty string)
+fixum b = "hello" bivalentum          # verum (non-empty)
+fixum b = [] bivalentum               # falsum (empty collection)
+fixum b = nihil bivalentum            # falsum (null)
+```
+
+Etymology: from `bivalens` (two-valued) + `-um` (made into).
+
+### Chaining Conversions
+
+Conversion operators chain left-to-right like other postfix operators:
+
+```fab
+fixum s = "42" numeratum textatum     # "42" -> 42 -> "42"
+```
+
+### Radix Types
+
+For `numeratum`, you can specify both the target integer type and the radix (base) for parsing:
+
+| Radix | Base | Example |
+|-------|------|---------|
+| `Dec` | 10 | `"42" numeratum<i32, Dec>` |
+| `Hex` | 16 | `"ff" numeratum<i32, Hex>` |
+| `Oct` | 8 | `"777" numeratum<i32, Oct>` |
+| `Bin` | 2 | `"101" numeratum<u8, Bin>` |
+
+If no radix is specified, decimal (base 10) is assumed.
+
+---
+
 ## Assignment
 
 Simple assignment uses the equals sign:

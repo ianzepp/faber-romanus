@@ -255,7 +255,9 @@ range      := additive (('..' | 'ante' | 'usque') additive ('per' additive)?)?
 additive   := multiplicative (('+' | '-') multiplicative)*
 multiplicative := unary (('*' | '/' | '%') unary)*
 unary      := ('!' | '-' | 'non' | 'nulla' | 'nonnulla' | 'nihil' | 'nonnihil' | 'negativum' | 'positivum' | 'cede' | 'novum' | 'finge') unary | cast
-cast       := call ('qua' typeAnnotation | 'innatum' typeAnnotation)*
+cast       := call ('qua' typeAnnotation | 'innatum' typeAnnotation | conversionOp)*
+conversionOp := ('numeratum' | 'fractatum') typeParams? ('vel' unary)?
+             | ('textatum' | 'bivalentum')
 ```
 
 ### Call and Member Access
@@ -417,6 +419,11 @@ inStmt := 'in' expression blockStmt
 | **Objects** | `ego` | this/self |
 | | `novum` | new |
 | | `finge` | construct variant |
+| **Type Conversion** | `numeratum` | parse to integer |
+| | `fractatum` | parse to float |
+| | `textatum` | convert to string |
+| | `bivalentum` | convert to boolean |
+| | `Hex` / `Oct` / `Bin` / `Dec` | radix types |
 | **Output** | `scribe` | log |
 | | `vide` | debug |
 | | `mone` | warn |
