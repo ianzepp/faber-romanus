@@ -352,15 +352,141 @@ Shared work (not compiler-specific):
 
 ---
 
+## Progress
+
+### Completed
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: Annotation Parsing | ✅ Complete | Both Faber and Rivus parse all four annotations |
+| Vertical Slice | ✅ Complete | `adde`/`addita` working via norma registry |
+
+### Vertical Slice Details (commit b5f9ef7)
+
+Proved architecture end-to-end:
+
+1. **`fons/norma/lista.fab`** - Annotation source (currently minimal)
+2. **`fons/faber/codegen/norma-registry.ts`** - Hardcoded registry (avoids circular dep with parser)
+3. **`fons/faber/codegen/ts/expressions/call.ts`** - Checks norma first, falls back to LISTA_METHODS
+
+Verified output:
+```
+items.adde(4)   → items.push(4)      # ts
+                → items.append(4)    # py
+
+items.addita(4) → [...items, 4]      # ts
+                → [*items, 4]        # py
+```
+
+### Current Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ fons/norma/lista.fab          (source of truth - annotations)  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓ (manual sync for now)
+┌─────────────────────────────────────────────────────────────────┐
+│ fons/faber/codegen/norma-registry.ts    (hardcoded registry)   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│ fons/faber/codegen/*/expressions/call.ts  (codegen lookup)     │
+│   - Check norma registry first                                  │
+│   - Fall back to LISTA_METHODS (hardcoded TypeScript)          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Current State
 
 | Component | Faber | Rivus |
 |-----------|-------|-------|
-| Annotation parsing | Yes | Yes |
+| Annotation parsing | ✅ Yes | ✅ Yes |
 | Morphology parsing | No | Yes (`morphologia.fab`) |
-| Codegen registries | Yes (TypeScript) | Basic |
+| Codegen registries | Hybrid (norma + TS fallback) | Basic |
 | Multi-target codegen | ts, py, rs, cpp, zig | ts |
 | subsidia/zig/*.zig | Yes | No |
+| norma-registry wired | ts only | No |
+
+---
+
+## Next: Full lista<> Migration
+
+Migrate all 53 lista methods from hardcoded `lista.ts` to annotation-driven `norma-registry.ts`.
+
+### Approach
+
+**Option A: Continue hardcoding** (chosen for now)
+- Manually add each method to `norma-registry.ts`
+- Tedious but straightforward, no new tooling
+- Can parallelize: registry expansion + target wiring
+
+**Option B: Build-time generation** (future)
+- Script parses `norma/lista.fab` → generates `norma-registry.ts`
+- Cleaner long-term, but adds build complexity
+- Blocked by: need to avoid circular dependency with parser
+
+### Tasks
+
+#### 1. Expand norma-registry.ts (~53 methods)
+
+Group methods by category for systematic migration:
+
+| Category | Methods | Count |
+|----------|---------|-------|
+| Adding | adde, addita, praepone, praeposita | 4 |
+| Removing | remove, remota, decapita, decapitata, purga | 5 |
+| Accessing | primus, ultimus, accipe, toSlice | 4 |
+| Properties | longitudo, vacua | 2 |
+| Searching | continet, indiceDe, inveni, inveniIndicem | 4 |
+| Predicates | omnes, aliquis | 2 |
+| Functional | filtrata, mappata, reducta, explanata, plana, inversa, ordinata, sectio, prima, ultima, omitte | 11 |
+| Mutating | filtra, ordina, inverte | 3 |
+| Iteration | perambula, coniunge | 2 |
+| Aggregation | summa, medium, minimus, maximus, minimusPer, maximusPer, numera | 7 |
+| Lodash-style | congrega, unica, planaOmnia, fragmenta, densa, partire, misce, specimen, specimina | 9 |
+| **Total** | | **53** |
+
+#### 2. Wire remaining targets
+
+Currently only `ts/expressions/call.ts` checks norma registry. Add same pattern to:
+
+- [ ] `py/expressions/call.ts`
+- [ ] `rs/expressions/call.ts`
+- [ ] `cpp/expressions/call.ts`
+- [ ] `zig/expressions/call.ts`
+
+#### 3. Test coverage
+
+For each method, verify:
+- Simple form works (method rename)
+- Template form works (§ substitution)
+- All 5 targets produce valid code
+
+#### 4. Deprecate lista.ts
+
+Once all methods are in norma-registry:
+- Remove fallback to `LISTA_METHODS` in call.ts files
+- Delete or archive `fons/faber/codegen/lista.ts`
+
+### Execution Strategy
+
+**Parallel workstreams:**
+
+```
+Stream A: Registry expansion          Stream B: Target wiring
+─────────────────────────────         ────────────────────────
+Add methods to norma-registry.ts      Wire py/call.ts
+  (batch by category)                 Wire rs/call.ts
+                                      Wire cpp/call.ts
+                                      Wire zig/call.ts
+```
+
+**Suggested order:**
+1. Wire all 5 targets with current 2 methods (adde, addita)
+2. Expand registry one category at a time
+3. Test each category across all targets before moving on
 
 ---
 
