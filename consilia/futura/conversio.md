@@ -219,69 +219,118 @@ export interface ConversionExpression extends BaseNode {
 }
 ```
 
-## Implementation
+## Implementation Checklist
 
 ### Phase 1: Keywords
+- [ ] `fons/faber/lexicon/keywords.ts` — Add conversion operator keywords (~line 280, Prepositions section):
+  ```typescript
+  { latin: 'numeratum', meaning: 'to number', category: 'operator' },
+  { latin: 'fractatum', meaning: 'to float', category: 'operator' },
+  { latin: 'textatum', meaning: 'to string', category: 'operator' },
+  { latin: 'bivalentum', meaning: 'to boolean', category: 'operator' },
+  { latin: 'Hex', meaning: 'hexadecimal radix', category: 'type' },
+  { latin: 'Oct', meaning: 'octal radix', category: 'type' },
+  { latin: 'Bin', meaning: 'binary radix', category: 'type' },
+  { latin: 'Dec', meaning: 'decimal radix', category: 'type' },
+  ```
 
-Add to `fons/faber/lexicon/keywords.ts`:
+### Phase 2: AST
+- [ ] `fons/faber/parser/ast.ts` — Add `ConversionExpression` interface (~line 2304, after `InnatumExpression`):
+  ```typescript
+  export interface ConversionExpression extends BaseNode {
+      type: 'ConversionExpression';
+      expression: Expression;
+      conversion: 'numeratum' | 'fractatum' | 'textatum' | 'bivalentum';
+      targetType?: TypeAnnotation;
+      radix?: 'Dec' | 'Hex' | 'Oct' | 'Bin';
+      fallback?: Expression;
+  }
+  ```
+- [ ] `fons/faber/parser/ast.ts` — Add `ConversionExpression` to `Expression` union type
 
-```typescript
-{ latin: 'numeratum', meaning: 'to number', category: 'operator' },
-{ latin: 'fractatum', meaning: 'to float', category: 'operator' },
-{ latin: 'textatum', meaning: 'to string', category: 'operator' },
-{ latin: 'bivalentum', meaning: 'to boolean', category: 'operator' },
-{ latin: 'Hex', meaning: 'hexadecimal radix', category: 'type' },
-{ latin: 'Oct', meaning: 'octal radix', category: 'type' },
-{ latin: 'Bin', meaning: 'binary radix', category: 'type' },
-{ latin: 'Dec', meaning: 'decimal radix', category: 'type' },
-```
+### Phase 3: Parser
+- [ ] `fons/faber/parser/index.ts` — Extend `parseQuaExpression()` (~line 4869, after `innatum` case):
+  ```typescript
+  else if (matchKeyword('numeratum') || matchKeyword('fractatum') ||
+           matchKeyword('textatum') || matchKeyword('bivalentum')) {
+      const conversion = previous().value;
+      let targetType: TypeAnnotation | undefined;
+      let radix: string | undefined;
+      let fallback: Expression | undefined;
 
-### Phase 2: Parser
+      if ((conversion === 'numeratum' || conversion === 'fractatum') && match('<')) {
+          targetType = parseTypeAnnotation();
+          if (match(',')) {
+              radix = consume(['Hex', 'Oct', 'Bin', 'Dec']).value;
+          }
+          consume('>');
+      }
 
-In the cast parsing section of `fons/faber/parser/index.ts`, add after `innatum` handling:
+      if (matchKeyword('vel')) {
+          fallback = parseUnary();
+      }
 
-```typescript
-else if (matchKeyword('numeratum') || matchKeyword('fractatum') ||
-         matchKeyword('textatum') || matchKeyword('bivalentum')) {
-    const conversion = previous().value;
-    let targetType: TypeAnnotation | undefined;
-    let radix: string | undefined;
-    let fallback: Expression | undefined;
+      expr = {
+          type: 'ConversionExpression',
+          expression: expr,
+          conversion,
+          targetType,
+          radix,
+          fallback,
+          position: expr.position
+      };
+  }
+  ```
 
-    // Parse optional type parameters for numeratum/fractatum
-    if ((conversion === 'numeratum' || conversion === 'fractatum') && match('<')) {
-        targetType = parseTypeAnnotation();
-        if (match(',')) {
-            radix = consume(['Hex', 'Oct', 'Bin', 'Dec']).value;
-        }
-        consume('>');
-    }
+### Phase 4: Semantic Analysis
+- [ ] `fons/faber/semantic/index.ts` — Add `ConversionExpression` case in `resolveExpression()` (~line 834):
+  - Resolve source expression type
+  - Validate source → target conversion is valid (see Type Compatibility table)
+  - If `fallback` present, validate fallback type matches result type
+  - If `fallback` is `nihil`, mark result type as nullable
+  - Set `node.resolvedType`
 
-    if (matchKeyword('vel')) {
-        fallback = parseUnary();  // or appropriate precedence
-    }
+### Phase 5: Codegen — TypeScript (primary target)
+- [ ] `fons/faber/codegen/ts/expressions/conversio.ts` — Create new file with `genConversionExpression()`
+- [ ] `fons/faber/codegen/ts/generator.ts` — Add dispatch case (~line 316):
+  ```typescript
+  case 'ConversionExpression':
+      return genConversionExpression(node, this);
+  ```
+- [ ] TypeScript codegen mapping:
+  | Faber | TypeScript |
+  |-------|------------|
+  | `x numeratum` | `parseInt(x, 10)` |
+  | `x numeratum vel f` | `parseInt(x, 10) \|\| f` |
+  | `x numeratum<i32, Hex>` | `parseInt(x, 16)` |
+  | `x fractatum` | `parseFloat(x)` |
+  | `x textatum` | `String(x)` |
+  | `x bivalentum` | `Boolean(x)` or `x != null && x !== '' && x !== 0` |
 
-    expr = {
-        type: 'ConversionExpression',
-        expression: expr,
-        conversion,
-        targetType,
-        radix,
-        fallback,
-        position: expr.position
-    };
-}
-```
+### Phase 6: Codegen — Other Targets
+- [ ] `fons/faber/codegen/rs/expressions/conversio.ts` — Rust target
+- [ ] `fons/faber/codegen/py/expressions/conversio.ts` — Python target
+- [ ] `fons/faber/codegen/cpp/expressions/conversio.ts` — C++ target
+- [ ] `fons/faber/codegen/zig/expressions/conversio.ts` — Zig target
+- [ ] `fons/faber/codegen/fab/expressions/conversio.ts` — Faber-to-Faber (identity)
 
-### Phase 3: Semantic Analysis
+### Phase 7: Tests
+- [ ] `fons/proba/codegen/conversio/` — Create test directory with YAML test cases:
+  - Basic conversions: `numeratum`, `fractatum`, `textatum`, `bivalentum`
+  - With fallback: `numeratum vel 0`
+  - With type params: `numeratum<i32>`, `numeratum<i32, Hex>`
+  - Chaining: `"42" numeratum textatum`
+  - Error cases: invalid source types, type mismatches
 
-- Validate source type is convertible to target
-- If `vel` present, validate fallback type matches result type
-- If `vel nihil`, mark result type as nullable
-
-### Phase 4: Codegen
-
-Add per-target generators in `fons/faber/codegen/<target>/expressions/conversion.ts`.
+### Key Reference Files
+| Component | File | Template to Follow |
+|-----------|------|-------------------|
+| Keywords | `fons/faber/lexicon/keywords.ts` | `qua`, `innatum` entries |
+| AST | `fons/faber/parser/ast.ts:2257-2303` | `QuaExpression`, `InnatumExpression` |
+| Parser | `fons/faber/parser/index.ts:4846-4873` | `parseQuaExpression()` |
+| Semantic | `fons/faber/semantic/index.ts:797-832` | `QuaExpression`, `InnatumExpression` cases |
+| TS Codegen | `fons/faber/codegen/ts/expressions/qua.ts` | 34-line simple pattern |
+| TS Codegen | `fons/faber/codegen/ts/expressions/innatum.ts` | 70-line with type checking |
 
 ## Error Cases
 
