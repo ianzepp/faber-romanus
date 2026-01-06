@@ -91,11 +91,20 @@ Template with `§` placeholders (positional):
 @ verte py (ego, pred) -> "list(filter(§, §))"
 ```
 
-Zig with allocator (always last parameter when present):
+Indexed placeholders (`§0`, `§1`, etc.) for reordering or repeated args:
 ```faber
-@ verte zig (ego) -> "§.longitudo()"           # no alloc
-@ verte zig (ego, elem, alloc) -> "§.adde(§, §)"    # with alloc
-@ verte zig (ego, pred, alloc) -> "§.filtrata(§, §)"
+# Reorder: put elem before ego
+@ verte ts (ego, elem) -> "[§1, ...§0]"
+
+# Repeated arg: ego used multiple times
+@ verte cpp (ego, elem) -> "(std::find(§0.begin(), §0.end(), §1) != §0.end())"
+```
+
+Zig with allocator (always last parameter, use indexed to put first in output):
+```faber
+@ verte zig (ego) -> "§.longitudo()"                    # no alloc
+@ verte zig (ego, elem, alloc) -> "§0.adde(§2, §1)"    # alloc before elem
+@ verte zig (ego, pred, alloc) -> "§0.filtrata(§2, §1)"
 ```
 
 ---
@@ -362,6 +371,8 @@ Shared work (not compiler-specific):
 | Vertical Slice | ✅ Complete | `adde`/`addita` working via norma registry |
 | All 5 Targets Wired | ✅ Complete | ts, py, rs, cpp, zig check norma registry |
 | Build-time Generation | ✅ Complete | `bun run build:norma` generates from .fab files |
+| Indexed Placeholders | ✅ Complete | `§0`/`§1` syntax for reordering and repeated args |
+| Full lista Migration | ✅ Complete | 47 methods in norma, 5 reserved keywords in fallback |
 
 ### Build-time Generation (commit f297c6d)
 
@@ -418,78 +429,54 @@ items.addita(4) → [...items, 4]           # ts
 |-----------|-------|-------|
 | Annotation parsing | ✅ Yes | ✅ Yes |
 | Morphology parsing | No | Yes (`morphologia.fab`) |
-| Codegen registries | Hybrid (norma + TS fallback) | Basic |
+| Codegen registries | ✅ norma + TS fallback (5 reserved keywords) | Basic |
 | Multi-target codegen | ts, py, rs, cpp, zig | ts |
 | subsidia/zig/*.zig | Yes | No |
 | norma-registry wired | ✅ All 5 targets | No |
 | Build-time generation | ✅ Yes | ✅ Yes (gen.fab) |
+| lista methods | ✅ 47 in norma | Uses gen.fab |
+| Indexed placeholders | ✅ §0/§1 in templates | ✅ §0/§1 in scriptum |
 
 ---
 
-## Next: Full lista<> Migration
+## lista<> Migration ✅ COMPLETE
 
-Migrate all 53 lista methods from hardcoded `lista.ts` to annotation-driven `norma/lista.fab`.
+All 47 lista methods are now in `fons/norma/lista.fab`. Five methods use reserved Faber keywords and fall back to `lista.ts`:
 
-### Approach
+| Category | Methods in norma | Reserved (fallback) |
+|----------|------------------|---------------------|
+| Adding | adde, addita, praepone, praeposita | - |
+| Removing | remove, remota, decapita, decapitata, purga | - |
+| Accessing | primus, ultimus, accipe | - |
+| Properties | longitudo, vacua | - |
+| Searching | continet, indiceDe, inveni, inveniIndicem | - |
+| Predicates | omnes, aliquis | - |
+| Functional | filtrata, mappata, reducta, explanata, plana, inversa, ordinata, sectio | prima, ultima, omitte |
+| Mutating | filtra, inverte | ordina |
+| Iteration | perambula, coniunge | - |
+| Aggregation | medium, minimus, maximus, minimusPer, maximusPer, numera | summa |
+| Lodash-style | congrega, unica, planaOmnia, fragmenta, densa, partire, misce, specimen, specimina | - |
+| **Total** | **47 methods** | **5 reserved** |
 
-Build-time generation is now complete. The workflow is:
+### Reserved Keywords
 
-1. Add method annotations to `fons/norma/lista.fab`
-2. Run `bun run build:norma`
-3. Generated files update automatically
+These Faber keywords cannot be used as function names:
+- `prima` - first N elements (use Faber's `ex lista prima N`)
+- `ultima` - last N elements (use Faber's `ex lista ultima N`)
+- `omitte` - skip N elements (use Faber's `ex lista omitte N`)
+- `ordina` - sort in place (reserved for future use)
+- `summa` - sum aggregation (reserved for future use)
 
-### Tasks
+### Test Results
 
-#### 1. Expand fons/norma/lista.fab (~51 remaining methods)
+All 144 lista tests pass across all 5 targets (ts, py, rs, cpp, zig).
 
-Group methods by category for systematic migration:
+### Remaining Work
 
-| Category | Methods | Count |
-|----------|---------|-------|
-| Adding | ~~adde~~, ~~addita~~, praepone, praeposita | 2 remaining |
-| Removing | remove, remota, decapita, decapitata, purga | 5 |
-| Accessing | primus, ultimus, accipe, toSlice | 4 |
-| Properties | longitudo, vacua | 2 |
-| Searching | continet, indiceDe, inveni, inveniIndicem | 4 |
-| Predicates | omnes, aliquis | 2 |
-| Functional | filtrata, mappata, reducta, explanata, plana, inversa, ordinata, sectio, prima, ultima, omitte | 11 |
-| Mutating | filtra, ordina, inverte | 3 |
-| Iteration | perambula, coniunge | 2 |
-| Aggregation | summa, medium, minimus, maximus, minimusPer, maximusPer, numera | 7 |
-| Lodash-style | congrega, unica, planaOmnia, fragmenta, densa, partire, misce, specimen, specimina | 9 |
-| **Total** | | **51 remaining** |
-
-#### 2. Wire remaining targets ✅ COMPLETE
-
-All 5 targets now check norma registry:
-
-- [x] `ts/expressions/call.ts`
-- [x] `py/expressions/call.ts`
-- [x] `rs/expressions/call.ts`
-- [x] `cpp/expressions/call.ts`
-- [x] `zig/expressions/call.ts`
-
-#### 3. Test coverage
-
-For each method, verify:
-- Simple form works (method rename)
-- Template form works (§ substitution)
-- All 5 targets produce valid code
-
-#### 4. Deprecate lista.ts
-
-Once all methods are in norma-registry:
-- Remove fallback to `LISTA_METHODS` in call.ts files
-- Delete or archive `fons/faber/codegen/lista.ts`
-
-### Execution Strategy
-
-With build-time generation and all targets wired, the workflow is now:
-
-1. Add method annotations to `fons/norma/lista.fab` (batch by category)
-2. Run `bun run build:norma` to regenerate
-3. Test each category across all 5 targets before moving on
-4. Once all methods migrated, remove fallback to `LISTA_METHODS`
+- [ ] Deprecate `lista.ts` fallback (keep only 5 reserved methods)
+- [ ] Add `tabula.fab` and `copia.fab` definitions
+- [ ] Phase 5: Morphology validation at call sites
+- [ ] Phase 6: Subsidia fallback for complex implementations
 
 ---
 
@@ -517,9 +504,13 @@ functio methodName()
 
 **Template rules:**
 - `§` is a positional placeholder (replaced in order)
-- `ego` = the receiver object (e.g., `items` in `items.adde(4)`)
-- `alloc` = allocator (Zig only, injected by codegen)
+- `§0`, `§1`, etc. are indexed placeholders (explicit position in values array)
+- `ego` = the receiver object (e.g., `items` in `items.adde(4)`) - always index 0
+- `alloc` = allocator (Zig only, injected by codegen) - typically last index
 - Other params = call arguments in order
+- Use indexed placeholders when:
+  - Same arg needed multiple times (e.g., `§0.begin()` and `§0.end()`)
+  - Args need reordering (e.g., Zig wants `(alloc, elem)` not `(elem, alloc)`)
 
 ### 2. Regenerate the registry
 
@@ -599,10 +590,23 @@ EOF
 
 **Template not substituting**: Check that:
 - Using `§` not `S` for placeholders
-- Param count matches placeholder count
+- Param count matches placeholder count (for positional `§`)
 - `ego` is first param for receiver
 
+**Wrong argument order**: Use indexed placeholders:
+- `§0`, `§1`, etc. to explicitly reference values array positions
+- Example: `(ego, elem, alloc)` → values = `[ego, elem, alloc]`
+- Template `"§0.method(§2, §1)"` → `ego.method(alloc, elem)`
+
+**Repeated arguments in template**: Use indexed placeholders:
+- C++ `std::find` needs `ego` four times: `§0.begin(), §0.end(), §1, §0.end()`
+- Without indexed: would consume 4 different args (broken)
+
 **Zig allocator undefined**: The test code needs a `cura` block to provide allocator context, or method is being called outside allocation scope.
+
+**Reserved keyword as function name**: These Faber keywords cannot be used:
+- `prima`, `ultima`, `omitte`, `ordina`, `summa`
+- Keep these methods in the TypeScript fallback registry
 
 ---
 
