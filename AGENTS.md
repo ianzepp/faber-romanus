@@ -65,6 +65,8 @@ archivum/               # Historical/archived materials
 
 ## Commands
 
+**Always use `bun run <script>` instead of `./scripta/<script>`** - direct invocation doesn't set up the environment properly. For example, use `bun run typecheck` not `./scripta/typecheck`.
+
 ### Faber CLI (Primary Compiler)
 
 The TypeScript implementation in `fons/faber/` - use this for all daily development:
