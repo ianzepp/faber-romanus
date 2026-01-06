@@ -31,7 +31,7 @@ The workflow: LLM writes Faber → Human approves → Compiler emits production 
 
 **No ecosystem problem.** Faber compiles to the target language, so you use its libraries directly. `ex hono importa Hono` becomes `import { Hono } from 'hono'`. No need to rewrite npm/PyPI/crates.io packages in Latin.
 
-**Grammar designed for LLMs.** The [GRAMMAR.md](GRAMMAR.md) file is built for LLM consumption: type tables, keyword references, style guides, and complete examples. An LLM can read it once and generate valid Faber immediately.
+**Grammar designed for LLMs.** The [EBNF.md](EBNF.md) specification is built for LLM consumption: formal grammar, type tables, keyword references, and style guides. An LLM can read it once and generate valid Faber immediately.
 
 **Semantics, not syntax.** Latin keywords encode meaning: `fixum` (fixed/immutable) vs `varia` (variable/mutable), `cede` (yield/await), `redde` (give back/return). The code reads like intent, not implementation.
 

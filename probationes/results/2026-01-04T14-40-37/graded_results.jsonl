@@ -1,0 +1,12 @@
+{"timestamp":"2026-01-04T14:40:37.604Z","run_id":"2026-01-04T14-40-37","task_id":"translate_simple_var","model":"gpt-3.5-turbo","n_shot":3,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:38.219Z","run_id":"2026-01-04T14-40-37","task_id":"translate_mutable_var","model":"gpt-3.5-turbo","n_shot":3,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:38.541Z","run_id":"2026-01-04T14-40-37","task_id":"translate_string_var","model":"gpt-3.5-turbo","n_shot":3,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:38.781Z","run_id":"2026-01-04T14-40-37","task_id":"predict_simple_output","model":"gpt-3.5-turbo","n_shot":3,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:39.040Z","run_id":"2026-01-04T14-40-37","task_id":"complete_return_statement","model":"gpt-3.5-turbo","n_shot":3,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:39.344Z","run_id":"2026-01-04T14-40-37","task_id":"complete_variable_declaration","model":"gpt-3.5-turbo","n_shot":3,"dialect":"latin","context":"examples-only","correct":false,"error_type":"wrong_output"}
+{"timestamp":"2026-01-04T14:40:39.652Z","run_id":"2026-01-04T14-40-37","task_id":"translate_simple_var","model":"gpt-3.5-turbo","n_shot":10,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:39.988Z","run_id":"2026-01-04T14-40-37","task_id":"translate_mutable_var","model":"gpt-3.5-turbo","n_shot":10,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:40.301Z","run_id":"2026-01-04T14-40-37","task_id":"translate_string_var","model":"gpt-3.5-turbo","n_shot":10,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:40.591Z","run_id":"2026-01-04T14-40-37","task_id":"predict_simple_output","model":"gpt-3.5-turbo","n_shot":10,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:40.852Z","run_id":"2026-01-04T14-40-37","task_id":"complete_return_statement","model":"gpt-3.5-turbo","n_shot":10,"dialect":"latin","context":"examples-only","correct":true}
+{"timestamp":"2026-01-04T14:40:41.159Z","run_id":"2026-01-04T14-40-37","task_id":"complete_variable_declaration","model":"gpt-3.5-turbo","n_shot":10,"dialect":"latin","context":"examples-only","correct":true}

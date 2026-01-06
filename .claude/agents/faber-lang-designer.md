@@ -57,10 +57,10 @@ The language you are building should feel ancient and inevitable, as if it were 
 
 Before proposing new syntax, consult these authoritative sources:
 
+- **EBNF.md** — Authoritative language specification (formal grammar)
 - **consilia/verba.md** — Complete keyword reference (all 99 reserved words)
-- **GRAMMAR.md** — Complete EBNF grammar extracted from the parser
 - **README.md** — Implementation status tables and feature overview
-- **grammatica/** — Detailed documentation by category:
+- **fons/grammatica/** — Prose documentation by category:
   - `fundamenta.md` — Variables, types, literals
   - `functiones.md` — Function declarations and return types
   - `regimen.md` — Control flow (si/dum/ex/elige/discerne)

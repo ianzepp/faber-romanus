@@ -1,0 +1,251 @@
+# Translation Tasks: TypeScript ↔ Faber
+# All tasks produce verifiable output
+
+tasks:
+  # === Basic Declarations ===
+
+  - id: ts_to_faber_const
+    type: translate_ts_to_faber
+    category: declarations
+    goal: "Translate const declaration with output"
+    input: |
+      const x = 42
+      console.log(x)
+    expected_output: "42"
+
+  - id: faber_to_ts_fixum
+    type: translate_faber_to_ts
+    category: declarations
+    goal: "Translate fixum declaration with output"
+    input_faber: |
+      fixum x = 42
+      scribe(x)
+    expected_output: "42"
+
+  - id: ts_to_faber_let
+    type: translate_ts_to_faber
+    category: declarations
+    goal: "Translate let declaration with mutation and output"
+    input: |
+      let count = 0
+      count = count + 1
+      console.log(count)
+    expected_output: "1"
+
+  - id: faber_to_ts_varia
+    type: translate_faber_to_ts
+    category: declarations
+    goal: "Translate varia declaration with mutation and output"
+    input_faber: |
+      varia count = 0
+      count = count + 1
+      scribe(count)
+    expected_output: "1"
+
+  - id: ts_to_faber_string
+    type: translate_ts_to_faber
+    category: declarations
+    goal: "Translate string variable with output"
+    input: |
+      const name = "Alice"
+      console.log(name)
+    expected_output: "Alice"
+
+  - id: faber_to_ts_string
+    type: translate_faber_to_ts
+    category: declarations
+    goal: "Translate textus variable with output"
+    input_faber: |
+      fixum name = "Alice"
+      scribe(name)
+    expected_output: "Alice"
+
+  # === Conditionals ===
+
+  - id: ts_to_faber_if_true
+    type: translate_ts_to_faber
+    category: conditionals
+    goal: "Translate if statement (true branch taken)"
+    input: |
+      const x = 10
+      if (x > 5) {
+        console.log("big")
+      } else {
+        console.log("small")
+      }
+    expected_output: "big"
+
+  - id: faber_to_ts_si_true
+    type: translate_faber_to_ts
+    category: conditionals
+    goal: "Translate si statement (true branch taken)"
+    input_faber: |
+      fixum x = 10
+      si x > 5 {
+        scribe("big")
+      } secus {
+        scribe("small")
+      }
+    expected_output: "big"
+
+  - id: ts_to_faber_if_false
+    type: translate_ts_to_faber
+    category: conditionals
+    goal: "Translate if statement (false branch taken)"
+    input: |
+      const x = 3
+      if (x > 5) {
+        console.log("big")
+      } else {
+        console.log("small")
+      }
+    expected_output: "small"
+
+  - id: faber_to_ts_si_false
+    type: translate_faber_to_ts
+    category: conditionals
+    goal: "Translate si statement (false branch taken)"
+    input_faber: |
+      fixum x = 3
+      si x > 5 {
+        scribe("big")
+      } secus {
+        scribe("small")
+      }
+    expected_output: "small"
+
+  # === Functions ===
+
+  - id: ts_to_faber_function
+    type: translate_ts_to_faber
+    category: functions
+    goal: "Translate function definition and call"
+    input: |
+      function double(n: number): number {
+        return n * 2
+      }
+      console.log(double(7))
+    expected_output: "14"
+
+  - id: faber_to_ts_functio
+    type: translate_faber_to_ts
+    category: functions
+    goal: "Translate functio definition and call"
+    input_faber: |
+      functio double(n: numerus) -> numerus {
+        redde n * 2
+      }
+      scribe(double(7))
+    expected_output: "14"
+
+  - id: ts_to_faber_function_string
+    type: translate_ts_to_faber
+    category: functions
+    goal: "Translate function with string return"
+    input: |
+      function greet(name: string): string {
+        return "Hello, " + name
+      }
+      console.log(greet("World"))
+    expected_output: "Hello, World"
+
+  - id: faber_to_ts_functio_string
+    type: translate_faber_to_ts
+    category: functions
+    goal: "Translate functio with textus return"
+    input_faber: |
+      functio greet(name: textus) -> textus {
+        redde "Hello, " + name
+      }
+      scribe(greet("World"))
+    expected_output: "Hello, World"
+
+  # === Loops ===
+
+  - id: ts_to_faber_for_of
+    type: translate_ts_to_faber
+    category: loops
+    goal: "Translate for-of loop over array"
+    input: |
+      const nums = [1, 2, 3]
+      for (const n of nums) {
+        console.log(n)
+      }
+    expected_output: "1\n2\n3"
+
+  - id: faber_to_ts_ex_pro
+    type: translate_faber_to_ts
+    category: loops
+    goal: "Translate ex...pro loop over lista"
+    input_faber: |
+      fixum nums = [1, 2, 3]
+      ex nums pro n {
+        scribe(n)
+      }
+    expected_output: "1\n2\n3"
+
+  - id: ts_to_faber_while
+    type: translate_ts_to_faber
+    category: loops
+    goal: "Translate while loop with counter"
+    input: |
+      let i = 0
+      while (i < 3) {
+        console.log(i)
+        i = i + 1
+      }
+    expected_output: "0\n1\n2"
+
+  - id: faber_to_ts_dum
+    type: translate_faber_to_ts
+    category: loops
+    goal: "Translate dum loop with counter"
+    input_faber: |
+      varia i = 0
+      dum i < 3 {
+        scribe(i)
+        i = i + 1
+      }
+    expected_output: "0\n1\n2"
+
+  # === Arithmetic ===
+
+  - id: ts_to_faber_arithmetic
+    type: translate_ts_to_faber
+    category: arithmetic
+    goal: "Translate arithmetic expression with precedence"
+    input: |
+      const result = 2 + 3 * 4
+      console.log(result)
+    expected_output: "14"
+
+  - id: faber_to_ts_arithmetic
+    type: translate_faber_to_ts
+    category: arithmetic
+    goal: "Translate arithmetic expression with precedence"
+    input_faber: |
+      fixum result = 2 + 3 * 4
+      scribe(result)
+    expected_output: "14"
+
+  # === Boolean Logic ===
+
+  - id: ts_to_faber_boolean
+    type: translate_ts_to_faber
+    category: boolean
+    goal: "Translate boolean logic"
+    input: |
+      const a = true
+      const b = false
+      console.log(a && !b)
+    expected_output: "true"
+
+  - id: faber_to_ts_boolean
+    type: translate_faber_to_ts
+    category: boolean
+    goal: "Translate boolean logic with verum/falsum"
+    input_faber: |
+      fixum a = verum
+      fixum b = falsum
+      scribe(a et non b)
+    expected_output: "true"

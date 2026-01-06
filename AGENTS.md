@@ -31,7 +31,7 @@ fons/                   # Source code ("fons" = source/spring)
 │   ├── semantic/       # Semantic analysis tests
 │   └── codegen/        # Codegen tests by target
 ├── exempla/            # Example .fab programs
-├── probationes/        # Additional test fixtures
+├── grammatica/         # Language documentation (prose tutorials)
 └── subsidia/           # Helper utilities (e.g., Zig runtime)
 
 opus/                   # Build outputs ("opus" = work/product)
@@ -46,7 +46,7 @@ consilia/               # Design documents ("consilia" = plans/advice)
 ├── archived/           # Superseded or rejected proposals
 └── cleanup/            # Refactoring notes
 
-grammatica/             # Auto-generated grammar documentation
+probationes/            # LLM research harness (learnability trials)
 norma/                  # Standard library modules
 scripta/                # Build and utility scripts
 editors/                # Editor integrations (syntax highlighting, etc.)
@@ -56,7 +56,7 @@ archivum/               # Historical/archived materials
 ## Quick Rules (CRITICAL)
 
 - **Type-first syntax**: `textus name` not `name: textus`
-- **Check grammar first**: Never assume syntax exists - verify in `grammatica/*.md`
+- **Check grammar first**: Never assume syntax exists - verify in `EBNF.md` or `fons/grammatica/*.md`
 - **No invented syntax**: Don't create variations (e.g., no `Type?` for nullable)
 - **Empty collections need explicit types**: `[] qua lista<T>`, `{} qua tabula<K,V>`
 - **Use `ignotum` for nullable params**, not invented suffixes
@@ -117,7 +117,7 @@ bun run test:rivus                    # Run tests against bootstrap compiler
 bun run lint                          # Lint TS source (fons/faber)
 bun run lint:fix                      # Lint with auto-fix
 bun run sanity                        # Verify test coverage
-bun run grammar                       # Regenerate GRAMMAR.md
+bun run trial                         # Run LLM learnability trials
 ```
 
 ### Build
@@ -195,7 +195,7 @@ Output varies by target:
 
 ## Grammar Reference
 
-See `GRAMMAR.md` or `grammatica/*.md` for complete syntax reference. Never assume syntax - always verify:
+See `EBNF.md` for the formal language specification, or `fons/grammatica/*.md` for prose tutorials. Never assume syntax - always verify:
 
 ```
 bun run faber check <file.fab>  # Validate before committing

@@ -1,0 +1,327 @@
+# Complex Translation Tasks: TypeScript ↔ Faber
+# These test multiple concepts combined, edge cases, and harder patterns
+
+tasks:
+  # === Nested Control Flow ===
+
+  - id: complex_ts_to_faber_nested_if
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate nested if/else with multiple conditions"
+    input: |
+      const x = 15
+      if (x > 20) {
+        console.log("large")
+      } else if (x > 10) {
+        console.log("medium")
+      } else if (x > 5) {
+        console.log("small")
+      } else {
+        console.log("tiny")
+      }
+    expected_output: "medium"
+
+  - id: complex_ts_to_faber_loop_in_loop
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate nested loops"
+    input: |
+      let sum = 0
+      for (const i of [1, 2]) {
+        for (const j of [10, 20]) {
+          sum = sum + i * j
+        }
+      }
+      console.log(sum)
+    expected_output: "90"
+
+  - id: complex_ts_to_faber_if_in_loop
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate conditional inside loop"
+    input: |
+      const nums = [1, 2, 3, 4, 5]
+      let evens = 0
+      for (const n of nums) {
+        if (n % 2 === 0) {
+          evens = evens + 1
+        }
+      }
+      console.log(evens)
+    expected_output: "2"
+
+  # === Recursion ===
+
+  - id: complex_ts_to_faber_factorial
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate recursive factorial function"
+    input: |
+      function factorial(n: number): number {
+        if (n <= 1) {
+          return 1
+        }
+        return n * factorial(n - 1)
+      }
+      console.log(factorial(5))
+    expected_output: "120"
+
+  - id: complex_ts_to_faber_fibonacci
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate recursive fibonacci function"
+    input: |
+      function fib(n: number): number {
+        if (n <= 1) {
+          return n
+        }
+        return fib(n - 1) + fib(n - 2)
+      }
+      console.log(fib(10))
+    expected_output: "55"
+
+  # === Multiple Functions ===
+
+  - id: complex_ts_to_faber_multi_function
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate multiple functions calling each other"
+    input: |
+      function add(a: number, b: number): number {
+        return a + b
+      }
+      function multiply(a: number, b: number): number {
+        return a * b
+      }
+      function compute(x: number): number {
+        return add(multiply(x, 2), 10)
+      }
+      console.log(compute(5))
+    expected_output: "20"
+
+  - id: complex_ts_to_faber_higher_order
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate function returning function result"
+    input: |
+      function applyTwice(x: number, f: (n: number) => number): number {
+        return f(f(x))
+      }
+      function addOne(n: number): number {
+        return n + 1
+      }
+      console.log(applyTwice(5, addOne))
+    expected_output: "7"
+
+  # === Type Annotations ===
+
+  - id: complex_ts_to_faber_typed_params
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate function with multiple typed parameters"
+    input: |
+      function format(name: string, age: number, active: boolean): string {
+        if (active) {
+          return name + " is " + age + " and active"
+        }
+        return name + " is " + age + " and inactive"
+      }
+      console.log(format("Alice", 30, true))
+    expected_output: "Alice is 30 and active"
+
+  - id: complex_ts_to_faber_array_type
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate function with array parameter"
+    input: |
+      function sumArray(nums: number[]): number {
+        let total = 0
+        for (const n of nums) {
+          total = total + n
+        }
+        return total
+      }
+      console.log(sumArray([1, 2, 3, 4, 5]))
+    expected_output: "15"
+
+  # === Complex Expressions ===
+
+  - id: complex_ts_to_faber_ternary_chain
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate complex boolean expression"
+    input: |
+      const a = 5
+      const b = 10
+      const c = 15
+      const result = (a < b) && (b < c) && (a + b < c)
+      console.log(result)
+    expected_output: "false"
+
+  - id: complex_ts_to_faber_string_ops
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate string concatenation in loop"
+    input: |
+      const words = ["hello", "world", "test"]
+      let result = ""
+      for (const w of words) {
+        result = result + w + " "
+      }
+      console.log(result)
+    expected_output: "hello world test "
+
+  # === Early Returns / Guards ===
+
+  - id: complex_ts_to_faber_early_return
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate function with multiple early returns"
+    input: |
+      function classify(n: number): string {
+        if (n < 0) {
+          return "negative"
+        }
+        if (n === 0) {
+          return "zero"
+        }
+        if (n < 10) {
+          return "small"
+        }
+        return "large"
+      }
+      console.log(classify(5))
+    expected_output: "small"
+
+  - id: complex_ts_to_faber_guard_clause
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate function with null check guard"
+    input: |
+      function safeLength(s: string | null): number {
+        if (s === null) {
+          return 0
+        }
+        return s.length
+      }
+      console.log(safeLength("hello"))
+    expected_output: "5"
+
+  # === Accumulator Patterns ===
+
+  - id: complex_ts_to_faber_accumulator
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate accumulator pattern with condition"
+    input: |
+      function countMatches(nums: number[], target: number): number {
+        let count = 0
+        for (const n of nums) {
+          if (n === target) {
+            count = count + 1
+          }
+        }
+        return count
+      }
+      console.log(countMatches([1, 2, 2, 3, 2, 4], 2))
+    expected_output: "3"
+
+  - id: complex_ts_to_faber_find_max
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate find maximum value in array"
+    input: |
+      function findMax(nums: number[]): number {
+        let max = nums[0]
+        for (const n of nums) {
+          if (n > max) {
+            max = n
+          }
+        }
+        return max
+      }
+      console.log(findMax([3, 1, 4, 1, 5, 9, 2, 6]))
+    expected_output: "9"
+
+  # === Combined Complexity ===
+
+  - id: complex_ts_to_faber_fizzbuzz
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate FizzBuzz logic"
+    input: |
+      function fizzbuzz(n: number): string {
+        if (n % 15 === 0) {
+          return "FizzBuzz"
+        }
+        if (n % 3 === 0) {
+          return "Fizz"
+        }
+        if (n % 5 === 0) {
+          return "Buzz"
+        }
+        return "" + n
+      }
+      console.log(fizzbuzz(15))
+    expected_output: "FizzBuzz"
+
+  - id: complex_ts_to_faber_prime_check
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate prime number checker"
+    input: |
+      function isPrime(n: number): boolean {
+        if (n < 2) {
+          return false
+        }
+        let i = 2
+        while (i * i <= n) {
+          if (n % i === 0) {
+            return false
+          }
+          i = i + 1
+        }
+        return true
+      }
+      console.log(isPrime(17))
+    expected_output: "true"
+
+  - id: complex_ts_to_faber_gcd
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate GCD using Euclidean algorithm"
+    input: |
+      function gcd(a: number, b: number): number {
+        while (b !== 0) {
+          const temp = b
+          b = a % b
+          a = temp
+        }
+        return a
+      }
+      console.log(gcd(48, 18))
+    expected_output: "6"
+
+  - id: complex_ts_to_faber_binary_search
+    type: translate_ts_to_faber
+    category: complex
+    goal: "Translate iterative binary search"
+    input: |
+      function binarySearch(arr: number[], target: number): number {
+        let left = 0
+        let right = arr.length - 1
+        while (left <= right) {
+          const mid = left + Math.floor((right - left) / 2)
+          if (arr[mid] === target) {
+            return mid
+          }
+          if (arr[mid] < target) {
+            left = mid + 1
+          } else {
+            right = mid - 1
+          }
+        }
+        return -1
+      }
+      console.log(binarySearch([1, 3, 5, 7, 9, 11], 7))
+    expected_output: "3"

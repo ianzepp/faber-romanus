@@ -254,4 +254,4 @@ When adding a new keyword:
 3. If statement-starting, add to `estVerbumSententiae()`
 4. If genus member, add to `estVerbumGeneris()`
 5. Update this document
-6. Update `grammatica/` if it affects documented syntax
+6. Update `fons/grammatica/` if it affects documented syntax

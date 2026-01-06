@@ -1,0 +1,128 @@
+# Prediction Tasks: Given Faber code, predict output
+# Tests understanding of Faber semantics without translation
+
+tasks:
+  - id: predict_simple_output
+    type: predict_output
+    category: basic
+    goal: "Predict output of simple scribe statement"
+    input_faber: |
+      scribe("Hello")
+    expected_output: "Hello"
+
+  - id: predict_const_value
+    type: predict_output
+    category: declarations
+    goal: "Predict output of const declaration"
+    input_faber: |
+      fixum x = 99
+      scribe(x)
+    expected_output: "99"
+
+  - id: predict_conditional_true
+    type: predict_output
+    category: conditionals
+    goal: "Predict output when condition is true"
+    input_faber: |
+      fixum x = 10
+      si x > 5 {
+        scribe("big")
+      } secus {
+        scribe("small")
+      }
+    expected_output: "big"
+
+  - id: predict_conditional_false
+    type: predict_output
+    category: conditionals
+    goal: "Predict output when condition is false"
+    input_faber: |
+      fixum x = 2
+      si x > 5 {
+        scribe("big")
+      } secus {
+        scribe("small")
+      }
+    expected_output: "small"
+
+  - id: predict_arithmetic_precedence
+    type: predict_output
+    category: arithmetic
+    goal: "Predict output with operator precedence"
+    input_faber: |
+      fixum result = 5 + 3 * 2
+      scribe(result)
+    expected_output: "11"
+
+  - id: predict_arithmetic_parens
+    type: predict_output
+    category: arithmetic
+    goal: "Predict output with parentheses"
+    input_faber: |
+      fixum result = (5 + 3) * 2
+      scribe(result)
+    expected_output: "16"
+
+  - id: predict_loop_output
+    type: predict_output
+    category: loops
+    goal: "Predict output of for-of loop"
+    input_faber: |
+      ex [1, 2, 3] pro num {
+        scribe(num)
+      }
+    expected_output: "1\n2\n3"
+
+  - id: predict_loop_sum
+    type: predict_output
+    category: loops
+    goal: "Predict output of accumulator loop"
+    input_faber: |
+      varia sum = 0
+      ex [1, 2, 3, 4] pro n {
+        sum = sum + n
+      }
+      scribe(sum)
+    expected_output: "10"
+
+  - id: predict_function_call
+    type: predict_output
+    category: functions
+    goal: "Predict output of function call"
+    input_faber: |
+      functio greet(name: textus) -> textus {
+        redde "Hello, " + name
+      }
+      scribe(greet("World"))
+    expected_output: "Hello, World"
+
+  - id: predict_function_math
+    type: predict_output
+    category: functions
+    goal: "Predict output of math function"
+    input_faber: |
+      functio square(n: numerus) -> numerus {
+        redde n * n
+      }
+      scribe(square(5))
+    expected_output: "25"
+
+  - id: predict_boolean_and
+    type: predict_output
+    category: boolean
+    goal: "Predict output of boolean AND"
+    input_faber: |
+      fixum a = verum
+      fixum b = verum
+      scribe(a et b)
+    expected_output: "true"
+
+  - id: predict_boolean_or
+    type: predict_output
+    category: boolean
+    goal: "Predict output of boolean OR"
+    input_faber: |
+      fixum a = falsum
+      fixum b = verum
+      scribe(a aut b)
+    expected_output: "true"

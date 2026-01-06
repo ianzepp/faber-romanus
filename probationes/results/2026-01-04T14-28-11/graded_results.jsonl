@@ -1,0 +1,1 @@
+{"timestamp":"2026-01-04T14:28:11.508Z","run_id":"2026-01-04T14-28-11","task_id":"translate_simple_var","model":"gpt-3.5-turbo","n_shot":0,"dialect":"latin","context":"minimal","correct":true}
