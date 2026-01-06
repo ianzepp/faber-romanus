@@ -133,6 +133,14 @@ For `numeratum` and `fractatum`, optional type parameters specify:
 | `"ff" numeratum<i32, Hex>` | `parseInt("ff", 16)` | `int("ff", 16)` | `i32::from_str_radix("ff", 16).unwrap()` | `std::stoi("ff", nullptr, 16)` | `std.fmt.parseInt(i32, "ff", 16) catch unreachable` |
 | `"big" numeratum<magnus>` | `BigInt("big")` | `int("big")` | `"big".parse::<num_bigint::BigInt>().unwrap()` | `boost::multiprecision::cpp_int("big")` | `std.math.big.Int.init(...)` |
 
+**Radix Values:**
+| Faber | Base |
+|-------|------|
+| `Dec` | 10 |
+| `Hex` | 16 |
+| `Oct` | 8 |
+| `Bin` | 2 |
+
 ### fractatum (string/value to float)
 
 | Faber | TypeScript | Python | Rust | C++ | Zig |
@@ -308,11 +316,35 @@ export interface ConversionExpression extends BaseNode {
   | `x bivalentum` | `Boolean(x)` or `x != null && x !== '' && x !== 0` |
 
 ### Phase 6: Codegen — Other Targets
-- [ ] `fons/faber/codegen/rs/expressions/conversio.ts` — Rust target
-- [ ] `fons/faber/codegen/py/expressions/conversio.ts` — Python target
-- [ ] `fons/faber/codegen/cpp/expressions/conversio.ts` — C++ target
-- [ ] `fons/faber/codegen/zig/expressions/conversio.ts` — Zig target
-- [ ] `fons/faber/codegen/fab/expressions/conversio.ts` — Faber-to-Faber (identity)
+
+Each target requires two changes:
+1. Create `expressions/conversio.ts` with `genConversionExpression()`
+2. Add dispatch case in `generator.ts`
+
+**Rust:**
+- [ ] `fons/faber/codegen/rs/expressions/conversio.ts`
+- [ ] `fons/faber/codegen/rs/generator.ts` — add dispatch
+- Pattern: `.parse::<T>().unwrap()` / `.unwrap_or(f)` / `from_str_radix()`
+
+**Python:**
+- [ ] `fons/faber/codegen/py/expressions/conversio.ts`
+- [ ] `fons/faber/codegen/py/generator.ts` — add dispatch
+- Pattern: `int()` / `float()` / `str()` / `bool()` with optional base
+
+**C++:**
+- [ ] `fons/faber/codegen/cpp/expressions/conversio.ts`
+- [ ] `fons/faber/codegen/cpp/generator.ts` — add dispatch
+- Pattern: `std::stoll()` / `std::stod()` / `std::to_string()` / IIFE for fallback
+
+**Zig:**
+- [ ] `fons/faber/codegen/zig/expressions/conversio.ts`
+- [ ] `fons/faber/codegen/zig/generator.ts` — add dispatch
+- Pattern: `std.fmt.parseInt()` / `parseFloat()` with `catch` for fallback
+
+**Faber (identity):**
+- [ ] `fons/faber/codegen/fab/expressions/conversio.ts`
+- [ ] `fons/faber/codegen/fab/generator.ts` — add dispatch
+- Pattern: Re-emit `x numeratum`, `x numeratum vel f`, etc.
 
 ### Phase 7: Tests
 - [ ] `fons/proba/codegen/conversio/` — Create test directory with YAML test cases:
