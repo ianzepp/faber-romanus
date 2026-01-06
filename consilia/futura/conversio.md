@@ -539,6 +539,110 @@ fixum s = 42 textatum vel "default"  # warning: vel clause has no effect
 
 5. **`bivalentum` on objects**: User-defined objects (`genus`) converted via `bivalentum` return `verum` if non-null, matching `nonnulla` semantics. Objects cannot be converted via `numeratum` or `fractatum` (compile error).
 
+## Rivus Implementation
+
+The Rivus compiler (bootstrap compiler written in Faber) requires parallel changes to support conversio. Unlike Faber (TypeScript), Rivus uses `.fab` files with `discretio` (tagged unions) instead of interfaces.
+
+### Files to Modify
+
+| Component | File | Location | Changes |
+|-----------|------|----------|---------|
+| **Lexicon enum** | `fons/rivus/ast/lexema.fab` | ~line 262 | Add `Numeratum`, `Fractatum`, `Textatum`, `Bivalentum` to `VerbumId` enum |
+| **Keywords** | `fons/rivus/lexicon/verba.fab` | ~line 149 | Add keyword→VerbumId mappings in `verbumFaberId()` |
+| **AST** | `fons/rivus/ast/expressia.fab` | ~line 190 | Add `ConversionExpressia` variant to `Expressia` discretio |
+| **Parser** | `fons/rivus/parser/expressia/unaria.fab` | ~line 350 | Extend `parsePostfix()` after `qua` case |
+| **Semantic** | `fons/rivus/semantic/expressia/index.fab` | ~line 114 | Add case in expression dispatch |
+| **Codegen** | `fons/rivus/codegen/ts/expressia/index.fab` | ~line 170 | Add TS generation logic |
+
+### AST Variant
+
+```fab
+ConversionExpressia {
+    Locus locus
+    Expressia expressia
+    textus signum              # "numeratum" | "fractatum" | "textatum" | "bivalentum"
+    TypusAnnotatio? targetType # optional type param (e.g., i32, u64)
+    textus? radix              # optional: "Dec" | "Hex" | "Oct" | "Bin"
+    Expressia? fallback        # optional vel fallback
+}
+```
+
+### Parser Logic (pseudocode)
+
+```fab
+# In parsePostfix(), after qua case:
+si p.congruetVerbum("numeratum") aut p.congruetVerbum("fractatum") aut
+   p.congruetVerbum("textatum") aut p.congruetVerbum("bivalentum") {
+    fixum signum = p.procede().verbum
+    varia targetType: TypusAnnotatio? = nihil
+    varia radix: textus? = nihil
+    varia fallback: Expressia? = nihil
+
+    # Type params for numeratum/fractatum only
+    si (signum == "numeratum" aut signum == "fractatum") et p.proba(SymbolumGenus.Minor) {
+        p.procede()
+        targetType = r.adnotatio()
+        si p.congruet(SymbolumGenus.Coma) {
+            fixum radixToken = p.specta(0)
+            si radixToken.verbum inter ["Dec", "Hex", "Oct", "Bin"] {
+                radix = p.procede().verbum
+            }
+        }
+        p.expecta(SymbolumGenus.Maior, ParserErrorCodice.ExpectaturMaior)
+    }
+
+    # Fallback clause
+    si p.probaVerbum("vel") {
+        p.procede()
+        fallback = parseUnaria(r)
+    }
+
+    expressia = finge ConversionExpressia { ... } qua Expressia
+}
+```
+
+### Codegen Logic (pseudocode)
+
+```fab
+casu ConversionExpressia ut c {
+    fixum expr = genExpressia(c.expressia, g)
+    elige c.signum {
+        casu "numeratum" {
+            fixum radix = c.radix == "Hex" sic 16 secus c.radix == "Oct" sic 8 secus c.radix == "Bin" sic 2 secus 10
+            si nonnihil c.fallback {
+                redde scriptum("(parseInt(§, §) || §)", expr, radix, genExpressia(c.fallback, g))
+            }
+            redde scriptum("parseInt(§, §)", expr, radix)
+        }
+        casu "fractatum" { ... }
+        casu "textatum" reddit scriptum("String(§)", expr)
+        casu "bivalentum" reddit scriptum("Boolean(§)", expr)
+    }
+}
+```
+
+### Build & Test
+
+```bash
+# After modifying .fab files:
+bun run build:rivus              # Rebuild rivus to opus/rivus/fons/ts/
+
+# Test against rivus:
+bun run test:rivus -t "conversio"
+
+# Or run all rivus tests:
+bun run test:rivus
+```
+
+### Key Differences from Faber
+
+| Aspect | Faber (TypeScript) | Rivus (Faber) |
+|--------|-------------------|---------------|
+| AST | `interface` with `type` discriminator | `discretio` variant |
+| Keywords | Array of objects | `verbumFaberId()` function |
+| Pattern match | `switch`/`case` | `discerne`/`casu` |
+| String templates | Template literals | `scriptum()` |
+
 ## Related
 
 - `qua` - type assertion (compile-time only)
