@@ -360,23 +360,22 @@ Shared work (not compiler-specific):
 |-------|--------|-------|
 | Phase 1: Annotation Parsing | ✅ Complete | Both Faber and Rivus parse all four annotations |
 | Vertical Slice | ✅ Complete | `adde`/`addita` working via norma registry |
+| All 5 Targets Wired | ✅ Complete | ts, py, rs, cpp, zig check norma registry |
+| Build-time Generation | ✅ Complete | `bun run build:norma` generates from .fab files |
 
-### Vertical Slice Details (commit b5f9ef7)
+### Build-time Generation (commit f297c6d)
 
-Proved architecture end-to-end:
+Registry is now generated at build time using Faber's parser:
 
-1. **`fons/norma/lista.fab`** - Annotation source (currently minimal)
-2. **`fons/faber/codegen/norma-registry.ts`** - Hardcoded registry (avoids circular dep with parser)
-3. **`fons/faber/codegen/ts/expressions/call.ts`** - Checks norma first, falls back to LISTA_METHODS
-
-Verified output:
+```bash
+bun run build:norma
 ```
-items.adde(4)   → items.push(4)      # ts
-                → items.append(4)    # py
 
-items.addita(4) → [...items, 4]      # ts
-                → [*items, 4]        # py
-```
+Generates:
+- `fons/faber/codegen/norma-registry.gen.ts` - TypeScript data (for Faber)
+- `fons/rivus/codegen/norma-registry.gen.fab` - Faber code (for Rivus)
+
+The build script (`scripta/build-norma.ts`) uses Faber's actual parser to extract annotations from AST nodes - no hacky regex.
 
 ### Current Architecture
 
@@ -384,16 +383,31 @@ items.addita(4) → [...items, 4]      # ts
 ┌─────────────────────────────────────────────────────────────────┐
 │ fons/norma/lista.fab          (source of truth - annotations)  │
 └─────────────────────────────────────────────────────────────────┘
-                              ↓ (manual sync for now)
+                              ↓ bun run build:norma
 ┌─────────────────────────────────────────────────────────────────┐
-│ fons/faber/codegen/norma-registry.ts    (hardcoded registry)   │
+│ norma-registry.gen.ts (Faber)    norma-registry.gen.fab (Rivus)│
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ fons/faber/codegen/*/expressions/call.ts  (codegen lookup)     │
-│   - Check norma registry first                                  │
+│   - All 5 targets check norma registry first                   │
 │   - Fall back to LISTA_METHODS (hardcoded TypeScript)          │
 └─────────────────────────────────────────────────────────────────┘
+```
+
+Verified output across all targets:
+```
+items.adde(4)   → items.push(4)           # ts
+                → items.append(4)          # py
+                → items.push(4)            # rs
+                → items.push_back(4)       # cpp
+                → items.adde(alloc, 4)     # zig
+
+items.addita(4) → [...items, 4]           # ts
+                → [*items, 4]              # py
+                → { let mut v = ... }      # rs
+                → [&]{ auto v = ... }()    # cpp
+                → items.addita(alloc, 4)   # zig
 ```
 
 ---
@@ -407,35 +421,32 @@ items.addita(4) → [...items, 4]      # ts
 | Codegen registries | Hybrid (norma + TS fallback) | Basic |
 | Multi-target codegen | ts, py, rs, cpp, zig | ts |
 | subsidia/zig/*.zig | Yes | No |
-| norma-registry wired | ts only | No |
+| norma-registry wired | ✅ All 5 targets | No |
+| Build-time generation | ✅ Yes | ✅ Yes (gen.fab) |
 
 ---
 
 ## Next: Full lista<> Migration
 
-Migrate all 53 lista methods from hardcoded `lista.ts` to annotation-driven `norma-registry.ts`.
+Migrate all 53 lista methods from hardcoded `lista.ts` to annotation-driven `norma/lista.fab`.
 
 ### Approach
 
-**Option A: Continue hardcoding** (chosen for now)
-- Manually add each method to `norma-registry.ts`
-- Tedious but straightforward, no new tooling
-- Can parallelize: registry expansion + target wiring
+Build-time generation is now complete. The workflow is:
 
-**Option B: Build-time generation** (future)
-- Script parses `norma/lista.fab` → generates `norma-registry.ts`
-- Cleaner long-term, but adds build complexity
-- Blocked by: need to avoid circular dependency with parser
+1. Add method annotations to `fons/norma/lista.fab`
+2. Run `bun run build:norma`
+3. Generated files update automatically
 
 ### Tasks
 
-#### 1. Expand norma-registry.ts (~53 methods)
+#### 1. Expand fons/norma/lista.fab (~51 remaining methods)
 
 Group methods by category for systematic migration:
 
 | Category | Methods | Count |
 |----------|---------|-------|
-| Adding | adde, addita, praepone, praeposita | 4 |
+| Adding | ~~adde~~, ~~addita~~, praepone, praeposita | 2 remaining |
 | Removing | remove, remota, decapita, decapitata, purga | 5 |
 | Accessing | primus, ultimus, accipe, toSlice | 4 |
 | Properties | longitudo, vacua | 2 |
@@ -446,16 +457,17 @@ Group methods by category for systematic migration:
 | Iteration | perambula, coniunge | 2 |
 | Aggregation | summa, medium, minimus, maximus, minimusPer, maximusPer, numera | 7 |
 | Lodash-style | congrega, unica, planaOmnia, fragmenta, densa, partire, misce, specimen, specimina | 9 |
-| **Total** | | **53** |
+| **Total** | | **51 remaining** |
 
-#### 2. Wire remaining targets
+#### 2. Wire remaining targets ✅ COMPLETE
 
-Currently only `ts/expressions/call.ts` checks norma registry. Add same pattern to:
+All 5 targets now check norma registry:
 
-- [ ] `py/expressions/call.ts`
-- [ ] `rs/expressions/call.ts`
-- [ ] `cpp/expressions/call.ts`
-- [ ] `zig/expressions/call.ts`
+- [x] `ts/expressions/call.ts`
+- [x] `py/expressions/call.ts`
+- [x] `rs/expressions/call.ts`
+- [x] `cpp/expressions/call.ts`
+- [x] `zig/expressions/call.ts`
 
 #### 3. Test coverage
 
@@ -472,21 +484,12 @@ Once all methods are in norma-registry:
 
 ### Execution Strategy
 
-**Parallel workstreams:**
+With build-time generation and all targets wired, the workflow is now:
 
-```
-Stream A: Registry expansion          Stream B: Target wiring
-─────────────────────────────         ────────────────────────
-Add methods to norma-registry.ts      Wire py/call.ts
-  (batch by category)                 Wire rs/call.ts
-                                      Wire cpp/call.ts
-                                      Wire zig/call.ts
-```
-
-**Suggested order:**
-1. Wire all 5 targets with current 2 methods (adde, addita)
-2. Expand registry one category at a time
-3. Test each category across all targets before moving on
+1. Add method annotations to `fons/norma/lista.fab` (batch by category)
+2. Run `bun run build:norma` to regenerate
+3. Test each category across all 5 targets before moving on
+4. Once all methods migrated, remove fallback to `LISTA_METHODS`
 
 ---
 
