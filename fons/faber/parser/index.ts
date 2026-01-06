@@ -4606,13 +4606,16 @@ export function parse(tokens: Token[]): ParserResult {
 
         // WHY: 'nihil x' checks if x is null, parallels 'nulla x' for emptiness
         //      But 'nihil' alone is the null literal (handled in parsePrimary)
-        //      Check if followed by identifier or expression-starting keyword
+        //      Check if followed by identifier or expression-starting keyword ON SAME LINE
         if (checkKeyword('nihil')) {
+            const curr = peek();
             const next = peek(1);
+            const sameLine = next && next.position.line === curr.position.line;
             const isUnaryOperand =
-                next?.type === 'IDENTIFIER' ||
-                (next?.type === 'KEYWORD' &&
-                    ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value));
+                sameLine &&
+                (next?.type === 'IDENTIFIER' ||
+                    (next?.type === 'KEYWORD' &&
+                        ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value)));
             if (isUnaryOperand) {
                 advance(); // consume 'nihil'
                 const position = tokens[current - 1]!.position;
@@ -4632,12 +4635,16 @@ export function parse(tokens: Token[]): ParserResult {
 
         // WHY: 'verum x' checks if x === true (strict boolean true check)
         //      But 'verum' alone is the true literal (handled in parsePrimary)
+        //      Must be on same line to avoid ambiguity with next statement
         if (checkKeyword('verum')) {
+            const curr = peek();
             const next = peek(1);
+            const sameLine = next && next.position.line === curr.position.line;
             const isUnaryOperand =
-                next?.type === 'IDENTIFIER' ||
-                (next?.type === 'KEYWORD' &&
-                    ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value));
+                sameLine &&
+                (next?.type === 'IDENTIFIER' ||
+                    (next?.type === 'KEYWORD' &&
+                        ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value)));
             if (isUnaryOperand) {
                 advance(); // consume 'verum'
                 const position = tokens[current - 1]!.position;
@@ -4649,12 +4656,16 @@ export function parse(tokens: Token[]): ParserResult {
 
         // WHY: 'falsum x' checks if x === false (strict boolean false check)
         //      But 'falsum' alone is the false literal (handled in parsePrimary)
+        //      Must be on same line to avoid ambiguity with next statement
         if (checkKeyword('falsum')) {
+            const curr = peek();
             const next = peek(1);
+            const sameLine = next && next.position.line === curr.position.line;
             const isUnaryOperand =
-                next?.type === 'IDENTIFIER' ||
-                (next?.type === 'KEYWORD' &&
-                    ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value));
+                sameLine &&
+                (next?.type === 'IDENTIFIER' ||
+                    (next?.type === 'KEYWORD' &&
+                        ['verum', 'falsum', 'nihil', 'ego', 'non', 'nulla', 'nonnulla', 'negativum', 'positivum', 'novum', 'cede'].includes(next.value)));
             if (isUnaryOperand) {
                 advance(); // consume 'falsum'
                 const position = tokens[current - 1]!.position;
