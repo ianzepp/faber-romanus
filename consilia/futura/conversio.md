@@ -347,12 +347,158 @@ Each target requires two changes:
 - Pattern: Re-emit `x numeratum`, `x numeratum vel f`, etc.
 
 ### Phase 7: Tests
-- [ ] `fons/proba/codegen/conversio/` — Create test directory with YAML test cases:
-  - Basic conversions: `numeratum`, `fractatum`, `textatum`, `bivalentum`
-  - With fallback: `numeratum vel 0`
-  - With type params: `numeratum<i32>`, `numeratum<i32, Hex>`
-  - Chaining: `"42" numeratum textatum`
-  - Error cases: invalid source types, type mismatches
+
+- [ ] `fons/proba/codegen/expressions/conversio.yaml` — Create test file
+
+**Test file structure** (follows `qua.yaml` and `innatum.yaml` patterns):
+
+```yaml
+# Conversio expressions - type conversion operators
+# Maps Faber numeratum/fractatum/textatum/bivalentum to target conversions
+
+# === numeratum (to integer) ===
+
+- name: basic numeratum
+  source: fixum n = "42" numeratum
+  expect:
+      ts: 'const n = parseInt("42", 10);'
+      py: 'n = int("42")'
+      rs:
+          - '"42".parse::<i64>().unwrap()'
+      cpp:
+          - 'std::stoll("42")'
+      zig:
+          - 'std.fmt.parseInt(i64, "42", 10)'
+      fab:
+          - 'fixum n = "42" numeratum'
+
+- name: numeratum with fallback
+  source: fixum n = input numeratum vel 0
+  expect:
+      ts: 'const n = parseInt(input, 10) || 0;'
+      py: 'n = int(input) if input.isdigit() else 0'
+      rs:
+          - '.parse::<i64>().unwrap_or(0)'
+      fab:
+          - 'fixum n = input numeratum vel 0'
+
+- name: numeratum with type param
+  source: fixum n = "42" numeratum<i32>
+  expect:
+      ts: 'const n = parseInt("42", 10);'
+      rs:
+          - '"42".parse::<i32>().unwrap()'
+      fab:
+          - 'fixum n = "42" numeratum<i32>'
+
+- name: numeratum with hex radix
+  source: fixum n = "ff" numeratum<i32, Hex>
+  expect:
+      ts: 'const n = parseInt("ff", 16);'
+      py: 'n = int("ff", 16)'
+      rs:
+          - 'i32::from_str_radix("ff", 16).unwrap()'
+      fab:
+          - 'fixum n = "ff" numeratum<i32, Hex>'
+
+- name: numeratum with binary radix
+  source: fixum n = "101" numeratum<u8, Bin>
+  expect:
+      ts: 'const n = parseInt("101", 2);'
+      py: 'n = int("101", 2)'
+      rs:
+          - 'u8::from_str_radix("101", 2).unwrap()'
+      fab:
+          - 'fixum n = "101" numeratum<u8, Bin>'
+
+# === fractatum (to float) ===
+
+- name: basic fractatum
+  source: fixum f = "3.14" fractatum
+  expect:
+      ts: 'const f = parseFloat("3.14");'
+      py: 'f = float("3.14")'
+      rs:
+          - '"3.14".parse::<f64>().unwrap()'
+      cpp:
+          - 'std::stod("3.14")'
+      fab:
+          - 'fixum f = "3.14" fractatum'
+
+- name: fractatum with fallback
+  source: fixum f = input fractatum vel 0.0
+  expect:
+      ts: 'const f = parseFloat(input) || 0;'
+      rs:
+          - '.parse::<f64>().unwrap_or(0.0)'
+      fab:
+          - 'fixum f = input fractatum vel 0.0'
+
+# === textatum (to string) ===
+
+- name: number to string
+  source: fixum s = 42 textatum
+  expect:
+      ts: 'const s = String(42);'
+      py: 's = str(42)'
+      rs:
+          - '42.to_string()'
+      cpp:
+          - 'std::to_string(42)'
+      fab:
+          - 'fixum s = 42 textatum'
+
+- name: boolean to string
+  source: fixum s = verum textatum
+  expect:
+      ts: 'const s = String(true);'
+      py: 's = str(True)'
+      rs:
+          - 'true.to_string()'
+      fab:
+          - 'fixum s = verum textatum'
+
+# === bivalentum (to boolean) ===
+
+- name: number to boolean
+  source: fixum b = count bivalentum
+  expect:
+      ts: 'const b = Boolean(count);'
+      py: 'b = bool(count)'
+      rs:
+          - 'count != 0'
+      fab:
+          - 'fixum b = count bivalentum'
+
+- name: string to boolean
+  source: fixum b = name bivalentum
+  expect:
+      ts: 'const b = Boolean(name);'
+      py: 'b = bool(name)'
+      rs:
+          - '!name.is_empty()'
+      fab:
+          - 'fixum b = name bivalentum'
+
+# === chaining ===
+
+- name: conversion chain numeratum then textatum
+  source: fixum s = "42" numeratum textatum
+  expect:
+      ts: 'const s = String(parseInt("42", 10));'
+      py: 's = str(int("42"))'
+      rs:
+          - '.parse::<i64>().unwrap().to_string()'
+      fab:
+          - 'fixum s = "42" numeratum textatum'
+
+- name: chained with fallback
+  source: fixum n = x numeratum vel 0 vel 1
+  expect:
+      ts: 'const n = (parseInt(x, 10) || 0) ?? 1;'
+      fab:
+          - 'fixum n = x numeratum vel 0 vel 1'
+```
 
 ### Key Reference Files
 | Component | File | Template to Follow |
