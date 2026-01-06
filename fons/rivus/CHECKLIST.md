@@ -4,6 +4,15 @@ The bootstrap compiler for Faber Romanus, written entirely in Faber itself. Rivu
 
 Unlike the reference compiler, Rivus uses Latin exclusively in its source code, serving as a showcase for writing substantial programs in pure Faber. The bootstrap compiler currently targets TypeScript output, with Zig support in development.
 
+## Usage
+
+```
+rivus compile <file.fab>              # Compile to TypeScript
+rivus compile <file.fab> -o out.ts    # Specify output file
+```
+
+> **Note:** Rivus must be built before use with `bun run build:rivus`. The bootstrap compiler has a narrower feature set than Faber, focusing on the subset needed for self-hosting.
+
 ## Implementation Status
 
 | Target     | Tests | Status |

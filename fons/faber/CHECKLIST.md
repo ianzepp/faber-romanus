@@ -4,6 +4,21 @@ The reference compiler for the Faber Romanus programming language, implemented i
 
 This compiler uses mixed Latin/English identifiers in its implementation, prioritizing clarity for contributors familiar with TypeScript conventions while maintaining the project's Latin aesthetic in user-facing APIs.
 
+## Usage
+
+```
+faber compile <file.fab>              # Compile to TypeScript (default)
+faber compile <file.fab> -t py        # Compile to Python
+faber compile <file.fab> -t zig       # Compile to Zig
+faber compile <file.fab> -t rs        # Compile to Rust
+faber compile <file.fab> -t cpp       # Compile to C++23
+faber compile <file.fab> -t fab       # Format/normalize Faber source
+faber compile <file.fab> -o out.ts    # Specify output file
+faber run <file.fab>                  # Compile and execute (TypeScript only)
+faber check <file.fab>                # Validate syntax without output
+faber format <file.fab>               # Format source in place
+```
+
 ## Implementation Status
 
 | Target     | Tests | Status |
