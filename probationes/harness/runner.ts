@@ -7,8 +7,6 @@ import { buildPrompt, buildVerificationPrompt } from './prompt'
 import { callModel } from './api'
 import { gradeTask } from './grader'
 import { Logger } from './logger'
-import { analyzeResults } from './analyzer'
-import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { $ } from 'bun'
 import type { RawResponse, Summary, Task, Model, TransitionType, GradedResult } from './types'
@@ -405,17 +403,6 @@ async function main() {
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0
   console.log(`\n${passed}/${total} passed (${pct}%) in ${(totalLatency / 1000).toFixed(1)}s — $${totalCost.toFixed(2)}`)
 
-  // Generate AI analysis
-  if (completed > 0) {
-    try {
-      if (verbose) console.log('Generating AI analysis...')
-      const analysis = await analyzeResults(runId)
-      writeFileSync(join(ROOT, 'results', runId, 'analysis.md'), analysis)
-      console.log(`Analysis: probationes/results/${runId}/analysis.md`)
-    } catch (error) {
-      console.error('Failed to generate analysis:', error)
-    }
-  }
 }
 
 main().catch(console.error)
