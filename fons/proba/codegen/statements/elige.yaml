@@ -212,7 +212,8 @@
           - 'return nullptr;'
       zig:
           - 'if ((mode == 1))'
-          - 'var x: anytype = init();'
+          # WHY: anytype not valid for var declarations - Zig infers type
+          - 'var x = init();'
           - 'process(x);'
           - 'return x;'
           - 'else {'

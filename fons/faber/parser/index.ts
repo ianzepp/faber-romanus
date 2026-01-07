@@ -1913,7 +1913,8 @@ export function parse(tokens: Token[]): ParserResult {
 
         while (!check('RBRACE') && !isAtEnd()) {
             const memberPosition = peek().position;
-            const memberName = parseIdentifier();
+            // WHY: Keywords like Oct, Dec can be used as enum member names
+            const memberName = parseIdentifierOrKeyword();
 
             let value: Literal | undefined;
 

@@ -120,9 +120,13 @@ export function genCallExpression(node: CallExpression, g: ZigGenerator): string
         }
 
         // Fallback: no type info - try all collection types
-        for (const coll of ['lista', 'tabula', 'copia']) {
-            const result = applyZigNorma(coll, methodName);
-            if (result) return result;
+        // WHY: Only use fallback when receiver type is truly unknown (lenient snippets).
+        //      For any known type (user-defined, objectum, etc.), skip the fallback.
+        if (objType?.kind === 'unknown') {
+            for (const coll of ['lista', 'tabula', 'copia']) {
+                const result = applyZigNorma(coll, methodName);
+                if (result) return result;
+            }
         }
     }
 

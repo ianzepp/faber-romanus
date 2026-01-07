@@ -96,7 +96,8 @@
           - 'return nullptr;'
       zig:
           - '// try block'
-          - 'var x: anytype = compute();'
+          # WHY: anytype not valid for var declarations - Zig infers type
+          - 'var x = compute();'
           - 'process(x);'
           - 'return x;'
       fab:
@@ -248,7 +249,7 @@
           - 'catch (const std::exception& e) {'
       zig:
           - '// try block'
-          - 'var fd: anytype = open();'
+          - 'var fd = open();'
           - 'write(fd, data);'
       fab:
           - 'tempta {'
@@ -579,8 +580,8 @@
           - 'return nullptr;'
       zig:
           - '// try block'
-          - 'var conn: anytype = openConnection();'
-          - 'var data: anytype = fetchData(conn);'
+          - 'var conn = openConnection();'
+          - 'var data = fetchData(conn);'
           - 'process(data);'
       fab:
           - 'tempta {'

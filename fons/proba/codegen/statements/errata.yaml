@@ -53,18 +53,23 @@
   errata:
       - "Expected '>'"
 
-- name: P008 missing opening brace in function body
+# WHY: Bodyless functions now parse successfully but fail semantic check
+- name: S002 function missing body
   source: 'functio f() redde 1'
   errata:
-      - "Expected '{'"
+      - "Semantic errors"
+      - "has no body"
 
 - name: P008 missing opening brace in si block
   source: 'si verum redde 1'
   errata:
       - "Expected '{'"
 
-- name: P010 expected identifier got keyword
-  source: 'functio si() { }'
+# WHY: Keywords are now valid as function names (per parseFunctioDeclaration using parseIdentifierOrKeyword)
+# Removed: "P010 expected identifier got keyword" - 'functio si() { }' is now valid
+
+- name: P010 expected identifier got number
+  source: 'functio 123() { }'
   errata:
       - 'Expected identifier'
 

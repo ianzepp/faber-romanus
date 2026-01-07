@@ -122,14 +122,19 @@ export function genCallExpression(node: CallExpression, g: TsGenerator): string 
         }
 
         // Fallback: no type info - try all collection types
-        for (const coll of ['lista', 'tabula', 'copia']) {
-            const norma = getNormaTranslation('ts', coll, methodName);
-            if (norma) {
-                if (norma.method) {
-                    return `${obj}.${norma.method}(${args})`;
-                }
-                if (norma.template && norma.params) {
-                    return applyNormaTemplate(norma.template, [...norma.params], obj, [...argsArray]);
+        // WHY: Only use fallback when receiver type is truly unknown (lenient snippets).
+        //      For any known type (user-defined, objectum, etc.), skip the fallback.
+        //      This prevents translating methods like 'pone' on objects that aren't tabulas.
+        if (objType?.kind === 'unknown') {
+            for (const coll of ['lista', 'tabula', 'copia']) {
+                const norma = getNormaTranslation('ts', coll, methodName);
+                if (norma) {
+                    if (norma.method) {
+                        return `${obj}.${norma.method}(${args})`;
+                    }
+                    if (norma.template && norma.params) {
+                        return applyNormaTemplate(norma.template, [...norma.params], obj, [...argsArray]);
+                    }
                 }
             }
         }
