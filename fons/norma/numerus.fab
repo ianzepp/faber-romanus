@@ -1,0 +1,50 @@
+# numerus.fab - Standard Library numerus (integer) Definition
+#
+# Provides Latin method translations for integer operations.
+
+# =============================================================================
+# TYPE MAPPING
+# =============================================================================
+
+@ innatum ts "number", py "int", rs "i64", cpp "int64_t", zig "i64"
+genus numerus { }
+
+# =============================================================================
+# NUMERIC OPERATIONS
+# =============================================================================
+
+# Absolute value
+@ verte ts (ego) -> "Math.abs(§)"
+@ verte py (ego) -> "abs(§)"
+@ verte rs (ego) -> "§.abs()"
+@ verte cpp (ego) -> "std::abs(§)"
+@ verte zig (ego) -> "@intCast(@abs(§))"
+@ externa
+functio absolutum() -> numerus
+
+# Sign (-1, 0, or 1)
+@ verte ts (ego) -> "Math.sign(§)"
+@ verte py (ego) -> "((§>0)-(§<0))"
+@ verte rs (ego) -> "§.signum()"
+@ verte cpp (ego) -> "((§ > 0) - (§ < 0))"
+@ verte zig (ego) -> "std.math.sign(§)"
+@ externa
+functio signum() -> numerus
+
+# Minimum of two values
+@ verte ts (ego, other) -> "Math.min(§, §)"
+@ verte py (ego, other) -> "min(§, §)"
+@ verte rs (ego, other) -> "std::cmp::min(§, §)"
+@ verte cpp (ego, other) -> "std::min(§, §)"
+@ verte zig (ego, other) -> "@min(§, §)"
+@ externa
+functio minimus(numerus other) -> numerus
+
+# Maximum of two values
+@ verte ts (ego, other) -> "Math.max(§, §)"
+@ verte py (ego, other) -> "max(§, §)"
+@ verte rs (ego, other) -> "std::cmp::max(§, §)"
+@ verte cpp (ego, other) -> "std::max(§, §)"
+@ verte zig (ego, other) -> "@max(§, §)"
+@ externa
+functio maximus(numerus other) -> numerus

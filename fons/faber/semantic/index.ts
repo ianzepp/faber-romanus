@@ -777,7 +777,12 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
         }
 
         if (typeof node.value === 'number') {
-            return NUMERUS;
+            // WHY: Distinguish integer literals from float literals
+            // 42 → numerus, 3.14 → fractus
+            if (Number.isInteger(node.value)) {
+                return NUMERUS;
+            }
+            return FRACTUS;
         }
 
         if (typeof node.value === 'bigint') {

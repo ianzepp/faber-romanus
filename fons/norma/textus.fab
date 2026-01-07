@@ -55,7 +55,7 @@ functio continet(textus sub) -> bivalens
 @ verte cpp (ego, prefix) -> "(§.rfind(§, 0) == 0)"
 @ verte zig (ego, prefix) -> "std.mem.startsWith(u8, §, §)"
 @ externa
-functio incipitCum(textus prefix) -> bivalens
+functio initium(textus prefix) -> bivalens
 
 # Check if string ends with suffix
 @ verte ts "endsWith"
@@ -64,7 +64,7 @@ functio incipitCum(textus prefix) -> bivalens
 @ verte cpp (ego, suffix) -> "(§.size() >= §.size() && §.compare(§.size() - §.size(), §.size(), §) == 0)"
 @ verte zig (ego, suffix) -> "std.mem.endsWith(u8, §, §)"
 @ externa
-functio finitCum(textus suffix) -> bivalens
+functio finis(textus suffix) -> bivalens
 
 # =============================================================================
 # CASE CONVERSION
