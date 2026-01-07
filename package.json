@@ -24,6 +24,7 @@
         "prettier:check": "./scripta/prettier --check",
         "release": "./scripta/release",
         "sanity": "bun ./scripta/sanity.ts",
+        "stats": "bun ./scripta/stats.ts",
         "test": "./scripta/test",
         "test:faber": "bun test fons/proba/faber.test.ts",
         "test:rivus": "bun test fons/proba/rivus.test.ts --timeout 5000",
