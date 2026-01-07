@@ -2,33 +2,28 @@
  * TypeScript Code Generator - Member Expression
  *
  * TRANSFORMS:
- *   obj.prop      -> obj.prop
- *   obj[key]      -> obj[key]
- *   obj?.prop     -> obj?.prop
- *   obj?[key]     -> obj?.[key]   (TS requires dot before bracket)
- *   obj!.prop     -> obj!.prop
- *   obj![key]     -> obj![key]
- *
- * BUG: Norma property translations (e.g., lista.longitudo -> array.length)
- *      are not applied here. The translations exist in fons/codegen/lista.ts
- *      etc. but only work for method calls, not property accesses.
- *
- *      Example: `items.longitudo` should become `items.length` in TS,
- *      but currently emits `items.longitudo` (invalid JS).
- *
- *      Fix requires type information at codegen time to know that `items`
- *      is a lista and `longitudo` should translate to `length`.
- *
- *      See also: fons/codegen/lista.ts (longitudo translation exists but unused)
+ *   obj.prop          -> obj.prop
+ *   obj[key]          -> obj[key]
+ *   obj?.prop         -> obj?.prop
+ *   obj?[key]         -> obj?.[key]   (TS requires dot before bracket)
+ *   obj!.prop         -> obj!.prop
+ *   obj![key]         -> obj![key]
+ *   lista.longitudo   -> array.length (via norma)
+ *   lista.primus      -> array[0]     (via norma)
  */
 
 import type { MemberExpression, Identifier, Expression, RangeExpression } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
 
+// WHY: Use norma registry for stdlib property translations
+import { getNormaTranslation, applyNormaTemplate } from '../../norma-registry';
+
 export function genMemberExpression(node: MemberExpression, g: TsGenerator): string {
     const obj = g.genExpression(node.object);
     const objType = node.object.resolvedType;
-    const collectionName = objType?.kind === 'generic' ? objType.name : null;
+    // WHY: Extract type name for norma lookup - works for both generics and primitives
+    const collectionName = objType?.kind === 'generic' ? objType.name :
+                           objType?.kind === 'primitive' ? objType.name : null;
 
     if (node.computed) {
         // GUARD: tabula indexing uses Map.get()
@@ -73,6 +68,29 @@ export function genMemberExpression(node: MemberExpression, g: TsGenerator): str
 
     // WHY: Non-computed access always has Identifier property by grammar
     const prop = (node.property as Identifier).name;
+
+    // WHY: Translate norma properties (longitudo -> length, primus -> [0], etc.)
+    // Only applies to generic types with norma translations (lista, tabula, copia)
+    if (collectionName) {
+        const norma = getNormaTranslation('ts', collectionName, prop);
+        if (norma?.template && norma?.params) {
+            // Apply template with obj as 'ego', no additional args for properties
+            const translated = applyNormaTemplate(norma.template, [...norma.params], obj, []);
+            if (node.optional) {
+                // WHY: Optional chaining must use `?.` for computed access.
+                const suffix = translated.startsWith(obj) ? translated.slice(obj.length) : '';
+                if (suffix.startsWith('[')) {
+                    return `${obj}?.${suffix}`;
+                }
+                if (suffix.startsWith('.')) {
+                    return `${obj}?${suffix}`;
+                }
+                // Fallback: preserve optional semantics even if template is exotic.
+                return `(${obj} == null ? undefined : ${translated})`;
+            }
+            return translated;
+        }
+    }
 
     if (node.optional) {
         return `${obj}?.${prop}`;

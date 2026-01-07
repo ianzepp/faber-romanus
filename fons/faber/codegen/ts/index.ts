@@ -67,6 +67,15 @@ export function generateTs(program: Program, options: CodegenOptions = {}): stri
     // First pass: generate body (this populates features)
     const body = program.body.map(stmt => g.genStatement(stmt)).join('\n');
 
+    // Fail hard on codegen errors (no fallback guessing).
+    if (g.codegenErrors.length > 0) {
+        const lines = g.codegenErrors.map(err => {
+            const loc = err.position ? `${err.position.line}:${err.position.column} ` : '';
+            return `  ${loc}${err.message}`;
+        });
+        throw new Error(`TypeScript codegen errors:\n${lines.join('\n')}`);
+    }
+
     // Second: prepend preamble based on detected features
     const preamble = genPreamble(g.features);
 

@@ -121,6 +121,32 @@ export function getNormaCollections(): string[] {
 }
 
 /**
+ * Find receiver-type collections that define a given method for a target.
+ *
+ * WHY: When the semantic analyzer cannot resolve a receiver type (UNKNOWN),
+ *      TS codegen must not guess. This helper lets codegen detect "this looks
+ *      like a stdlib method" and emit a compiler error prompting a type fix.
+ */
+export function getNormaReceiverCollectionsForMethod(target: string, method: string): string[] {
+    // Restrict to receiver types (not module-like entries such as mathesis/solum).
+    // Keep this list small and explicit; expand as receiver stdlib grows.
+    const receiverCollections = new Set(['lista', 'tabula', 'copia', 'textus']);
+
+    const matches: string[] = [];
+    for (const [collectionName, coll] of registry.entries()) {
+        if (!receiverCollections.has(collectionName)) {
+            continue;
+        }
+        const m = coll.methods.get(method);
+        if (!m) continue;
+        if (m.translations.get(target)) {
+            matches.push(collectionName);
+        }
+    }
+    return matches;
+}
+
+/**
  * Apply a norma module function call (no receiver object).
  *
  * For module functions like mathesis.pavimentum(x) or solum.lege(path),

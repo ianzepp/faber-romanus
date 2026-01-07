@@ -14,8 +14,8 @@ ex "./scopus" importa SymbolumSpecies
 ex "../ast/positio" importa Locus
 ex "../ast/radix" importa Programma
 ex "../ast/sententia" importa Sententia
-ex "../lexor/index" importa lexare
-ex "../parser/index" importa resolvere
+ex "../lexor/index" importa lexare, LexorResultatum
+ex "../parser/index" importa resolvere, ParserResultatum
 
 # ============================================================================
 # FILE I/O DECLARATIONS (extern - implementations injected post-build)

@@ -17,6 +17,7 @@ import type {
 } from '../../parser/ast';
 import type { RequiredFeatures } from '../types';
 import { createRequiredFeatures, COMMENT_SYNTAX, formatLeadingComments, formatTrailingComments } from '../types';
+import type { Position } from '../../tokenizer/types';
 
 // Statement handlers
 import { genImportaDeclaration } from './statements/importa';
@@ -111,6 +112,7 @@ export class TsGenerator {
     genusNames = new Set<string>(); // WHY: Track genus type names for proper instantiation
     features: RequiredFeatures;
     semi: boolean;
+    codegenErrors: Array<{ message: string; position?: Position }> = [];
 
     constructor(
         public indent: string = '  ',
@@ -118,6 +120,19 @@ export class TsGenerator {
     ) {
         this.features = createRequiredFeatures();
         this.semi = semi;
+    }
+
+    /**
+     * Record a codegen error without throwing immediately.
+     *
+     * WHY: Prefer collecting multiple errors in one pass so users can fix
+     *      issues in batches (especially missing type info for norma lowering).
+     */
+    codegenError(message: string, node?: BaseNode): void {
+        this.codegenErrors.push({
+            message,
+            position: node?.position,
+        });
     }
 
     /**

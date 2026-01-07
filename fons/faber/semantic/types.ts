@@ -288,6 +288,21 @@ export const UNKNOWN: UnknownType = unknownType();
  * WHY: Used for type checking assignments, function calls, etc.
  */
 export function typesEqual(a: SemanticType, b: SemanticType): boolean {
+    // WHY: `user` is a nominal reference to a declared type; treat it as equal
+    // to the corresponding concrete type (genus/ordo/pactum/discretio) when the
+    // names match. This enables cross-module type propagation without forcing
+    // every annotation to carry the concrete kind.
+    if (a.kind === 'user') {
+        if ((b.kind === 'enum' || b.kind === 'genus' || b.kind === 'pactum' || b.kind === 'discretio') && a.name === b.name) {
+            return true;
+        }
+    }
+    if (b.kind === 'user') {
+        if ((a.kind === 'enum' || a.kind === 'genus' || a.kind === 'pactum' || a.kind === 'discretio') && a.name === b.name) {
+            return true;
+        }
+    }
+
     if (a.kind !== b.kind) {
         return false;
     }

@@ -46,8 +46,8 @@ import type {
     TypeAliasDeclaration,
     VariaDeclaration,
 } from '../parser/ast';
-import type { SemanticType, FunctionType, PrimitiveType } from './types';
-import { functionType, UNKNOWN, VACUUM, userType, enumType, genusType, pactumType, genericType, primitiveType } from './types';
+import type { SemanticType, FunctionType, PrimitiveType, VariantInfo } from './types';
+import { functionType, UNKNOWN, VACUUM, userType, enumType, genusType, pactumType, genericType, primitiveType, discretioType } from './types';
 import type { TypeAnnotation } from '../parser/ast';
 
 // =============================================================================
@@ -309,9 +309,23 @@ function extractOrdoExport(stmt: OrdoDeclaration): ModuleExport {
  * Extract export from discretio (tagged union) declaration.
  */
 function extractDiscretioExport(stmt: DiscretioDeclaration): ModuleExport {
+    // WHY: Preserve variant field information for cross-module pattern matching.
+    // Without this, variant aliases in `discerne` cannot be typed when the
+    // discretio is imported from another file.
+    const variants = new Map<string, VariantInfo>();
+
+    for (const variant of stmt.variants) {
+        variants.set(variant.name.name, {
+            fields: variant.fields.map(f => ({
+                name: f.name.name,
+                type: resolveTypeSimple(f.fieldType),
+            })),
+        });
+    }
+
     return {
         name: stmt.name.name,
-        type: userType(stmt.name.name),
+        type: discretioType(stmt.name.name, variants),
         kind: 'discretio',
     };
 }

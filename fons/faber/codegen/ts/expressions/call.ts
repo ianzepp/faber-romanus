@@ -17,7 +17,13 @@ import type { CallExpression, Identifier } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
 
 // WHY: Unified norma registry for all stdlib translations (from .fab files)
-import { getNormaTranslation, applyNormaTemplate, applyNormaModuleCall, validateMorphology } from '../../norma-registry';
+import {
+    getNormaTranslation,
+    applyNormaTemplate,
+    applyNormaModuleCall,
+    validateMorphology,
+    getNormaReceiverCollectionsForMethod,
+} from '../../norma-registry';
 
 /**
  * TypeScript intrinsic mappings.
@@ -104,9 +110,25 @@ export function genCallExpression(node: CallExpression, g: TsGenerator): string 
 
         // WHY: Use semantic type info to dispatch to correct collection registry.
         // This prevents method name collisions (e.g., accipe means different
-        // things for lista vs tabula).
+        // things for lista vs tabula). Also handles primitives like textus.
         const objType = node.callee.object.resolvedType;
-        const collectionName = objType?.kind === 'generic' ? objType.name : null;
+        const collectionName = objType?.kind === 'generic' ? objType.name :
+                               objType?.kind === 'primitive' ? objType.name : null;
+
+        // STRICT: No fallback guessing. If this method name is known to norma
+        // for receiver types but we can't resolve the receiver type, emit an
+        // actionable compiler error.
+        if (!collectionName) {
+            const candidates = getNormaReceiverCollectionsForMethod('ts', methodName);
+            if (candidates.length > 0) {
+                g.codegenError(
+                    `Cannot translate stdlib method '${methodName}()' without resolved receiver type (candidates: ${candidates.join(
+                        ', ',
+                    )}). Add a type annotation, import the return type, or fix upstream type propagation.`,
+                    node,
+                );
+            }
+        }
 
         // Try norma registry for the resolved collection type
         if (collectionName) {

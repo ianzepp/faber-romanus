@@ -11,7 +11,7 @@
 
 import type { Identifier } from '../../../parser/ast';
 import type { TsGenerator } from '../generator';
-import { applyNormaModuleCall } from '../../norma-registry';
+import { getNormaTranslation } from '../../norma-registry';
 
 /**
  * TypeScript constant intrinsics.
@@ -36,10 +36,12 @@ export function genIdentifier(node: Identifier, _g: TsGenerator): string {
     }
 
     // Check for mathesis constants (PI, E, TAU) via norma registry
-    // WHY: These are zero-arg functions that act as constants
-    const mathesisConst = applyNormaModuleCall('ts', 'mathesis', node.name, []);
-    if (mathesisConst) {
-        return mathesisConst;
+    // WHY: Only match zero-arg functions that act as constants.
+    //      Functions like radix(x) and signum(x) require parameters and
+    //      should NOT be matched here - they're local variable names.
+    const mathesisConst = getNormaTranslation('ts', 'mathesis', node.name);
+    if (mathesisConst?.template && mathesisConst?.params?.length === 0) {
+        return mathesisConst.template;
     }
 
     return node.name;

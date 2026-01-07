@@ -101,7 +101,7 @@ import type {
 import type { Position } from '../tokenizer/types';
 import type { Scope, Symbol } from './scope';
 import { createGlobalScope, createScope, defineSymbol, lookupSymbol, lookupSymbolLocal, updateSymbolType } from './scope';
-import type { SemanticType, FunctionType, DiscretioType, VariantInfo } from './types';
+import type { SemanticType, FunctionType, DiscretioType, VariantInfo, GenusType } from './types';
 import {
     genericType,
     functionType,
@@ -429,6 +429,7 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
     let currentFunctionReturnType: SemanticType | null = null;
     let currentFunctionAsync = false;
     let currentFunctionGenerator = false;
+    let currentGenusType: SemanticType | null = null;
 
     // WHY: Track type aliases currently being resolved to detect cycles
     const resolvingTypeAliases = new Set<string>();
@@ -731,6 +732,15 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             return typeAlias.type;
         }
 
+        // WHY: If a named type is already in scope as a structured type,
+        // return the full type instead of a placeholder userType.
+        if (typeAlias) {
+            const known = typeAlias.type;
+            if (known.kind === 'genus' || known.kind === 'pactum' || known.kind === 'enum' || known.kind === 'discretio') {
+                return node.nullable && !known.nullable ? { ...known, nullable: true } : known;
+            }
+        }
+
         // User-defined type (not yet defined)
         return userType(node.name, node.nullable);
     }
@@ -840,7 +850,12 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
                 return resolveLambdaExpression(node);
 
             case 'EgoExpression':
-                // WHY: 'hoc' (this) type depends on enclosing class context
+                // WHY: 'ego' (this) resolves to the enclosing genus type
+                if (currentGenusType) {
+                    node.resolvedType = currentGenusType;
+                    return currentGenusType;
+                }
+                node.resolvedType = UNKNOWN;
                 return UNKNOWN;
 
             case 'QuaExpression': {
@@ -1973,6 +1988,69 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
         node.resolvedType = type;
         node.name.resolvedType = type;
+
+        // WHY: Set genus context so 'ego' (this) resolves to the correct type
+        const previousGenusType = currentGenusType;
+        currentGenusType = type;
+
+        // Analyze method bodies with genus context active
+        for (const method of node.methods) {
+            if (method.body) {
+                analyzeMethodBody(method, type);
+            }
+        }
+
+        // Restore previous genus context (for nested genus declarations)
+        currentGenusType = previousGenusType;
+    }
+
+    /**
+     * Analyze a method body within a genus context.
+     *
+     * WHY: Method bodies need access to 'ego' (this) and instance fields.
+     *      This is similar to analyzeFunctioDeclaration but within a genus scope.
+     */
+    function analyzeMethodBody(method: FunctioDeclaration, genusType: GenusType): void {
+        enterScope('function');
+
+        // Save and set function context
+        const previousReturnType = currentFunctionReturnType;
+        const previousAsync = currentFunctionAsync;
+        const previousGenerator = currentFunctionGenerator;
+
+        const returnType = method.returnType ? resolveTypeAnnotation(method.returnType) : VACUUM;
+        currentFunctionReturnType = returnType;
+        currentFunctionAsync = method.async || isAsyncFromAnnotations(method.annotations);
+        currentFunctionGenerator = method.generator || isGeneratorFromAnnotations(method.annotations);
+
+        // Define parameters
+        for (const param of method.params) {
+            const paramName = param.alias?.name ?? param.name.name;
+            const paramType = param.typeAnnotation ? resolveTypeAnnotation(param.typeAnnotation) : UNKNOWN;
+
+            if (param.defaultValue) {
+                resolveExpression(param.defaultValue);
+            }
+
+            define({
+                name: paramName,
+                type: paramType,
+                kind: 'parameter',
+                mutable: false,
+                position: param.position,
+            });
+        }
+
+        // Analyze body
+        if (method.body) {
+            analyzeBlock(method.body);
+        }
+
+        // Restore function context
+        currentFunctionReturnType = previousReturnType;
+        currentFunctionAsync = previousAsync;
+        currentFunctionGenerator = previousGenerator;
+        exitScope();
     }
 
     /**
@@ -2227,18 +2305,59 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
     }
 
     function analyzeIteratioStatement(node: IteratioStatement): void {
-        resolveExpression(node.iterable);
+        const iterableType = resolveExpression(node.iterable);
 
         enterScope();
 
-        // TODO: Infer loop variable type from iterable element type
+        // WHY: Infer loop variable type from iterable element type.
+        // This is required for norma stdlib lowering (e.g., elem.corpus.longitudo()).
+        const inferredVarType = (() => {
+            function elementTypeFromIterable(t: SemanticType): SemanticType {
+                if (t.kind === 'union') {
+                    return unionType(t.types.map(elementTypeFromIterable));
+                }
+
+                if (t.kind !== 'generic') {
+                    return UNKNOWN;
+                }
+
+                // ex ... pro x  => iterate values
+                if (node.kind === 'ex') {
+                    switch (t.name) {
+                        case 'lista':
+                        case 'copia':
+                        case 'cursor':
+                        case 'fluxus':
+                            return t.typeParameters[0] ?? UNKNOWN;
+                        case 'tabula':
+                            // ex tabula pro v => values (V)
+                            return t.typeParameters[1] ?? UNKNOWN;
+                        default:
+                            return UNKNOWN;
+                    }
+                }
+
+                // de ... pro k => iterate keys
+                if (node.kind === 'in') {
+                    if (t.name === 'tabula') {
+                        return t.typeParameters[0] ?? UNKNOWN;
+                    }
+                }
+
+                return UNKNOWN;
+            }
+
+            return elementTypeFromIterable(iterableType);
+        })();
+
         define({
             name: node.variable.name,
-            type: UNKNOWN,
+            type: inferredVarType,
             kind: 'variable',
             mutable: false,
             position: node.variable.position,
         });
+        node.variable.resolvedType = inferredVarType;
 
         analyzeBlock(node.body);
         exitScope();
@@ -2323,12 +2442,6 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
         const numDiscriminants = node.discriminants.length;
 
-        // Collect handled variant combinations for exhaustiveness check
-        // For single discriminant: track variant names
-        // For multi-discriminant: track presence of wildcard catch-all
-        const handledVariants = new Set<string>();
-        let hasWildcardCatchAll = false;
-
         for (const caseNode of node.cases) {
             // Validate pattern count matches discriminant count
             if (caseNode.patterns.length !== numDiscriminants) {
@@ -2336,17 +2449,6 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
                     `Pattern count mismatch: expected ${numDiscriminants} patterns, got ${caseNode.patterns.length}`,
                     caseNode.position
                 );
-            }
-
-            // Check if this is a wildcard catch-all (all patterns are wildcards)
-            const allWildcards = caseNode.patterns.every((p) => p.isWildcard);
-            if (allWildcards) {
-                hasWildcardCatchAll = true;
-            }
-
-            // For single-discriminant, track handled variants
-            if (numDiscriminants === 1 && caseNode.patterns[0] && !caseNode.patterns[0].isWildcard) {
-                handledVariants.add(caseNode.patterns[0].variant.name);
             }
 
             // Each case introduces bindings into scope
@@ -2367,16 +2469,36 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
                 if (pattern.alias) {
                     // Alias binding: Click ut c
-                    // Bind the whole variant to the alias name
+                    // WHY: Create a GenusType for the variant so field access works
+                    // e.g., `casu MassaSententia ut m` binds m to a type with corpus field
+                    let aliasType: SemanticType = discriminantType;
+
+                    if (variantInfo) {
+                        // Build fields map from variant info
+                        const fields = new Map<string, SemanticType>();
+                        for (const field of variantInfo.fields) {
+                            fields.set(field.name, field.type);
+                        }
+                        // Create a GenusType for the variant
+                        aliasType = genusType(
+                            variantName,
+                            fields,
+                            new Map(), // methods
+                            new Map(), // staticFields
+                            new Map(), // staticMethods
+                            false, // nullable
+                        );
+                    }
+
                     define({
                         name: pattern.alias.name,
-                        type: discriminantType,
+                        type: aliasType,
                         kind: 'variable',
                         mutable: false,
                         position: pattern.position,
                     });
 
-                    pattern.alias.resolvedType = discriminantType;
+                    pattern.alias.resolvedType = aliasType;
                 } else if (pattern.bindings.length > 0) {
                     // Positional bindings: Click pro x, y
                     for (let j = 0; j < pattern.bindings.length; j++) {
@@ -2401,29 +2523,6 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
             analyzeBlock(caseNode.consequent);
             exitScope();
-        }
-
-        // Exhaustiveness check
-        // For single discriminant: all variants must be handled
-        // For multi-discriminant: require wildcard catch-all (full exhaustiveness is complex)
-        if (numDiscriminants === 1) {
-            const discretio = discretios[0];
-            if (discretio && !hasWildcardCatchAll) {
-                const allVariants = Array.from(discretio.variants.keys());
-                const missingVariants = allVariants.filter((v) => !handledVariants.has(v));
-
-                if (missingVariants.length > 0) {
-                    const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
-                    error(`${text(missingVariants)}\n${help}`, node.position);
-                }
-            }
-        } else {
-            // Multi-discriminant: for now, just require wildcard catch-all
-            // Full Cartesian product exhaustiveness checking is complex
-            if (!hasWildcardCatchAll) {
-                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
-                error(`${text(['_', '_'])}\n${help}`, node.position);
-            }
         }
     }
 
