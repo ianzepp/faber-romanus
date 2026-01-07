@@ -380,10 +380,7 @@ export function tokenize(source: string): TokenizerResult {
      *         documentation generators or IDE tooling.
      */
     function skipWhitespace(): void {
-        // True while there's whitespace or comments to consume
-        const hasWhitespaceOrComment = () => !isAtEnd();
-
-        while (hasWhitespaceOrComment()) {
+        while (!isAtEnd()) {
             const char = peek();
 
             if (char === ' ' || char === '\t' || char === '\r') {
@@ -839,8 +836,7 @@ export function tokenize(source: string): TokenizerResult {
                 if (peek() === '=') {
                     advance();
                     addToken('LESS_EQUAL', '<=', pos);
-                }
-                else {
+                } else {
                     addToken('LESS', char, pos);
                 }
 
@@ -852,8 +848,7 @@ export function tokenize(source: string): TokenizerResult {
                 if (peek() === '=') {
                     advance();
                     addToken('GREATER_EQUAL', '>=', pos);
-                }
-                else {
+                } else {
                     addToken('GREATER', char, pos);
                 }
 

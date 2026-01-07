@@ -22,7 +22,11 @@ export function genAssignmentExpression(node: AssignmentExpression, g: TsGenerat
             const prop = g.genBareExpression(node.left.property);
             const right = g.genBareExpression(node.right);
 
-            const getExpr = node.left.optional ? `${obj}?.get(${prop})` : node.left.nonNull ? `${obj}!.get(${prop})` : `${obj}.get(${prop})`;
+            const getExpr = node.left.optional
+                ? `${obj}?.get(${prop})`
+                : node.left.nonNull
+                  ? `${obj}!.get(${prop})`
+                  : `${obj}.get(${prop})`;
 
             const setStmt = node.left.optional
                 ? `${obj}?.set(${prop}, __next)`
