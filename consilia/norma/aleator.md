@@ -31,7 +31,7 @@ fixum item = elige(items)        # random element from list
 | `octeti`  | bytes                | random bytes          |
 | `uuid`    | (borrowed)           | UUID v4               |
 | `selige`  | choose, select       | random pick from list |
-| `misce`   | mix, shuffle         | shuffle (copy)        |
+| `miscita` | mixed (participle)   | shuffle (copy)        |
 | `semen`   | seed                 | set RNG seed          |
 
 ---
@@ -51,8 +51,8 @@ fixum item = elige(items)        # random element from list
 
 | Faber           | Description              | Returns |
 | --------------- | ------------------------ | ------- |
-| `selige(lista)` | Random element from list | `T`     |
-| `misce(lista)`  | Shuffled copy of list    | `T[]`   |
+| `selige(lista)`  | Random element from list | `T`     |
+| `miscita(lista)` | Shuffled copy of list    | `T[]`   |
 
 ### Seeding
 
@@ -84,8 +84,8 @@ import uuid as uuid_mod
 random.random()                    # fractus()
 random.randint(min, max)           # numerus(min, max)
 str(uuid_mod.uuid4())              # uuid()
-random.choice(lista)               # elige(lista)
-random.sample(lista, len(lista))   # misce(lista)
+random.choice(lista)               # selige(lista)
+random.sample(lista, len(lista))   # miscita(lista)
 random.seed(n)                     # semen(n)
 ```
 
@@ -177,6 +177,6 @@ For `fractus()` and `numerus()`, fast PRNG is acceptable.
 | `numerus(min, max)` | [x] | [x] | [x] | [x]  | [x] |
 | `octeti(n)` (bytes) | [x] | [x] | [x] | [x]  | [x] |
 | `uuid()` (UUID v4)  | [x] | [x] | [x] | [x]  | [x] |
-| `elige(lista)`      | [x] | [x] | [x] | [x]  | [x] |
-| `misce(lista)`      | [x] | [x] | [x] | [x]  | [x] |
+| `selige(lista)`     | [x] | [x] | [x] | [x]  | [x] |
+| `miscita(lista)`    | [x] | [x] | [x] | [x]  | [x] |
 | `semen(n)` (seed)   | [x] | [x] | [x] | [x]  | [x] |

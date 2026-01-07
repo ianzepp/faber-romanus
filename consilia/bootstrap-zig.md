@@ -169,7 +169,7 @@ ex items pro x {
 - `pone`, `accipe`, `accipeAut`, `habet`, `dele` — core ops
 - `longitudo`, `vacua`, `purga` — size/state
 - `claves()`, `valores()`, `paria()` — iteration
-- `confla()` — merge another map
+- `conflata()` — merge another map
 - `inLista()` — convert to array of tuples
 
 **Required for:** Symbol tables, keyword lookups, scope management. All needs covered.

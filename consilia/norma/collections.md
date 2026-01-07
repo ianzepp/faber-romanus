@@ -116,12 +116,12 @@ Method dispatch uses `resolvedType` from semantic analysis to correctly route ov
 | `fragmenta(numerus) -> T[][]`            | `chunk`       | Split into chunks of size n |
 | `densa() -> T[]`                         | `compact`     | Remove falsy values         |
 | `partire((T) -> bivalens) -> (T[], T[])` | `partition`   | Split by predicate          |
-| `misce() -> T[]`                         | `shuffle`     | Randomize order             |
+| `miscita() -> T[]`                       | `shuffle`     | Randomize order             |
 | `specimen() -> T?`                       | `sample`      | Random element              |
 | `specimina(numerus) -> T[]`              | `sampleSize`  | Random n elements           |
 | `prima(numerus) -> T[]`                  | `take`        | First n elements            |
 | `ultima(numerus) -> T[]`                 | `takeRight`   | Last n elements             |
-| `omitte(numerus) -> T[]`                 | `drop`        | Skip first n                |
+| `omissa(numerus) -> T[]`                 | `drop`        | Skip first n                |
 | `inversa() -> T[]`                       | `reverse`     | Reverse order               |
 
 ### Aggregation
@@ -208,9 +208,9 @@ Target mappings:
 | Faber                                   | lodash             | Description              |
 | --------------------------------------- | ------------------ | ------------------------ |
 | `accipeAut(K, V) -> V`                  | `get` with default | Get or return default    |
-| `selige(...K) -> tabula<K,V>`           | `pick`             | Keep only specified keys |
-| `omitte(...K) -> tabula<K,V>`           | `omit`             | Remove specified keys    |
-| `confla(tabula<K,V>) -> tabula<K,V>`    | `merge`            | Merge maps               |
+| `selecta(...K) -> tabula<K,V>`          | `pick`             | Keep only specified keys |
+| `omissa(...K) -> tabula<K,V>`           | `omit`             | Remove specified keys    |
+| `conflata(tabula<K,V>) -> tabula<K,V>`  | `merge`            | Merge maps               |
 | `inversa() -> tabula<V,K>`              | `invert`           | Swap keys and values     |
 | `mappaValores((V) -> U) -> tabula<K,U>` | `mapValues`        | Transform values         |
 | `mappaClaves((K) -> J) -> tabula<J,V>`  | `mapKeys`          | Transform keys           |

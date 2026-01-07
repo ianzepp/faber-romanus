@@ -250,10 +250,10 @@ See `consilia/futura/async-generator.md` for the full design.
 | **pon-**    | `pone`               | —                        | Mutate only            |
 | **del-**    | `dele`               | —                        | Mutate only            |
 | **purg-**   | `purga`              | —                        | Mutate only            |
-| **confl-**  | `confla`             | —                        | Mutate only (merge)    |
+| **confl-**  | —                    | `conflata`               | Returns new (merge)    |
 | **invert-** | —                    | `inversa`                | Returns new (swap k/v) |
-| **selig-**  | —                    | `selige`                 | Returns new (pick)     |
-| **omitt-**  | —                    | `omitte`                 | Returns new (omit)     |
+| **select-** | —                    | `selecta`                | Returns new (pick)     |
+| **omis-**   | —                    | `omissa`                 | Returns new (omit)     |
 
 #### Read-Only Methods (No Morphology)
 

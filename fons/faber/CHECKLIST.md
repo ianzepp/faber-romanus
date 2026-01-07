@@ -365,8 +365,8 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 | `inter(min, max)` (int)       |    ●     | ● |  ●   | ●  |  ●  |
 | `octeti(n)` (random bytes)    |    ●     | ● |  ●   | ●  |  ●  |
 | `uuid()` (UUID v4)            |    ●     | ● |  ●   | ●  |  ●  |
-| `selige(lista)` (random pick) |    ●     | ● |  ●   | ●  |  ●  |
-| `misce(lista)` (shuffle copy) |    ●     | ● |  ●   | ●  |  ●  |
+| `selige(lista)` (random pick)   |    ●     | ● |  ●   | ●  |  ●  |
+| `miscita(lista)` (shuffle copy) |    ●     | ● |  ●   | ●  |  ●  |
 | `semen(n)` (seed)             |    ●     | ● |  ●   | ●  |  ●  |
 
 ## Lista (Array) Methods
@@ -401,7 +401,7 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 | `sectio` (slice)             |    ●     | ● |  ●   | ●  |  ●  |
 | `prima` (take first n)       |    ●     | ● |  ●   | ●  |  ●  |
 | `ultima` (take last n)       |    ●     | ● |  ●   | ●  |  ●  |
-| `omitte` (skip first n)      |    ●     | ● |  ●   | ●  |  ●  |
+| `omissa` (skip first n)      |    ●     | ● |  ●   | ●  |  ●  |
 | `omnes` (every)              |    ●     | ● |  ●   | ●  |  ●  |
 | `aliquis` (some)             |    ●     | ● |  ●   | ●  |  ●  |
 | `coniunge` (join)            |    ●     | — |  ●   | ●  |  ●  |
@@ -415,7 +415,7 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 | `fragmenta` (chunk)          |    ●     | — |  ●   | ●  |  ●  |
 | `densa` (compact)            |    ●     | — |  ●   | ○  |  ●  |
 | `partire` (partition)        |    ●     | — |  ●   | ●  |  ●  |
-| `misce` (shuffle)            |    ●     | — |  ●   | ○  |  ●  |
+| `miscita` (shuffle)          |    ●     | — |  ●   | ○  |  ●  |
 | `specimen` (sample one)      |    ●     | — |  ●   | ○  |  ●  |
 | `specimina` (sample n)       |    ●     | — |  ●   | ○  |  ●  |
 | `summa` (sum)                |    ●     | ● |  ●   | ●  |  ●  |
@@ -441,9 +441,9 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 | `valores` (values)         |    ●     | ● |  ●   | ●  |  ●  |
 | `paria` (entries)          |    ●     | ● |  ●   | ●  |  ●  |
 | `accipeAut` (getOrDefault) |    ●     | ● |  ●   | ●  |  ●  |
-| `selige` (pick)            |    ●     | — |  ●   | ○  |  ●  |
-| `omitte` (omit)            |    ●     | — |  ●   | ○  |  ●  |
-| `confla` (merge)           |    ●     | — |  ●   | ●  |  ●  |
+| `selecta` (pick)           |    ●     | — |  ●   | ○  |  ●  |
+| `omissa` (omit)            |    ●     | — |  ●   | ○  |  ●  |
+| `conflata` (merge)         |    ●     | — |  ●   | ●  |  ●  |
 | `inversa` (invert)         |    ●     | — |  ●   | ○  |  ●  |
 | `mappaValores` (mapValues) |    ●     | — |  ●   | ○  |  ●  |
 | `mappaClaves` (mapKeys)    |    ●     | — |  ●   | ○  |  ●  |

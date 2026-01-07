@@ -159,7 +159,7 @@ Full implementation of 34 lista methods using Python idioms:
 | `ordinata`  | `sorted()`         | `sorted(items)`                     |
 | `prima`     | slice              | `items[:n]`                         |
 | `ultima`    | slice              | `items[-n:]`                        |
-| `omitte`    | slice              | `items[n:]`                         |
+| `omissa`    | slice              | `items[n:]`                         |
 | `coniunge`  | `.join()`          | `", ".join(items)`                  |
 | `omnes`     | `all()`            | `all(pred(x) for x in items)`       |
 | `aliquis`   | `any()`            | `any(pred(x) for x in items)`       |

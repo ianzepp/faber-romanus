@@ -469,11 +469,11 @@ All 47 lista methods are now in `fons/norma/lista.fab`. Five methods use reserve
 | Properties | longitudo, vacua | - |
 | Searching | continet, indiceDe, inveni, inveniIndicem | - |
 | Predicates | omnes, aliquis | - |
-| Functional | filtrata, mappata, reducta, explanata, plana, inversa, ordinata, sectio | prima, ultima, omitte |
+| Functional | filtrata, mappata, reducta, explanata, plana, inversa, ordinata, sectio | prima, ultima, omissa |
 | Mutating | filtra, inverte | ordina |
 | Iteration | perambula, coniunge | - |
 | Aggregation | medium, minimus, maximus, minimusPer, maximusPer, numera | summa |
-| Lodash-style | congrega, unica, planaOmnia, fragmenta, densa, partire, misce, specimen, specimina | - |
+| Lodash-style | congrega, unica, planaOmnia, fragmenta, densa, partire, miscita, specimen, specimina | - |
 | **Total** | **47 methods** | **5 reserved** |
 
 ### Reserved Keywords
@@ -481,7 +481,7 @@ All 47 lista methods are now in `fons/norma/lista.fab`. Five methods use reserve
 These Faber keywords cannot be used as function names:
 - `prima` - first N elements (use Faber's `ex lista prima N`)
 - `ultima` - last N elements (use Faber's `ex lista ultima N`)
-- `omitte` - skip N elements (use Faber's `ex lista omitte N`)
+- `omissa` - skip N elements (returns new list)
 - `ordina` - sort in place (reserved for future use)
 - `summa` - sum aggregation (reserved for future use)
 
@@ -623,7 +623,7 @@ EOF
 **Zig allocator undefined**: The test code needs a `cura` block to provide allocator context, or method is being called outside allocation scope.
 
 **Reserved keyword as function name**: These Faber keywords cannot be used:
-- `prima`, `ultima`, `omitte`, `ordina`, `summa`
+- `prima`, `ultima`, `omissa`, `ordina`, `summa`
 - Keep these methods in the TypeScript fallback registry
 
 ---

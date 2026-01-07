@@ -387,7 +387,7 @@ C++23 ranges provide functional-style list operations:
 | `adde`      | `.push_back()`            | `items.push_back(x)`                 |
 | `inversa`   | `std::views::reverse`     | `items \| std::views::reverse`       |
 | `prima`     | `std::views::take`        | `items \| std::views::take(n)`       |
-| `omitte`    | `std::views::drop`        | `items \| std::views::drop(n)`       |
+| `omissa`    | `std::views::drop`        | `items \| std::views::drop(n)`       |
 | `coniunge`  | —                         | Custom or `fmt::join`                |
 | `reducta`   | `std::accumulate` or fold | `std::ranges::fold_left`             |
 | `omnes`     | `std::ranges::all_of`     | `std::ranges::all_of(items, pred)`   |
