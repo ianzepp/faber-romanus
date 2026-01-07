@@ -1,0 +1,166 @@
+# copia.fab - Standard Library copia<T> Definition
+#
+# Etymology: "abundance, supply" - a collection of resources.
+# Feminine noun, so participle endings use -a (e.g., unita, not unitus).
+
+# =============================================================================
+# TYPE MAPPING
+# =============================================================================
+
+@ innatum ts "Set", py "set", rs "HashSet", cpp "std::unordered_set", zig "Copia"
+genus copia { }
+
+# =============================================================================
+# CORE OPERATIONS
+# =============================================================================
+
+# Add element (mutates)
+@ verte ts "add"
+@ verte py "add"
+@ verte rs "insert"
+@ verte cpp "insert"
+@ verte zig (ego, elem, alloc) -> "§0.adde(§2, §1)"
+@ externa
+functio adde(T elem) -> vacuum
+
+# Check if element exists
+@ verte ts "has"
+@ verte py (ego, elem) -> "(§1 in §0)"
+@ verte rs (ego, elem) -> "§0.contains(&§1)"
+@ verte cpp (ego, elem) -> "§0.contains(§1)"
+@ verte zig (ego, elem) -> "§0.habet(§1)"
+@ externa
+functio habet(T elem) -> bivalens
+
+# Delete element (mutates)
+@ verte ts "delete"
+@ verte py "discard"
+@ verte rs (ego, elem) -> "§0.remove(&§1)"
+@ verte cpp (ego, elem) -> "§0.erase(§1)"
+@ verte zig (ego, elem) -> "_ = §0.dele(§1)"
+@ externa
+functio dele(T elem) -> bivalens
+
+# Get size
+@ verte ts (ego) -> "§.size"
+@ verte py (ego) -> "len(§)"
+@ verte rs (ego) -> "§.len()"
+@ verte cpp (ego) -> "§.size()"
+@ verte zig (ego) -> "§.longitudo()"
+@ externa
+functio longitudo() -> numerus
+
+# Check if empty
+@ verte ts (ego) -> "§.size === 0"
+@ verte py (ego) -> "len(§) == 0"
+@ verte rs (ego) -> "§.is_empty()"
+@ verte cpp (ego) -> "§.empty()"
+@ verte zig (ego) -> "§.vacua()"
+@ externa
+functio vacua() -> bivalens
+
+# Clear all elements (mutates)
+@ verte ts "clear"
+@ verte py "clear"
+@ verte rs "clear"
+@ verte cpp "clear"
+@ verte zig (ego) -> "§.purga()"
+@ externa
+functio purga() -> vacuum
+
+# =============================================================================
+# ITERATION
+# =============================================================================
+
+# Get values iterator (for sets, iterates elements)
+@ verte ts "values"
+@ verte py (ego) -> "iter(§)"
+@ verte rs (ego) -> "§.iter()"
+@ verte cpp (ego) -> "§"
+@ verte zig (ego) -> "§.valores()"
+@ externa
+functio valores() -> cursor<T>
+
+# Iterate with callback
+@ verte ts "forEach"
+@ verte py (ego, fn) -> "[(§1)(x) for x in §0]"
+@ verte rs (ego, fn) -> "§0.iter().for_each(§1)"
+@ verte cpp (ego, fn) -> "std::ranges::for_each(§0, §1)"
+@ verte zig (ego, fn) -> "@compileError(\"perambula not implemented for Zig - use 'ex set.valores() pro item { ... }' loop\")"
+@ externa
+functio perambula((T) -> vacuum fn) -> vacuum
+
+# =============================================================================
+# SET OPERATIONS
+# =============================================================================
+
+# Union: A ∪ B (returns new set)
+@ verte ts (ego, alia) -> "new Set([...§0, ...§1])"
+@ verte py (ego, alia) -> "§0 | §1"
+@ verte rs (ego, alia) -> "§0.union(&§1).cloned().collect::<HashSet<_>>()"
+@ verte cpp (ego, alia) -> "[&]{ auto s = §0; s.insert(§1.begin(), §1.end()); return s; }()"
+@ verte zig (ego, alia) -> "@compileError(\"unio not implemented for Zig - use explicit loop to merge sets\")"
+@ externa
+functio unio(copia<T> alia) -> copia<T>
+
+# Intersection: A ∩ B (returns new set)
+@ verte ts (ego, alia) -> "new Set([...§0].filter(x => §1.has(x)))"
+@ verte py (ego, alia) -> "§0 & §1"
+@ verte rs (ego, alia) -> "§0.intersection(&§1).cloned().collect::<HashSet<_>>()"
+@ verte cpp (ego, alia) -> "[&]{ std::unordered_set<typename std::decay_t<decltype(§0)>::value_type> r; for (auto& x : §0) if (§1.contains(x)) r.insert(x); return r; }()"
+@ verte zig (ego, alia) -> "@compileError(\"intersectio not implemented for Zig - use explicit loop\")"
+@ externa
+functio intersectio(copia<T> alia) -> copia<T>
+
+# Difference: A - B (returns new set)
+@ verte ts (ego, alia) -> "new Set([...§0].filter(x => !§1.has(x)))"
+@ verte py (ego, alia) -> "§0 - §1"
+@ verte rs (ego, alia) -> "§0.difference(&§1).cloned().collect::<HashSet<_>>()"
+@ verte cpp (ego, alia) -> "[&]{ std::unordered_set<typename std::decay_t<decltype(§0)>::value_type> r; for (auto& x : §0) if (!§1.contains(x)) r.insert(x); return r; }()"
+@ verte zig (ego, alia) -> "@compileError(\"differentia not implemented for Zig - use explicit loop\")"
+@ externa
+functio differentia(copia<T> alia) -> copia<T>
+
+# Symmetric difference: (A - B) ∪ (B - A) (returns new set)
+@ verte ts (ego, alia) -> "new Set([...[...§0].filter(x => !§1.has(x)), ...[...§1].filter(x => !§0.has(x))])"
+@ verte py (ego, alia) -> "§0 ^ §1"
+@ verte rs (ego, alia) -> "§0.symmetric_difference(&§1).cloned().collect::<HashSet<_>>()"
+@ verte cpp (ego, alia) -> "[&]{ std::unordered_set<typename std::decay_t<decltype(§0)>::value_type> r; for (auto& x : §0) if (!§1.contains(x)) r.insert(x); for (auto& x : §1) if (!§0.contains(x)) r.insert(x); return r; }()"
+@ verte zig (ego, alia) -> "@compileError(\"symmetrica not implemented for Zig - use explicit loop\")"
+@ externa
+functio symmetrica(copia<T> alia) -> copia<T>
+
+# =============================================================================
+# PREDICATES
+# =============================================================================
+
+# Is subset of other
+@ verte ts (ego, alia) -> "[...§0].every(x => §1.has(x))"
+@ verte py (ego, alia) -> "§0 <= §1"
+@ verte rs (ego, alia) -> "§0.is_subset(&§1)"
+@ verte cpp (ego, alia) -> "std::ranges::all_of(§0, [&](auto& x) { return §1.contains(x); })"
+@ verte zig (ego, alia) -> "@compileError(\"subcopia not implemented for Zig - use explicit loop\")"
+@ externa
+functio subcopia(copia<T> alia) -> bivalens
+
+# Is superset of other
+@ verte ts (ego, alia) -> "[...§1].every(x => §0.has(x))"
+@ verte py (ego, alia) -> "§0 >= §1"
+@ verte rs (ego, alia) -> "§0.is_superset(&§1)"
+@ verte cpp (ego, alia) -> "std::ranges::all_of(§1, [&](auto& x) { return §0.contains(x); })"
+@ verte zig (ego, alia) -> "@compileError(\"supercopia not implemented for Zig - use explicit loop\")"
+@ externa
+functio supercopia(copia<T> alia) -> bivalens
+
+# =============================================================================
+# CONVERSIONS
+# =============================================================================
+
+# Convert to list
+@ verte ts (ego) -> "[...§]"
+@ verte py (ego) -> "list(§)"
+@ verte rs (ego) -> "§.iter().cloned().collect::<Vec<_>>()"
+@ verte cpp (ego) -> "std::vector(§.begin(), §.end())"
+@ verte zig (ego) -> "@compileError(\"inLista not implemented for Zig - iterate with ex...pro into ArrayList\")"
+@ externa
+functio inLista() -> lista<T>
