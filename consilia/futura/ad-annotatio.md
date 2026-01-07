@@ -191,3 +191,54 @@ functio listUsers() fiet lista<User> { ... }
 ```
 
 This is out of scope for the core `@ ad` mechanism but compatible with it.
+
+### Morphology Integration
+
+Functions with `@ radix` annotations define morphological families (e.g., `lege`/`leget`/`legens` from stem `leg-`). Two approaches for `@ ad` registration:
+
+**Option A: Register each variant separately**
+
+```fab
+@ ad "solum:lege"
+@ radix leg, imperativus
+functio lege() fit textus { ... }
+
+@ ad "solum:leget"
+@ radix leg, futurum_indicativum
+functio leget() fiet textus { ... }
+
+@ ad "solum:legens"
+@ radix leg, participium_praesens
+functio legens() fiunt textus { ... }
+```
+
+Caller specifies the exact form in the address.
+
+**Option B: Register the stem, nucleus resolves via caller's verb**
+
+```fab
+@ ad "solum:leg"
+@ radix leg, imperativus, futurum_indicativum, participium_praesens
+@ externa
+functio lege()
+```
+
+Caller uses the stem; the binding verb determines which morphological variant is dispatched:
+
+```fab
+ad "solum:leg" ("config.json") fit textus { }   # → lege (sync)
+ad "solum:leg" ("config.json") fiet textus { }  # → leget (async)
+ad "solum:leg" ("config.json") fiunt textus { } # → legens (streaming)
+```
+
+The dispatch table would store morphological families:
+
+```
+solum:leg → { fit: lege, fiet: leget, fiunt: legens }
+```
+
+Option B aligns with Faber's morphological philosophy—the verb already encodes sync/async/streaming semantics, so repeating it in the endpoint name is redundant. However, it requires the `@ ad` annotation to understand morphological families via `@ radix`.
+
+## Status
+
+**Tabled.** This feature is designed but not yet implemented. The annotation parses as a generic annotation but has no semantic effect.
