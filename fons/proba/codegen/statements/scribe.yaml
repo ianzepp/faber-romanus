@@ -30,7 +30,7 @@
       cpp:
           - 'std::print("{}\n", std::string("hello"));'
       zig:
-          - 'stdout.print("{s}\n", .{ "hello" }) catch {};'
+          - 'print("{s}\n", .{ "hello" });'
       fab:
           - 'scribe "hello"'
 
@@ -48,8 +48,7 @@
           - 'std::print("{}'
           - 'n", x);'
       zig:
-          - 'stdout.print("{any}'
-          - 'n", .{ x }) catch {};'
+          - 'print("{any}\n", .{ x });'
       fab:
           - 'scribe x'
 
@@ -67,8 +66,7 @@
           - 'std::print("{} {}'
           - 'n", std::string("value:"), x);'
       zig:
-          - 'stdout.print("{s} {any}'
-          - 'n", .{ "value:", x }) catch {};'
+          - 'print("{s} {any}\n", .{ "value:", x });'
       fab:
           - 'scribe "value:", x'
 
@@ -113,8 +111,7 @@
           - 'std::print("[WARN] {}'
           - 'n", std::string("warning message"));'
       zig:
-          - 'stderr.print("[WARN] {s}'
-          - 'n", .{ "warning message" }) catch {};'
+          - 'eprint("[WARN] {s}\n", .{ "warning message" });'
       fab:
           - 'mone "warning message"'
 

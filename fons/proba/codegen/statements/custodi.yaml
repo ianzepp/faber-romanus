@@ -249,7 +249,7 @@
           - 'return nullptr;'
       zig:
           - 'if (error)'
-          - 'stderr.print("[WARN] {s}\n", .{ "Error occurred" }) catch {};'
+          - 'eprint("[WARN] {s}\n", .{ "Error occurred" });'
           - 'cleanup();'
           - 'return null;'
       fab:

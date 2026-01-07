@@ -46,7 +46,7 @@ functio nunc_secunda() -> numerus
 
 # Sleep for milliseconds (async on TS/Py, blocking on others)
 @ verte ts (ms) -> "new Promise(r => setTimeout(r, §))"
-@ verte py (ms) -> "asyncio.sleep(§ / 1000)"
+@ verte py (ms) -> "time.sleep(§ / 1000)"
 @ verte rs (ms) -> "std::thread::sleep(std::time::Duration::from_millis(§ as u64))"
 @ verte cpp (ms) -> "std::this_thread::sleep_for(std::chrono::milliseconds(§))"
 @ verte zig (ms) -> "std.time.sleep(§ * 1_000_000)"

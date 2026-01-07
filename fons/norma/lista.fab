@@ -286,7 +286,32 @@ functio ordinata() -> lista<T>
 @ externa
 functio sectio(numerus start, numerus end) -> lista<T>
 
-# NOTE: prima, ultima, omitte are reserved keywords - handled by lista.ts fallback
+# Take first n elements (returns new list)
+@ verte ts (ego, n) -> "§.slice(0, §)"
+@ verte py (ego, n) -> "§[:§]"
+@ verte rs (ego, n) -> "§.iter().take(§).cloned().collect::<Vec<_>>()"
+@ verte cpp (ego, n) -> "(§ | std::views::take(§) | std::ranges::to<std::vector>())"
+@ verte zig (ego, n, alloc) -> "§0.prima(§2, §1)"
+@ externa
+functio prima(numerus n) -> lista<T>
+
+# Take last n elements (returns new list)
+@ verte ts (ego, n) -> "§.slice(-§)"
+@ verte py (ego, n) -> "§[-§:]"
+@ verte rs (ego, n) -> "§.iter().rev().take(§).rev().cloned().collect::<Vec<_>>()"
+@ verte cpp (ego, n) -> "(§ | std::views::reverse | std::views::take(§) | std::views::reverse | std::ranges::to<std::vector>())"
+@ verte zig (ego, n, alloc) -> "§0.ultima(§2, §1)"
+@ externa
+functio ultima(numerus n) -> lista<T>
+
+# Drop first n elements (returns new list)
+@ verte ts (ego, n) -> "§.slice(§)"
+@ verte py (ego, n) -> "§[§:]"
+@ verte rs (ego, n) -> "§.iter().skip(§).cloned().collect::<Vec<_>>()"
+@ verte cpp (ego, n) -> "(§ | std::views::drop(§) | std::ranges::to<std::vector>())"
+@ verte zig (ego, n, alloc) -> "§0.omitte(§2, §1)"
+@ externa
+functio omitte(numerus n) -> lista<T>
 
 # Reduce to single value
 @ verte ts "reduce"
@@ -308,7 +333,14 @@ functio reducta((U, T) -> U fn, U init) -> U
 @ externa
 functio filtra((T) -> bivalens pred) -> vacuum
 
-# NOTE: ordina is a reserved keyword - handled by lista.ts fallback
+# Sort in place (mutates)
+@ verte ts (ego) -> "§.sort()"
+@ verte py (ego) -> "§.sort()"
+@ verte rs (ego) -> "§.sort()"
+@ verte cpp (ego) -> "std::ranges::sort(§)"
+@ verte zig (ego) -> "§.ordina()"
+@ externa
+functio ordina() -> vacuum
 
 # Reverse in place (mutates)
 @ verte ts "reverse"
@@ -344,7 +376,14 @@ functio coniunge(textus sep) -> textus
 # AGGREGATION
 # =============================================================================
 
-# NOTE: summa is a reserved keyword - handled by lista.ts fallback
+# Sum of all elements
+@ verte ts (ego) -> "§.reduce((a, b) => a + b, 0)"
+@ verte py (ego) -> "sum(§)"
+@ verte rs (ego) -> "§.iter().sum::<i64>()"
+@ verte cpp (ego) -> "std::accumulate(§.begin(), §.end(), 0)"
+@ verte zig (ego) -> "§.summa()"
+@ externa
+functio summa() -> T
 
 # Average of numeric elements
 @ verte ts (ego) -> "(§.reduce((a, b) => a + b, 0) / §.length)"

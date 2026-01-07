@@ -24,7 +24,7 @@
   cpp:
       - 'std::print("{} {} {}\n"'
   zig:
-      - 'stdout.print("{s} {s} {s}\n", .{ "a", "b", "c" }) catch {};'
+      - 'print("{s} {s} {s}\n", .{ "a", "b", "c" });'
   rs:
       - 'println!'
   fab:
@@ -92,7 +92,7 @@
       - 'println!'
   zig:
       - 'pub fn main() void {'
-      - 'stdout.print'
+      - 'print("{s}\n", .{ "hello" });'
   fab:
       - 'incipit {'
       - 'scribe "hello"'
@@ -285,7 +285,7 @@
       - 'println!("{}", typus)'
   zig:
       - 'const typus: i64 = 42'
-      - 'stdout.print("{d}\n", .{ typus })'
+      - 'print("{d}\n", .{ typus });'
   fab:
       - 'fixum numerus typus = 42'
       - 'scribe typus'
@@ -308,7 +308,7 @@
       - 'println!("{}", genus)'
   zig:
       - 'const genus: []const u8 = "species"'
-      - 'stdout.print("{s}\n", .{ genus })'
+      - 'print("{s}\n", .{ genus });'
   fab:
       - 'fixum textus genus = "species"'
       - 'scribe genus'

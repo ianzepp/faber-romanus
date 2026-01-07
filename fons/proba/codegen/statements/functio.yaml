@@ -502,24 +502,28 @@
 # Edge Cases
 # =============================================================================
 
-# Function with default parameter value
-# WHY: Tests default parameter syntax (type name: value)
-# NOTE: Currently codegen doesn't emit function signature for expression-only mode
+# Function with optional parameter and default value
+# WHY: Tests si (optional) + vel (default) syntax
 - name: function with default parameter
-  source: 'functio greet(textus name: "World") -> textus { redde name }'
+  source: 'functio greet(si textus name vel "World") -> textus { redde name }'
   expect:
       ts:
+          - 'function greet(name: string = "World")'
           - 'return name'
       py:
+          - 'def greet(name: str = "World")'
           - 'return name'
       rs:
+          - 'fn greet(name'
           - 'return name'
       cpp:
+          - 'greet('
           - 'return name'
       zig:
+          - 'fn greet(name'
           - 'return name'
       fab:
-          - 'functio greet(textus name'
+          - 'functio greet(si textus name vel "World")'
           - 'redde name'
 
 # Recursive function (factorial)
@@ -589,23 +593,28 @@
           - 'redde a'
 
 # Generic function with type parameter
-# WHY: Tests generic/template syntax
-# NOTE: Generics may not be fully implemented in all targets
+# WHY: Tests prae typus (type parameter) syntax
 - name: generic function
-  source: 'functio identity<T>(T value) -> T { redde value }'
+  source: 'functio identity(prae typus T, T value) -> T { redde value }'
   expect:
       ts:
+          - 'function identity<T>(value: T): T'
           - 'return value'
       py:
+          - "T = TypeVar('T')"
+          - 'def identity(value: T) -> T'
           - 'return value'
       rs:
+          - 'fn identity<T>(value: T) -> T'
           - 'return value'
       cpp:
+          - 'T identity('
           - 'return value'
       zig:
+          - 'fn identity(comptime T: type, value: T) T'
           - 'return value'
       fab:
-          - 'functio identity<T>(T value) -> T'
+          - 'functio identity(prae typus T, T value) -> T'
           - 'redde value'
 
 # Function returning lambda
@@ -716,7 +725,7 @@
           - 'std::print("{}'
       zig:
           - 'fn log(prefix: []const u8, args: anytype)'
-          - 'stdout.print("{s}'
+          - 'print("{s}\n", .{ prefix });'
       fab:
           - 'functio log(textus prefix, ceteri args)'
           - 'scribe prefix'
@@ -746,7 +755,7 @@
           - 'std::print("{}'
       zig:
           - 'fn greet(loc: []const u8)'
-          - 'stdout.print("{s}'
+          - 'print("{s}\n", .{ loc });'
       fab:
           - 'functio greet(textus location ut loc)'
           - 'scribe loc'

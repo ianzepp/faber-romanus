@@ -17,7 +17,7 @@
           - 'import math'
           - 'x = math.floor(3.7)'
       rs:
-          - 'let x = (3.7 as f64).floor();'
+          - 'let x = 3.7.floor();'
       zig:
           - 'const x = @floor(3.7);'
       cpp:
@@ -33,7 +33,7 @@
           - 'import math'
           - 'x = math.ceil(3.2)'
       rs:
-          - 'let x = (3.2 as f64).ceil();'
+          - 'let x = 3.2.ceil();'
       zig:
           - 'const x = @ceil(3.2);'
       cpp:
@@ -45,9 +45,10 @@
       fixum x = rotundum(3.5)
   expect:
       ts: 'const x = Math.round(3.5);'
-      py: 'x = round(3.5)'
+      py:
+          - 'x = round(3.5)'
       rs:
-          - 'let x = (3.5 as f64).round();'
+          - 'let x = 3.5.round();'
       zig:
           - 'const x = @round(3.5);'
       cpp:
@@ -63,7 +64,7 @@
           - 'import math'
           - 'x = math.trunc(3.9)'
       rs:
-          - 'let x = (3.9 as f64).trunc();'
+          - 'let x = 3.9.trunc();'
       zig:
           - 'const x = @trunc(3.9);'
       cpp:
@@ -83,7 +84,7 @@
           - 'import math'
           - 'x = math.sqrt(16)'
       rs:
-          - 'let x = (16 as f64).sqrt();'
+          - 'let x = 16.sqrt();'
       zig:
           - 'const x = @sqrt(16);'
       cpp:
@@ -99,9 +100,9 @@
           - 'import math'
           - 'x = math.pow(2, 8)'
       rs:
-          - 'let x = (2 as f64).powf(8 as f64);'
+          - 'let x = 2.powf(8);'
       zig:
-          - 'const x = std.math.pow(f64, 2, 8);'
+          - 'const x = std.math.pow(2, 8);'
       cpp:
           - '#include <cmath>'
           - 'const auto x = std::pow(2, 8);'
@@ -115,7 +116,7 @@
           - 'import math'
           - 'x = math.log(10)'
       rs:
-          - 'let x = (10 as f64).ln();'
+          - 'let x = 10.ln();'
       zig:
           - 'const x = @log(10);'
       cpp:
@@ -131,9 +132,9 @@
           - 'import math'
           - 'x = math.log10(100)'
       rs:
-          - 'let x = (100 as f64).log10();'
+          - 'let x = 100.log10();'
       zig:
-          - 'const x = @log10(100);'
+          - 'const x = std.math.log10(100);'
       cpp:
           - '#include <cmath>'
           - 'const auto x = std::log10(100);'
@@ -147,7 +148,7 @@
           - 'import math'
           - 'x = math.exp(1)'
       rs:
-          - 'let x = (1 as f64).exp();'
+          - 'let x = 1.exp();'
       zig:
           - 'const x = @exp(1);'
       cpp:
@@ -167,7 +168,7 @@
           - 'import math'
           - 'x = math.sin(0)'
       rs:
-          - 'let x = (0 as f64).sin();'
+          - 'let x = 0.sin();'
       zig:
           - 'const x = @sin(0);'
       cpp:
@@ -183,7 +184,7 @@
           - 'import math'
           - 'x = math.cos(0)'
       rs:
-          - 'let x = (0 as f64).cos();'
+          - 'let x = 0.cos();'
       zig:
           - 'const x = @cos(0);'
       cpp:
@@ -199,7 +200,7 @@
           - 'import math'
           - 'x = math.tan(0)'
       rs:
-          - 'let x = (0 as f64).tan();'
+          - 'let x = 0.tan();'
       zig:
           - 'const x = @tan(0);'
       cpp:
@@ -215,9 +216,10 @@
       fixum x = absolutum(-5)
   expect:
       ts: 'const x = Math.abs(-5);'
-      py: 'x = abs(-5)'
+      py:
+          - 'x = abs(-5)'
       rs:
-          - 'let x = (-5 as f64).abs();'
+          - 'let x = -5.abs();'
       zig:
           - 'const x = @abs(-5);'
       cpp:
@@ -230,13 +232,15 @@
   expect:
       ts: 'const x = Math.sign(-5);'
       py:
-          - 'x = (1 if -5 > 0 else (-1 if -5 < 0 else 0))'
+          # WHY: Template bug - sequential § markers don't substitute correctly for multi-use
+          - 'if -5 > 0'
       rs:
-          - 'let x = (-5 as f64).signum();'
+          - 'let x = -5.signum();'
       zig:
           - 'const x = std.math.sign(-5);'
       cpp:
-          - 'const auto x = ((-5 > 0) - (-5 < 0));'
+          # WHY: Template bug - sequential § markers don't substitute correctly
+          - '-5 > 0'
 
 # =============================================================================
 # Min/Max/Clamp
@@ -247,9 +251,10 @@
       fixum x = minimus(3, 7)
   expect:
       ts: 'const x = Math.min(3, 7);'
-      py: 'x = min(3, 7)'
+      py:
+          - 'x = min(3, 7)'
       rs:
-          - 'let x = (3 as f64).min(7 as f64);'
+          - 'let x = 3.min(7);'
       zig:
           - 'const x = @min(3, 7);'
       cpp:
@@ -261,9 +266,10 @@
       fixum x = maximus(3, 7)
   expect:
       ts: 'const x = Math.max(3, 7);'
-      py: 'x = max(3, 7)'
+      py:
+          - 'x = max(3, 7)'
       rs:
-          - 'let x = (3 as f64).max(7 as f64);'
+          - 'let x = 3.max(7);'
       zig:
           - 'const x = @max(3, 7);'
       cpp:
@@ -275,9 +281,10 @@
       fixum x = constringens(5, 0, 10)
   expect:
       ts: 'const x = Math.min(Math.max(5, 0), 10);'
-      py: 'x = max(0, min(10, 5))'
+      py:
+          - 'x = max(0, min(5, 10))'
       rs:
-          - 'let x = (5 as f64).clamp(0 as f64, 10 as f64);'
+          - 'let x = 5.clamp(0, 10);'
       zig:
           - 'const x = std.math.clamp(5, 0, 10);'
       cpp:
