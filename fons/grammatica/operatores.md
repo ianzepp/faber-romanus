@@ -403,7 +403,7 @@ flags |= flag    # bitwise OR and assign
 
 ## Bitwise Operators
 
-Low-level bit manipulation uses symbolic operators exclusively. These operations are inherently machine-oriented and do not benefit from Latin keywords.
+Low-level bit manipulation uses symbolic operators for AND, OR, XOR, and NOT:
 
 ```fab
 fixum flags = 0b1010
@@ -413,8 +413,6 @@ fixum bitwiseAnd = flags & mask      # AND
 fixum bitwiseOr = flags | mask       # OR
 fixum bitwiseXor = flags ^ mask      # XOR
 fixum bitwiseNot = ~flags            # NOT (complement)
-fixum leftShift = 1 << 4             # left shift
-fixum rightShift = 16 >> 2           # right shift
 ```
 
 **Precedence note:** Unlike C, bitwise operators in Faber bind tighter than comparison operators. This means:
@@ -424,6 +422,21 @@ flags & mask == 0    # parses as (flags & mask) == 0
 ```
 
 This matches programmer intent and avoids a common source of bugs in C-family languages.
+
+### Shift Operators
+
+Bit shift operations use Latin postfix keywords rather than `<<` and `>>` symbols. This avoids ambiguity with nested generics like `lista<lista<T>>` where `>>` would otherwise tokenize as a shift operator.
+
+```fab
+fixum shifted = 1 sinistratum 4      # left shift: 1 << 4 = 16
+fixum halved = 16 dextratum 2        # right shift: 16 >> 2 = 4
+```
+
+Etymology:
+- `sinistratum` from *sinister* ("left") + *-atum* ("made into")---shifted leftward
+- `dextratum` from *dexter* ("right") + *-atum* ("made into")---shifted rightward
+
+The `-atum` suffix follows the same pattern as type conversion operators (`numeratum`, `textatum`), treating the shift as a transformation applied to the value.
 
 ---
 

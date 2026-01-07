@@ -183,6 +183,46 @@ functio log(textus message) -> vacuum {
 }
 ```
 
+### Function Types
+
+Higher-order functions accept or return other functions. Faber uses parenthesized syntax for function type annotations:
+
+```fab
+(paramTypes) -> returnType
+```
+
+A predicate function that takes a value and returns a boolean:
+
+```fab
+functio filtra(lista<T> items, (T) -> bivalens pred) -> lista<T> {
+    # ...
+}
+```
+
+A transformer that takes two functions and returns their composition:
+
+```fab
+functio compone((A) -> B f, (B) -> C g) -> (A) -> C {
+    redde pro a: f(a) |> g
+}
+```
+
+Function types can appear anywhere a type annotation is valid---parameters, return types, variable declarations, and generics:
+
+```fab
+fixum (numerus) -> numerus doubler = pro x: x * 2
+typus Predicate<T> = (T) -> bivalens
+typus Mapper<A, B> = (A) -> B
+```
+
+Multiple parameters are comma-separated; no parameters use empty parentheses:
+
+```fab
+() -> vacuum                     # no params, returns nothing
+(numerus) -> textus              # one param
+(textus, numerus) -> bivalens    # two params
+```
+
 ---
 
 ## Nullable Types

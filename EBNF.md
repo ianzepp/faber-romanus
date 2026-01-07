@@ -122,10 +122,19 @@ specifier     := IDENTIFIER ('ut' IDENTIFIER)?
 ## Types
 
 ```ebnf
-typeAnnotation := ('de' | 'in')? IDENTIFIER typeParams? '?'? arrayBrackets*
+typeAnnotation := ('de' | 'in')? (functionType | IDENTIFIER typeParams? '?'? arrayBrackets*)
+functionType   := '(' typeList? ')' '->' typeAnnotation
+typeList       := typeAnnotation (',' typeAnnotation)*
 typeParams     := '<' typeParameter (',' typeParameter)* '>'
 typeParameter  := typeAnnotation | NUMBER | MODIFIER
 arrayBrackets  := '[]' '?'?
+```
+
+Function types enable higher-order function signatures:
+
+```fab
+functio filtrata((T) -> bivalens pred) -> lista<T>
+functio compose((A) -> B f, (B) -> C g) -> (A) -> C
 ```
 
 ### Primitive Types
@@ -253,7 +262,8 @@ comparison := bitwiseOr (('<' | '>' | '<=' | '>=' | 'intra' | 'inter') bitwiseOr
 bitwiseOr  := bitwiseXor ('|' bitwiseXor)*
 bitwiseXor := bitwiseAnd ('^' bitwiseAnd)*
 bitwiseAnd := shift ('&' shift)*
-shift      := range (('<<' | '>>') range)*
+shift      := range (shiftOp range)*
+shiftOp    := 'sinistratum' | 'dextratum'
 range      := additive (('..' | 'ante' | 'usque') additive ('per' additive)?)?
 additive   := multiplicative (('+' | '-') multiplicative)*
 multiplicative := unary (('*' | '/' | '%') unary)*
@@ -431,6 +441,8 @@ inStmt := 'in' expression blockStmt
 | | `textatum` | convert to string |
 | | `bivalentum` | convert to boolean |
 | | `Hex` / `Oct` / `Bin` / `Dec` | radix types |
+| **Bitwise** | `sinistratum` | left shift (<<) |
+| | `dextratum` | right shift (>>) |
 | **Output** | `scribe` | log |
 | | `vide` | debug |
 | | `mone` | warn |
