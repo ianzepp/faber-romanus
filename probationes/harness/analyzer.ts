@@ -78,15 +78,18 @@ function buildSummary(results: GradedResult[]): Summary {
   for (const r of results) {
     // By context
     if (!byContext[r.context]) byContext[r.context] = emptyStats()
-    addResult(byContext[r.context], r)
+    const contextStats = byContext[r.context]
+    if (contextStats) addResult(contextStats, r)
 
     // By model
     if (!byModel[r.model]) byModel[r.model] = emptyStats()
-    addResult(byModel[r.model], r)
+    const modelStats = byModel[r.model]
+    if (modelStats) addResult(modelStats, r)
 
     // By task
     if (!byTask[r.task_id]) byTask[r.task_id] = emptyStats()
-    addResult(byTask[r.task_id], r)
+    const taskStats = byTask[r.task_id]
+    if (taskStats) addResult(taskStats, r)
 
     // Overall
     addResult(overall, r)
@@ -148,7 +151,7 @@ function extractFailures(raw: RawResponse[], graded: GradedResult[]): Failure[] 
     if (g && !g.correct) {
       // Extract input from prompt (rough heuristic)
       const inputMatch = r.prompt.match(/```(?:typescript|faber)\n([\s\S]+?)\n```/)
-      const input = inputMatch ? inputMatch[1].trim() : 'unknown'
+      const input = inputMatch?.[1]?.trim() ?? 'unknown'
 
       failures.push({
         task: r.task_id,

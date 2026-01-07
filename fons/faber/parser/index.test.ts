@@ -4462,7 +4462,9 @@ describe('parser', () => {
             `);
 
             expect(errors.length).toBeGreaterThan(0);
-            expect(errors[0].message).toContain('one target per line');
+            if (errors[0]) {
+                expect(errors[0].message).toContain('one target per line');
+            }
         });
 
         test('@ verte template rejects multiple targets on one line', () => {
@@ -4472,7 +4474,9 @@ describe('parser', () => {
             `);
 
             expect(errors.length).toBeGreaterThan(0);
-            expect(errors[0].message).toContain('one target per line');
+            if (errors[0]) {
+                expect(errors[0].message).toContain('one target per line');
+            }
         });
     });
 });

@@ -46,9 +46,14 @@ function parseArgs(): Args {
             targets = t === 'all' ? ALL_TARGETS : [t as Target];
         }
         else if (arg === '--timeout') {
-            const t = parseInt(args[++i], 10);
+            const nextArg = args[++i];
+            if (!nextArg) {
+                console.error('Missing value for --timeout');
+                process.exit(1);
+            }
+            const t = parseInt(nextArg, 10);
             if (isNaN(t) || t < 1) {
-                console.error(`Invalid timeout '${args[i]}'. Must be positive integer.`);
+                console.error(`Invalid timeout '${nextArg}'. Must be positive integer.`);
                 process.exit(1);
             }
             timeout = t;

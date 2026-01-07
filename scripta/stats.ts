@@ -20,7 +20,8 @@ async function countLines(pattern: string): Promise<number> {
     try {
         const result = await $`find fons -name "${pattern}" -type f -exec wc -l {} + | tail -1`.text();
         const match = result.match(/(\d+)\s+total/);
-        return match ? parseInt(match[1], 10) : 0;
+        if (!match?.[1]) return 0;
+        return parseInt(match[1], 10);
     } catch {
         return 0;
     }
@@ -40,7 +41,8 @@ async function countTestCases(): Promise<number> {
         // Count passing tests from last test run output
         const result = await $`timeout 5 bun test fons/proba/faber.test.ts 2>&1 | grep 'pass' | head -1`.text();
         const match = result.match(/(\d+)\s+pass/);
-        return match ? parseInt(match[1], 10) : 0;
+        if (!match?.[1]) return 0;
+        return parseInt(match[1], 10);
     } catch {
         return 0;
     }

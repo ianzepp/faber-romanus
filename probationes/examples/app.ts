@@ -5,6 +5,14 @@ class User {
     age: number
     active: boolean = true
 
+    constructor(data: { name: string; age: number; active?: boolean }) {
+        this.name = data.name
+        this.age = data.age
+        if (data.active !== undefined) {
+            this.active = data.active
+        }
+    }
+
     canVote(): boolean {
         return this.age >= 18 && this.active
     }
@@ -45,6 +53,9 @@ function findOldest(users: User[]): User | null {
     }
 
     let oldest = users[0]
+    if (!oldest) {
+        return null
+    }
 
     for (const user of users) {
         if (user.age > oldest.age) {
