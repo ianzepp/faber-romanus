@@ -119,15 +119,8 @@ export function genCallExpression(node: CallExpression, g: ZigGenerator): string
             if (result) return result;
         }
 
-        // Fallback: no type info - try all collection types
-        // WHY: Only use fallback when receiver type is truly unknown (lenient snippets).
-        //      For any known type (user-defined, objectum, etc.), skip the fallback.
-        if (objType?.kind === 'unknown') {
-            for (const coll of ['lista', 'tabula', 'copia']) {
-                const result = applyZigNorma(coll, methodName);
-                if (result) return result;
-            }
-        }
+        // WHY: No fallback guessing. If type isn't resolved to a known collection,
+        //      preserve the Latin method name. Require type annotations for translation.
     }
 
     const callee = g.genExpression(node.callee);

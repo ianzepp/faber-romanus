@@ -149,37 +149,36 @@
 # NOTE: Without type annotations, {} is inferred as generic object and falls
 # back to lista methods. These tests verify curator tracking still works.
 
-# copia.adde uses curator - falls back to lista.adde due to type inference
-# WHY: Lista methods receive allocator explicitly
+# copia.adde uses curator - copia methods receive allocator explicitly
 - name: 'copia.adde uses curator param'
   source: |
       functio build(curator allocator) {
-        varia s = {}
+        varia copia<textus> s = {}
         s.adde("item")
       }
   zig:
       - '.adde(allocator, "item")'
   rs:
       - 'fn build(allocator: curator)'
-      - 'let mut s = {}'
-      - 's.push(String::from("item"))'
+      - 'HashSet<String>'
+      - '.insert(String::from("item"))'
   skip: [ts, py, cpp]
   fab:
       - 'functio build(curator allocator) {'
-      - 'varia s = {}'
+      - 'varia copia<textus> s = {}'
       - 's.adde("item")'
 
 # copia.adde without curator param - skip Zig (requires cura block)
 - name: 'copia.adde without curator param'
   source: |
-      varia s = {}
+      varia copia<textus> s = {}
       s.adde("item")
   rs:
-      - 'let mut s = {}'
-      - 's.push(String::from("item"))'
+      - 'HashSet<String>'
+      - '.insert(String::from("item"))'
   skip: [ts, py, cpp, zig]
   fab:
-      - 'varia s = {}'
+      - 'varia copia<textus> s = {}'
       - 's.adde("item")'
 
 # =============================================================================

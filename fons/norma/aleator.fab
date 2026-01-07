@@ -54,19 +54,21 @@ functio uuid() -> textus
 # =============================================================================
 
 # Random element from list
-@ verte ts (lista) -> "§[Math.floor(Math.random() * §.length)]"
-@ verte py (lista) -> "random.choice(§)"
-@ verte rs (lista) -> "§.choose(&mut rand::thread_rng()).unwrap().clone()"
-@ verte cpp (lista) -> "[&]{ std::random_device rd; std::mt19937 gen(rd()); std::uniform_int_distribution<size_t> dis(0, §.size() - 1); return §[dis(gen)]; }()"
-@ verte zig (lista) -> "blk: { var seed: u64 = undefined; std.crypto.random.bytes(std.mem.asBytes(&seed)); var prng = std.rand.DefaultPrng.init(seed); break :blk §[prng.random().uintLessThan(usize, §.len)]; }"
+# WHY: Use §0 for multi-use - implicit § increments each use
+@ verte ts (lista) -> "§0[Math.floor(Math.random() * §0.length)]"
+@ verte py (lista) -> "random.choice(§0)"
+@ verte rs (lista) -> "§0.choose(&mut rand::thread_rng()).unwrap().clone()"
+@ verte cpp (lista) -> "[&]{ std::random_device rd; std::mt19937 gen(rd()); std::uniform_int_distribution<size_t> dis(0, §0.size() - 1); return §0[dis(gen)]; }()"
+@ verte zig (lista) -> "blk: { var seed: u64 = undefined; std.crypto.random.bytes(std.mem.asBytes(&seed)); var prng = std.rand.DefaultPrng.init(seed); break :blk §0[prng.random().uintLessThan(usize, §0.len)]; }"
 @ externa
 functio selige(lista<T> lista) -> T
 
 # Shuffled copy of list
-@ verte ts (lista) -> "(() => { const a = [...§]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; })()"
-@ verte py (lista) -> "random.sample(§, len(§))"
-@ verte rs (lista) -> "{ let mut v = §.clone(); v.shuffle(&mut rand::thread_rng()); v }"
-@ verte cpp (lista) -> "[&]{ auto v = §; std::random_device rd; std::mt19937 gen(rd()); std::ranges::shuffle(v, gen); return v; }()"
+# WHY: Use §0 for multi-use - implicit § increments each use
+@ verte ts (lista) -> "(() => { const a = [...§0]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; })()"
+@ verte py (lista) -> "random.sample(§0, len(§0))"
+@ verte rs (lista) -> "{ let mut v = §0.clone(); v.shuffle(&mut rand::thread_rng()); v }"
+@ verte cpp (lista) -> "[&]{ auto v = §0; std::random_device rd; std::mt19937 gen(rd()); std::ranges::shuffle(v, gen); return v; }()"
 @ verte zig (lista, alloc) -> "blk: { var seed: u64 = undefined; std.crypto.random.bytes(std.mem.asBytes(&seed)); var prng = std.rand.DefaultPrng.init(seed); var copy = §1.dupe(@TypeOf(§0[0]), §0) catch unreachable; prng.random().shuffle(@TypeOf(copy[0]), copy); break :blk copy; }"
 @ externa
 functio misce(lista<T> lista) -> lista<T>

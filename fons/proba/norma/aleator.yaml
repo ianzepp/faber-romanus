@@ -88,16 +88,21 @@
 
 - name: selige (random pick from list)
   source: |
+      fixum items = [1, 2, 3, 4, 5]
       fixum item = selige(items)
   expect:
-      ts: 'const item = items[Math.floor(Math.random() * items.length)];'
+      ts:
+          - 'const items = [1, 2, 3, 4, 5];'
+          - 'const item = items[Math.floor(Math.random() * items.length)];'
       py:
           - 'import random'
+          - 'items = [1, 2, 3, 4, 5]'
           - 'item = random.choice(items)'
       cpp:
           - '#include <random>'
           - 'std::uniform_int_distribution<size_t> dis(0, items.size() - 1)'
       rs:
+          - 'let items = vec![1, 2, 3, 4, 5];'
           - 'let item = items.choose(&mut rand::thread_rng()).unwrap().clone();'
       zig:
           - 'std.rand.DefaultPrng'
@@ -105,16 +110,19 @@
 
 - name: misce (shuffle list)
   source: |
+      fixum items = [1, 2, 3, 4, 5]
       fixum shuffled = misce(items)
   expect:
       ts:
           contains:
+              - 'const items = [1, 2, 3, 4, 5];'
               - 'const shuffled'
               - 'const a = [...items]'
               - 'Math.random()'
               - 'return a'
       py:
           - 'import random'
+          - 'items = [1, 2, 3, 4, 5]'
           - 'shuffled = random.sample(items, len(items))'
       cpp:
           - '#include <random>'
@@ -122,6 +130,7 @@
           - 'auto v = items'
           - 'std::ranges::shuffle(v, gen)'
       rs:
+          - 'let items = vec![1, 2, 3, 4, 5];'
           - 'let shuffled = { let mut v = items.clone(); v.shuffle(&mut rand::thread_rng()); v };'
       zig:
           - 'std.rand.DefaultPrng'
