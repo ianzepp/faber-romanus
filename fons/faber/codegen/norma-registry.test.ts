@@ -81,6 +81,16 @@ describe('norma-registry', () => {
 
                 expect(result.valid).toBe(true);
             });
+
+            test('selecta is valid (perfectum declared, stem select)', () => {
+                // WHY: Regression test for issue #5. The method 'selecta' with stem 'select'
+                // was being misclassified as imperativus (suffix 'a') instead of perfectum
+                // (suffix 'ta'). The greedy parser correctly identifies '-ta' as perfectum.
+                const result = validateMorphology('tabula', 'selecta');
+
+                expect(result.valid).toBe(true);
+                expect(result.error).toBeUndefined();
+            });
         });
 
         describe('invalid method calls', () => {
