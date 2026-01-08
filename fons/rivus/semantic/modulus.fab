@@ -163,6 +163,7 @@ functio extraheExporta(Programma programma, textus via) -> ModulusResolutum {
                     locus: v.locus
                 } qua ModulusExportum
             }
+            casu _ { }
         }
     }
 
@@ -246,6 +247,7 @@ functio resolveModulum(
                     resolveModulum(imp.fons, via, cache, inProgressu)
                 }
             }
+            casu _ { }
         }
     }
 

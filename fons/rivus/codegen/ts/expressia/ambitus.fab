@@ -33,6 +33,7 @@ functio genAmbitusExpressia(Expressia expr, TsGenerator g) -> textus {
 
             redde scriptum("Array.from({length: § - §§}, (_, i) => § + i)", finis, initium, adj, initium)
         }
+        casu _ { }
     }
 
     redde genExpressia(expr, g)

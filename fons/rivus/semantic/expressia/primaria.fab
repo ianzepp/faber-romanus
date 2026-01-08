@@ -40,6 +40,7 @@ functio resolveNomen(Resolvitor r, Expressia nomenExpr) -> SemanticTypus {
 
             redde symbolum.semanticTypus
         }
+        casu _ { }
     }
 
     redde IGNOTUM
@@ -75,6 +76,7 @@ functio resolveLittera(Resolvitor r, Expressia litteraExpr) -> SemanticTypus {
                 }
             }
         }
+        casu _ { }
     }
 
     redde IGNOTUM
@@ -104,6 +106,7 @@ functio resolveSeries(Resolvitor r, Expressia seriesExpr) -> SemanticTypus {
 
             redde genericumTypus("lista", [primumTypus], falsum)
         }
+        casu _ { }
     }
 
     redde IGNOTUM
@@ -126,6 +129,7 @@ functio resolveObiectum(Resolvitor r, Expressia obiectumExpr) -> SemanticTypus {
             # Object literals have unknown structural type for now
             redde IGNOTUM
         }
+        casu _ { }
     }
 
     redde IGNOTUM

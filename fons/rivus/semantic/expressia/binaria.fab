@@ -25,12 +25,13 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
             si estArithmeticum(b.signum) {
                 # String concatenation with +
                 si b.signum == "+" {
-                discerne sinisterTypus {
-                    casu Primitivum ut p {
+                    discerne sinisterTypus {
+                        casu Primitivum ut p {
                             si p.nomen == "textus" {
                                 redde TEXTUS
                             }
                         }
+                        casu _ { }
                     }
                 }
 
@@ -48,8 +49,10 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
                                     redde sinisterTypus
                                 }
                             }
+                            casu _ { }
                         }
                     }
+                    casu _ { }
                 }
 
                 # Default to numerus
@@ -72,8 +75,10 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
                                     a.error(err.textus, b.locus)
                                 }
                             }
+                            casu _ { }
                         }
                     }
+                    casu _ { }
                 }
 
                 redde BIVALENS
@@ -89,6 +94,7 @@ functio resolveBinaria(Resolvitor r, Expressia binariaExpr) -> SemanticTypus {
                 redde BIVALENS
             }
         }
+        casu _ { }
     }
 
     redde IGNOTUM

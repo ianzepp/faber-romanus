@@ -73,6 +73,7 @@ functio genGenus(textus nomen, ignotum generaParametra, ignotum extendit, ignotu
                     estCreo = verum
                 }
             }
+            casu _ { }
         }
         si non estCreo {
             ceteri.adde(m)
@@ -142,6 +143,7 @@ functio genCreoMethod(Sententia creo, TsGenerator g) -> textus {
             }
             redde scriptum("§private creo() §", g.ind(), body)
         }
+        casu _ { }
     }
     redde scriptum("§private creo() {}", g.ind())
 }

@@ -124,6 +124,7 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
                             }
                         }
                     }
+                    casu _ { }
                 }
             }
         }
@@ -252,5 +253,6 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         }
 
         # Other statements don't need predeclaration
+        casu _ { }
     }
 }

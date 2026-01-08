@@ -49,6 +49,7 @@ functio analyzeTempta(Resolvitor r, Sententia temptaStmt) -> vacuum {
                 r.sententia(t.demum qua Sententia)
             }
         }
+        casu _ { }
     }
 }
 
@@ -90,6 +91,7 @@ functio analyzeFac(Resolvitor r, Sententia facStmt) -> vacuum {
                 a.exiScopum()
             }
         }
+        casu _ { }
     }
 }
 
@@ -127,5 +129,6 @@ functio analyzeCura(Resolvitor r, Sententia curaStmt) -> vacuum {
 
             a.exiScopum()
         }
+        casu _ { }
     }
 }

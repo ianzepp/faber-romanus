@@ -89,6 +89,7 @@ functio genTypusGenericus(textus nomen, lista<TypusParametrum> parametra, bivale
                     fixum inner = genTypus(t.adnotatio, g)
                     result = scriptum("Lista(§)", inner)
                 }
+                casu _ { }
             }
             si result == "" {
                 result = "Lista(anytype)"
@@ -105,11 +106,13 @@ functio genTypusGenericus(textus nomen, lista<TypusParametrum> parametra, bivale
                     casu Typus ut t {
                         keyZig = genTypus(t.adnotatio, g)
                     }
+                    casu _ { }
                 }
                 discerne parametra[1] {
                     casu Typus ut t {
                         valZig = genTypus(t.adnotatio, g)
                     }
+                    casu _ { }
                 }
 
                 si keyZig == "[]const u8" {
@@ -130,6 +133,7 @@ functio genTypusGenericus(textus nomen, lista<TypusParametrum> parametra, bivale
                 casu Typus ut t {
                     inner = genTypus(t.adnotatio, g)
                 }
+                casu _ { }
             }
 
             si inner == "[]const u8" {
@@ -147,6 +151,7 @@ functio genTypusGenericus(textus nomen, lista<TypusParametrum> parametra, bivale
                 casu Typus ut t {
                     inner = genTypus(t.adnotatio, g)
                 }
+                casu _ { }
             }
             result = scriptum("!§", inner)
         }
