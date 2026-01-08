@@ -288,7 +288,27 @@ export function validateMorphology(collection: string, methodName: string): Morp
 
             // WHY: Use stem-guided parsing first. The greedy parser can misparse
             // words like 'decapita' as 'decap' + '-ita' instead of 'decapit' + '-a'.
-            const parsed = parseMethodumWithStem(methodName, declaredStem) || parseMethodum(methodName);
+            const stemParsed = parseMethodumWithStem(methodName, declaredStem);
+            const greedyParsed = parseMethodum(methodName);
+
+            // WHY: Prefer stem-guided parser, but if it returns a form that's not declared,
+            // check if the greedy parser gives a declared form. This handles cases like
+            // 'selecta' with stem 'select': stem-guided gives 'a' -> imperativus (wrong),
+            // but greedy gives 'ta' -> perfectum (correct with stem 'selec').
+            let parsed = stemParsed;
+            if (stemParsed && !declaredForms.includes(stemParsed.form)) {
+                if (greedyParsed && declaredForms.includes(greedyParsed.form)) {
+                    // Greedy parser gives a declared form - prefer it over stem-guided
+                    // We override the stem to match the declared stem for validation
+                    parsed = { ...greedyParsed, stem: declaredStem };
+                }
+            }
+
+            // Fallback to whichever parser succeeded
+            if (!parsed) {
+                parsed = stemParsed || greedyParsed;
+            }
+
             if (parsed) {
                 // Check stem matches (should always match with stem-guided parsing)
                 if (parsed.stem !== declaredStem) {
@@ -324,8 +344,17 @@ export function validateMorphology(collection: string, methodName: string): Morp
         const declaredStem = method.radixForms[0]!;
         const declaredForms = method.radixForms.slice(1);
 
-        // Try stem-guided parsing
-        const parsed = parseMethodumWithStem(methodName, declaredStem);
+        // Try both parsers with disambiguation logic (same as above)
+        const stemParsed = parseMethodumWithStem(methodName, declaredStem);
+        const greedyParsed = parseMethodum(methodName);
+
+        let parsed = stemParsed;
+        if (stemParsed && !declaredForms.includes(stemParsed.form)) {
+            if (greedyParsed && declaredForms.includes(greedyParsed.form)) {
+                parsed = { ...greedyParsed, stem: declaredStem };
+            }
+        }
+
         if (parsed) {
             // Found a stem match - check if form is declared
             if (!declaredForms.includes(parsed.form)) {
