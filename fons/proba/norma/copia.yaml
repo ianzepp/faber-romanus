@@ -130,10 +130,10 @@
       setA.unio(setB)
   cpp:
       - 'std::unordered_set'
-      - '.insert('
+      - 'faber::copia_unio(setA, setB)'
   rs:
       - 'HashSet<i64>'
-      - '.union(&setB).cloned().collect'
+      - 'faber::copia_unio(&setA, &setB)'
   ts:
       - '[...'
   fab:
@@ -148,11 +148,10 @@
       fixum copia<numerus> setB = {}
       setA.intersectio(setB)
   cpp:
-      - '.contains('
-      - '.insert('
+      - 'faber::copia_intersectio(setA, setB)'
   rs:
       - 'HashSet<i64>'
-      - '.intersection(&setB).cloned().collect'
+      - 'faber::copia_intersectio(&setA, &setB)'
   ts:
       - '.filter('
   fab:
@@ -167,11 +166,10 @@
       fixum copia<numerus> setB = {}
       setA.differentia(setB)
   cpp:
-      - '!'
-      - '.contains('
+      - 'faber::copia_differentia(setA, setB)'
   rs:
       - 'HashSet<i64>'
-      - '.difference(&setB).cloned().collect'
+      - 'faber::copia_differentia(&setA, &setB)'
   ts:
       - '.filter('
   fab:
@@ -186,11 +184,10 @@
       fixum copia<numerus> setB = {}
       setA.symmetrica(setB)
   cpp:
-      - '!'
-      - '.contains('
+      - 'faber::copia_symmetrica(setA, setB)'
   rs:
       - 'HashSet<i64>'
-      - '.symmetric_difference(&setB).cloned().collect'
+      - 'faber::copia_symmetrica(&setA, &setB)'
   ts:
       - '.filter('
   fab:
@@ -209,8 +206,7 @@
       fixum copia<numerus> setB = {}
       setA.subcopia(setB)
   cpp:
-      - 'std::ranges::all_of'
-      - '.contains('
+      - 'faber::copia_subcopia(setA, setB)'
   rs:
       - 'HashSet<i64>'
       - '.is_subset(&setB)'
@@ -228,7 +224,7 @@
       fixum copia<numerus> setB = {}
       setA.supercopia(setB)
   cpp:
-      - 'std::ranges::all_of'
+      - 'faber::copia_supercopia(setA, setB)'
   rs:
       - 'HashSet<i64>'
       - '.is_superset(&setB)'
@@ -249,10 +245,10 @@
       fixum copia<numerus> set = {}
       set.inLista()
   cpp:
-      - 'std::vector('
+      - 'faber::copia_in_lista(set)'
   rs:
       - 'HashSet<i64>'
-      - '.iter().cloned().collect::<Vec<_>>()'
+      - 'faber::copia_in_lista(&set)'
   ts:
       - '[...'
   fab:

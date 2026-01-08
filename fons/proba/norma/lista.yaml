@@ -36,14 +36,11 @@
       items.addita(1)
   wrap: 'cura arena fit alloc { $ }'
   cpp:
-      - 'auto v = items'
-      - 'v.push_back(1)'
-      - 'return v'
+      - 'faber::lista_addita(items, 1)'
   ts:
       - '[...'
   rs:
-      - 'let mut v = items.clone()'
-      - 'v.push(1)'
+      - 'faber::lista_addita(&items, 1)'
   zig:
       - '.addita(alloc, 1)'
   fab:
@@ -79,8 +76,7 @@
       fixum items = [1, 2, 3]
       items.remove()
   cpp:
-      - '.back()'
-      - '.pop_back()'
+      - 'faber::lista_remove(items)'
   ts:
       - '.pop('
   rs:
@@ -97,8 +93,7 @@
       fixum items = [1, 2, 3]
       items.decapita()
   cpp:
-      - '.front()'
-      - '.erase('
+      - 'faber::lista_decapita(items)'
   ts:
       - '.shift('
   rs:
@@ -243,8 +238,7 @@
       fixum items = [1, 2, 3]
       items.indiceDe(5)
   cpp:
-      - 'std::find('
-      - 'std::distance('
+      - 'faber::lista_indice_de(items, 5)'
   ts:
       - '.indexOf('
   rs:
@@ -306,8 +300,7 @@
       items.inversa()
   wrap: 'cura arena fit alloc { $ }'
   cpp:
-      - 'std::views::reverse'
-      - 'std::ranges::to<std::vector>'
+      - 'faber::lista_inversa(items)'
   ts:
       - '.reverse('
   rs:
@@ -628,3 +621,442 @@
       - 'fixum items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]'
       - 'fixum result = ex items prima 10, ultima 3'
   skip: [rs]
+
+# =============================================================================
+# Missing Method Coverage
+# =============================================================================
+
+# praeposita returns new list with element prepended
+- name: 'praeposita -> insert at begin (returns new)'
+  source: |
+      fixum items = [1, 2, 3]
+      items.praeposita(1)
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'faber::lista_praeposita(items, 1)'
+  ts:
+      - '[1, ...'
+  rs:
+      - 'faber::lista_praeposita(&items, 1)'
+  zig:
+      - '.praeposita(alloc, 1)'
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.praeposita(1)'
+
+# remota removes last element (returns new list)
+- name: 'remota -> slice without last element'
+  source: |
+      fixum items = [1, 2, 3]
+      items.remota()
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'std::vector(items.begin(), items.end() - 1)'
+  ts:
+      - '.slice(0, -1)'
+  rs:
+      - '[..items.len().saturating_sub(1)].to_vec()'
+  zig:
+      - '.remota(alloc)'
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.remota()'
+
+# decapitata removes first element (returns new list)
+- name: 'decapitata -> slice from 1'
+  source: |
+      fixum items = [1, 2, 3]
+      items.decapitata()
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'std::vector(items.begin() + 1, items.end())'
+  ts:
+      - '.slice(1)'
+  rs:
+      - '[1..].to_vec()'
+  zig:
+      - '.decapitata(alloc)'
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.decapitata()'
+
+# inveni finds first element matching predicate
+- name: 'inveni -> find'
+  source: |
+      fixum items = [1, 2, 3]
+      items.inveni(pro x: x > 1)
+  cpp:
+      - 'std::find_if(items.begin(), items.end(),'
+  ts:
+      - '.find('
+  rs:
+      - '.iter().find('
+  zig:
+      - '.inveni('
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.inveni(pro x: x > 1)'
+
+# inveniIndicem finds index of first element matching predicate
+- name: 'inveniIndicem -> findIndex'
+  source: |
+      fixum items = [1, 2, 3]
+      items.inveniIndicem(pro x: x > 1)
+  cpp:
+      - 'faber::lista_inveni_indicem(items,'
+  ts:
+      - '.findIndex('
+  rs:
+      - '.iter().position('
+  zig:
+      - '.inveniIndicem('
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.inveniIndicem(pro x: x > 1)'
+
+# explanata flat maps elements
+- name: 'explanata -> flatMap'
+  source: |
+      fixum items = [1, 2, 3]
+      items.explanata(pro x: [x, x * 2])
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'std::views::transform'
+      - 'std::views::join'
+  ts:
+      - '.flatMap('
+  rs:
+      - '.iter().flat_map('
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.explanata(pro x: [x, x * 2])'
+  skip: [zig]
+
+# plana flattens one level
+- name: 'plana -> flat one level'
+  source: |
+      fixum items = [[1, 2], [3, 4]]
+      items.plana()
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'std::views::join'
+  ts:
+      - '.flat('
+  rs:
+      - '.iter().flatten()'
+  fab:
+      - 'fixum items = [[1, 2], [3, 4]]'
+      - 'items.plana()'
+  skip: [zig]
+
+# ordinata returns sorted copy
+- name: 'ordinata -> sorted copy'
+  source: |
+      fixum items = [3, 1, 2]
+      items.ordinata()
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'faber::lista_ordinata(items)'
+  ts:
+      - '.sort('
+  rs:
+      - 'faber::lista_ordinata(&items)'
+  zig:
+      - '.ordinata(alloc)'
+  fab:
+      - 'fixum items = [3, 1, 2]'
+      - 'items.ordinata()'
+
+# sectio slices from start to end
+- name: 'sectio -> slice range'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.sectio(1, 3)
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'std::vector(items.begin() + 1, items.begin() + 3)'
+  ts:
+      - '.slice(1, 3)'
+  rs:
+      - '[1..3].to_vec()'
+  zig:
+      - '.sectio(alloc, 1, 3)'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.sectio(1, 3)'
+
+# ultima takes last n elements
+- name: 'ultima -> take last n'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.ultima(2)
+  wrap: 'cura arena fit alloc { $ }'
+  cpp:
+      - 'faber::lista_ultima(items, 2)'
+  ts:
+      - '.slice(-2)'
+  rs:
+      - 'faber::lista_ultima(&items, 2)'
+  zig:
+      - '.ultima(alloc, 2)'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.ultima(2)'
+
+# reducta reduces to single value
+- name: 'reducta -> fold/reduce'
+  source: |
+      fixum items = [1, 2, 3]
+      items.reducta(pro acc, x: acc + x, 0)
+  cpp:
+      - 'std::ranges::fold_left(items,'
+  ts:
+      - '.reduce('
+  rs:
+      - '.iter().fold('
+  zig:
+      - '.reducta('
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.reducta(pro acc, x: acc + x, 0)'
+
+# filtra filters in place
+- name: 'filtra -> filter in place'
+  source: |
+      fixum items = [1, 2, 3]
+      items.filtra(pro x: x > 1)
+  cpp:
+      - 'std::remove_if(items.begin(), items.end(),'
+      - '.erase('
+  ts:
+      - 'for (let i'
+      - '.splice('
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.filtra(pro x: x > 1)'
+  skip: [rs, zig, py]
+
+# coniunge joins elements to string
+- name: 'coniunge -> join with separator'
+  source: |
+      fixum items = ["a", "b", "c"]
+      items.coniunge(", ")
+  cpp:
+      - 'faber::lista_coniunge(items, ", ")'
+  ts:
+      - '.join(", ")'
+  rs:
+      - '.join(", ")'
+  fab:
+      - 'fixum items = ["a", "b", "c"]'
+      - 'items.coniunge(", ")'
+  skip: [zig]
+
+# medium computes average
+- name: 'medium -> average'
+  source: |
+      fixum nums = [1, 2, 3, 4, 5]
+      nums.medium()
+  cpp:
+      - 'std::accumulate'
+      - '/ nums.size()'
+  ts:
+      - '.reduce((a, b) => a + b, 0)'
+      - '/ nums.length'
+  rs:
+      - '.iter().sum'
+      - 'as f64'
+      - '.len() as f64'
+  zig:
+      - '.medium()'
+  fab:
+      - 'fixum nums = [1, 2, 3, 4, 5]'
+      - 'nums.medium()'
+
+# minimusPer finds minimum by key function
+- name: 'minimusPer -> min_by_key'
+  source: |
+      fixum items = [1, 2, 3]
+      items.minimusPer(pro x: -x)
+  cpp:
+      - 'std::ranges::min_element(items,'
+  ts:
+      - '.reduce('
+  rs:
+      - '.iter().min_by_key('
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.minimusPer(pro x: -x)'
+  skip: [zig]
+
+# maximusPer finds maximum by key function
+- name: 'maximusPer -> max_by_key'
+  source: |
+      fixum items = [1, 2, 3]
+      items.maximusPer(pro x: -x)
+  cpp:
+      - 'std::ranges::max_element(items,'
+  ts:
+      - '.reduce('
+  rs:
+      - '.iter().max_by_key('
+  fab:
+      - 'fixum items = [1, 2, 3]'
+      - 'items.maximusPer(pro x: -x)'
+  skip: [zig]
+
+# numera counts elements matching predicate
+- name: 'numera -> count_if'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.numera(pro x: x > 2)
+  cpp:
+      - 'std::ranges::count_if(items,'
+  ts:
+      - '.filter('
+      - '.length'
+  rs:
+      - '.iter().filter('
+      - '.count()'
+  zig:
+      - '.numera('
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.numera(pro x: x > 2)'
+
+# congrega groups by key function
+- name: 'congrega -> groupBy'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.congrega(pro x: x % 2)
+  cpp:
+      - 'faber::lista_congrega(items,'
+  ts:
+      - 'Object.groupBy(items,'
+  rs:
+      - 'faber::lista_congrega(&items,'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.congrega(pro x: x % 2)'
+  skip: [zig, py]
+
+# unica removes duplicates
+- name: 'unica -> unique/deduplicate'
+  source: |
+      fixum items = [1, 2, 2, 3, 1]
+      items.unica()
+  cpp:
+      - 'faber::lista_unica(items)'
+  ts:
+      - 'new Set('
+  rs:
+      - 'faber::lista_unica(&items)'
+  fab:
+      - 'fixum items = [1, 2, 2, 3, 1]'
+      - 'items.unica()'
+  skip: [zig, py]
+
+# planaOmnia flattens all levels
+- name: 'planaOmnia -> flat all levels'
+  source: |
+      fixum items = [[[1, 2]], [3, [4, 5]]]
+      items.planaOmnia()
+  cpp:
+      - 'std::views::join'
+  ts:
+      - '.flat(Infinity)'
+  fab:
+      - 'fixum items = [[[1, 2]], [3, [4, 5]]]'
+      - 'items.planaOmnia()'
+  skip: [rs, zig, py]
+
+# fragmenta splits into chunks
+- name: 'fragmenta -> chunks'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.fragmenta(2)
+  cpp:
+      - 'faber::lista_fragmenta(items, 2)'
+  ts:
+      - 'Array.from('
+      - '.slice('
+  rs:
+      - '.chunks(2)'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.fragmenta(2)'
+  skip: [zig, py]
+
+# densa removes falsy values
+- name: 'densa -> compact (remove falsy)'
+  source: |
+      fixum items = [1, 0, 2, null, 3]
+      items.densa()
+  cpp:
+      - 'std::views::filter'
+      - 'static_cast<bool>'
+  ts:
+      - '.filter(Boolean)'
+  fab:
+      - 'fixum items = [1, 0, 2, null, 3]'
+      - 'items.densa()'
+  skip: [rs, zig, py]
+
+# partire partitions by predicate
+- name: 'partire -> partition'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.partire(pro x: x % 2 == 0)
+  cpp:
+      - 'faber::lista_partire(items,'
+  ts:
+      - '.reduce('
+  rs:
+      - 'faber::lista_partire(&items,'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.partire(pro x: x % 2 == 0)'
+  skip: [zig, py]
+
+# miscita shuffles elements
+- name: 'miscita -> shuffle'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.miscita()
+  cpp:
+      - 'faber::lista_miscita(items)'
+  ts:
+      - 'Math.random()'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.miscita()'
+  skip: [rs, zig, py]
+
+# specimen returns random element
+- name: 'specimen -> random element'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.specimen()
+  cpp:
+      - 'faber::lista_specimen(items)'
+  ts:
+      - 'Math.floor(Math.random()'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.specimen()'
+  skip: [rs, zig, py]
+
+# specimina returns n random elements
+- name: 'specimina -> random n elements'
+  source: |
+      fixum items = [1, 2, 3, 4, 5]
+      items.specimina(2)
+  cpp:
+      - 'faber::lista_specimina(items, 2)'
+  ts:
+      - 'Math.random()'
+      - '.slice(0, 2)'
+  fab:
+      - 'fixum items = [1, 2, 3, 4, 5]'
+      - 'items.specimina(2)'
+  skip: [rs, zig, py]

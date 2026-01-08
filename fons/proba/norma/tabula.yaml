@@ -207,12 +207,12 @@
       varia tabula<textus, numerus> other = {}
       map.conflata(other)
   cpp:
-      - 'for (auto& [k, v]'
+      - 'faber::tabula_conflata(map, other)'
   ts:
       - '[...'
   rs:
       - 'HashMap<String, i64>'
-      - '.extend(other.iter()'
+      - 'faber::tabula_conflata(&map, &other)'
   zig:
       - '.conflata(&other)'
   fab:
@@ -227,14 +227,138 @@
       map.inLista()
   wrap: 'cura arena fit alloc { $ }'
   cpp:
-      - 'std::vector('
+      - 'faber::tabula_in_lista(map)'
   ts:
       - '[...'
   rs:
       - 'HashMap<String, i64>'
-      - '.iter().map(|(k, v)| (k.clone(), v.clone())).collect::<Vec<_>>()'
+      - 'faber::tabula_in_lista(&map)'
   zig:
       - '.inLista(alloc)'
   fab:
       - 'varia tabula<textus, numerus> map = {}'
       - 'map.inLista()'
+
+# =============================================================================
+# Missing Method Coverage
+# =============================================================================
+
+# paria returns entries iterator
+- name: 'paria -> entries/items iterator'
+  source: |
+      fixum tabula<textus, numerus> map = {}
+      map.paria()
+  cpp:
+      - 'map'
+  ts:
+      - '.entries('
+  rs:
+      - 'HashMap<String, i64>'
+      - '.iter()'
+  zig:
+      - '.paria()'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.paria()'
+
+# selecta keeps only specified keys
+- name: 'selecta -> filter by keys'
+  source: |
+      fixum tabula<textus, numerus> map = {}
+      map.selecta(["key1", "key2"])
+  cpp:
+      - 'faber::tabula_selecta(map, '
+  ts:
+      - '[...map].filter('
+      - '.includes(k)'
+  rs:
+      - 'HashMap<String, i64>'
+      - 'faber::tabula_selecta(&map, &'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.selecta(["key1", "key2"])'
+  skip: [zig]
+
+# omissa removes specified keys (returns new map)
+- name: 'omissa -> filter excluding keys'
+  source: |
+      fixum tabula<textus, numerus> map = {}
+      map.omissa(["key1", "key2"])
+  cpp:
+      - 'faber::tabula_omissa(map, '
+  ts:
+      - '[...map].filter('
+      - '!['
+      - '.includes(k)'
+  rs:
+      - 'HashMap<String, i64>'
+      - 'faber::tabula_omissa(&map, &'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.omissa(["key1", "key2"])'
+  skip: [zig]
+
+# inversa swaps keys and values
+- name: 'inversa -> invert map'
+  source: |
+      fixum tabula<textus, numerus> map = {}
+      map.inversa()
+  cpp:
+      - 'faber::tabula_inversa(map)'
+  ts:
+      - '[...map].map(([k, v]) => [v, k])'
+  rs:
+      - 'HashMap<String, i64>'
+      - 'faber::tabula_inversa(&map)'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.inversa()'
+  skip: [zig]
+
+# mappaValores transforms values
+- name: 'mappaValores -> transform values'
+  source: |
+      fixum tabula<textus, numerus> map = {}
+      map.mappaValores(pro v: v * 2)
+  cpp:
+      - '[...map].map(([k, v]) => [k, '
+  ts:
+      - '[...map].map(([k, v]) => [k, '
+  rs:
+      - 'HashMap<String, i64>'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.mappaValores(pro v: v * 2)'
+  skip: [zig, rs, py]
+
+# mappaClaves transforms keys
+- name: 'mappaClaves -> transform keys'
+  source: |
+      fixum tabula<textus, numerus> map = {}
+      map.mappaClaves(pro k: k + "_new")
+  cpp:
+      - '[...map].map(([k, v]) => ['
+      - ', v])'
+  ts:
+      - '[...map].map(([k, v]) => ['
+      - ', v])'
+  rs:
+      - 'HashMap<String, i64>'
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.mappaClaves(pro k: k + "_new")'
+  skip: [zig, rs, py]
+
+# inObjectum converts to plain object (JS/Python only)
+- name: 'inObjectum -> object from map'
+  source: |
+      fixum tabula<textus, numerus> map = {}
+      map.inObjectum()
+  cpp:
+      - 'Object.fromEntries('
+  ts:
+      - 'Object.fromEntries('
+  fab:
+      - 'fixum tabula<textus, numerus> map = {}'
+      - 'map.inObjectum()'
+  skip: [zig, rs, cpp]
