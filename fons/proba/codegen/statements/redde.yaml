@@ -35,9 +35,9 @@
       py:
           - 'return "hello"'
       rs:
-          - 'return String::from("hello");'
+          - 'return "hello";'
       cpp:
-          - 'return std::string("hello");'
+          - 'return "hello";'
       zig:
           - 'return "hello";'
       fab:

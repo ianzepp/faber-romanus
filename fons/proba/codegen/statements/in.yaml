@@ -19,9 +19,9 @@
       py:
           - 'user.nomen = "Marcus"'
       rs:
-          - 'user.nomen = String::from("Marcus");'
+          - 'user.nomen = "Marcus";'
       cpp:
-          - 'user.nomen = std::string("Marcus");'
+          - 'user.nomen = "Marcus";'
       zig:
           - 'user.nomen = "Marcus";'
       fab:
@@ -44,10 +44,10 @@
           - 'user.nomen = "Marcus"'
           - 'user.aetas = 42'
       rs:
-          - 'user.nomen = String::from("Marcus");'
+          - 'user.nomen = "Marcus";'
           - 'user.aetas = 42;'
       cpp:
-          - 'user.nomen = std::string("Marcus");'
+          - 'user.nomen = "Marcus";'
           - 'user.aetas = 42;'
       zig:
           - 'user.nomen = "Marcus";'
@@ -90,9 +90,9 @@
       py:
           - 'message.text += " world"'
       rs:
-          - 'message.text = String::from(" world");'
+          - 'message.text = " world";'
       cpp:
-          - 'message.text += std::string(" world");'
+          - 'message.text += " world";'
       zig:
           - 'message.text += " world";'
       fab:
@@ -142,10 +142,10 @@
           - 'user.nomen = "Marcus"'
           - 'validate()'
       rs:
-          - 'user.nomen = String::from("Marcus");'
+          - 'user.nomen = "Marcus";'
           - 'validate();'
       cpp:
-          - 'user.nomen = std::string("Marcus");'
+          - 'user.nomen = "Marcus";'
           - 'validate();'
       zig:
           - 'user.nomen = "Marcus";'

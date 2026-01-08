@@ -219,9 +219,9 @@
       ts: '(("hello" + " ") + "world");'
       py: '(("hello" + " ") + "world")'
       rs:
-          - '((String::from("hello") + String::from(" ")) + String::from("world"));'
+          - '(("hello" + " ") + "world");'
       cpp:
-          - '((std::string("hello") + std::string(" ")) + std::string("world"))'
+          - '(("hello" + " ") + "world")'
       fab:
           - '"hello" + " " + "world"'
 
@@ -315,9 +315,9 @@
       ts: '["pending", "active", "paused"].includes(status);'
       py: 'status in ["pending", "active", "paused"]'
       rs:
-          - '[String::from("pending"), String::from("active"), String::from("paused")].contains(&status);'
+          - '["pending", "active", "paused"].contains(&status);'
       cpp:
-          - 'std::ranges::contains(std::vector{std::string("pending"), std::string("active"), std::string("paused")}, status)'
+          - 'std::ranges::contains(std::vector{"pending", "active", "paused"}, status)'
       zig:
           - '(std.mem.indexOfScalar(i64, .{ "pending", "active", "paused" }, status) != null)'
       fab:
@@ -329,9 +329,9 @@
       ts: '(c >= "a" && c < "z");'
       py: '(c >= "a" and c < "z")'
       rs:
-          - '(c >= String::from("a") && c < String::from("z"));'
+          - '(c >= "a" && c < "z");'
       cpp:
-          - '(c >= std::string("a") && c < std::string("z"))'
+          - '(c >= "a" && c < "z")'
       zig:
           - '(c >= "a" and c < "z")'
       fab:
@@ -343,9 +343,9 @@
       ts: '(c >= "a" && c <= "z");'
       py: '(c >= "a" and c <= "z")'
       rs:
-          - '(c >= String::from("a") && c <= String::from("z"));'
+          - '(c >= "a" && c <= "z");'
       cpp:
-          - '(c >= std::string("a") && c <= std::string("z"))'
+          - '(c >= "a" && c <= "z")'
       zig:
           - '(c >= "a" and c <= "z")'
       fab:
@@ -357,9 +357,9 @@
       ts: '(((c >= "0" && c < "9") || (c >= "a" && c < "f")) || (c >= "A" && c < "F"));'
       py: '(((c >= "0" and c < "9") or (c >= "a" and c < "f")) or (c >= "A" and c < "F"))'
       rs:
-          - '(((c >= String::from("0") && c < String::from("9")) || (c >= String::from("a") && c < String::from("f"))) || (c >= String::from("A") && c < String::from("F")));'
+          - '(((c >= "0" && c < "9") || (c >= "a" && c < "f")) || (c >= "A" && c < "F"));'
       cpp:
-          - '(((c >= std::string("0") && c < std::string("9")) || (c >= std::string("a") && c < std::string("f"))) || (c >= std::string("A") && c < std::string("F")))'
+          - '(((c >= "0" && c < "9") || (c >= "a" && c < "f")) || (c >= "A" && c < "F"))'
       zig:
           - '(((c >= "0" and c < "9") or (c >= "a" and c < "f")) or (c >= "A" and c < "F"))'
       fab:

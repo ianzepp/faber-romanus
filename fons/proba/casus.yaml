@@ -97,7 +97,7 @@
   ts: 'const SI = "signal intelligence";'
   py: 'SI = "signal intelligence"'
   rs:
-      - 'let SI = String::from("signal intelligence");'
+      - 'let SI = "signal intelligence";'
   fab: 'fixum SI = "signal intelligence"'
 
 # FIXUM is a valid identifier, not the 'const' keyword
@@ -115,7 +115,7 @@
   ts: 'const Verum = "truth";'
   py: 'Verum = "truth"'
   rs:
-      - 'let Verum = String::from("truth");'
+      - 'let Verum = "truth";'
   fab: 'fixum Verum = "truth"'
 
 - name: 'VERUM is identifier not keyword'
@@ -132,7 +132,7 @@
   ts: 'const DUM = "while in Latin";'
   py: 'DUM = "while in Latin"'
   rs:
-      - 'let DUM = String::from("while in Latin");'
+      - 'let DUM = "while in Latin";'
   fab: 'fixum DUM = "while in Latin"'
 
 # =============================================================================
@@ -145,7 +145,7 @@
   ts: 'const msg: string = "hello";'
   py: 'msg: str = "hello"'
   rs:
-      - 'let msg: String = String::from("hello");'
+      - 'let msg: String = "hello";'
   fab: 'fixum textus msg = "hello"'
 
 - name: 'lowercase numerus type'
@@ -199,7 +199,7 @@
   ts: 'const TEXTUS = "text type name";'
   py: 'TEXTUS = "text type name"'
   rs:
-      - 'let TEXTUS = String::from("text type name");'
+      - 'let TEXTUS = "text type name";'
   fab: 'fixum TEXTUS = "text type name"'
 
 # NUMERUS as constant identifier
@@ -217,7 +217,7 @@
   ts: 'const Textus = "PascalCase";'
   py: 'Textus = "PascalCase"'
   rs:
-      - 'let Textus = String::from("PascalCase");'
+      - 'let Textus = "PascalCase";'
   fab: 'fixum Textus = "PascalCase"'
 
 # =============================================================================

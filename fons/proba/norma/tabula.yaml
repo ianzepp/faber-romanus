@@ -39,7 +39,7 @@
       - '.get('
   rs:
       - 'HashMap<String, i64>'
-      - '.get(&String::from("key")'
+      - '.get(&"key"'
   zig:
       - '.accipe("key")'
   fab:
@@ -57,7 +57,7 @@
       - '.has('
   rs:
       - 'HashMap<String, i64>'
-      - '.contains_key(&String::from("key")'
+      - '.contains_key(&"key"'
   zig:
       - '.habet("key")'
   fab:
@@ -75,7 +75,7 @@
       - '.delete('
   rs:
       - 'HashMap<String, i64>'
-      - '.remove(&String::from("key")'
+      - '.remove(&"key"'
   zig:
       - '.dele("key")'
   fab:
@@ -192,7 +192,7 @@
       - '.get('
   rs:
       - 'HashMap<String, i64>'
-      - '.get(&String::from("key")'
+      - '.get(&"key"'
       - '.unwrap_or(0)'
   zig:
       - '.accipeAut("key", 0)'

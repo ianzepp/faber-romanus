@@ -63,7 +63,7 @@
           - 'if (user == None)'
           - 'return None;'
           - 'if (user.age < 0)'
-          - 'return Err(String::from("Invalid age"));'
+          - 'return Err("Invalid age");'
       cpp:
           - 'if ((user == nullptr))'
           - 'return nullptr;'
@@ -157,7 +157,7 @@
           - 'raise Exception("Count must be positive")'
       rs:
           - 'if (count < 1)'
-          - 'return Err(String::from("Count must be positive"));'
+          - 'return Err("Count must be positive");'
       cpp:
           - 'if ((count < 1))'
           - 'throw std::runtime_error("Count must be positive");'
@@ -239,12 +239,12 @@
           - 'return None'
       rs:
           - 'if error'
-          - 'println!("{}", String::from("Error occurred"));'
+          - 'println!("{}", "Error occurred");'
           - 'cleanup();'
           - 'return None;'
       cpp:
           - 'if (error)'
-          - 'std::print("[WARN] {}\n", std::string("Error occurred"));'
+          - 'std::print("[WARN] {}\n", "Error occurred");'
           - 'cleanup();'
           - 'return nullptr;'
       zig:

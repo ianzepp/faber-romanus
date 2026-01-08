@@ -120,7 +120,7 @@
   rs:
       - 'fn build(a: curator)'
       - 'let mut m = {}'
-      - 'm.pone(String::from("key"), 42)'
+      - 'm.pone("key", 42)'
   skip: [ts, py, cpp]
   fab:
       - 'functio build(curator a) {'
@@ -136,7 +136,7 @@
       m.pone("key", 42)
   rs:
       - 'let mut m = {}'
-      - 'm.pone(String::from("key"), 42)'
+      - 'm.pone("key", 42)'
   skip: [ts, py, cpp, zig]
   fab:
       - 'varia m = {}'
@@ -161,7 +161,7 @@
   rs:
       - 'fn build(allocator: curator)'
       - 'HashSet<String>'
-      - '.insert(String::from("item"))'
+      - '.insert("item")'
   skip: [ts, py, cpp]
   fab:
       - 'functio build(curator allocator) {'
@@ -175,7 +175,7 @@
       s.adde("item")
   rs:
       - 'HashSet<String>'
-      - '.insert(String::from("item"))'
+      - '.insert("item")'
   skip: [ts, py, cpp, zig]
   fab:
       - 'varia copia<textus> s = {}'
