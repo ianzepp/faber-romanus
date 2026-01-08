@@ -100,8 +100,8 @@ functio perambula((T) -> vacuum fn) -> vacuum
 # Union: A ∪ B (returns new set)
 @ verte ts (ego, alia) -> "new Set([...§0, ...§1])"
 @ verte py (ego, alia) -> "§0 | §1"
-@ verte rs (ego, alia) -> "§0.union(&§1).cloned().collect::<HashSet<_>>()"
-@ verte cpp (ego, alia) -> "[&]{ auto s = §0; s.insert(§1.begin(), §1.end()); return s; }()"
+@ verte rs (ego, alia) -> "faber::copia_unio(&§0, &§1)"
+@ verte cpp (ego, alia) -> "faber::copia_unio(§0, §1)"
 @ verte zig (ego, alia) -> "@compileError(\"unio not implemented for Zig - use explicit loop to merge sets\")"
 @ externa
 functio unio(copia<T> alia) -> copia<T>
@@ -109,8 +109,8 @@ functio unio(copia<T> alia) -> copia<T>
 # Intersection: A ∩ B (returns new set)
 @ verte ts (ego, alia) -> "new Set([...§0].filter(x => §1.has(x)))"
 @ verte py (ego, alia) -> "§0 & §1"
-@ verte rs (ego, alia) -> "§0.intersection(&§1).cloned().collect::<HashSet<_>>()"
-@ verte cpp (ego, alia) -> "[&]{ std::unordered_set<typename std::decay_t<decltype(§0)>::value_type> r; for (auto& x : §0) if (§1.contains(x)) r.insert(x); return r; }()"
+@ verte rs (ego, alia) -> "faber::copia_intersectio(&§0, &§1)"
+@ verte cpp (ego, alia) -> "faber::copia_intersectio(§0, §1)"
 @ verte zig (ego, alia) -> "@compileError(\"intersectio not implemented for Zig - use explicit loop\")"
 @ externa
 functio intersectio(copia<T> alia) -> copia<T>
@@ -118,8 +118,8 @@ functio intersectio(copia<T> alia) -> copia<T>
 # Difference: A - B (returns new set)
 @ verte ts (ego, alia) -> "new Set([...§0].filter(x => !§1.has(x)))"
 @ verte py (ego, alia) -> "§0 - §1"
-@ verte rs (ego, alia) -> "§0.difference(&§1).cloned().collect::<HashSet<_>>()"
-@ verte cpp (ego, alia) -> "[&]{ std::unordered_set<typename std::decay_t<decltype(§0)>::value_type> r; for (auto& x : §0) if (!§1.contains(x)) r.insert(x); return r; }()"
+@ verte rs (ego, alia) -> "faber::copia_differentia(&§0, &§1)"
+@ verte cpp (ego, alia) -> "faber::copia_differentia(§0, §1)"
 @ verte zig (ego, alia) -> "@compileError(\"differentia not implemented for Zig - use explicit loop\")"
 @ externa
 functio differentia(copia<T> alia) -> copia<T>
@@ -127,8 +127,8 @@ functio differentia(copia<T> alia) -> copia<T>
 # Symmetric difference: (A - B) ∪ (B - A) (returns new set)
 @ verte ts (ego, alia) -> "new Set([...[...§0].filter(x => !§1.has(x)), ...[...§1].filter(x => !§0.has(x))])"
 @ verte py (ego, alia) -> "§0 ^ §1"
-@ verte rs (ego, alia) -> "§0.symmetric_difference(&§1).cloned().collect::<HashSet<_>>()"
-@ verte cpp (ego, alia) -> "[&]{ std::unordered_set<typename std::decay_t<decltype(§0)>::value_type> r; for (auto& x : §0) if (!§1.contains(x)) r.insert(x); for (auto& x : §1) if (!§0.contains(x)) r.insert(x); return r; }()"
+@ verte rs (ego, alia) -> "faber::copia_symmetrica(&§0, &§1)"
+@ verte cpp (ego, alia) -> "faber::copia_symmetrica(§0, §1)"
 @ verte zig (ego, alia) -> "@compileError(\"symmetrica not implemented for Zig - use explicit loop\")"
 @ externa
 functio symmetrica(copia<T> alia) -> copia<T>
@@ -141,7 +141,7 @@ functio symmetrica(copia<T> alia) -> copia<T>
 @ verte ts (ego, alia) -> "[...§0].every(x => §1.has(x))"
 @ verte py (ego, alia) -> "§0 <= §1"
 @ verte rs (ego, alia) -> "§0.is_subset(&§1)"
-@ verte cpp (ego, alia) -> "std::ranges::all_of(§0, [&](auto& x) { return §1.contains(x); })"
+@ verte cpp (ego, alia) -> "faber::copia_subcopia(§0, §1)"
 @ verte zig (ego, alia) -> "@compileError(\"subcopia not implemented for Zig - use explicit loop\")"
 @ externa
 functio subcopia(copia<T> alia) -> bivalens
@@ -150,7 +150,7 @@ functio subcopia(copia<T> alia) -> bivalens
 @ verte ts (ego, alia) -> "[...§1].every(x => §0.has(x))"
 @ verte py (ego, alia) -> "§0 >= §1"
 @ verte rs (ego, alia) -> "§0.is_superset(&§1)"
-@ verte cpp (ego, alia) -> "std::ranges::all_of(§1, [&](auto& x) { return §0.contains(x); })"
+@ verte cpp (ego, alia) -> "faber::copia_supercopia(§0, §1)"
 @ verte zig (ego, alia) -> "@compileError(\"supercopia not implemented for Zig - use explicit loop\")"
 @ externa
 functio supercopia(copia<T> alia) -> bivalens
@@ -162,8 +162,8 @@ functio supercopia(copia<T> alia) -> bivalens
 # Convert to list
 @ verte ts (ego) -> "[...§]"
 @ verte py (ego) -> "list(§)"
-@ verte rs (ego) -> "§.iter().cloned().collect::<Vec<_>>()"
-@ verte cpp (ego) -> "std::vector(§0.begin(), §0.end())"
+@ verte rs (ego) -> "faber::copia_in_lista(&§)"
+@ verte cpp (ego) -> "faber::copia_in_lista(§)"
 @ verte zig (ego) -> "@compileError(\"inLista not implemented for Zig - iterate with ex...pro into ArrayList\")"
 @ externa
 functio inLista() -> lista<T>
