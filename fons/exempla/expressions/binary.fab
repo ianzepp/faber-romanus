@@ -87,13 +87,18 @@
 #
 #   bitwiseOr  := bitwiseXor ('|' bitwiseXor)*
 #   bitwiseXor := bitwiseAnd ('^' bitwiseAnd)*
-#   bitwiseAnd := shift ('&' shift)*
-#   shift      := range (('<<' | '>>') range)*
+#   bitwiseAnd := range ('&' range)*
 #
 # Bitwise precedence is ABOVE comparison (unlike C), so:
 #   flags & MASK == 0  parses as  (flags & MASK) == 0
 #
 # This matches programmer intent and avoids subtle bugs.
+#
+# Bit shift uses postfix keywords (see parseQuaExpression level):
+#   x sinistratum n  → x << n (shift left)
+#   x dextratum n    → x >> n (shift right)
+#
+# WHY: Latin keywords avoid ambiguity with nested generics like lista<lista<T>>.
 #
 # ----------------------------------------------------------------------------
 # GRAMMAR: Range
@@ -254,7 +259,7 @@ incipit {
     scribe grade
 
     # --------------------------------------------------------------------------
-    # Bitwise operators: & | ^ << >>
+    # Bitwise operators: & | ^
     # --------------------------------------------------------------------------
     # Note: Bitwise has higher precedence than comparison (unlike C)
 
@@ -270,10 +275,15 @@ incipit {
     fixum bitwiseXor = flags ^ mask
     scribe bitwiseXor
 
-    fixum leftShift = 1 << 4
+    # --------------------------------------------------------------------------
+    # Bit shift: sinistratum (<<), dextratum (>>)
+    # --------------------------------------------------------------------------
+    # Uses postfix keywords to avoid ambiguity with nested generics
+
+    fixum leftShift = 1 sinistratum 4
     scribe leftShift
 
-    fixum rightShift = 16 >> 2
+    fixum rightShift = 16 dextratum 2
     scribe rightShift
 
     # Precedence: (flags & mask) == 0, not flags & (mask == 0)
