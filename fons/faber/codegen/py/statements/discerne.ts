@@ -67,6 +67,14 @@ export function genDiscerneStatement(node: DiscerneStatement, g: PyGenerator): s
         g.depth--;
     }
 
+    // Generate default case (ceterum)
+    if (node.defaultCase) {
+        lines.push(`${g.ind()}case _:`);
+        g.depth++;
+        lines.push(g.genBlockStatementContent(node.defaultCase));
+        g.depth--;
+    }
+
     g.depth--;
 
     return lines.join('\n');

@@ -87,6 +87,19 @@ export function genDiscerneStatement(node: DiscerneStatement, g: ZigGenerator): 
         }
     }
 
+    // Generate default case (ceterum) as else
+    if (node.defaultCase) {
+        result += `${g.ind()}else => {\n`;
+        g.depth++;
+
+        for (const stmt of node.defaultCase.body) {
+            result += g.genStatement(stmt) + '\n';
+        }
+
+        g.depth--;
+        result += `${g.ind()}},\n`;
+    }
+
     g.depth--;
     result += `${g.ind()}}`;
 

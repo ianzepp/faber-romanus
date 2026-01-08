@@ -93,10 +93,29 @@ export function genDiscerneStatement(node: DiscerneStatement, g: TsGenerator): s
         g.depth--;
         result += `${g.ind()}}`;
 
-        // Add newline if more cases follow
-        if (i < node.cases.length - 1) {
+        // Add newline if more cases or default follows
+        if (i < node.cases.length - 1 || node.defaultCase) {
             result += '\n';
         }
+    }
+
+    // Generate default case (ceterum)
+    if (node.defaultCase) {
+        if (node.cases.length > 0) {
+            result += `${g.ind()}else {\n`;
+        } else {
+            // No cases, just default - emit as bare block
+            result += `${g.ind()}{\n`;
+        }
+
+        g.depth++;
+
+        for (const stmt of node.defaultCase.body) {
+            result += g.genStatement(stmt) + '\n';
+        }
+
+        g.depth--;
+        result += `${g.ind()}}`;
     }
 
     return result;

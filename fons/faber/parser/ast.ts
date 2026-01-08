@@ -1061,6 +1061,7 @@ export interface DiscerneStatement extends BaseNode {
     type: 'DiscerneStatement';
     discriminants: Expression[];
     cases: VariantCase[];
+    defaultCase?: BlockStatement;
 }
 
 /**
