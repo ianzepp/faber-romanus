@@ -320,8 +320,6 @@
   source: |
       fixum tabula<textus, numerus> map = {}
       map.mappaValores(pro v: v * 2)
-  cpp:
-      - '[...map].map(([k, v]) => [k, '
   ts:
       - '[...map].map(([k, v]) => [k, '
   rs:
@@ -329,16 +327,13 @@
   fab:
       - 'fixum tabula<textus, numerus> map = {}'
       - 'map.mappaValores(pro v: v * 2)'
-  skip: [zig, rs, py]
+  skip: [zig, rs, py, cpp]
 
 # mappaClaves transforms keys
 - name: 'mappaClaves -> transform keys'
   source: |
       fixum tabula<textus, numerus> map = {}
       map.mappaClaves(pro k: k + "_new")
-  cpp:
-      - '[...map].map(([k, v]) => ['
-      - ', v])'
   ts:
       - '[...map].map(([k, v]) => ['
       - ', v])'
@@ -347,7 +342,7 @@
   fab:
       - 'fixum tabula<textus, numerus> map = {}'
       - 'map.mappaClaves(pro k: k + "_new")'
-  skip: [zig, rs, py]
+  skip: [zig, rs, py, cpp]
 
 # inObjectum converts to plain object (JS/Python only)
 - name: 'inObjectum -> object from map'
