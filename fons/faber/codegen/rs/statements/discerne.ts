@@ -46,6 +46,12 @@ export function genDiscerneStatement(node: DiscerneStatement, g: RsGenerator): s
         lines.push(`${g.ind()}${patternStr} => ${body},`);
     }
 
+    // Generate default case (ceterum) as _ =>
+    if (node.defaultCase) {
+        const body = genBlockStatementInline(node.defaultCase, g);
+        lines.push(`${g.ind()}_ => ${body},`);
+    }
+
     g.depth--;
     lines.push(`${g.ind()}}`);
 

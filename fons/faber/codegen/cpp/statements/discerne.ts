@@ -38,5 +38,10 @@ export function genDiscerneStatement(node: DiscerneStatement, g: CppGenerator): 
         }
     }
 
+    // Generate default case (ceterum) comment
+    if (node.defaultCase) {
+        lines.push(`${g.ind()}// ceterum: { ... }`);
+    }
+
     return lines.join('\n');
 }

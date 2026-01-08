@@ -2595,12 +2595,21 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             exitScope();
         }
 
+        // Analyze default case if present
+        if (node.defaultCase) {
+            enterScope();
+            analyzeBlock(node.defaultCase);
+            exitScope();
+        }
+
         // Exhaustiveness check
-        // For single discriminant: all variants must be handled
-        // For multi-discriminant: require wildcard catch-all (full exhaustiveness is complex)
+        // For single discriminant: all variants must be handled (or have ceterum/wildcard)
+        // For multi-discriminant: require wildcard catch-all or ceterum
+        const hasDefaultCase = !!node.defaultCase;
+
         if (numDiscriminants === 1) {
             const discretio = discretios[0];
-            if (discretio && !hasWildcardCatchAll) {
+            if (discretio && !hasWildcardCatchAll && !hasDefaultCase) {
                 const allVariants = Array.from(discretio.variants.keys());
                 const missingVariants = allVariants.filter((v) => !handledVariants.has(v));
 
@@ -2611,9 +2620,9 @@ ${help}`, node.position);
                 }
             }
         } else {
-            // Multi-discriminant: for now, just require wildcard catch-all
+            // Multi-discriminant: for now, just require wildcard catch-all or ceterum
             // Full Cartesian product exhaustiveness checking is complex
-            if (!hasWildcardCatchAll) {
+            if (!hasWildcardCatchAll && !hasDefaultCase) {
                 const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
                 error(`${text(["_", "_"])}
 ${help}`, node.position);

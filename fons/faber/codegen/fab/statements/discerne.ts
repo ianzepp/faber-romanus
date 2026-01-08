@@ -22,6 +22,11 @@ export function genDiscerneStatement(node: DiscerneStatement, g: FabGenerator): 
         const patterns = c.patterns.map((p) => genPattern(p)).join(', ');
         lines.push(`${g.ind()}casu ${patterns} ${genBlockStatement(c.consequent, g)}`);
     }
+
+    // Generate default case (ceterum)
+    if (node.defaultCase) {
+        lines.push(`${g.ind()}ceterum ${genBlockStatement(node.defaultCase, g)}`);
+    }
     g.depth--;
 
     lines.push(`${g.ind()}}`);

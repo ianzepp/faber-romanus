@@ -3173,6 +3173,27 @@ export function parse(tokens: Token[]): ParserResult {
         expect('LBRACE', ParserErrorCode.ExpectedOpeningBrace);
 
         const cases: VariantCase[] = [];
+        let defaultCase: BlockStatement | undefined;
+
+        // Helper: parse 'ceterum' body (block, reddit, or direct statement)
+        function parseCeterumBody(): BlockStatement {
+            if (check('LBRACE')) {
+                return parseBlockStatement();
+            }
+            if (matchKeyword('reddit')) {
+                const stmtPos = peek().position;
+                const expr = parseExpression();
+                const returnStmt: ReddeStatement = { type: 'ReddeStatement', argument: expr, position: stmtPos };
+                return { type: 'BlockStatement', body: [returnStmt], position: stmtPos };
+            }
+            const stmtPos = peek().position;
+            const stmt = parseStatement();
+            return {
+                type: 'BlockStatement',
+                body: [stmt],
+                position: stmtPos,
+            };
+        }
 
         // True while there are unparsed cases (not at '}' or EOF)
         const hasMoreCases = () => !check('RBRACE') && !isAtEnd();
@@ -3205,6 +3226,10 @@ export function parse(tokens: Token[]): ParserResult {
                 }
 
                 cases.push({ type: 'VariantCase', patterns, consequent, position: casePosition });
+            } else if (checkKeyword('ceterum')) {
+                advance(); // consume ceterum
+                defaultCase = parseCeterumBody();
+                break; // Default must be last
             } else {
                 error(ParserErrorCode.InvalidDiscerneCaseStart);
                 break;
@@ -3213,7 +3238,7 @@ export function parse(tokens: Token[]): ParserResult {
 
         expect('RBRACE', ParserErrorCode.ExpectedClosingBrace);
 
-        return { type: 'DiscerneStatement', discriminants, cases, position };
+        return { type: 'DiscerneStatement', discriminants, cases, defaultCase, position };
     }
 
     /**
