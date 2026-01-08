@@ -88,8 +88,8 @@
           - 'finally {'
           - 'inFile.solve?.();'
       rs:
-          - 'let inFile = openFile(String::from("input.txt"));'
-          - 'let outFile = openFile(String::from("output.txt"));'
+          - 'let inFile = openFile("input.txt");'
+          - 'let outFile = openFile("output.txt");'
           - '{'
           - 'copy(inFile, outFile);'
       zig:

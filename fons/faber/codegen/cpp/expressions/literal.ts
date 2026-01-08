@@ -2,11 +2,16 @@
  * C++23 Code Generator - Literal and TemplateLiteral
  *
  * TRANSFORMS:
- *   "hello" -> std::string("hello")
+ *   "hello" -> "hello"
  *   42      -> 42
  *   true    -> true
  *   null    -> nullptr
  *   `hi ${x}` -> std::format("hi {}", x)
+ *
+ * WHY: String literals emit as const char* (bare). C++'s type system handles conversions:
+ * - Functions expecting const char* or string_view receive it directly
+ * - Variables typed as std::string get automatic construction from const char*
+ * - No need for explicit std::string() wrapper
  */
 
 import type { Literal, TemplateLiteral } from '../../../parser/ast';
@@ -18,9 +23,9 @@ export function genLiteral(node: Literal, g: CppGenerator): string {
     }
 
     if (typeof node.value === 'string') {
-        // WHY: Use raw to preserve escape sequences like \u0048, \n, \t as-is.
-        // Manual escaping would double-escape backslashes.
-        return `std::string(${node.raw})`;
+        // WHY: Emit bare string literal as const char*. C++ will construct std::string where needed.
+        // Preserves escape sequences like \u0048, \n, \t via node.raw.
+        return node.raw;
     }
 
     if (typeof node.value === 'boolean') {

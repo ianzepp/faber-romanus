@@ -58,12 +58,12 @@
           - 'print("test")'
       rs:
           - '{'
-          - 'println!("{}", String::from("test"));'
+          - 'println!("{}", "test");'
           - '}'
       cpp:
           - '{'
           - 'std::print("{}\'
-          - 'n", std::string("test"));'
+          - 'n", "test");'
           - '}'
       zig:
           - 'print("{s}\n", .{ "test" });'

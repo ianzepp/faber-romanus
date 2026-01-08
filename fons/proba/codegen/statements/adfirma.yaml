@@ -80,9 +80,9 @@
       py:
           - 'assert (x > 0), "x must be positive"'
       rs:
-          - 'assert!((x > 0), String::from("x must be positive"));'
+          - 'assert!((x > 0), "x must be positive");'
       cpp:
-          - 'assert(((x > 0)) && std::string("x must be positive"));'
+          - 'assert(((x > 0)) && "x must be positive");'
       zig:
           - 'if (!((x > 0))) @panic("x must be positive");'
       fab:

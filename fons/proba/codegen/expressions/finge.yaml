@@ -101,9 +101,9 @@
       py:
           - 'Result_Success(message="done")'
       rs:
-          - 'Result::Success { message: String::from("done") }'
+          - 'Result::Success { message: "done" }'
       cpp:
-          - 'Success{.message = std::string("done")}'
+          - 'Success{.message = "done"}'
       zig:
           - 'Result{ .success = .{ .message = "done" } }'
       fab:

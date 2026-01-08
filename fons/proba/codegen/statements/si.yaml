@@ -30,7 +30,7 @@
           - 'print("yes")'
       rs:
           - 'if true'
-          - 'println!("{}", String::from("yes"))'
+          - 'println!("{}", "yes")'
       cpp:
           - 'if (true)'
       zig:
