@@ -30,9 +30,10 @@ pactum Rogatio {
     functio capita() -> tabula<textus, textus>
 }
 
-# HTTP server instance
+# HTTP server handle (for stopping)
+# FUTURE: Hono-style routing API with pete/mitte/pone/dele/muta methods
+#         and Contextus type for path params, response helpers, etc.
 pactum Servitor {
-    functio exspecta(numerus portus) -> vacuum
     functio siste() -> vacuum
 }
 
@@ -143,24 +144,15 @@ functio mitteCum(textus url, textus corpus, tabula<textus, textus> capita) -> Re
 # HTTP SERVER
 # =============================================================================
 
-# Create HTTP server (does not start listening)
-@ verte ts (handler) -> "caelum.creaServitorem(§)"
-@ verte py (handler) -> "caelum.crea_servitorem(§)"
-@ verte rs (handler) -> "caelum::crea_servitorem(§)"
-@ verte cpp (handler) -> "caelum::crea_servitorem(§)"
-@ verte zig (handler) -> "caelum.creaServitorem(§)"
-@ externa
-functio creaServitorem((Rogatio) -> Replicatio handler) -> Servitor
-
-# Start server listening on port
+# Start server listening on port with handler for all requests
 @ futura
-@ verte ts (s, portus) -> "§0.exspecta(§1)"
-@ verte py (s, portus) -> "§0.exspecta(§1)"
-@ verte rs (s, portus) -> "§0.exspecta(§1)"
-@ verte cpp (s, portus) -> "§0.exspecta(§1)"
-@ verte zig (s, portus) -> "§0.exspecta(§1)"
+@ verte ts (handler, portus) -> "caelum.exspecta(§, §)"
+@ verte py (handler, portus) -> "caelum.exspecta(§, §)"
+@ verte rs (handler, portus) -> "caelum::exspecta(§, §)"
+@ verte cpp (handler, portus) -> "caelum::exspecta(§, §)"
+@ verte zig (handler, portus) -> "caelum.exspecta(§, §)"
 @ externa
-functio exspecta(Servitor s, numerus portus) -> vacuum
+functio exspecta((Rogatio) -> Replicatio handler, numerus portus) -> Servitor
 
 # Stop server
 @ futura
