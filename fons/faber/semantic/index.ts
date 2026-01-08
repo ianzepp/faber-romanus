@@ -2447,6 +2447,12 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
         const numDiscriminants = node.discriminants.length;
 
+        // Collect handled variant combinations for exhaustiveness check
+        // For single discriminant: track variant names
+        // For multi-discriminant: track presence of wildcard catch-all
+        const handledVariants = new Set<string>();
+        let hasWildcardCatchAll = false;
+
         for (const caseNode of node.cases) {
             // Validate pattern count matches discriminant count
             if (caseNode.patterns.length !== numDiscriminants) {
@@ -2454,6 +2460,17 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
                     `Pattern count mismatch: expected ${numDiscriminants} patterns, got ${caseNode.patterns.length}`,
                     caseNode.position
                 );
+            }
+
+            // Check if this is a wildcard catch-all (all patterns are wildcards)
+            const allWildcards = caseNode.patterns.every((p) => p.isWildcard);
+            if (allWildcards) {
+                hasWildcardCatchAll = true;
+            }
+
+            // For single-discriminant, track handled variants
+            if (numDiscriminants === 1 && caseNode.patterns[0] && !caseNode.patterns[0].isWildcard) {
+                handledVariants.add(caseNode.patterns[0].variant.name);
             }
 
             // Each case introduces bindings into scope
@@ -2528,6 +2545,31 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
 
             analyzeBlock(caseNode.consequent);
             exitScope();
+        }
+
+        // Exhaustiveness check
+        // For single discriminant: all variants must be handled
+        // For multi-discriminant: require wildcard catch-all (full exhaustiveness is complex)
+        if (numDiscriminants === 1) {
+            const discretio = discretios[0];
+            if (discretio && !hasWildcardCatchAll) {
+                const allVariants = Array.from(discretio.variants.keys());
+                const missingVariants = allVariants.filter((v) => !handledVariants.has(v));
+
+                if (missingVariants.length > 0) {
+                    const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
+                    error(`${text(missingVariants)}
+${help}`, node.position);
+                }
+            }
+        } else {
+            // Multi-discriminant: for now, just require wildcard catch-all
+            // Full Cartesian product exhaustiveness checking is complex
+            if (!hasWildcardCatchAll) {
+                const { text, help } = SEMANTIC_ERRORS[SemanticErrorCode.NonExhaustiveMatch];
+                error(`${text(["_", "_"])}
+${help}`, node.position);
+            }
         }
     }
 
