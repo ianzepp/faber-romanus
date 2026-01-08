@@ -115,32 +115,6 @@ functio muta(textus url, textus corpus) -> Replicatio
 functio roga(textus modus, textus url, tabula<textus, textus> capita, textus corpus) -> Replicatio
 
 # =============================================================================
-# HTTP CLIENT - Convenience Variants with Headers
-# =============================================================================
-
-# GET with custom headers
-@ radix pet, imperativus
-@ futura
-@ verte ts (url, capita) -> "caelum.peteCum(§, §)"
-@ verte py (url, capita) -> "caelum.pete_cum(§, §)"
-@ verte rs (url, capita) -> "caelum::pete_cum(§, §)"
-@ verte cpp (url, capita) -> "caelum::pete_cum(§, §)"
-@ verte zig (url, capita) -> "caelum.peteCum(§, §)"
-@ externa
-functio peteCum(textus url, tabula<textus, textus> capita) -> Replicatio
-
-# POST with custom headers
-@ radix mitt, imperativus
-@ futura
-@ verte ts (url, corpus, capita) -> "caelum.mitteCum(§, §, §)"
-@ verte py (url, corpus, capita) -> "caelum.mitte_cum(§, §, §)"
-@ verte rs (url, corpus, capita) -> "caelum::mitte_cum(§, §, §)"
-@ verte cpp (url, corpus, capita) -> "caelum::mitte_cum(§, §, §)"
-@ verte zig (url, corpus, capita) -> "caelum.mitteCum(§, §, §)"
-@ externa
-functio mitteCum(textus url, textus corpus, tabula<textus, textus> capita) -> Replicatio
-
-# =============================================================================
 # HTTP SERVER
 # =============================================================================
 
