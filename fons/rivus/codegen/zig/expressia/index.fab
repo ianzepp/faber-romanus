@@ -158,6 +158,8 @@ functio genExpressia(Expressia expr, ZigGenerator g) -> textus {
         casu LambdaExpressia ut e {
             redde genLambda(e.parametra qua lista<LambdaParametrum>, e.corpus, g)
         }
+
+        casu _ { }
     }
 
     # Fallback

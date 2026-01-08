@@ -142,6 +142,7 @@ functio parseTypusAnnotatio(Resolvitor r) -> TypusAnnotatio {
                 casu Typus ut t {
                     unioParametra.adde(t.adnotatio)
                 }
+                casu _ { }
             }
         }
         redde {

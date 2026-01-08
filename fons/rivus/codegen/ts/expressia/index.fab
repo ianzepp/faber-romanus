@@ -71,6 +71,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                         fixum op = (r.inclusivum qua bivalens) sic "<=" secus "<"
                         redde scriptum("(§ >= § && § § §)", sinister, initium, sinister, op, finis)
                     }
+                    casu _ { }
                 }
                 redde scriptum("(§ intra §)", sinister, dexter)
             }
@@ -120,6 +121,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                     casu EstExpressia ut est {
                         redde genEstExpressiaNegata(est.expressia, est.scopus qua TypusAnnotatio, g)
                     }
+                    casu _ { }
                 }
             }
 
@@ -153,6 +155,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                         }
                     }
                 }
+                casu _ { }
             }
 
             # WHY: Avoid extra parens on RHS for assignments.
@@ -190,6 +193,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                     g.exiProfundum()
                     redde scriptum("(() => {\n§\n§})()", body, g.ind())
                 }
+                casu _ { }
             }
             # Fallback: expression form.
             redde scriptum("(§)", genExpressia(e.corpus qua Expressia, g))
@@ -219,9 +223,11 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                                         }
                                     }
                                 }
+                                casu _ { }
                             }
                         }
                     }
+                    casu _ { }
                 }
             }
 
@@ -237,6 +243,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                     casu AmbitusExpressia ut a {
                         redde genSectioAccess(obj, a, e.optivum qua bivalens, e.nonNullum qua bivalens, g)
                     }
+                    casu _ { }
                 }
 
                 fixum idx = genNudaExpressia(e.proprietas, g)
@@ -381,6 +388,7 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                     }
                     redde scriptum("(§)§ => {\n§\n§}", params.coniunge(", "), retType, body, g.ind())
                 }
+                casu _ { }
             }
             redde scriptum("(§)§ => §", params.coniunge(", "), retType, genExpressia(e.corpus qua Expressia, g))
         }
@@ -506,6 +514,8 @@ functio genPraefixumSententia(Sententia stmt, TsGenerator g) -> textus {
         casu ExpressiaSententia ut s {
             redde scriptum("§§;", g.ind(), genExpressia(s.expressia, g))
         }
+
+        casu _ { }
     }
 
     redde scriptum("§/* praefixum: unsupported statement */", g.ind())
@@ -546,6 +556,7 @@ functio invenitTabulaNomen(Expressia obiectum, TsGenerator g) -> textus? {
                 }
             }
         }
+        casu _ { }
     }
     redde nihil
 }
@@ -575,6 +586,7 @@ functio estNegativusIndex(Expressia expr) -> bivalens {
         casu UnariaExpressia ut u {
             redde (u.signum qua textus) == "-"
         }
+        casu _ { }
     }
     redde falsum
 }
@@ -615,6 +627,7 @@ functio genSectioAccess(textus obj, Expressia range, bivalens optivum, bivalens 
 
             redde scriptum("§.slice(§, §)", receiver, initium, finis)
         }
+        casu _ { }
     }
 
     redde scriptum("§[§]", obj, genExpressia(range, g))
@@ -635,9 +648,11 @@ functio legeNumerusLiteralis(Expressia expr) -> numerus? {
                             redde -legeNumerusTextus(l.crudus)
                         }
                     }
+                    casu _ { }
                 }
             }
         }
+        casu _ { }
     }
     redde nihil
 }
@@ -681,6 +696,7 @@ functio genNudaExpressia(Expressia expr, TsGenerator g) -> textus {
             }
             redde scriptum("§ § §", sin, signum, dex)
         }
+        casu _ { }
     }
 
     redde genExpressia(expr, g)

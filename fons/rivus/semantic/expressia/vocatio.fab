@@ -58,9 +58,11 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
                                     }
                                 }
                             }
+                            casu _ { }
                         }
                     }
                 }
+                casu _ { }
             }
 
             # If callee is a function type, return its return type
@@ -68,11 +70,13 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
                 casu Functio ut f {
                     redde f.reditusTypus
                 }
+                casu _ { }
             }
 
             # Otherwise unknown
             redde IGNOTUM
         }
+        casu _ { }
     }
 
     redde IGNOTUM
@@ -92,6 +96,7 @@ functio nomenReceptor(SemanticTypus t) -> textus? {
         casu Usitatum ut u {
             redde u.nomen
         }
+        casu _ { }
     }
     redde nihil
 }
@@ -143,6 +148,7 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
                                     redde BIVALENS
                                 }
                             }
+                            casu _ { }
                         }
 
                         # Indexed access: lista[i] -> element type
@@ -160,6 +166,7 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
                                     redde NUMERUS
                                 }
                             }
+                            casu _ { }
                         }
                         # Indexed access: textus[i] -> textus (single char)
                         si m.computatum {
@@ -179,12 +186,15 @@ functio resolveMembrum(Resolvitor r, Expressia membrumExpr) -> SemanticTypus {
                                 redde ge.methodi[n.valor]
                             }
                         }
+                        casu _ { }
                     }
                 }
+                casu _ { }
             }
 
             redde IGNOTUM
         }
+        casu _ { }
     }
 
     redde IGNOTUM

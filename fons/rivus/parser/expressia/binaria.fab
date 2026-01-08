@@ -43,6 +43,7 @@ functio estAssignabile(Expressia expr) -> bivalens {
         casu MembrumExpressia ut m {
             redde verum
         }
+        casu _ { }
     }
 
     redde falsum

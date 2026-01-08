@@ -113,6 +113,7 @@ functio analyzeVariaDeclaratio(Resolvitor r, Sententia variaStmt) -> vacuum {
                 locus: v.locus
             } qua Symbolum)
         }
+        casu _ { }
     }
 }
 
@@ -197,6 +198,7 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
                 a.currentFunctioGenerator = prevGenerator
             }
         }
+        casu _ { }
     }
 }
 
@@ -254,6 +256,7 @@ functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
                         # All methods are treated as instance methods for now.
                         methodi[m.nomen] = fnTypus
                     }
+                    casu _ { }
                 }
             }
 
@@ -269,6 +272,7 @@ functio analyzeGenusDeclaratio(Resolvitor r, Sententia genusStmt) -> vacuum {
                 locus: g.locus
             }
         }
+        casu _ { }
     }
 }
 
@@ -316,6 +320,7 @@ functio analyzePactumDeclaratio(Resolvitor r, Sententia pactumStmt) -> vacuum {
                 locus: p.locus
             }
         }
+        casu _ { }
     }
 }
 
@@ -344,6 +349,7 @@ functio analyzeOrdoDeclaratio(Resolvitor r, Sententia ordoStmt) -> vacuum {
                 locus: o.locus
             }
         }
+        casu _ { }
     }
 }
 
@@ -396,6 +402,7 @@ functio analyzeDiscretioDeclaratio(Resolvitor r, Sententia discretioStmt) -> vac
                 }
             }
         }
+        casu _ { }
     }
 }
 
@@ -418,5 +425,6 @@ functio analyzeTypusAlias(Resolvitor r, Sententia typusStmt) -> vacuum {
                 locus: t.locus
             }
         }
+        casu _ { }
     }
 }

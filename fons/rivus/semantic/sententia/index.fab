@@ -143,5 +143,7 @@ functio analyzeSententia(Resolvitor r, Sententia stmt) -> vacuum {
         casu ImportaSententia {
             # Imports are processed in predeclaration phase
         }
+
+        casu _ { }
     }
 }

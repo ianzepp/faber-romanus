@@ -98,6 +98,8 @@ functio genSententia(Sententia stmt, ZigGenerator g) -> textus {
         casu OrdoDeclaratio ut s {
             redde genOrdo(s.nomen qua textus, s.membra qua lista<OrdoMembrum>, g)
         }
+
+        casu _ { }
     }
 
     redde scriptum("§// TODO: unknown statement", g.ind())
@@ -135,6 +137,7 @@ functio genExpressiaSententia(Expressia expr, ZigGenerator g) -> textus {
         casu AssignatioExpressia {
             redde scriptum("§§;", g.ind(), e)
         }
+        casu _ { }
     }
 
     redde scriptum("§_ = §;", g.ind(), e)
