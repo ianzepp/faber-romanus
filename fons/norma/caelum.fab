@@ -184,30 +184,3 @@ functio siste(Servitor s) -> vacuum
 @ verte zig (status, capita, corpus) -> "caelum.replicatio(§, §, §)"
 @ externa
 functio replicatio(numerus status, tabula<textus, textus> capita, textus corpus) -> Replicatio
-
-# Create simple text response (200 OK)
-@ verte ts (corpus) -> "caelum.replica(§)"
-@ verte py (corpus) -> "caelum.replica(§)"
-@ verte rs (corpus) -> "caelum::replica(§)"
-@ verte cpp (corpus) -> "caelum::replica(§)"
-@ verte zig (corpus) -> "caelum.replica(§)"
-@ externa
-functio replica(textus corpus) -> Replicatio
-
-# Create JSON response (200 OK, Content-Type: application/json)
-@ verte ts (corpus) -> "caelum.replicaJSON(§)"
-@ verte py (corpus) -> "caelum.replica_json(§)"
-@ verte rs (corpus) -> "caelum::replica_json(§)"
-@ verte cpp (corpus) -> "caelum::replica_json(§)"
-@ verte zig (corpus) -> "caelum.replicaJSON(§)"
-@ externa
-functio replicaJSON(textus corpus) -> Replicatio
-
-# Create error response
-@ verte ts (status, corpus) -> "caelum.replicaErrorem(§, §)"
-@ verte py (status, corpus) -> "caelum.replica_errorem(§, §)"
-@ verte rs (status, corpus) -> "caelum::replica_errorem(§, §)"
-@ verte cpp (status, corpus) -> "caelum::replica_errorem(§, §)"
-@ verte zig (status, corpus) -> "caelum.replicaErrorem(§, §)"
-@ externa
-functio replicaErrorem(numerus status, textus corpus) -> Replicatio
