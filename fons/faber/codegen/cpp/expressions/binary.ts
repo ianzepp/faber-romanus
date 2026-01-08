@@ -15,7 +15,7 @@
  *      For std::optional, would use .value_or() instead.
  */
 
-import type { BinaryExpression, RangeExpression } from '../../../parser/ast';
+import type { BinaryExpression, RangeExpression, Expression } from '../../../parser/ast';
 import type { CppGenerator } from '../generator';
 
 /**

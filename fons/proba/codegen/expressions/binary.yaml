@@ -221,7 +221,7 @@
       rs:
           - '(("hello" + " ") + "world");'
       cpp:
-          - '(("hello" + " ") + "world")'
+          - '((std::string("hello") + " ") + "world")'
       fab:
           - '"hello" + " " + "world"'
 
