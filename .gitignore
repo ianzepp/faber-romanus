@@ -40,3 +40,6 @@ tmp/
 __pycache__/
 .zig-cache/
 .zed/settings.json
+
+# Auto-generated files
+**/norma-registry.gen.*
