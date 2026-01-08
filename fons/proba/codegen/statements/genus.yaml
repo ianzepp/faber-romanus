@@ -95,7 +95,7 @@
       rs:
           - 'struct Config'
       cpp:
-          - 'std::string nomen = std::string("default")'
+          - 'std::string nomen = "default"'
           - 'int64_t port = 8080'
       zig:
           - 'nomen: []const u8 = "default"'

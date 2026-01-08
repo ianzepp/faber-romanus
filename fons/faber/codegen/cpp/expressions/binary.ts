@@ -3,6 +3,7 @@
  *
  * TRANSFORMS:
  *   a + b           -> (a + b)
+ *   "a" + "b"       -> (std::string("a") + "b")  // string concat needs std::string
  *   a === b         -> (a == b)
  *   a !== b         -> (a != b)
  *   a && b          -> (a && b)
@@ -15,8 +16,15 @@
  *      For std::optional, would use .value_or() instead.
  */
 
-import type { BinaryExpression, RangeExpression } from '../../../parser/ast';
+import type { BinaryExpression, RangeExpression, Expression } from '../../../parser/ast';
 import type { CppGenerator } from '../generator';
+
+/**
+ * Check if an expression is a string literal.
+ */
+function isStringLiteral(expr: Expression): boolean {
+    return expr.type === 'Literal' && typeof expr.value === 'string';
+}
 
 /**
  * Map operators to C++ equivalents.
@@ -67,6 +75,12 @@ export function genBinaryExpression(node: BinaryExpression, g: CppGenerator): st
     }
 
     const op = mapOperator(node.operator);
+
+    // WHY: C++ cannot concatenate const char* with +. Need at least one std::string operand.
+    // Wrap left operand in std::string() for string concatenation.
+    if (op === '+' && isStringLiteral(node.left)) {
+        return `(std::string(${left}) ${op} ${right})`;
+    }
 
     return `(${left} ${op} ${right})`;
 }

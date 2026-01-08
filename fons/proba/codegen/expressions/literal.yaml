@@ -9,9 +9,9 @@
       ts: 'const s = "hello";'
       py: 's = "hello"'
       rs:
-          - 'let s = String::from("hello");'
+          - 'let s = "hello";'
       cpp:
-          - 'const auto s = std::string("hello");'
+          - 'const auto s = "hello";'
       zig:
           - 'const s = "hello";'
       fab:
@@ -182,9 +182,9 @@
       ts: 'const escaped = "line1\nline2\ttabbed";'
       py: 'escaped = "line1\nline2\ttabbed"'
       rs:
-          - 'let escaped = String::from("line1\nline2\ttabbed");'
+          - 'let escaped = "line1\nline2\ttabbed";'
       cpp:
-          - 'const auto escaped = std::string("line1\nline2\ttabbed");'
+          - 'const auto escaped = "line1\nline2\ttabbed";'
       zig:
           - 'const escaped = "line1\nline2\ttabbed";'
       fab:
@@ -196,9 +196,9 @@
       ts: 'const empty = "";'
       py: 'empty = ""'
       rs:
-          - 'let empty = String::from("");'
+          - 'let empty = "";'
       cpp:
-          - 'const auto empty = std::string("");'
+          - 'const auto empty = "";'
       zig:
           - 'const empty = "";'
       fab:
@@ -261,9 +261,9 @@
       ts: 'const unicode = "\u0048ello";'
       py: 'unicode = "\u0048ello"'
       rs:
-          - 'let unicode = String::from("\u0048ello");'
+          - 'let unicode = "\u0048ello";'
       cpp:
-          - 'const auto unicode = std::string("\u0048ello");'
+          - 'const auto unicode = "\u0048ello";'
       zig:
           - 'const unicode = "\u0048ello";'
       fab:
@@ -275,9 +275,9 @@
       ts: 'const char = "x";'
       py: 'char = "x"'
       rs:
-          - 'let char = String::from("x");'
+          - 'let char = "x";'
       cpp:
-          - 'const auto char = std::string("x");'
+          - 'const auto char = "x";'
       zig:
           - 'const char = "x";'
       fab:

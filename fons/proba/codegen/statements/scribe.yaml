@@ -26,9 +26,9 @@
       py:
           - 'print("hello")'
       rs:
-          - 'println!("{}", String::from("hello"));'
+          - 'println!("{}", "hello");'
       cpp:
-          - 'std::print("{}\n", std::string("hello"));'
+          - 'std::print("{}\n", "hello");'
       zig:
           - 'print("{s}\n", .{ "hello" });'
       fab:
@@ -61,10 +61,10 @@
       py:
           - 'print("value:", x)'
       rs:
-          - 'println!("{} {}", String::from("value:"), x);'
+          - 'println!("{} {}", "value:", x);'
       cpp:
           - 'std::print("{} {}'
-          - 'n", std::string("value:"), x);'
+          - 'n", "value:", x);'
       zig:
           - 'print("{s} {any}\n", .{ "value:", x });'
       fab:
@@ -83,10 +83,10 @@
       py:
           - 'print("[DEBUG]", "debug info")'
       rs:
-          - 'dbg!(String::from("debug info"));'
+          - 'dbg!("debug info");'
       cpp:
           - 'std::print("[DEBUG] {}'
-          - 'n", std::string("debug info"));'
+          - 'n", "debug info");'
       zig:
           - 'std.debug.print("[DEBUG] {s}'
           - 'n", .{ "debug info" });'
@@ -106,10 +106,10 @@
       py:
           - 'print("[WARN]", "warning message")'
       rs:
-          - 'println!("{}", String::from("warning message"));'
+          - 'println!("{}", "warning message");'
       cpp:
           - 'std::print("[WARN] {}'
-          - 'n", std::string("warning message"));'
+          - 'n", "warning message");'
       zig:
           - 'eprint("[WARN] {s}\n", .{ "warning message" });'
       fab:

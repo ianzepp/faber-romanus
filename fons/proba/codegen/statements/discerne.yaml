@@ -40,7 +40,7 @@
       rs:
           - 'match status'
           - 'Active =>'
-          - 'println!("{}", String::from("active"))'
+          - 'println!("{}", "active")'
           - 'Inactive =>'
       cpp:
           - '// TODO: discerne on status'

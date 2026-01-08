@@ -35,9 +35,9 @@
       ts: 'const names = ["a", "b", "c"];'
       py: 'names = ["a", "b", "c"]'
       rs:
-          - 'let names = vec![String::from("a"), String::from("b"), String::from("c")];'
+          - 'let names = vec!["a", "b", "c"];'
       cpp:
-          - 'std::vector{std::string("a"), std::string("b"), std::string("c")}'
+          - 'std::vector{"a", "b", "c"}'
       zig:
           - '.{ "a", "b", "c" }'
       fab:

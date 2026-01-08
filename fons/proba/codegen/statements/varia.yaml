@@ -80,9 +80,9 @@
       py:
           - 'name: str = "Marcus"'
       rs:
-          - 'let name: String = String::from("Marcus");'
+          - 'let name: String = "Marcus";'
       cpp:
-          - 'const std::string name = std::string("Marcus");'
+          - 'const std::string name = "Marcus";'
       zig:
           - 'const name: []const u8 = "Marcus";'
       fab:

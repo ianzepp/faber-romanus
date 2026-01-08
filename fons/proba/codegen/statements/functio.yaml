@@ -54,10 +54,10 @@
           - 'return "hello"'
       rs:
           - 'fn greet() -> String'
-          - 'return String::from("hello");'
+          - 'return "hello";'
       cpp:
           - 'std::string greet()'
-          - 'return std::string("hello")'
+          - 'return "hello"'
       zig:
           - 'fn greet() []const u8'
           - 'return "hello";'
@@ -823,7 +823,7 @@
           # Rust doesn't support default params - value ignored
           - 'fn greet(name: &str)'
       cpp:
-          - 'void greet(const std::string& name = std::string("World"))'
+          - 'void greet(const std::string& name = "World")'
       zig:
           # Zig doesn't support default params - value ignored
           - 'fn greet(name: []const u8)'
@@ -864,7 +864,7 @@
       rs:
           - 'fn greet(loc: &str)'
       cpp:
-          - 'void greet(const std::string& loc = std::string("Roma"))'
+          - 'void greet(const std::string& loc = "Roma")'
       zig:
           - 'fn greet(loc: []const u8)'
       fab:
@@ -882,7 +882,7 @@
       rs:
           - 'fn greet(greeting: &str, name: &str)'
       cpp:
-          - 'void greet(const std::string& greeting, const std::string& name = std::string("World"))'
+          - 'void greet(const std::string& greeting, const std::string& name = "World")'
       zig:
           - 'fn greet(greeting: []const u8, name: []const u8)'
       fab:
@@ -926,7 +926,7 @@
           # Rust: si with vel becomes Option<T> (caller must pass Some/None)
           - 'fn greet(name: Option<&str>)'
       cpp:
-          - 'void greet(const std::string& name = std::string("World"))'
+          - 'void greet(const std::string& name = "World")'
       zig:
           # Zig: si wraps in optional regardless of default
           - 'fn greet(name: ?[]const u8)'

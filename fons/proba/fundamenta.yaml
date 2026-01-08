@@ -301,10 +301,10 @@
       - 'genus: str = "species"'
       - 'print(genus)'
   cpp:
-      - 'const std::string genus = std::string("species")'
+      - 'const std::string genus = "species"'
       - 'std::print("{}\n", genus)'
   rs:
-      - 'let genus: String = String::from("species")'
+      - 'let genus: String = "species"'
       - 'println!("{}", genus)'
   zig:
       - 'const genus: []const u8 = "species"'

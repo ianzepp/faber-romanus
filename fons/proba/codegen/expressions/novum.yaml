@@ -25,7 +25,7 @@
       rs:
           - 'let e = Error::new();'
       cpp:
-          - 'Error(std::string("message"))'
+          - 'Error("message")'
       zig:
           - 'Error.init("message")'
       fab:
@@ -37,7 +37,7 @@
       ts: 'const u = new User({ nomen: "Marcus", aetas: 30 });'
       py: 'u = User({"nomen": "Marcus", "aetas": 30})'
       rs:
-          - 'let u = User { nomen: String::from("Marcus"), aetas: 30 };'
+          - 'let u = User { nomen: "Marcus", aetas: 30 };'
       cpp:
           - 'User{.nomen = '
           - '.aetas = 30}'

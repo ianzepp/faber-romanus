@@ -24,9 +24,9 @@
       ts: 'const user = { nomen: "Marcus" };'
       py: 'user = {"nomen": "Marcus"}'
       rs:
-          - 'nomen: String::from("Marcus")'
+          - 'nomen: "Marcus"'
       cpp:
-          - '.nomen = std::string("Marcus")'
+          - '.nomen = "Marcus"'
       zig:
           - '.nomen = "Marcus"'
       fab:

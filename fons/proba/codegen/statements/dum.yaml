@@ -22,7 +22,7 @@
           - 'print("loop")'
       rs:
           - 'while true'
-          - 'println!("{}", String::from("loop"))'
+          - 'println!("{}", "loop")'
       cpp:
           - 'while (true)'
           - 'std::print'
