@@ -194,6 +194,54 @@ export function resolveModulePath(source: string, basePath: string): string | nu
 // =============================================================================
 
 /**
+ * Context for resolving types within a module.
+ * Contains all type definitions (genus, pactum, etc.) from the module.
+ */
+interface ModuleTypeContext {
+    types: Map<string, SemanticType>;
+}
+
+/**
+ * Resolve a type annotation, using in-module type definitions when available.
+ *
+ * WHY: When extracting exports, method return types may reference other types
+ * defined in the same module. Without this, we'd get userType placeholders
+ * that can't be resolved later for cross-module field access.
+ */
+function resolveTypeInModule(node: TypeAnnotation, ctx: ModuleTypeContext): SemanticType {
+    const name = node.name.toLowerCase();
+
+    // Check for primitives
+    if (name in LATIN_PRIMITIVES) {
+        return primitiveType(LATIN_PRIMITIVES[name]!, node.nullable);
+    }
+
+    // Check for generics (lista<T>, tabula<K,V>, etc.)
+    if (GENERIC_TYPES.has(name)) {
+        const params =
+            node.typeParameters?.map(tp => {
+                if (tp.type === 'TypeAnnotation') {
+                    return resolveTypeInModule(tp, ctx);
+                }
+                return UNKNOWN;
+            }) ?? [];
+        return genericType(name, params, node.nullable);
+    }
+
+    // Check for in-module type definitions
+    const moduleType = ctx.types.get(node.name);
+    if (moduleType) {
+        if (node.nullable && !moduleType.nullable) {
+            return { ...moduleType, nullable: true };
+        }
+        return moduleType;
+    }
+
+    // User-defined type (not in this module)
+    return userType(node.name, node.nullable);
+}
+
+/**
  * Extract exports from a parsed program.
  *
  * All top-level declarations become exports:
@@ -204,12 +252,48 @@ export function resolveModulePath(source: string, basePath: string): string | nu
  * - discretio declarations
  * - typus aliases
  * - fixum/varia declarations (module constants/variables)
+ *
+ * WHY: Two-pass extraction allows method return types to reference other
+ * types defined in the same module, enabling proper cross-module type resolution.
+ *
+ * @param importedTypes - Types imported from other modules (for pactum method resolution)
  */
-export function extractExports(program: Program, filePath: string): ModuleExports {
+export function extractExports(program: Program, filePath: string, importedTypes: Map<string, SemanticType> = new Map()): ModuleExports {
     const exports = new Map<string, ModuleExport>();
 
+    // Pass 1: Extract genus/ordo/discretio types first
+    // These provide the type context for pactum method signatures
+    // Start with imported types so we can reference them
+    const typeCtx: ModuleTypeContext = { types: new Map(importedTypes) };
     for (const stmt of program.body) {
-        const extracted = extractStatementExport(stmt);
+        if (stmt.type === 'GenusDeclaration') {
+            // First pass: extract genus with simple resolution (field types as user types)
+            const simpleCtx: ModuleTypeContext = { types: new Map() };
+            const genusExport = extractGenusExport(stmt, simpleCtx);
+            typeCtx.types.set(stmt.name.name, genusExport.type);
+        } else if (stmt.type === 'OrdoDeclaration') {
+            typeCtx.types.set(stmt.name.name, enumType(stmt.name.name, new Map()));
+        } else if (stmt.type === 'DiscretioDeclaration') {
+            // WHY: Extract discretio with full variant info from the start.
+            // This ensures that genus fields referencing this discretio type
+            // get the proper variant information for pattern matching.
+            const discretioExport = extractDiscretioExport(stmt);
+            typeCtx.types.set(stmt.name.name, discretioExport.type);
+        }
+    }
+
+    // Pass 2: Re-extract genus types with full context for nested type resolution
+    // This allows genus fields to reference other genus types defined in the same module
+    for (const stmt of program.body) {
+        if (stmt.type === 'GenusDeclaration') {
+            const genusExport = extractGenusExport(stmt, typeCtx);
+            typeCtx.types.set(stmt.name.name, genusExport.type);
+        }
+    }
+
+    // Pass 3: Extract full exports using the complete type context
+    for (const stmt of program.body) {
+        const extracted = extractStatementExport(stmt, typeCtx);
         if (extracted) {
             exports.set(extracted.name, extracted);
         }
@@ -221,14 +305,14 @@ export function extractExports(program: Program, filePath: string): ModuleExport
 /**
  * Extract export from a single statement, if it's exportable.
  */
-function extractStatementExport(stmt: Statement): ModuleExport | null {
+function extractStatementExport(stmt: Statement, ctx: ModuleTypeContext): ModuleExport | null {
     switch (stmt.type) {
         case 'FunctioDeclaration':
-            return extractFunctioExport(stmt);
+            return extractFunctioExport(stmt, ctx);
         case 'GenusDeclaration':
-            return extractGenusExport(stmt);
+            return extractGenusExport(stmt, ctx);
         case 'PactumDeclaration':
-            return extractPactumExport(stmt);
+            return extractPactumExport(stmt, ctx);
         case 'OrdoDeclaration':
             return extractOrdoExport(stmt);
         case 'DiscretioDeclaration':
@@ -245,13 +329,13 @@ function extractStatementExport(stmt: Statement): ModuleExport | null {
 /**
  * Extract export from function declaration.
  */
-function extractFunctioExport(stmt: FunctioDeclaration): ModuleExport {
+function extractFunctioExport(stmt: FunctioDeclaration, ctx: ModuleTypeContext): ModuleExport {
     // WHY: Build function type from parameters and return type.
     // Parameter types use UNKNOWN since full resolution isn't needed for most cases.
     // Return types ARE resolved so that callers can access fields on the result.
     const paramTypes: SemanticType[] = stmt.params.map(() => UNKNOWN);
 
-    const returnType = stmt.returnType ? resolveTypeSimple(stmt.returnType) : VACUUM;
+    const returnType = stmt.returnType ? resolveTypeInModule(stmt.returnType, ctx) : VACUUM;
     const isAsync = stmt.returnVerb === 'fiet' || stmt.returnVerb === 'fient';
 
     return {
@@ -264,7 +348,7 @@ function extractFunctioExport(stmt: FunctioDeclaration): ModuleExport {
 /**
  * Extract export from genus (class) declaration.
  */
-function extractGenusExport(stmt: GenusDeclaration): ModuleExport {
+function extractGenusExport(stmt: GenusDeclaration, ctx: ModuleTypeContext): ModuleExport {
     // WHY: Extract field types for cross-module field access resolution.
     // Without this, chained member expressions like `result.errors.longitudo()`
     // fail because the semantic analyzer can't resolve the field type.
@@ -272,7 +356,7 @@ function extractGenusExport(stmt: GenusDeclaration): ModuleExport {
 
     for (const field of stmt.fields) {
         if (!field.isStatic) {
-            fields.set(field.name.name, resolveTypeSimple(field.fieldType));
+            fields.set(field.name.name, resolveTypeInModule(field.fieldType, ctx));
         }
     }
 
@@ -287,18 +371,18 @@ function extractGenusExport(stmt: GenusDeclaration): ModuleExport {
  * Extract export from pactum (interface) declaration.
  *
  * WHY: Extract method signatures for cross-module method call resolution.
- * Without this, accessing methods through imported pactum types fails because
- * the semantic analyzer can't resolve the method return types.
+ * Without this, calling methods on pactum instances from other modules
+ * fails because the return type can't be resolved.
  */
-function extractPactumExport(stmt: PactumDeclaration): ModuleExport {
-    const methods = new Map<string, FunctionType>();
+function extractPactumExport(stmt: PactumDeclaration, ctx: ModuleTypeContext): ModuleExport {
+    const methods = new Map<string, SemanticType>();
 
     for (const method of stmt.methods) {
-        // Parameter types use UNKNOWN since full resolution isn't needed for most cases
-        const paramTypes: SemanticType[] = method.params.map(() => UNKNOWN);
-        const returnType = method.returnType ? resolveTypeSimple(method.returnType) : VACUUM;
-        const fnType = functionType(paramTypes, returnType, method.async);
-        methods.set(method.name.name, fnType);
+        const paramTypes = method.params.map(p =>
+            p.typeAnnotation ? resolveTypeInModule(p.typeAnnotation, ctx) : UNKNOWN
+        );
+        const returnType = method.returnType ? resolveTypeInModule(method.returnType, ctx) : VACUUM;
+        methods.set(method.name.name, functionType(paramTypes, returnType, method.async));
     }
 
     return {
@@ -447,14 +531,9 @@ export function resolveModule(source: string, ctx: ModuleContext): ModuleResult 
             };
         }
 
-        // Extract exports
-        const moduleExports = extractExports(program, absolutePath);
-
-        // Cache the result before recursing to prevent re-parsing on diamond dependencies
-        ctx.cache.set(absolutePath, moduleExports);
-
-        // WHY: Recursively resolve imports from this module to detect cycles
-        // We need a new context with the imported file as the base path
+        // WHY: First resolve all imports to build full type context.
+        // This allows pactum methods to reference types imported from other modules.
+        const importedTypes = new Map<string, SemanticType>();
         for (const stmt of program.body) {
             if (stmt.type === 'ImportaDeclaration' && isLocalImport(stmt.source)) {
                 const childCtx: ModuleContext = {
@@ -467,8 +546,21 @@ export function resolveModule(source: string, ctx: ModuleContext): ModuleResult 
                     // Propagate the error (especially cycles)
                     return childResult;
                 }
+                // Add imported exports to type context
+                for (const spec of stmt.specifiers) {
+                    const exportInfo = childResult.module.exports.get(spec.imported.name);
+                    if (exportInfo && (exportInfo.kind === 'genus' || exportInfo.kind === 'pactum' || exportInfo.kind === 'ordo' || exportInfo.kind === 'discretio')) {
+                        importedTypes.set(spec.local.name, exportInfo.type);
+                    }
+                }
             }
         }
+
+        // Extract exports with imported types as context
+        const moduleExports = extractExports(program, absolutePath, importedTypes);
+
+        // Cache the result
+        ctx.cache.set(absolutePath, moduleExports);
 
         return { ok: true, module: moduleExports };
     } finally {
