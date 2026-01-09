@@ -1428,6 +1428,25 @@ export function analyze(program: Program, options: AnalyzeOptions = {}): Semanti
             }
         }
 
+        // WHY: Handle computed access (indexing) on generic collection types.
+        // tabula[key] should resolve to the value type V in tabula<K, V>
+        // lista[index] should resolve to the element type T in lista<T>
+        if (node.computed && objectType.kind === 'generic') {
+            resolveExpression(node.property);
+            if (objectType.name === 'tabula' && objectType.typeParameters.length >= 2) {
+                // tabula<K, V>[key] -> V
+                const valueType = objectType.typeParameters[1];
+                node.resolvedType = valueType;
+                return valueType;
+            }
+            if (objectType.name === 'lista' && objectType.typeParameters.length >= 1) {
+                // lista<T>[index] -> T
+                const elementType = objectType.typeParameters[0];
+                node.resolvedType = elementType;
+                return elementType;
+            }
+        }
+
         // Unknown property - return unknown for permissive behavior
         node.resolvedType = UNKNOWN;
         return UNKNOWN;
