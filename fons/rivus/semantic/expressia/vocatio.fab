@@ -30,13 +30,20 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
                     si non (m.computatum qua bivalens) {
                         discerne m.proprietas {
                             casu Nomen ut n {
-                                fixum parsed = parseMethodum(n.valor)
-                                si nonnihil parsed {
-                                    fixum obiectumTypus = r.expressia(m.obiectum)
-                                    fixum recipiens = nomenReceptor(obiectumTypus)
-                                    si nonnihil recipiens {
-                                        fixum receiver = recipiens qua textus
-                                        si r.analyzator().habetMorphologiam(receiver) {
+                                fixum obiectumTypus = r.expressia(m.obiectum)
+                                fixum recipiens = nomenReceptor(obiectumTypus)
+
+                                # WHY: Set morphologia for method calls on known stdlib collection types.
+                                # This enables norma-registry translation in codegen even for methods
+                                # that don't have Latin morphology (like habet, accipe, pone).
+                                si nonnihil recipiens {
+                                    fixum receiver = recipiens qua textus
+
+                                    # Check if this is a known stdlib collection for norma translation
+                                    si receiver inter ["lista", "tabula", "copia", "textus", "numerus", "fractus"] {
+                                        fixum parsed = parseMethodum(n.valor)
+
+                                        si nonnihil parsed et r.analyzator().habetMorphologiam(receiver) {
                                             fixum formae = r.analyzator().formaeMorphologiae(receiver, parsed.radix)
 
                                             # EDGE: Avoid lexical hijacking. Only treat a call as morphologia if
@@ -54,6 +61,18 @@ functio resolveVocatio(Resolvitor r, Expressia vocatioExpr) -> SemanticTypus {
                                                     } qua MorphologiaInvocatio
                                                 }
                                             }
+                                        }
+
+                                        # Fallback: set morphologia with method name as-is for norma translation
+                                        # WHY: Methods like 'habet', 'accipe' don't parse as morphology but
+                                        # still need norma translation. The codegen uses recipiens to look up
+                                        # the translation.
+                                        si nihil v.morphologia {
+                                            v.morphologia = {
+                                                recipiens: receiver,
+                                                radix: n.valor,
+                                                forma: "directum"
+                                            } qua MorphologiaInvocatio
                                         }
                                     }
                                 }
