@@ -25,6 +25,8 @@ rivus compile <file.fab> -o out.ts    # Specify output file
 
 > Status % = passing tests / TypeScript baseline (741). Run `bun test proba/runner.test.ts -t "@rivus @<target>"` to verify. 35 tests skipped (intrinsic I/O functions, deferred).
 
+> **Known Issue:** Norma method translations (e.g., `adde` → `push`, `habet` → `has`) are defined but not applied during codegen. Collection methods marked ◐ have stem definitions in `codegen/radices.fab` but require translation wiring to work at runtime. See issue #32.
+
 Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, ◌ convention
 
 ## Type System
@@ -45,7 +47,7 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 | `lista<T>` (array)        |    ●     | ● |  ○   | ○  |  ○  |
 | `tabula<K,V>` (map)       |    ●     | ● |  ○   | ○  |  ○  |
 | `copia<T>` (set)          |    ●     | ● |  ○   | ○  |  ○  |
-| `series<T...>` (tuple)    |    ●     | ○ |  ○   | ○  |  ○  |
+| `series<T...>` (tuple)    |    ○     | ○ |  ○   | ○  |  ○  |
 | `promissum<T>` (promise)  |    ●     | ◐ |  ○   | ○  |  ○  |
 | `erratum` (error)         |    ●     | ○ |  ○   | ○  |  ○  |
 | `cursor<T>` (iterator)    |    ●     | ○ |  ○   | ○  |  ○  |
@@ -187,7 +189,7 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 | Hex literals (`0xFF`)               |    ●     | ● |  ○   | ○  |  ○  |
 | Binary literals (`0b1010`)          |    ●     | ● |  ○   | ○  |  ○  |
 | Octal literals (`0o755`)            |    ●     | ● |  ○   | ○  |  ○  |
-| BigInt literals (`123n`)            |    ●     | ○ |  ○   | ○  |  ○  |
+| BigInt literals (`123n`)            |    ○     | ○ |  ○   | ○  |  ○  |
 | Template literals                   |    ●     | ○ |  ○   | ○  |  ○  |
 | `scriptum()` format strings         |    ●     | ● |  ○   | ○  |  ○  |
 | Regex literals (`sed`)              |    ●     | — |  ○   | ○  |  ○  |
@@ -366,31 +368,31 @@ Status: ● implemented, ◐ partial, ○ not implemented, — not applicable, �
 
 | Latin                        | TypeScript | Zig | Python | Rust | C++23 |
 | ---------------------------- | :--------: | :-: | :----: | :--: | :---: |
-| `adde` (push)                |    ○     | ○ |  ○   | ○  |  ○  |
+| `adde` (push)                |    ◐     | ○ |  ○   | ○  |  ○  |
 | `addita` (push copy)         |    ○     | — |  ○   | ○  |  ○  |
-| `praepone` (unshift)         |    ○     | ○ |  ○   | ○  |  ○  |
+| `praepone` (unshift)         |    ◐     | ○ |  ○   | ○  |  ○  |
 | `praeposita` (unshift copy)  |    ○     | — |  ○   | ○  |  ○  |
-| `remove` (pop)               |    ○     | ○ |  ○   | ○  |  ○  |
+| `remove` (pop)               |    ◐     | ○ |  ○   | ○  |  ○  |
 | `remota` (pop copy)          |    ○     | — |  ○   | ○  |  ○  |
-| `decapita` (shift)           |    ○     | ○ |  ○   | ○  |  ○  |
+| `decapita` (shift)           |    ◐     | ○ |  ○   | ○  |  ○  |
 | `decapitata` (shift copy)    |    ○     | — |  ○   | ○  |  ○  |
 | `purga` (clear)              |    ○     | ○ |  ○   | ○  |  ○  |
 | `primus` (first)             |    ○     | ○ |  ○   | ○  |  ○  |
 | `ultimus` (last)             |    ○     | ○ |  ○   | ○  |  ○  |
 | `accipe` (at index)          |    ○     | ○ |  ○   | ○  |  ○  |
-| `longitudo` (length)         |    ○     | ○ |  ○   | ○  |  ○  |
-| `vacua` (is empty)           |    ○     | ○ |  ○   | ○  |  ○  |
+| `longitudo` (length)         |    ◐     | ○ |  ○   | ○  |  ○  |
+| `vacua` (is empty)           |    ◐     | ○ |  ○   | ○  |  ○  |
 | `continet` (includes)        |    ○     | ○ |  ○   | ○  |  ○  |
 | `indiceDe` (indexOf)         |    ○     | ○ |  ○   | ○  |  ○  |
 | `inveni` (find)              |    ○     | ○ |  ○   | ○  |  ○  |
 | `inveniIndicem` (findIndex)  |    ○     | ○ |  ○   | ○  |  ○  |
-| `filtrata` (filter)          |    ○     | ○ |  ○   | ○  |  ○  |
-| `mappata` (map)              |    ○     | ○ |  ○   | ○  |  ○  |
+| `filtrata` (filter)          |    ◐     | ○ |  ○   | ○  |  ○  |
+| `mappata` (map)              |    ◐     | ○ |  ○   | ○  |  ○  |
 | `reducta` (reduce)           |    ○     | ○ |  ○   | ○  |  ○  |
 | `explanata` (flatMap)        |    ○     | — |  ○   | ○  |  ○  |
 | `plana` (flat)               |    ○     | — |  ○   | ○  |  ○  |
 | `inversa` (reverse copy)     |    ○     | ○ |  ○   | ○  |  ○  |
-| `ordinata` (sort copy)       |    ○     | ○ |  ○   | ○  |  ○  |
+| `ordinata` (sort copy)       |    ◐     | ○ |  ○   | ○  |  ○  |
 | `sectio` (slice)             |    ○     | ○ |  ○   | ○  |  ○  |
 | `prima` (take first n)       |    ○     | ○ |  ○   | ○  |  ○  |
 | `ultima` (take last n)       |    ○     | ○ |  ○   | ○  |  ○  |
