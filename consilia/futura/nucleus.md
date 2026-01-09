@@ -13,107 +13,301 @@ A minimal kernel layer providing unified I/O dispatch, message-passing protocol,
 | AsyncContext            | Not started | Executor for state machines        |
 | Target runtimes         | TS only     | Zig is next priority               |
 
-## Motivation
+---
 
-Faber targets multiple backends (TS, Python, Zig, Rust, C++). Each has different async primitives:
+## Core Insight: Async Generators as the Primitive
 
-| Target     | Native Async       | Native Generators |
-| ---------- | ------------------ | ----------------- |
-| TypeScript | `async`/`await`    | `function*`       |
-| Python     | `async`/`await`    | `yield`           |
-| Zig        | Removed in 0.11    | None              |
-| Rust       | `async`/`.await`   | Unstable          |
-| C++        | Coroutines (C++20) | None              |
+**The fundamental design principle**: Async generators are the primitive. Everything else—promises, blocking calls, collected results—derives from streaming.
 
-Rather than emit target-native async everywhere (impossible for Zig), Faber provides a **unified runtime protocol** that compiles to:
+This inverts the typical mental model where sync is default and async is added. In Nucleus:
 
-- Native async where available (TS, Python)
-- State machines where not (Zig, Rust, C++)
+```
+Async Generator (primitive)
+       │
+       ├── fient/fiunt → raw stream, yields .item repeatedly, ends with .done
+       │
+       ├── fiet        → collect stream into single value, return .ok
+       │
+       └── fit         → block until .ok, unwrap and return raw value
+```
 
-The `ad` dispatch system routes all I/O through this protocol.
+### Why Streaming First?
+
+1. **I/O is naturally streaming** — Files read in chunks, networks deliver packets, databases return rows
+2. **Memory efficiency** — Process items as they arrive, don't buffer everything
+3. **Unified model** — Single primitive handles all async patterns
+4. **Backpressure built-in** — Consumer controls pace via poll frequency
+
+### The Derivation Chain
+
+Every I/O operation follows this pattern:
+
+```
+stream()           # primitive: yields items over time
+    ↓ collect
+future()           # derived: collect all items → single value (Promise)
+    ↓ block_on
+sync()             # derived: await future → unwrapped value (blocking)
+```
+
+---
+
+## Latin Verb Conjugation Model
+
+The Latin verb conjugation **encodes async semantics**. This isn't arbitrary naming—it maps grammatical meaning to execution model:
+
+| Conjugation | Latin Form | Meaning | Async Semantics | Responsum Pattern |
+|-------------|------------|---------|-----------------|-------------------|
+| `legens` | participium praesens | "reading" (ongoing) | streaming generator | `.item*` → `.done` |
+| `leget` | futurum indicativum | "will read" (future) | async/promise | `.pending*` → `.ok` |
+| `lege` | imperativus | "read!" (command) | sync/blocking | `block_on(leget)` |
+
+### Grammar-to-Execution Mapping
+
+| Verb Form | Grammar | Execution | Return Type |
+|-----------|---------|-----------|-------------|
+| Present participle (`-ens`, `-ans`) | Ongoing action | Async generator | `cursor<T>` / `OpStream<T>` |
+| Future indicative (`-et`, `-it`) | Will complete | Promise/Future | `futura<T>` / `Future<T>` |
+| Imperative (`-e`, `-a`) | Do it now | Blocking call | `T` directly |
+
+### Concrete Example: File Reading
+
+From `fons/norma/solum.fab`:
+
+```fab
+# Stream file chunks (base implementation - the primitive)
+@ radix leg, participium_praesens
+functio legens(textus path) -> cursor<octeti>
+
+# Async batch read (derived: collect stream)
+@ radix leg, futurum_indicativum
+@ futura
+functio leget(textus path) -> textus
+
+# Sync batch read (derived: block + collect)
+@ radix leg, imperativus
+functio lege(textus path) -> textus
+```
+
+The derivation is explicit:
+- `legens()` → primitive, yields chunks
+- `leget()` = collect(`legens()`) → single value, async
+- `lege()` = block_on(`leget()`) → single value, sync
+
+---
+
+## Stdlib Examples
+
+### File I/O (`solum.fab`)
+
+```fab
+# READING
+functio legens(textus path) -> cursor<octeti>      # stream chunks
+functio leget(textus path) -> textus               # async, collected
+functio lege(textus path) -> textus                # sync, blocking
+
+# WRITING
+functio scribens(textus path) -> cursor<octeti>    # stream writes
+functio scribet(textus path, textus data) -> vacuum  # async batch
+functio inscribe(textus path, textus data) -> vacuum # sync batch
+
+# STDIN
+functio ausculta() -> cursor<textus>               # stream stdin lines
+functio hauri() -> textus                          # read all stdin
+
+# DIRECTORY
+functio ambula(textus path) -> cursor<textus>      # walk tree (always streaming)
+functio elenca(textus path) -> lista<textus>       # list directory
+```
+
+### Network I/O (`caelum.fab`)
+
+```fab
+# HTTP CLIENT
+functio pete(textus url) -> Replicatio             # GET (async)
+functio mitte(textus url, textus corpus) -> Replicatio  # POST
+functio pone(textus url, textus corpus) -> Replicatio   # PUT
+functio dele(textus url) -> Replicatio             # DELETE
+functio roga(textus modus, textus url, tabula<textus, textus> capita, textus corpus) -> Replicatio
+
+# HTTP SERVER
+functio exspecta((Rogatio) -> Replicatio handler, numerus portus) -> Servitor
+```
+
+### Database (`arca.fab`)
+
+```fab
+pactum Connexio {
+    # Read returns cursor - streams rows (the primitive!)
+    @ futura
+    functio lege(textus sql, lista<quidlibet> params) -> cursor<series>
+
+    # Write returns count (single value)
+    @ futura
+    functio muta(textus sql, lista<quidlibet> params) -> numerus
+
+    @ futura
+    functio incipe() -> Transactio
+    functio claude() -> vacuum
+}
+```
+
+Database queries return `cursor<series>` — a stream of rows. The caller chooses how to consume:
+
+```fab
+# Stream rows one at a time (memory efficient for large results)
+ex connexio.lege("SELECT * FROM users", []) pro row {
+    scribe row.nomen
+}
+
+# Collect all rows (convenience for small results)
+fixum users = collige(connexio.lege("SELECT * FROM users", []))
+```
+
+---
+
+## Responsum Protocol
+
+All I/O operations return `Responsum<T>` — a tagged union describing the result:
+
+```
+┌─────────────┬──────────────────────────────────────────┐
+│ Variant     │ Meaning                                  │
+├─────────────┼──────────────────────────────────────────┤
+│ .pending    │ Operation in progress, poll again        │
+│ .ok(T)      │ Single value, terminal (futures)         │
+│ .item(T)    │ One of many values, non-terminal (streams) │
+│ .done       │ Stream complete, terminal                │
+│ .err(E)     │ Error, terminal                          │
+└─────────────┴──────────────────────────────────────────┘
+```
+
+### Protocol Invariants
+
+- **Single-value operation**: `.pending* -> (.ok | .err)`
+- **Streaming operation**: `.pending* -> (.item | .pending)* -> (.done | .err)`
+- `.item` MUST NOT appear after a terminal variant
+- `.done` and `.err` are terminal variants
+
+### Why Protocol Everywhere?
+
+The Responsum protocol is not overhead—it's the unifying abstraction:
+
+1. **Uniform dispatch** — Every syscall produces a stream of `Responsum<T>`
+2. **Terminal is explicit** — `.done` vs implicit generator end
+3. **Errors are values** — No exception unwinding, streaming errors possible
+4. **Cross-target consistency** — Same semantics on all targets
+5. **Observability** — Every response is inspectable/loggable
+
+---
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Faber Source Code                                          │
-│  ad "fasciculus:lege" ("file.txt") fiet textus pro content  │
+│  solum.legens("file.txt") fient octeti pro chunk { ... }    │
 ├─────────────────────────────────────────────────────────────┤
 │  Compiler (semantic analysis, codegen)                      │
+│  ├── Verb detection (fit/fiet/fiunt/fient)                  │
+│  ├── State machine generation (Zig/Rust/C++)                │
+│  └── Native async emission (TS/Python)                      │
 ├─────────────────────────────────────────────────────────────┤
 │  Nucleus Runtime (per-target implementation)                │
-│  ├── Dispatcher (syscall routing)                           │
-│  ├── Responsum (message protocol)                           │
-│  ├── Handle (unified I/O interface)                         │
-│  └── Executor (async scheduling)                            │
+│  ├── Responsum<T> protocol types                            │
+│  ├── OpStream (async generator interface)                   │
+│  ├── Executor (drives state machines)                       │
+│  ├── Collectors (stream → single value)                     │
+│  └── Syscall handlers (solum, caelum, arca, etc.)           │
 ├─────────────────────────────────────────────────────────────┤
 │  Target Runtime (Bun, Python, Zig std, etc.)                │
 └─────────────────────────────────────────────────────────────┘
 ```
 
+---
+
 ## Core Components
 
-### 1. Responsum Protocol
+### 1. OpStream (Async Generator Interface)
 
-All syscalls return `Responsum<T>` — a tagged union describing the result:
+The primitive type representing an async generator:
+
+**Conceptual interface:**
 
 ```
-┌─────────────┬──────────────────────────────────────────┐
-│ Variant     │ Meaning                                  │
-├─────────────┼──────────────────────────────────────────┤
-│ .pending    │ Operation in progress, poll again       │
-│ .ok(T)      │ Single value, terminal                  │
-│ .item(T)    │ One of many values, non-terminal        │
-│ .done       │ Stream complete, terminal               │
-│ .err(E)     │ Error, terminal                         │
-└─────────────┴──────────────────────────────────────────┘
+OpStream<T>
+├── poll(ctx) → Responsum<T>    # Get next item or status
+└── cancel(ctx) → void          # Request cancellation (optional)
 ```
 
-**TypeScript:**
+**Native targets (TS/Python):**
 
 ```typescript
-type ResponsumError = {
-    code: string;
-    message: string;
-    details?: unknown;
-    cause?: ResponsumError;
-};
-
-type Responsum<T> = { op: 'pending' } | { op: 'ok'; data: T } | { op: 'item'; data: T } | { op: 'done' } | { op: 'err'; error: ResponsumError };
+type OpStream<T> = AsyncIterable<Responsum<T>>;
 ```
 
-**Zig:**
+**Poll-based targets (Zig/Rust/C++):**
 
 ```zig
-const ResponsumError = struct {
-    code: []const u8,
-    message: []const u8,
-    // Optional enrichment (best-effort per target/runtime)
-    details: ?[]const u8 = null,
-    cause: ?*const ResponsumError = null,
-};
+const OpStream = struct {
+    ptr: *anyopaque,
+    vtable: *const OpStreamVTable,
 
-fn Responsum(comptime T: type) type {
-    return union(enum) {
-        pending,
-        ok: T,
-        item: T,
-        done,
-        err: ResponsumError,
-    };
+    pub fn poll(self: *OpStream, ctx: *ExecutorContext) Responsum(T) {
+        return self.vtable.poll(self.ptr, ctx);
+    }
+
+    pub fn cancel(self: *OpStream, ctx: *ExecutorContext) void {
+        self.vtable.cancel(self.ptr, ctx);
+    }
+};
+```
+
+### 2. Executor
+
+Drives state machines and manages I/O:
+
+**Core operations:**
+
+```
+Executor
+├── run(stream) → T              # Poll until .ok, return value
+├── collect(stream) → []T        # Poll until .done, collect items
+├── block_on(future) → T         # Sync wrapper around run()
+└── for_each(stream, fn) → void  # Poll and call fn on each .item
+```
+
+**Zig implementation:**
+
+```zig
+pub fn run(comptime T: type, stream: *OpStream(T), ctx: *ExecutorContext) !T {
+    while (true) {
+        switch (stream.poll(ctx)) {
+            .pending => ctx.wait_for_io(),
+            .ok => |value| return value,
+            .err => |e| return error.ResponsumError,
+            .item, .done => unreachable, // single-value context
+        }
+    }
+}
+
+pub fn collect(comptime T: type, stream: *OpStream(T), ctx: *ExecutorContext, allocator: Allocator) ![]T {
+    var list = std.ArrayList(T).init(allocator);
+    while (true) {
+        switch (stream.poll(ctx)) {
+            .pending => ctx.wait_for_io(),
+            .item => |v| try list.append(v),
+            .done => return list.toOwnedSlice(),
+            .err => |e| return error.ResponsumError,
+            .ok => unreachable, // streaming context
+        }
+    }
 }
 ```
 
-**Protocol contract (required invariants):**
+### 3. Handle Abstraction
 
-- Single-value operation: `.pending* -> (.ok | .err)`
-- Streaming operation: `.pending* -> (.item | .pending)* -> (.done | .err)`
-- `.item` MUST NOT appear after a terminal variant.
-- `.done` and `.err` are terminal variants.
-
-### 2. Handle Abstraction
-
-All I/O sources implement a common interface:
+Unified interface for all I/O sources:
 
 ```
 Handle
@@ -121,47 +315,11 @@ Handle
 ├── type: HandleType (file, socket, channel, timer, ...)
 ├── exec(msg: Message) → OpStream<T>
 └── close() → void
-
-OpStream<T>
-├── id: RequestId
-├── poll(ctx) → Responsum<T>
-└── cancel(ctx) → void (optional)
 ```
 
-**Message:**
-
-```
-Message
-├── op: string        // "read", "write", "get", "query", ...
-├── data: any         // Operation-specific payload
-└── id: RequestId     // For correlating responses
-```
-
-**Rationale:** Native targets (TypeScript/Python) can expose `OpStream<T>` as an `AsyncIterable<Responsum<T>>`. Poll-based targets (Zig/C++ and potentially Rust) expose an explicit stream object that the executor drives via `poll()`.
-
-This keeps the _conceptual_ model identical across targets ("a stream of `Responsum`"), while allowing different execution mechanisms.
-
-**Zig:**
+**Zig vtable pattern:**
 
 ```zig
-const OpStream = struct {
-    id: u64,
-    vtable: *const OpStreamVTable,
-
-    pub fn poll(self: *OpStream, ctx: *ExecutorContext) Responsum(ResultType) {
-        return self.vtable.poll(self, ctx);
-    }
-
-    pub fn cancel(self: *OpStream, ctx: *ExecutorContext) void {
-        return self.vtable.cancel(self, ctx);
-    }
-};
-
-const OpStreamVTable = struct {
-    poll: *const fn (*OpStream, *ExecutorContext) Responsum(ResultType),
-    cancel: *const fn (*OpStream, *ExecutorContext) void,
-};
-
 const Handle = struct {
     id: u64,
     handle_type: HandleType,
@@ -182,138 +340,524 @@ const HandleVTable = struct {
 };
 ```
 
-### 3. Dispatcher (Syscall Table)
+### 4. Dispatcher (Syscall Table)
 
-Routes `ad` calls to handlers based on target pattern.
+Routes calls to handlers based on namespace:
 
-**Streaming syscalls:** For streaming targets (e.g. `caelum:websocket`), the handler yields `.item(T)` values and terminates with `.done` or `.err`.
-
-```
-┌──────────────────────┬─────────────────────┬─────────────────┐
-│ Pattern              │ Handler             │ Returns         │
-├──────────────────────┼─────────────────────┼─────────────────┤
-│ fasciculus:lege      │ FileReadHandler     │ Responsum<text> │
-│ fasciculus:scribe    │ FileWriteHandler    │ Responsum<void> │
-│ caelum:request       │ HttpHandler         │ Responsum<Resp> │
-│ caelum:websocket     │ WebSocketHandler    │ Responsum<Message> │
-│ tempus:dormi         │ SleepHandler        │ Responsum<void> │
-│ https://*            │ → caelum:request    │ (rewrite)       │
-│ file://*             │ → fasciculus:lege   │ (rewrite)       │
-└──────────────────────┴─────────────────────┴─────────────────┘
-```
+| Namespace    | Domain   | Example Operations                  |
+| ------------ | -------- | ----------------------------------- |
+| `solum`      | Files    | `lege`, `scribe`, `ambula`          |
+| `caelum`     | Network  | `pete`, `mitte`, `exspecta`         |
+| `arca`       | Database | `lege`, `muta`, `incipe`            |
+| `tempus`     | Time     | `dormi`, `nunc`, `intervallum`      |
+| `memoria`    | Memory   | `alloca`, `libera` (Zig/Rust/C++)   |
+| `processus`  | Process  | `genera`, `occide`, `expecta`       |
+| `canalis`    | Channels | `crea`, `mitte`, `recipe`           |
+| `aleator`    | Random   | `numerus`, `octeti`, `uuid`         |
+| `crypto`     | Crypto   | `hash`, `signa`, `verifica`         |
 
 **Compile-time dispatch (Zig):**
 
 ```zig
-pub fn dispatch(comptime target: []const u8, args: anytype) Responsum(ReturnType(target)) {
-    if (comptime std.mem.startsWith(u8, target, "fasciculus:")) {
-        return fasciculus.dispatch(target, args);
-    } else if (comptime std.mem.startsWith(u8, target, "caelum:")) {
-        return caelum.dispatch(target, args);
+pub fn dispatch(comptime namespace: []const u8, comptime op: []const u8, args: anytype) OpStream(ReturnType(namespace, op)) {
+    if (comptime std.mem.eql(u8, namespace, "solum")) {
+        return solum.dispatch(op, args);
+    } else if (comptime std.mem.eql(u8, namespace, "caelum")) {
+        return caelum.dispatch(op, args);
     } else {
-        @compileError("Unknown syscall: " ++ target);
+        @compileError("Unknown namespace: " ++ namespace);
     }
 }
 ```
 
-**Dynamic targets:** When the syscall target is not compile-time known (computed string, user input), Zig cannot use comptime dispatch. In that case, codegen uses a small runtime dispatch table (string comparisons) and yields `.err` for unknown syscalls.
-
-**Runtime dispatch (TypeScript):**
-
-```typescript
-const dispatcher: Record<string, Handler> = {
-    'fasciculus:lege': fileReadHandler,
-    'fasciculus:scribe': fileWriteHandler,
-    'caelum:request': httpHandler,
-    // ...
-};
-
-async function* dispatch(target: string, ...args: unknown[]): AsyncIterable<Responsum<unknown>> {
-    const handler = dispatcher[target] ?? resolvePattern(target);
-    yield* handler(...args);
-}
-```
-
-### 4. Request Correlation
+### 5. Request Correlation
 
 For concurrent operations, every request gets an ID:
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│ Request                                                    │
-│ ├── id: u64                                                │
-│ ├── target: "caelum:request"                               │
-│ └── args: ("https://api.example.com", "GET")               │
-├────────────────────────────────────────────────────────────┤
-│ Response                                                   │
-│ ├── id: u64  (same as request)                             │
-│ └── result: Responsum<T>                                   │
-└────────────────────────────────────────────────────────────┘
+Request
+├── id: u64                              # Unique within executor
+├── namespace: "caelum"
+├── op: "pete"
+└── args: ("https://api.example.com",)
+
+Response
+├── id: u64                              # Matches request
+└── result: Responsum<T>
 ```
 
-The executor tracks pending requests by ID. When I/O completes, the result is routed to the correct waiting state machine.
+**ID generation:**
+- Native targets (TS/Python): UUID acceptable
+- Poll-based targets (Zig/Rust/C++): 64-bit monotonic counter
 
-**Uniqueness scope:** `RequestId` is required to be unique within a single executor instance. Native targets may use UUIDs; native-code targets may use a monotonic 64-bit counter (optionally prefixed with an executor ID if multiple executors are introduced).
+---
 
-### 5. Executor
+## Backpressure
 
-Drives state machines and manages I/O:
+For streaming operations, the executor implements flow control:
 
-**Single-threaded poll loop (Zig):**
+- **Native async targets**: Backpressure is naturally enforced by consumer-driven iteration
+- **Poll-based targets**: Explicit high/low watermarks
 
-```zig
-pub fn run(comptime T: type, future: *Future(T)) !T {
-    var ctx = ExecutorContext.init();
-    defer ctx.deinit();
+| Constant             | Value  | Purpose                 |
+| -------------------- | ------ | ----------------------- |
+| `AQUA_ALTA`          | 1000   | Pause producing         |
+| `AQUA_BASSA`         | 100    | Resume producing        |
+| `PULSUS_INTERVALLUM` | 100ms  | Consumer liveness check |
+| `MORA_MAXIMUM`       | 5000ms | Abort if consumer dead  |
 
-    while (true) {
-        switch (future.poll(&ctx)) {
-            .pending => {
-                // Wait for any I/O to complete
-                const completed = ctx.wait_for_io();
-                // Route result to waiting future
-                ctx.deliver_result(completed.id, completed.result);
-            },
-            .ok => |value| return value,
-            .err => |e| return error.ResponsumError,
-            .item, .done => unreachable, // single-value future
-        }
-    }
+(Latin: aqua alta = high water, aqua bassa = low water)
+
+---
+
+## Error Handling
+
+Errors flow through Responsum as values:
+
+```fab
+ex solum.legens("missing.txt") pro chunk {
+    scribe chunk
+} cape err {
+    scribe "Error: " + err.message
 }
 ```
 
-**Async wrapper (TypeScript):**
+**Why errors-as-values:**
+- No exception unwinding
+- Streaming errors after partial success
+- Cross-target consistency
+- Uniform logging
+
+---
+
+## Implementation Plan
+
+### Phase 1: Protocol Foundation
+
+1. Define `Responsum<T>` for all targets in preamble
+2. Define `OpStream<T>` interface per target
+3. Implement basic `Executor` with `run()` and `collect()`
+
+### Phase 2: TypeScript Runtime
+
+1. Use native `AsyncIterable<Responsum<T>>` for OpStream
+2. Implement `run()`, `collect()` as async functions
+3. Wire solum/caelum handlers using Node.js APIs
+
+### Phase 3: Zig Runtime
+
+1. Implement `Responsum(T)` union
+2. Implement `OpStream` vtable pattern
+3. Implement `ExecutorContext` with blocking I/O (v1)
+4. State machine codegen for `fiet`/`fient` functions
+5. Implement solum handlers using `std.fs`
+6. Implement caelum handlers using `std.http`
+
+### Phase 4: Async I/O (Zig)
+
+1. Integrate io_uring or epoll for non-blocking I/O
+2. Implement proper `.pending` handling with I/O multiplexing
+3. Add request correlation for concurrent operations
+
+### Phase 5: Other Targets
+
+1. Python — Similar to TypeScript (native async)
+2. Rust — State machines like Zig, or native async
+3. C++ — Coroutines (C++20) or callback-based
+
+---
+
+## Target-Specific Design
+
+### TypeScript
+
+**Approach:** Native async generators with Responsum protocol.
 
 ```typescript
-async function run<T>(gen: AsyncIterable<Responsum<T>>): Promise<T> {
-    for await (const resp of gen) {
+type Responsum<T> =
+    | { op: 'pending' }
+    | { op: 'ok'; data: T }
+    | { op: 'item'; data: T }
+    | { op: 'done' }
+    | { op: 'err'; error: ResponsumError };
+
+type OpStream<T> = AsyncIterable<Responsum<T>>;
+
+// Executor
+async function run<T>(stream: OpStream<T>): Promise<T> {
+    for await (const resp of stream) {
         switch (resp.op) {
-            case 'ok':
-                return resp.data;
-            case 'err':
-                throw new ResponsumError(resp.error);
-            case 'pending':
-                continue; // implicit in async iteration
-            case 'item':
-                continue; // collect or ignore
-            case 'done':
-                throw new Error('Unexpected done in single-value context');
+            case 'ok': return resp.data;
+            case 'err': throw new ResponsumError(resp.error);
+            case 'pending': continue;
+            case 'item': continue; // unexpected in single-value context
+            case 'done': throw new Error('Unexpected done');
         }
     }
-    throw new Error('Generator ended without result');
+    throw new Error('Stream ended without result');
+}
+
+async function collect<T>(stream: OpStream<T>): Promise<T[]> {
+    const items: T[] = [];
+    for await (const resp of stream) {
+        switch (resp.op) {
+            case 'item': items.push(resp.data); break;
+            case 'done': return items;
+            case 'err': throw new ResponsumError(resp.error);
+            case 'pending': continue;
+            case 'ok': throw new Error('Unexpected ok in stream');
+        }
+    }
+    throw new Error('Stream ended without done');
 }
 ```
 
-## Why Protocol on All Targets
+**Handler example (solum.legens):**
 
-The Responsum protocol is not overhead—it's the unifying abstraction. Monk OS implements Response protocol in TypeScript for reasons that apply equally to Faber.
+```typescript
+async function* legens(path: string): OpStream<Uint8Array> {
+    const stream = fs.createReadStream(path);
+    for await (const chunk of stream) {
+        yield { op: 'item', data: chunk };
+    }
+    yield { op: 'done' };
+}
+```
+
+---
+
+### Python
+
+**Approach:** Native async generators, similar to TypeScript.
+
+```python
+from typing import TypeVar, Union, AsyncIterator
+from dataclasses import dataclass
+
+T = TypeVar('T')
+
+@dataclass
+class Ok:
+    data: T
+
+@dataclass
+class Item:
+    data: T
+
+@dataclass
+class Done:
+    pass
+
+@dataclass
+class Err:
+    code: str
+    message: str
+
+Responsum = Union[Ok, Item, Done, Err]
+OpStream = AsyncIterator[Responsum]
+
+async def run(stream: OpStream[T]) -> T:
+    async for resp in stream:
+        match resp:
+            case Ok(data): return data
+            case Err(code, message): raise ResponsumError(code, message)
+            case _: continue
+    raise RuntimeError("Stream ended without result")
+```
+
+---
+
+### Zig
+
+**Approach:** Explicit state machines, poll-based execution.
+
+```zig
+const ResponsumError = struct {
+    code: []const u8,
+    message: []const u8,
+    details: ?[]const u8 = null,
+    cause: ?*const ResponsumError = null,
+};
+
+fn Responsum(comptime T: type) type {
+    return union(enum) {
+        pending,
+        ok: T,
+        item: T,
+        done,
+        err: ResponsumError,
+    };
+}
+
+// OpStream via vtable
+const OpStreamVTable = struct {
+    poll: *const fn (*anyopaque, *ExecutorContext) Responsum(anytype),
+    cancel: *const fn (*anyopaque, *ExecutorContext) void,
+};
+
+const OpStream = struct {
+    ptr: *anyopaque,
+    vtable: *const OpStreamVTable,
+
+    pub fn poll(self: *OpStream, ctx: *ExecutorContext) Responsum(T) {
+        return @call(.auto, self.vtable.poll, .{ self.ptr, ctx });
+    }
+};
+
+// Executor
+const ExecutorContext = struct {
+    allocator: Allocator,
+    cancelled: bool = false,
+    // For async I/O (Phase 4):
+    // io_context: *IoContext,
+    // pending_requests: std.AutoHashMap(u64, *anyopaque),
+
+    pub fn wait_for_io(self: *ExecutorContext) void {
+        // Phase 1: blocking (no-op, I/O is sync)
+        // Phase 4: epoll_wait / io_uring_wait
+    }
+};
+
+pub fn run(comptime T: type, stream: *OpStream(T), ctx: *ExecutorContext) !T {
+    while (true) {
+        switch (stream.poll(ctx)) {
+            .pending => ctx.wait_for_io(),
+            .ok => |value| return value,
+            .err => |e| return error.ResponsumError,
+            .item, .done => unreachable,
+        }
+    }
+}
+```
+
+**State machine codegen example:**
+
+```fab
+functio fetch(textus url) fiet Replicatio {
+    fixum resp = caelum.pete(url)
+    redde resp
+}
+```
+
+Compiles to:
+
+```zig
+const FetchState = union(enum) {
+    start: struct { url: []const u8 },
+    awaiting_pete: struct { inner: *caelum.PeteStream },
+};
+
+const FetchFuture = struct {
+    state: FetchState,
+
+    pub fn poll(self: *FetchFuture, ctx: *ExecutorContext) Responsum(Replicatio) {
+        switch (self.state) {
+            .start => |s| {
+                const inner = caelum.pete(s.url);
+                self.state = .{ .awaiting_pete = .{ .inner = inner } };
+                return .pending;
+            },
+            .awaiting_pete => |s| {
+                switch (s.inner.poll(ctx)) {
+                    .pending => return .pending,
+                    .ok => |resp| return .{ .ok = resp },
+                    .err => |e| return .{ .err = e },
+                    else => unreachable,
+                }
+            },
+        }
+    }
+};
+```
+
+**Subsidia structure:**
+
+```
+fons/subsidia/zig/
+├── responsum.zig      # Responsum(T), ResponsumError
+├── stream.zig         # OpStream, OpStreamVTable
+├── executor.zig       # ExecutorContext, run(), collect()
+├── solum.zig          # File I/O handlers
+│   ├── legens()       → OpStream([]u8)
+│   ├── leget()        → Future([]u8)
+│   └── lege()         → []u8
+├── caelum.zig         # HTTP handlers
+│   ├── pete()         → Future(Replicatio)
+│   └── ...
+└── mod.zig            # Re-exports
+```
+
+---
+
+### Rust
+
+**Approach:** Native async where possible, state machines for generators.
+
+```rust
+enum Responsum<T> {
+    Pending,
+    Ok(T),
+    Item(T),
+    Done,
+    Err(ResponsumError),
+}
+
+// Futures: use native async
+pub async fn leget(path: &str) -> Result<String, ResponsumError> {
+    let content = tokio::fs::read_to_string(path).await?;
+    Ok(content)
+}
+
+// Streams: use async-stream or manual impl
+pub fn legens(path: &str) -> impl Stream<Item = Result<Vec<u8>, ResponsumError>> {
+    async_stream::stream! {
+        let file = tokio::fs::File::open(path).await?;
+        let mut reader = tokio::io::BufReader::new(file);
+        let mut buf = vec![0u8; 8192];
+        loop {
+            let n = reader.read(&mut buf).await?;
+            if n == 0 { break; }
+            yield Ok(buf[..n].to_vec());
+        }
+    }
+}
+```
+
+**Responsum mapping to Rust idioms:**
+
+| Responsum  | Rust                               |
+| ---------- | ---------------------------------- |
+| `.ok(T)`   | `Poll::Ready(Ok(T))`               |
+| `.err(E)`  | `Poll::Ready(Err(ResponsumError))` |
+| `.pending` | `Poll::Pending`                    |
+| `.item(T)` | `Some(Ok(T))` via Stream           |
+| `.done`    | `None` via Stream                  |
+
+---
+
+### C++
+
+**Approach:** Coroutines (C++20) or callback-based fallback.
+
+```cpp
+// With C++20 coroutines
+template<typename T>
+struct Responsum {
+    enum class Op { Pending, Ok, Item, Done, Err };
+    Op op;
+    std::optional<T> data;
+    std::optional<ResponsumError> error;
+};
+
+// Generator using coroutines
+template<typename T>
+struct OpStream {
+    struct promise_type { /* ... */ };
+
+    Responsum<T> poll() {
+        if (handle.done()) return {.op = Op::Done};
+        handle.resume();
+        return handle.promise().current;
+    }
+};
+
+// Example handler
+OpStream<std::vector<uint8_t>> legens(std::string_view path) {
+    std::ifstream file(path, std::ios::binary);
+    std::vector<uint8_t> buf(8192);
+    while (file.read(reinterpret_cast<char*>(buf.data()), buf.size())) {
+        co_yield Responsum<std::vector<uint8_t>>{.op = Op::Item, .data = buf};
+    }
+    co_return;
+}
+```
+
+---
+
+## Design Decisions
+
+### 1. Async Generators as Primitive
+
+**Decision:** All I/O fundamentally returns `OpStream<T>`. Futures and sync calls are derived.
+
+**Rationale:**
+- Matches reality (I/O is streaming)
+- Memory efficient (no mandatory buffering)
+- Unified model (one abstraction for all patterns)
+
+### 2. Latin Verb Conjugation
+
+**Decision:** Use grammatical forms to encode execution semantics.
+
+**Rationale:**
+- Self-documenting (grammar implies behavior)
+- Consistent across all operations
+- Leverages existing Faber Latin design
+
+### 3. Responsum Protocol Everywhere
+
+**Decision:** Use protocol on all targets, not just poll-based.
+
+**Rationale:**
+- Cross-target consistency
+- Uniform observability
+- Errors as values
+
+### 4. Allocator Threading (Zig)
+
+**Decision:** Per-request allocator, inherited from parent.
+
+**Rationale:** Avoids global lock contention, matches per-stream isolation.
+
+### 5. Cancellation
+
+**Decision:** Out-of-band signal, not Responsum variant.
+
+**Rationale:** Adding `.cancelled` complicates every switch. Separate flag is cleaner.
+
+### 6. Nested Composition
+
+**Decision:** Inline for small futures (< 256 bytes), pointer for large.
+
+**Rationale:** Inline avoids allocation for common case; pointer prevents bloat.
+
+### 7. User-Defined Syscalls
+
+**Decision:** Not in v1. Compile-time syscall table only.
+
+**Rationale:** Runtime registration requires type erasure and has security concerns.
+
+---
+
+## Arrow Binding Escape Hatch
+
+For performance-critical paths on native async targets, arrow binding bypasses the Responsum protocol:
+
+```fab
+# Default: via protocol (observable, consistent)
+solum.leget("file.txt") fiet textus pro content
+
+# Escape hatch: direct (fast, loses observability)
+solum.leget("file.txt") -> textus pro content
+```
+
+**Trade-offs:**
+- Arrow bypasses logging, metrics, mocking
+- Arrow only works on TS/Python (compile error P192 on Zig/Rust/C++)
+- Verb binding works on all targets
+
+**Rationale:** Reuses existing arrow vs verb distinction from function declarations. No new syntax needed. Most code should use verb binding for consistency and debuggability.
+
+---
+
+## Why Protocol on All Targets (Detailed)
 
 ### 1. Uniform Dispatch
 
 Every syscall conceptually produces a stream of `Responsum<T>`, regardless of semantics.
 
-- TypeScript/Python expose this as `AsyncIterable<Responsum<T>>`.
-- Zig/C++ expose this as `OpStream<T>` driven by `poll()`.
+- TypeScript/Python expose this as `AsyncIterable<Responsum<T>>`
+- Zig/C++ expose this as `OpStream<T>` driven by `poll()`
 
 Example (TypeScript syntax):
 
@@ -336,7 +880,7 @@ async function* fileStat(...): AsyncIterable<Responsum<Stat>> {
 }
 ```
 
-The `ad` dispatcher doesn't need to know if a syscall is single-value, stream, sync, or async. It just routes and yields. Without protocol, dispatch becomes type chaos.
+The dispatcher doesn't need to know if a syscall is single-value, stream, sync, or async. It just routes and yields. Without protocol, dispatch becomes type chaos.
 
 ### 2. Terminal vs Non-Terminal is Explicit
 
@@ -358,7 +902,6 @@ async function* items(): AsyncIterable<Responsum<Item>> {
 ```
 
 This matters for:
-
 - **Backpressure** — Executor knows stream ended vs stalled
 - **Cleanup** — Terminal op triggers resource release
 - **Partial errors** — `.err` after `.item` is distinguishable from normal end
@@ -383,7 +926,6 @@ async function* fileRead(path: string): AsyncIterable<Responsum<string>> {
 ```
 
 Why errors-as-values matters:
-
 - **No exception unwinding** — Predictable control flow
 - **Streaming errors** — Error after 100 items is just another yield
 - **Cross-target consistency** — Same semantics on TS, Zig, Rust
@@ -436,249 +978,9 @@ for await (const resp of syscall('file:read', path)) {
 ```
 
 Cancellation is explicit via stream finalization + executor signals:
-
 - Consumer breaks from loop → triggers `iterator.return()` (native targets)
 - Executor sets a cancellation flag in context (poll-based targets)
 - Streams are responsible for cleanup on scope exit (no `.cancelled` Responsum variant)
-
----
-
-## Compilation Strategy
-
-### TypeScript / Python
-
-Use native async generators with Responsum protocol:
-
-```fab
-ad "fasciculus:lege" ("file.txt") fiet textus pro content { ... }
-```
-
-Becomes:
-
-```typescript
-const content = await run(dispatch('fasciculus:lege', 'file.txt'));
-```
-
-The `run()` helper unwraps Responsum, throwing on `.err`:
-
-```typescript
-async function run<T>(gen: AsyncIterable<Responsum<T>>): Promise<T> {
-    for await (const resp of gen) {
-        switch (resp.op) {
-            case 'ok':
-                return resp.data;
-            case 'err':
-                throw new ResponsumError(resp.error);
-            case 'item':
-                continue;
-            case 'done':
-                throw new Error('Unexpected done in single-value context');
-            case 'pending':
-                continue;
-        }
-    }
-    throw new Error('Generator ended without result');
-}
-```
-
-**Arrow binding (`->`) is the escape hatch, not the default:**
-
-```fab
-# Default: protocol (observable, consistent)
-ad "fasciculus:lege" ("file.txt") fiet textus pro content
-
-# Escape hatch: direct (fast, loses observability)
-ad "fasciculus:lege" ("file.txt") -> textus pro content
-```
-
-Arrow binding bypasses protocol for performance-critical hot paths, but only works on TS/Python. Zig/Rust/C++ reject arrow binding with error P192.
-
-Most code should use verb binding (`fiet`/`fiunt`/`fient`) for consistency and debuggability.
-
-### Rust
-
-Use native `async fn` with Responsum mapped to Rust idioms:
-
-| Responsum  | Rust                               |
-| ---------- | ---------------------------------- |
-| `.ok(T)`   | `Poll::Ready(Ok(T))`               |
-| `.err(E)`  | `Poll::Ready(Err(ResponsumError))` |
-| `.pending` | `Poll::Pending`                    |
-| `.item(T)` | `Some(Ok(T))` via Stream           |
-| `.done`    | `None` via Stream                  |
-
-```fab
-functio fetch(textus url) fiet Response {
-    ad "caelum:request" (url, "GET") fiet Response pro resp
-    redde resp
-}
-```
-
-Becomes:
-
-```rust
-pub async fn fetch(url: &str) -> Result<Response, ResponsumError> {
-    let resp = caelum::request(url, "GET").await?;
-    Ok(resp)
-}
-```
-
-Rust's compiler generates state machines for `async fn`. No manual state machine needed. The `?` operator maps to Responsum error propagation.
-
-For streaming (`fiunt`/`fient`):
-
-```rust
-pub fn items() -> impl Stream<Item = Result<Item, ResponsumError>> {
-    async_stream::stream! {
-        yield Ok(item1);
-        yield Ok(item2);
-    }
-}
-```
-
-### Zig / C++
-
-Compile to explicit state machines. Each `fiet`/`fient` function becomes:
-
-1. **State union** — captures locals at each suspend point
-2. **Poll function** — advances state machine, returns `Responsum<T>`
-3. **Wrapper function** — returns the future
-
-```fab
-functio fetch(textus url) fiet Response {
-    ad "caelum:request" (url, "GET") fiet Response pro resp
-    redde resp
-}
-```
-
-Becomes (Zig):
-
-```zig
-const FetchState = union(enum) {
-    start: struct { url: []const u8 },
-    awaiting_request: struct { request_id: u64 },
-};
-
-const FetchFuture = struct {
-    state: FetchState,
-
-    pub fn poll(self: *FetchFuture, ctx: *ExecutorContext) Responsum(Response) {
-        switch (self.state) {
-            .start => |s| {
-                const id = ctx.submit("caelum:request", .{ s.url, "GET" });
-                self.state = .{ .awaiting_request = .{ .request_id = id } };
-                return .pending;
-            },
-            .awaiting_request => |s| {
-                if (ctx.get_result(s.request_id, Response)) |resp| {
-                    return .{ .ok = resp };
-                }
-                return .pending;
-            },
-        }
-    }
-};
-
-pub fn fetch(url: []const u8) FetchFuture {
-    return FetchFuture{ .state = .{ .start = .{ .url = url } } };
-}
-```
-
-## Syscall Namespaces
-
-Latin names for stdlib modules (matching `ad.md`):
-
-| Namespace    | Domain   | Example Syscalls                    |
-| ------------ | -------- | ----------------------------------- |
-| `fasciculus` | Files    | `lege`, `scribe`, `tolle`, `movere` |
-| `caelum`     | Network  | `request`, `websocket`, `listen`    |
-| `tempus`     | Time     | `dormi`, `nunc`, `intervallum`      |
-| `memoria`    | Memory   | `alloca`, `libera` (Zig/Rust/C++)   |
-| `processus`  | Process  | `genera`, `occide`, `expecta`       |
-| `canalis`    | Channels | `crea`, `mitte`, `recipe`           |
-| `aleator`    | Random   | `numerus`, `bytes`, `uuid`          |
-| `crypto`     | Crypto   | `hash`, `signa`, `verifica`         |
-
-## Backpressure
-
-For streaming syscalls (`fiunt`/`fient`), the executor implements flow control.
-
-- Native async targets: backpressure is naturally enforced by consumer-driven iteration (the producer runs when polled).
-- Poll-based targets: the executor may buffer items, so explicit high/low watermarks apply.
-
-Default constants:
-
-| Constant             | Value  | Purpose                 |
-| -------------------- | ------ | ----------------------- |
-| `AQUA_ALTA`          | 1000   | Pause producing         |
-| `AQUA_BASSA`         | 100    | Resume producing        |
-| `PULSUS_INTERVALLUM` | 100ms  | Consumer liveness check |
-| `MORA_MAXIMUM`       | 5000ms | Abort if consumer dead  |
-
-(Latin: aqua alta = high water, aqua bassa = low water, pulsus = pulse/ping, mora = delay)
-
-## Error Handling
-
-Errors flow through Responsum:
-
-```fab
-ad "fasciculus:lege" ("missing.txt") fiet textus pro content {
-    scribe content
-} cape err {
-    scribe "Error: " + err.message
-}
-```
-
-The `cape` clause catches `.err` responses. Without it, errors propagate to caller.
-
-**Zig codegen:**
-
-```zig
-switch (future.poll(&ctx)) {
-    .ok => |content| { ... },
-    .err => |e| {
-        // cape block
-        std.debug.print("Error: {s}\n", .{e.message});
-    },
-    // ...
-}
-```
-
-## Relationship to Existing Designs
-
-| Document       | Relationship                                               |
-| -------------- | ---------------------------------------------------------- |
-| `ad.md`        | Nucleus provides the runtime that `ad` dispatches to       |
-| `zig-async.md` | State machine compilation is one strategy within Nucleus   |
-| `flumina.md`   | Responsum protocol originated here; Nucleus generalizes it |
-| `two-pass.md`  | Liveness analysis feeds into state machine generation      |
-
-## Implementation Plan
-
-### Phase 1: Protocol Unification
-
-1. Define `Responsum<T>` for all targets in preamble
-2. Standardize syscall table schema
-3. Add request ID generation
-
-### Phase 2: TypeScript Runtime
-
-1. Implement dispatcher with pattern matching
-2. Wire `ad` codegen to dispatcher
-3. Test with file/http syscalls
-
-### Phase 3: Zig Runtime
-
-1. Implement `Handle` vtable pattern
-2. Implement `ExecutorContext` with I/O polling
-3. State machine codegen for `fiet`/`fient`
-4. Syscall handlers for `fasciculus`, `caelum`, `tempus`
-
-### Phase 4: Other Targets
-
-1. Python — similar to TypeScript
-2. Rust — state machines like Zig, or native async
-3. C++ — coroutines or callback-based
 
 ---
 
@@ -801,117 +1103,21 @@ Monk aborts streams after 5s without ping. Slow networks can trigger false timeo
 | Runtime syscall dispatch             | Compile-time dispatch (Zig comptime) |
 | Per-syscall auth checking            | Entry-point or compile-time auth     |
 
-### HAL Device Model
+---
+
+## HAL Device Model
 
 Monk's 17-device HAL is worth adopting selectively:
 
 | Device    | Faber Equivalent     | Priority |
 | --------- | -------------------- | -------- |
-| `block`   | `fasciculus` (files) | High     |
+| `block`   | `solum` (files)      | High     |
 | `network` | `caelum` (network)   | High     |
 | `timer`   | `tempus`             | High     |
 | `entropy` | `aleator`            | Medium   |
 | `crypto`  | `crypto`             | Medium   |
 | `storage` | EMS-style (future)   | Low      |
 | `console` | `scriba`             | High     |
-
----
-
-## Design Decisions
-
-Based on Monk analysis, the following open questions are resolved:
-
-### 1. Allocator Threading (Zig)
-
-**Decision**: Per-request allocator, inherited from parent.
-
-```zig
-pub fn poll(self: *FetchFuture, ctx: *ExecutorContext) Responsum(Response) {
-    // ctx.allocator inherited from parent future or executor
-    const result = try ctx.allocator.alloc(u8, size);
-    // ...
-}
-```
-
-**Rationale**: Matches Monk's per-Worker heap isolation. Avoids global lock contention.
-
-### 2. Cancellation
-
-**Decision**: Out-of-band signal (like Monk), not Responsum variant.
-
-```zig
-// Executor signals cancellation via context flag
-if (ctx.cancelled) {
-    // Cleanup and exit
-    return .done;
-}
-```
-
-**Rationale**: Adding `.cancelled` to Responsum complicates every switch statement. Separate signal is cleaner.
-
-For streaming consumers, provide explicit cancel:
-
-```fab
-ad "fasciculus:lege" ("large.bin") fiunt bytes pro chunk {
-    si chunk.size > MAX {
-        exi  # Break from stream (triggers cleanup)
-    }
-}
-```
-
-### 3. Nested Composition
-
-**Decision**: Inline for small futures (< 256 bytes), pointer for large.
-
-```zig
-// Small future: inline
-const OuterFuture = struct {
-    inner: InnerFuture,  // Inline, no allocation
-    // ...
-};
-
-// Large future: pointer
-const OuterFuture = struct {
-    inner_ptr: *LargeFuture,  // Heap-allocated
-    // ...
-};
-```
-
-**Rationale**: Inline avoids allocation overhead for common case. Pointer prevents bloat for complex compositions.
-
-**Implementation**: Compiler tracks future sizes during codegen. Threshold configurable.
-
-### 4. User-Defined Syscalls
-
-**Decision**: Not in v1. Compile-time syscall table only.
-
-**Rationale**: Runtime registration requires:
-
-- Type erasure (fighting Zig/Rust)
-- Dynamic dispatch overhead
-- Security concerns (arbitrary code execution)
-
-Future consideration: Allow `importa` to bring in typed syscall handlers at compile time.
-
-### 5. Direct Codegen Escape Hatch
-
-**Decision**: Opt-in via arrow binding (`->`), consistent with `functio` syntax.
-
-```fab
-# Standard: via protocol (observable, testable)
-ad "fasciculus:lege" ("file.txt") fiet textus pro content
-
-# Direct: bypass protocol (fast, less observable)
-ad "fasciculus:lege" ("file.txt") -> textus pro content
-```
-
-**Rationale**: Reuses existing arrow vs verb distinction from function declarations. No new syntax needed.
-
-**Trade-offs**:
-
-- Arrow bypasses logging, metrics, mocking
-- Arrow only works on TS/Python (compile error on Zig/Rust/C++)
-- Verb binding works on all targets
 
 ---
 
@@ -960,15 +1166,19 @@ Compiler injects auth check at function entry, not inside dispatcher.
 
 ---
 
-## Open Questions (Remaining)
+## Open Questions
 
-1. **Error context enrichment** — Should `.err` include stack trace or causality chain? Performance vs debuggability trade-off.
+1. **Error context enrichment** — Should `.err` include stack trace? Performance vs debuggability.
 
-2. **Streaming timeout configuration** — Per-syscall or global? How to specify in Faber syntax?
+2. **Streaming timeout** — Per-operation or global? Syntax for specifying?
 
-3. **Future size threshold** — 256 bytes for inline composition is arbitrary. Profile real-world futures to tune.
+3. **Future size threshold** — 256 bytes is arbitrary. Profile real-world futures.
 
-4. **Cross-target consistency** — How much divergence is acceptable between targets? (e.g., TS uses UUID, Zig uses counter)
+4. **Cross-target ID consistency** — TS uses UUID, Zig uses counter. Acceptable divergence?
+
+5. **Partial error semantics** — Consumer sees 100 items then `.err`. How to handle?
+
+---
 
 ## References
 
@@ -976,4 +1186,6 @@ Compiler injects auth check at function entry, not inside dispatcher.
 - `zig-async.md` — Zig-specific state machine details
 - `flumina.md` — Original Responsum protocol (TypeScript)
 - `two-pass.md` — Semantic analysis for liveness
-- Monk OS `AGENTS.md` — Inspiration for Handle/Message/Response patterns
+- `fons/norma/solum.fab` — File I/O stdlib definitions
+- `fons/norma/caelum.fab` — Network I/O stdlib definitions
+- `fons/norma/arca.fab` — Database stdlib definitions
