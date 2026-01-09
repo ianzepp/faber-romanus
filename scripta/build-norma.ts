@@ -250,6 +250,66 @@ function generateFaberCode(collections: CollectionDef[]): string {
 }
 
 // =============================================================================
+// JSON GENERATOR (flat key structure)
+// =============================================================================
+
+interface JsonTranslation {
+    method?: string;
+    template?: string;
+    params?: string[];
+}
+
+function generateJsonRegistry(collections: CollectionDef[]): string {
+    const registry: Record<string, JsonTranslation> = {};
+
+    for (const coll of collections) {
+        for (const [methodName, method] of coll.methods) {
+            for (const [target, trans] of method.translations) {
+                const key = `${coll.name}:${methodName}:${target}`;
+                const entry: JsonTranslation = {};
+
+                if (trans.method) {
+                    entry.method = trans.method;
+                }
+                if (trans.template) {
+                    entry.template = trans.template;
+                }
+                if (trans.params && trans.params.length > 0) {
+                    entry.params = trans.params;
+                }
+
+                registry[key] = entry;
+            }
+        }
+    }
+
+    const lines: string[] = ['{'];
+    const sortedKeys = Object.keys(registry).sort();
+
+    for (let i = 0; i < sortedKeys.length; i++) {
+        const key = sortedKeys[i];
+        const entry = registry[key];
+        const parts: string[] = [];
+
+        if (entry.method) {
+            parts.push(`"method": ${JSON.stringify(entry.method)}`);
+        }
+        if (entry.template) {
+            parts.push(`"template": ${JSON.stringify(entry.template)}`);
+        }
+        if (entry.params && entry.params.length > 0) {
+            parts.push(`"params": ${JSON.stringify(entry.params)}`);
+        }
+
+        const comma = i < sortedKeys.length - 1 ? ',' : '';
+        lines.push(`  ${JSON.stringify(key)}: { ${parts.join(', ')} }${comma}`);
+    }
+
+    lines.push('}');
+    return lines.join('\n') + '\n';
+}
+
+// =============================================================================
 // MAIN
 // =============================================================================
 
@@ -257,6 +317,7 @@ async function main() {
     const normaDir = join(import.meta.dir, '..', 'fons', 'norma');
     const outputTs = join(import.meta.dir, '..', 'fons', 'faber', 'codegen', 'norma-registry.gen.ts');
     const outputFab = join(import.meta.dir, '..', 'fons', 'rivus', 'codegen', 'norma-registry.gen.fab');
+    const outputJson = join(import.meta.dir, '..', 'fons', 'norma', 'index.json');
 
     const files = await readdir(normaDir);
     const fabFiles = files.filter(f => f.endsWith('.fab'));
@@ -313,6 +374,11 @@ async function main() {
     const fabCode = generateFaberCode(allCollections);
     await writeFile(outputFab, fabCode, 'utf-8');
     console.log(`Generated: ${outputFab}`);
+
+    // Generate JSON output (trial flat format)
+    const jsonCode = generateJsonRegistry(allCollections);
+    await writeFile(outputJson, jsonCode, 'utf-8');
+    console.log(`Generated: ${outputJson}`);
 }
 
 main().catch(err => {
