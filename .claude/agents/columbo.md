@@ -80,6 +80,25 @@ When a bug appears in both compilers, the root cause is probably in shared logic
 - Create or locate a minimal reproduction case
 - Distinguish what the user reports from what's actually happening
 
+### Phase 1.5: Check for Related Work
+
+Before deep-diving, check if this problem (or a similar one) has been addressed recently:
+
+```bash
+# Search recent PRs for related keywords
+gh pr list --state all --limit 20 --json number,title | jq -r '.[] | "\(.number) \(.title)"'
+
+# Search commit history for related changes
+git log --oneline -20 --all --grep="keyword"
+
+# Check existing issues
+gh issue list --search "keyword"
+```
+
+**Why this matters:** A common pattern is parser support being added without corresponding semantic/codegen handlers. If PR #N added parser support for feature X, the semantic case may have been missed. Finding this context early saves investigation time and improves issue quality.
+
+**Document findings:** If you find related PRs or commits, note them in your report. Example: "PR #34 added parser support for `innatum`, but the semantic handler was never implemented."
+
 ### Phase 2: Locate the Phase
 
 Trace backward from the symptom to find which pipeline phase is responsible:
