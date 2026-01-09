@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 /**
- * Full build: faber -> norma -> rivus -> exempla
+ * Full build: faber -> norma -> rivus -> artifex
+ *
+ * Each compiler stage is verified by running build:exempla against it.
  *
  * Usage:
- *   bun run build                        # faber, TypeScript (default)
- *   bun run build -t zig                 # faber, Zig
- *   bun run build -t all                 # faber, all targets
- *   bun run build -c rivus               # rivus, TypeScript
- *   bun run build -c rivus -t all        # rivus, all targets
+ *   bun run build                        # All stages, TypeScript (default)
+ *   bun run build -t zig                 # All stages, Zig
+ *   bun run build -t all                 # All stages, all targets
  */
 
 import { join } from 'path';
@@ -15,34 +15,18 @@ import { $ } from 'bun';
 
 const ROOT = join(import.meta.dir, '..');
 
-type Compiler = 'faber' | 'rivus';
 type Target = 'ts' | 'zig' | 'py' | 'rs' | 'all';
 
-const VALID_COMPILERS = ['faber', 'rivus'] as const;
 const VALID_TARGETS = ['ts', 'zig', 'py', 'rs', 'all'] as const;
 
-interface Args {
-    compiler: Compiler;
-    target: Target;
-}
-
-function parseArgs(): Args {
+function parseArgs(): { target: Target } {
     const args = process.argv.slice(2);
-    let compiler: Compiler = 'faber';
     let target: Target = 'ts';
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
 
-        if (arg === '-c' || arg === '--compiler') {
-            const c = args[++i];
-            if (!VALID_COMPILERS.includes(c as Compiler)) {
-                console.error(`Unknown compiler '${c}'. Valid: ${VALID_COMPILERS.join(', ')}`);
-                process.exit(1);
-            }
-            compiler = c as Compiler;
-        }
-        else if (arg === '-t' || arg === '--target') {
+        if (arg === '-t' || arg === '--target') {
             const t = args[++i];
             if (!VALID_TARGETS.includes(t as Target)) {
                 console.error(`Unknown target '${t}'. Valid: ${VALID_TARGETS.join(', ')}`);
@@ -52,7 +36,7 @@ function parseArgs(): Args {
         }
     }
 
-    return { compiler, target };
+    return { target };
 }
 
 async function step(name: string, fn: () => Promise<void>) {
@@ -64,25 +48,29 @@ async function step(name: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-    const { compiler, target } = parseArgs();
+    const { target } = parseArgs();
     const start = performance.now();
 
-    console.log(`Full build (exempla compiler: ${compiler}, target: ${target})\n`);
+    console.log(`Full build (target: ${target})\n`);
 
-    await step('build:faber', async () => {
+    await step('build:faber and verify', async () => {
         await $`bun run build:faber`.quiet();
+        await $`bun run build:exempla -c faber -t ${target}`.quiet();
     });
 
     await step('build:norma', async () => {
         await $`bun run build:norma`.quiet();
     });
 
-    await step('build:rivus', async () => {
+    await step('build:rivus and verify', async () => {
         await $`bun run build:rivus`.quiet();
+        await $`bun run build:exempla -c rivus -t ${target}`.quiet();
     });
 
-    console.log('');
-    await $`bun run build:exempla -c ${compiler} -t ${target}`;
+    await step('build:artifex and verify', async () => {
+        await $`bun run build:artifex`.quiet();
+        await $`bun run build:exempla -c artifex -t ${target}`.quiet();
+    });
 
     const elapsed = performance.now() - start;
     console.log(`\nFull build complete (${(elapsed / 1000).toFixed(1)}s)`);

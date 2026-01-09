@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 /**
- * Compile fons/exempla/ using faber or rivus.
+ * Compile fons/exempla/ using faber, rivus, or artifex.
  *
  * Usage:
  *   bun run build:exempla                    # faber, TypeScript (default)
  *   bun run build:exempla -t zig             # faber, Zig
  *   bun run build:exempla -t all             # faber, all targets
  *   bun run build:exempla -c rivus           # rivus, TypeScript
- *   bun run build:exempla -c rivus -t all    # rivus, all targets
+ *   bun run build:exempla -c artifex         # artifex (self-hosted), TypeScript
  */
 
 import { mkdir, readdir, rm, stat } from 'fs/promises';
@@ -18,10 +18,10 @@ const ROOT = join(import.meta.dir, '..');
 const EXEMPLA_SOURCE = join(ROOT, 'fons', 'exempla');
 const EXEMPLA_OUTPUT = join(ROOT, 'opus', 'exempla');
 
-type Compiler = 'faber' | 'rivus';
+type Compiler = 'faber' | 'rivus' | 'artifex';
 type Target = 'ts' | 'zig' | 'py' | 'rs';
 
-const VALID_COMPILERS = ['faber', 'rivus'] as const;
+const VALID_COMPILERS = ['faber', 'rivus', 'artifex'] as const;
 const VALID_TARGETS = ['ts', 'zig', 'py', 'rs', 'all'] as const;
 const ALL_TARGETS: Target[] = ['ts', 'zig', 'py', 'rs'];
 const TARGET_EXT: Record<Target, string> = { ts: 'ts', zig: 'zig', py: 'py', rs: 'rs' };
