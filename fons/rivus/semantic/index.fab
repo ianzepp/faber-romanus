@@ -88,11 +88,14 @@ functio predeclare(Resolvitor r, Sententia stmt) -> vacuum {
         # Function declaration - register name with function type
         casu FunctioDeclaratio ut f {
             # Build placeholder function type
+            # WHY: Use IGNOTUM (not VACUUM) when return type is declared, matching faber.
+            # This allows forward function calls to pass type checks during body analysis.
             varia paramTypi = [] innatum lista<SemanticTypus>
             ex f.parametra pro param {
                 paramTypi.adde(IGNOTUM)
             }
-            fixum fnTypus = functioTypus(paramTypi, VACUUM, f.asynca, falsum)
+            fixum reditusTypus = nonnihil f.typusReditus sic IGNOTUM secus VACUUM
+            fixum fnTypus = functioTypus(paramTypi, reditusTypus, f.asynca, falsum)
 
             a.definie({
                 nomen: f.nomen,
