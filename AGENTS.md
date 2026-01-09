@@ -2,6 +2,10 @@
 
 A Latin programming language compiler ("The Roman Craftsman").
 
+## Grammar Reference
+
+See `EBNF.md` for the formal specification, `fons/grammatica/*.md` for prose tutorials, and `fons/exempla/` or `fons/rivus/` for working examples.
+
 ## Project Layout
 
 ```
@@ -219,10 +223,6 @@ Output varies by target:
 - TS: `` `Hello, ${name}!` ``
 - Python: `"Hello, {}!".format(name)`
 - C++/Rust/Zig: `format(...)` family
-
-## Grammar Reference
-
-See `EBNF.md` for the formal specification, `fons/grammatica/*.md` for prose tutorials, and `fons/exempla/` or `fons/rivus/` for working examples.
 
 ## Primitive Types
 
