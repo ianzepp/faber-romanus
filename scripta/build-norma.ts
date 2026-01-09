@@ -307,8 +307,8 @@ function generateJsonRegistry(collections: CollectionDef[]): string {
     const sortedKeys = Object.keys(registry).sort();
 
     for (let i = 0; i < sortedKeys.length; i++) {
-        const key = sortedKeys[i];
-        const entry = registry[key];
+        const key = sortedKeys[i]!;
+        const entry = registry[key]!;
         const parts: string[] = [];
 
         if (entry.innatum) {
@@ -341,7 +341,6 @@ function generateJsonRegistry(collections: CollectionDef[]): string {
 
 async function main() {
     const normaDir = join(import.meta.dir, '..', 'fons', 'norma');
-    const outputTs = join(import.meta.dir, '..', 'fons', 'faber', 'codegen', 'norma-registry.gen.ts');
     const outputFab = join(import.meta.dir, '..', 'fons', 'rivus', 'codegen', 'norma-registry.gen.fab');
     const outputJson = join(import.meta.dir, '..', 'fons', 'norma', 'index.json');
 
@@ -390,11 +389,6 @@ async function main() {
             console.log(`  ${file}: ${coll.name} with ${coll.methods.size} method(s)`);
         }
     }
-
-    // Generate TypeScript output (for Faber)
-    const tsCode = generateRegistryCode(allCollections);
-    await writeFile(outputTs, tsCode, 'utf-8');
-    console.log(`Generated: ${outputTs}`);
 
     // Generate Faber output (for Rivus)
     const fabCode = generateFaberCode(allCollections);
