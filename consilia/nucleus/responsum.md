@@ -187,34 +187,43 @@ ex solum.legens("missing.txt") pro chunk {
 
 ---
 
-## Known Issues
+## Design Decisions (Resolved)
 
-### Protocol Naming Inconsistency
+### Protocol Naming: Latin Canonical
 
-**Problem**: The existing TypeScript preamble uses `{ op: 'bene' }`, `{ op: 'res' }`, `{ op: 'factum' }` while this design shows `.ok`, `.item`, `.done`.
+**Decision**: Use Latin names everywhere. The TS implementation (`bene`/`res`/`factum`) is canonical.
 
-**Impact**: Silent semantic drift between implementation and design. Cross-target conformance tests will fail.
+**Rationale**: The Responsum protocol is internal to compiled code—users never see it directly. Latin naming aligns with Faber's identity. Design docs should use Latin names to match implementation.
 
-**Resolution needed**: Decide on canonical names and update either the code or the design.
+| Discriminant | Latin | Meaning | Terminal |
+|--------------|-------|---------|----------|
+| Success | `bene` | "well" | Yes |
+| Item | `res` | "thing" | No |
+| Done | `factum` | "done/made" | Yes |
+| Pending | `pendens` | "hanging/waiting" | No |
+| Error | `malum` | "bad/evil" | Yes |
 
-| Current Code | Design Doc | Latin Meaning |
-|--------------|------------|---------------|
-| `bene` | `ok` | "well" (success) |
-| `res` | `item` | "thing" (item) |
-| `factum` | `done` | "done/made" (complete) |
+### Protocol Shapes Vary by Target
 
-### Missing `.pending` in TypeScript
+**Decision**: TS does not need `.pendens`. Protocol shapes can legitimately vary by target.
 
-**Problem**: The TS implementation has no `.pending` variant, but the design requires it for poll-based targets.
+**Rationale**: The whole point of Nucleus is that each target uses its native async model. TS uses native async/await where suspension is implicit. Zig/Rust/C++ use poll-based state machines where `.pendens` signals "call me again."
 
-**Impact**: If TS code ever needs to interoperate with Zig (via FFI or IPC), the protocol shapes diverge.
+What matters is semantic equivalence:
+- `bene` = success, stream ends
+- `res` = yielded item, stream continues
+- `factum` = stream complete
+- `malum` = error, stream ends
 
-**Resolution needed**: Add `.pending` to TypeScript Responsum type, even if native async iteration means it's rarely used.
+The *presence* of `.pendens` is a target implementation detail, not a protocol requirement.
 
-### No Error Code Taxonomy
+### Error Handling: Keep `iace` Untyped
 
-**Problem**: Responsum uses `{ code: string, message: string }` for errors, but what codes exist? Different syscalls will produce different error conditions.
+**Decision**: No error taxonomy for now. `iace` remains untyped (throws any expression).
 
-**Impact**: Without a defined taxonomy, error handling becomes string-matching guesswork. Zig's approach (typed error sets) and the design's approach (opaque strings) are fundamentally incompatible.
+**Rationale**: Defining a cross-target error type system is a larger design effort. Current codegen does best-effort mapping:
+- TS: `throw expr`
+- Zig: `return error.ErrorName` (string→PascalCase conversion)
+- Rust: `return Err(expr)`
 
-**Resolution needed**: Define error code registry mapping POSIX codes (ENOENT, EACCES, etc.) to Responsum `.err` codes, with target-specific translations.
+This is adequate for v1. Revisit if the string→PascalCase hack causes real problems in Zig codegen.

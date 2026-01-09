@@ -67,33 +67,27 @@ See [streaming.md](streaming.md) for the full design philosophy.
 
 *Reviewed: 2026-01-09*
 
-### Key Findings
+### Resolved Findings
 
-1. **Protocol discriminant naming inconsistency** — Existing TS implementation uses `bene`/`res`/`factum` but design shows `ok`/`item`/`done`. This will cause silent semantic drift.
+| # | Finding | Resolution |
+|---|---------|------------|
+| 1 | Protocol discriminant naming inconsistency | **Latin canonical.** TS implementation (`bene`/`res`/`factum`/`pendens`) is correct. Update design docs to match. See [responsum.md](responsum.md). |
+| 2 | Missing `.pending` in TS implementation | **Not needed.** Protocol shapes vary by target. TS uses native async; `.pendens` is only for poll-based targets. |
+| 3 | Circular dependency between Nucleus and `ad` | **Resolved.** `ad` is compile-time syntax; Nucleus owns runtime dispatch. See [dispatch.md](dispatch.md). |
+| 4 | Allocator threading declared but not designed | **Use `cura`/`curator`.** Existing language mechanism handles allocator scoping. See [executor.md](executor.md). |
+| 5 | User-defined `fiet` functions don't fit derivation chain | **Verb triggers codegen.** The verb (`fit`/`fiet`/`fient`) signals Responsum codegen, regardless of call target. |
+| 6 | stdlib `@ verte` annotations bypass derivation model | **Parked.** May resolve naturally. Hand-written implementations acceptable for stdlib if documented. |
+| 7 | No error code taxonomy | **Keep `iace` untyped.** Codegen does best-effort mapping per target. Revisit if problems arise. |
+| 8 | Blocking I/O in Phase 3 can't validate async design | **Validate async early.** Build minimal proof-of-concept (one syscall, one target) before full syscall surface. |
 
-2. **Missing `.pending` in TS implementation** — The design requires it for poll-based targets. If TS ever needs to interoperate with Zig (via FFI or IPC), the protocol shapes diverge.
+### Recommendations (Status)
 
-3. **Circular dependency between Nucleus and `ad`** — Document says "Nucleus runtime is the execution layer beneath `ad`" but also shows syscall handlers being dispatched through Nucleus. Unclear who owns registration.
-
-4. **Allocator threading declared but not designed** — Decision says "Per-request allocator, inherited from parent" but no mechanism shown.
-
-5. **User-defined `fiet` functions don't fit derivation chain** — Only stdlib operations shown going through syscall table.
-
-6. **stdlib `@ verte` annotations bypass derivation model** — Shows direct function calls, not `block_on(collect(...))`.
-
-7. **No error code taxonomy** — Zig typed errors vs opaque strings are fundamentally incompatible.
-
-8. **Blocking I/O in Phase 3 can't validate async design** — Bugs won't surface until Phase 4.
-
-### Recommendations
-
-1. **Establish protocol conformance tests immediately** — Before more codegen work, validate Responsum semantics are identical across targets.
-
-2. **Sequence semantic analysis work explicitly** — Create dependency graph: (liveness analysis) → (state machine shape) → (Zig codegen). Don't start Phase 3 without semantic prerequisites.
-
-3. **Resolve stdlib annotation vs derivation chain conflict** — Either update annotations to emit derivation calls, or document why hand-written implementations are acceptable.
-
-4. **Define error code registry** — Document stdlib error codes and how they map to each target's native error system.
+| # | Recommendation | Status |
+|---|----------------|--------|
+| 1 | Establish protocol conformance tests | **Future work.** New `fons/probationes/` structure using Faber's `proba` syntax. See [probationes.md](../futura/probationes.md). |
+| 2 | Sequence semantic analysis work | **Adopted.** Build order: two-pass → canThrow → liveness → state machine → Zig codegen. |
+| 3 | Resolve stdlib annotation conflict | **Parked.** See finding #6. |
+| 4 | Define error code registry | **Deferred.** See finding #7. |
 
 ## References
 

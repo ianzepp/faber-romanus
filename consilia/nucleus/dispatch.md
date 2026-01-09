@@ -153,20 +153,32 @@ If concurrent, how does the user `cede` both and wait for whichever completes fi
 
 ---
 
-## Known Issues
+## Design Decisions (Resolved)
 
-### Circular Dependency
+### `ad` is Compile-Time Syntax; Nucleus Owns Runtime
 
-**Problem**: Document says "Nucleus runtime is the execution layer beneath `ad`" but also shows syscall handlers being dispatched through Nucleus. The `ad` design doc says handlers are "registered in a syscall table" but Nucleus says "compile-time syscall table only."
+**Decision**: `ad` is purely syntactic sugar that the compiler erases. Nucleus owns both dispatch and syscall handlers at runtime.
 
-**Question**: Who owns registration? Nucleus or `ad` dispatcher?
+**Rationale**: The apparent circular dependency dissolves when you recognize the layering:
 
-**Resolution needed**: Clarify component boundaries and ownership.
+```
+Faber source (ad solum.legens)
+       ↓ compiler
+Syscall invocation (nucleus.solum.legens)
+       ↓ runtime dispatch
+Syscall handler (yields Responsum)
+       ↓
+Target I/O (Bun fs, Zig std, etc.)
+```
 
-### stdlib Annotations Bypass Derivation
+`ad` doesn't exist at runtime. The compiler transforms `ad "solum:lege"` into direct calls to Nucleus handlers. Nucleus owns the syscall table (compile-time for Zig/Rust/C++, potentially runtime for TS/Python).
 
-**Problem**: `solum.fab` annotations show `@ verte zig (path, alloc) -> "solum.lege(§1, §0)"` which assumes `solum.lege` is a standalone Zig function. But Nucleus says `lege` is derived from `legens` by blocking on a collected stream.
+### stdlib Annotations: Parked
 
-**Options**:
-- Update stdlib annotations to emit derivation calls: `block_on(collect(solum.legens(...)))`
-- Acknowledge that hand-written Zig implementations bypass the derivation model and document why that's acceptable
+**Status**: Deferred. The tension between `@ verte` hand-written implementations and the derivation model may resolve naturally as other decisions are made.
+
+**Context**: `solum.fab` annotations assume standalone Zig functions exist. The derivation model says `lege` = `block_on(collect(legens))`. These can coexist:
+- Derivation model describes the *semantic* relationship
+- `@ verte` annotations provide *implementation* escape hatches for performance-critical paths
+
+Document explicitly if hand-written implementations are acceptable for stdlib (likely yes).

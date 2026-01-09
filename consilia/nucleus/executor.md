@@ -213,11 +213,21 @@ const ExecutorContext = struct {
 - Can futures be transferred between executors?
 - What if syscall handlers use shared global state (e.g., file descriptor table)?
 
-### Allocator Threading
+### Allocator Threading (Resolved)
 
-**Problem**: Decision says "Per-request allocator, inherited from parent" but no mechanism shown. Nested futures need allocator access; how does a child future obtain its parent's allocator?
+**Decision**: Use existing `cura`/`curator` mechanism. No new Nucleus-specific design needed.
 
-**Resolution needed**: Design the allocator inheritance mechanism explicitly.
+**Rationale**: Faber already solves allocator threading at the language level:
+- `cura` blocks push allocators onto a stack for implicit injection
+- `curator` function suffix binds an allocator to a function without polluting its signature
+
+Nucleus doesn't need its own mechanism—it inherits whatever allocator is in scope via the existing stack injection model.
+
+**Codegen per target:**
+- **Zig/Rust/C++**: Syscall implementations access the current allocator from the `cura` stack (thread-local or context pointer)
+- **TS/Python**: Ignored entirely; GC handles it
+
+The "per-request allocator, inherited from parent" statement describes the *semantic guarantee*, not a new mechanism. The mechanism is `cura`.
 
 ### Backpressure Concerns
 
