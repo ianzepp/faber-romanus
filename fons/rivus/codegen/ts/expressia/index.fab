@@ -10,12 +10,12 @@ ex "../nucleus" importa TsGenerator
 ex "../typus" importa genTypus
 ex "../../../parser/morphologia" importa parseMethodum
 ex "../../radices" importa generaListaMethodum
+ex "../../norma-registry.gen" importa getNormaTranslation, VerteTranslation
 ex "./littera" importa genLittera, genLitteraExemplar
 ex "./scriptum" importa genScriptum
 ex "./ambitus" importa genAmbitusExpressia
 ex "./est" importa genEstExpressia, genEstExpressiaNegata
 ex "./obiectum" importa genObiectum
-
 # =============================================================================
 # EXPRESSION DISPATCH
 # =============================================================================
@@ -304,29 +304,49 @@ functio genExpressia(Expressia expr, TsGenerator g) -> textus {
                 args.adde(genExpressia(arg, g))
             }
 
-            # WHY: Morphology dispatch is receiver-bound and semantic-gated.
-            si nonnihil e.morphologia {
-                discerne e.vocatum {
-                    casu MembrumExpressia ut m {
-                        si non (m.computatum qua bivalens) {
-                            discerne m.proprietas {
-                                casu Nomen ut prop {
-                                    fixum methodNomen = prop.valor qua textus
+            # WHY: Check for stdlib method translation via norma-registry.
+            # This handles lista, tabula, copia, textus, etc. method calls.
+            discerne e.vocatum {
+                casu MembrumExpressia ut m {
+                    si non (m.computatum qua bivalens) {
+                        discerne m.proprietas {
+                            casu Nomen ut prop {
+                                fixum methodNomen = prop.valor qua textus
+                                fixum obj = genExpressia(m.obiectum, g)
+
+                                # WHY: Try norma translation if we have receiver type info.
+                                si nonnihil e.morphologia {
+                                    fixum recipiens = (e.morphologia qua MorphologiaInvocatio).recipiens
+                                    fixum translation = getNormaTranslation("ts", recipiens, methodNomen)
+
+                                    si nonnihil translation {
+                                        # Simple method rename: use translated method name
+                                        si nonnihil translation.method {
+                                            fixum optMark = (e.optivum qua bivalens) sic "?." secus ""
+                                            redde scriptum("§§.§(§)", obj, optMark, translation.method, args.coniunge(", "))
+                                        }
+
+                                        # Template-based translation
+                                        si nonnihil translation.template et nonnihil translation.params {
+                                            redde applyNormaTemplate(translation.template qua textus, translation.params qua lista<textus>, obj, args)
+                                        }
+                                    }
+
+                                    # Fallback: generaListaMethodum for lista morphology patterns
                                     fixum parsed = parseMethodum(methodNomen)
-                                    si nonnihil parsed et (e.morphologia qua MorphologiaInvocatio).recipiens == "lista" {
-                                        fixum obj = genExpressia(m.obiectum, g)
+                                    si nonnihil parsed et recipiens == "lista" {
                                         fixum result = generaListaMethodum((e.morphologia qua MorphologiaInvocatio).radix, obj, args, parsed.flagga)
                                         si nonnihil result {
                                             redde result
                                         }
                                     }
                                 }
-                                casu _ { }
                             }
+                            casu _ { }
                         }
                     }
-                    casu _ { }
                 }
+                casu _ { }
             }
 
             # Default: pass through as-is
@@ -784,6 +804,80 @@ functio legeNumerusTextus(textus crudus) -> numerus {
         result = result * 10 + digit
         i += 1
     }
+    redde result
+}
+
+# =============================================================================
+# NORMA TRANSLATION HELPERS
+# =============================================================================
+
+# Apply a norma template translation with parameter substitution.
+# WHY: Norma templates use § placeholders that map to params.
+# - 'ego' maps to the receiver object
+# - Other params consume args in order
+# - §0, §1 etc. are explicit indices into the values array
+# - Plain § uses implicit positional indexing
+functio applyNormaTemplate(textus template, lista<textus> params, textus obj, lista<textus> args) -> textus {
+    # Build values array: ego -> obj, other params -> args
+    varia values = [] innatum lista<textus>
+    varia argIdx = 0
+    ex params pro param {
+        si param == "ego" {
+            values.adde(obj)
+        } secus {
+            si argIdx < args.longitudo() {
+                values.adde(args[argIdx])
+                argIdx += 1
+            } secus {
+                values.adde("")
+            }
+        }
+    }
+
+    # Replace § placeholders
+    varia result = ""
+    varia i = 0
+    varia implicitIdx = 0
+
+    dum i < template.longitudo() {
+        fixum c = template[i]
+        si c == "§" {
+            # Check for explicit index (§0, §1, etc.)
+            si i + 1 < template.longitudo() {
+                fixum next = template[i + 1]
+                si next >= "0" et next <= "9" {
+                    # Parse the index
+                    varia idxStr = ""
+                    varia j = i + 1
+                    dum j < template.longitudo() {
+                        fixum digit = template[j]
+                        si digit >= "0" et digit <= "9" {
+                            idxStr = idxStr + digit
+                            j += 1
+                        } secus {
+                            rumpe
+                        }
+                    }
+                    fixum idx = legeNumerusTextus(idxStr)
+                    si idx < values.longitudo() {
+                        result = result + values[idx]
+                    }
+                    i = j
+                    perge
+                }
+            }
+            # Implicit positional: plain §
+            si implicitIdx < values.longitudo() {
+                result = result + values[implicitIdx]
+            }
+            implicitIdx += 1
+            i += 1
+        } secus {
+            result = result + c
+            i += 1
+        }
+    }
+
     redde result
 }
 
