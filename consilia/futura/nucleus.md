@@ -39,6 +39,65 @@ Async Generator (primitive)
 4. **Backpressure built-in** — Consumer controls pace via poll frequency
 5. **Buffer management** — Base streaming impl uses fixed internal buffers; derived batch forms add allocation on top
 
+### Streaming-First Edge Cases
+
+**Streaming is not always natural**: While I/O is often streaming, some operations are inherently atomic:
+- File existence check (`solum.exstat`) — yes/no, no streaming
+- Small config files (< 4KB) — overhead of streaming exceeds benefit
+- DNS lookups — single result, not a stream
+- Random access (seek to byte N) — streaming model forces reading preceding bytes
+
+Should these operations bypass streaming and return `.ok` directly? Or force them through streaming for API consistency?
+
+**Partial read complications**: Streaming file reads can stop midway (user breaks loop, error occurs, etc.). This leaves:
+- File descriptor unclosed (resource leak)
+- File lock held (blocks other processes)
+- Partial state in consumer (half-processed data)
+
+Options:
+- Require explicit cleanup: `cape` blocks must close handles
+- Automatic cleanup via RAII: `cura` blocks track handles and close on scope exit
+- Finalizers (TS/Python only): Register cleanup on cursor, run on GC
+
+**Small file streaming overhead**: Consider a 10-byte config file. Streaming approach:
+1. Allocate buffer (4096 bytes)
+2. Open file
+3. Read chunk (10 bytes)
+4. Yield `.item`
+5. Read again (EOF, 0 bytes)
+6. Yield `.done`
+7. Close file
+
+Batch approach:
+1. Open file
+2. Read all (10 bytes)
+3. Close file
+4. Return bytes
+
+Streaming has 3-4x more operations. For files < chunk size, batch is strictly better. Should the compiler or stdlib detect this and optimize automatically?
+
+**Streaming interrupts compiler optimizations**: When collecting a stream, the compiler can't optimize across suspend points. Example:
+
+```fab
+# Streaming
+varia sum = 0
+ex solum.legens("numbers.txt") pro chunk {
+    sum = sum + parse(chunk)  # Suspend between chunks
+}
+```
+
+The loop body can't be optimized as a tight loop — each iteration may suspend. Batch form:
+
+```fab
+fixum content = solum.lege("numbers.txt")
+varia sum = 0
+ex content.split("\n") pro line {
+    sum = sum + parse(line)  # No suspend, optimizer can vectorize
+}
+```
+
+Batch enables SIMD, loop unrolling, and other optimizations. For CPU-bound workloads, batch > streaming.
+
 **Memory efficiency example:**
 
 ```fab
@@ -162,6 +221,58 @@ The derivation is explicit:
 - `leget()` = collect(`legens()`) → single value, async
 - `lege()` = block_on(`leget()`) → single value, sync
 
+### Latin Conjugation Concerns
+
+**Stem irregularities**: Not all Latin verbs conjugate regularly. Example: "to write" has multiple stems:
+- `scribere` (infinitive) → `scribens` (present participle) ✓ regular
+- `scribere` → `scribet` (future indicative) ✓ regular
+- But imperative is `scribe` not `scribere` ✓ different stem
+
+The stdlib uses `inscribe` (compound form) for sync write. This works, but users defining custom verbs must know Latin morphology. Is this sustainable? Should there be a verb conjugation validator in the compiler?
+
+**Morphological ambiguity**: Some Latin verbs have identical forms across tenses. Example:
+- `audit` could be "he hears" (present) or "he heard" (perfect)
+- `legit` could be "he reads" (present) or "he read" (perfect)
+
+Faber uses verb endings to encode semantics, not tense. But when users read `leget`, do they parse it as:
+- Future tense ("will read")? ✓ intended
+- Present tense third person ("he reads")? ✗ misleading
+
+This is acceptable for developers who learn the Faber conventions, but increases learning curve.
+
+**Verb form collisions with other keywords**: The document shows:
+- `fit` = sync return
+- `fiet` = async return
+
+But `fit` also means "becomes" in Latin (third person singular). If user code says `x fit y`, is this:
+- Assignment (x becomes y)?
+- Function declaration (x returns y)?
+
+Context disambiguates, but it's subtle. Could lead to confusing error messages.
+
+**Non-Latin developer experience**: Developers unfamiliar with Latin must memorize arbitrary-looking endings:
+- `-ens` = streaming
+- `-et` = async
+- `-e` = sync
+
+These mappings are opaque without Latin knowledge. Should the docs include a "cheat sheet" mapping Latin forms to programmer-familiar concepts (e.g., "legens = async iterator")?
+
+**Verb radix annotation incompleteness**: The `@ radix` annotation lists valid verb forms, but what if a user tries to use an unlisted form? Example:
+
+```fab
+@ radix leg, participium_praesens, futurum_indicativum
+functio legens(...) -> cursor<octeti>
+functio leget(...) -> textus
+
+# User tries:
+solum.legent(...)  # future passive (not listed)
+```
+
+Should this be:
+- Compile error (unlisted form)?
+- Interpreted as method call on `solum` (falls back to method resolution)?
+- Allowed if signature matches (lenient radix checking)?
+
 ---
 
 ## Stdlib Examples
@@ -232,6 +343,35 @@ ex connexio.lege("SELECT * FROM users", []) pro row {
 fixum users = collige(connexio.lege("SELECT * FROM users", []))
 ```
 
+### Database Streaming Concerns
+
+**Transaction boundaries**: If a query streams 1000 rows but the transaction commits or rolls back midway, what happens to remaining rows? Options:
+- Stream becomes invalid, future `poll()` calls return `.err`
+- Stream continues with stale data (phantom reads)
+- Cursor holds transaction open until `.done` (long-lived transactions, lock contention)
+
+**Connection pooling**: If `connexio.lege()` returns a cursor, who owns the underlying connection? If connection returns to pool before cursor completes, next `poll()` may use a different connection. This breaks cursor state. Solutions:
+- Cursor borrows connection until `.done` (limits pool utilization)
+- Cursor buffers all rows upfront (defeats streaming)
+- Database-specific cursor IDs (not all DBs support server-side cursors)
+
+**Query parameter hygiene**: The signature is `lege(textus sql, lista<quidlibet> params)`. How are params bound?
+- Positional (`$1`, `$2`) — works for Postgres, SQLite
+- Named (`:name`) — works for SQLite, Oracle
+- Question marks (`?`) — works for SQLite, MySQL
+
+Cross-database compatibility requires either:
+- Standardizing on one param style (breaks DB idioms)
+- Per-DB translations (complex, error-prone)
+- User specifies style via type/annotation (additional API surface)
+
+**Null handling in series**: If a column value is NULL, what does `row.nomen` return? Options:
+- `ignotum` (nullable type) — requires all column access to check nullability
+- `nihil` — but then type is `textus | nihil`, complicates non-null columns
+- Panic on NULL access — forces explicit NULL handling
+
+**Large objects (LOBs)**: For BLOB/CLOB columns, should the stream return the LOB inline or as a handle? Inline bloats memory; handles require separate fetch calls. Postgres returns LOBs as file descriptors. SQLite inlines. Need per-DB handling or unified abstraction?
+
 ---
 
 ## Responsum Protocol
@@ -291,6 +431,24 @@ The Responsum protocol is not overhead—it's the unifying abstraction:
 │  Target Runtime (Bun, Python, Zig std, etc.)                │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### Architecture Concerns
+
+**Boundary clarity**: Where does Nucleus end and user code begin? If a user defines their own `cursor<T>` producer, is it "inside" Nucleus or "outside"? This affects:
+- Whether user generators must use Responsum protocol
+- Whether user code can bypass the executor
+- Whether custom I/O sources integrate with backpressure
+
+**Preamble size**: Every Faber program targeting Zig will include the Nucleus runtime in its preamble. For small programs (like "hello world"), this overhead may dominate binary size. Considerations:
+- Dead code elimination: Can unused syscall handlers be stripped?
+- Incremental compilation: Can Nucleus be pre-compiled as a static library?
+- Minimal subset: Can programs opt into "Nucleus-lite" that only includes what they use?
+
+**Version skew**: If Nucleus is distributed as a runtime library (for Zig/Rust/C++), updating Nucleus requires rebuilding all programs. If it's emitted per-program (in preamble), different programs may have different Nucleus versions. Which model?
+- Preamble: No runtime dependency, but code duplication and version fragmentation
+- Library: Shared code, versioning complexity, potential ABI breaks
+
+**Cross-module calls**: If module A uses `fiet` and module B uses `fit`, and B calls A, the compiler must insert `block_on` at the boundary. This is tricky when modules are compiled separately. Does semantic analysis need whole-program visibility? Or do we require explicit `cede` at async call sites?
 
 ---
 
@@ -372,6 +530,28 @@ pub fn collect(comptime T: type, stream: *OpStream(T), ctx: *ExecutorContext, al
     }
 }
 ```
+
+### Executor Concerns
+
+**Unbounded collection**: The `collect()` function allocates unbounded memory. If a stream produces millions of items, `collect()` will allocate a massive slice. This can OOM. Considerations:
+- Should `collect()` accept a max item count? `collect(stream, ctx, allocator, max_items: 10000)`
+- Should there be a separate `collectLimited()` variant?
+- Should the user be warned (via documentation) that `collect()` is unsafe for unbounded streams?
+
+**Error detail loss**: `collect()` returns generic `error.ResponsumError`, discarding the actual error code and message. Caller can't distinguish "file not found" from "permission denied". Options:
+- Return `ResponsumError` struct with full context?
+- Thread Zig error unions through (`!T` where T can be another error union)?
+- Keep it simple and require caller to catch errors before collection?
+
+**Cancellation during wait**: If `ctx.wait_for_io()` blocks indefinitely and user wants to cancel, how? The function signature doesn't support cancellation tokens. This means:
+- Long-running streams can't be interrupted gracefully
+- Ctrl+C during `wait_for_io()` may leak resources
+- Need to clarify: Is cancellation in-scope for v1 Nucleus, or deferred to later?
+
+**Concurrent executor instances**: If multiple threads each have their own `ExecutorContext`, can they safely coexist? The design doc doesn't specify thread-safety guarantees. Questions:
+- Is `ExecutorContext` thread-local only?
+- Can futures be transferred between executors?
+- What if syscall handlers use shared global state (e.g., file descriptor table)?
 
 ### 3. Handle Abstraction
 
@@ -476,6 +656,49 @@ For streaming operations, the executor implements flow control:
 
 (Latin: aqua alta = high water, aqua bassa = low water)
 
+### Backpressure Concerns
+
+**Watermark granularity**: The constants above are item-count based. For streams where items vary widely in size (e.g., file chunks: 4KB vs 4MB), item count is a poor proxy for memory pressure. Considerations:
+- Should watermarks be byte-based for certain stream types?
+- Should there be per-stream-type watermark configuration?
+- Can users override watermarks for performance-critical streams?
+
+**Consumer liveness detection failure modes**: The 100ms ping interval and 5s timeout assume low-latency networks. In high-latency or lossy networks:
+- Ping may arrive late, falsely triggering timeout
+- Consumer may be alive but slow-processing (e.g., writing to slow disk)
+- Spurious timeouts abort streams prematurely
+
+Should timeout be:
+- Adaptive (increase timeout if consumer consistently responds slowly)?
+- Configurable per stream type (file I/O vs network vs database)?
+- Disabled for local-only operations (solum operations don't need liveness checks)?
+
+**Cross-executor backpressure**: If producer runs in executor A and consumer runs in executor B (multi-threaded), how is backpressure signaled? The design assumes single-executor model. Multi-executor would require:
+- Shared atomic counters for `sent - acked`
+- Cross-thread signaling (condition variables or channels)
+- Potential deadlock if both executors wait for each other
+
+**Native async backpressure assumptions**: The doc states "Backpressure is naturally enforced by consumer-driven iteration" for TS/Python. But what if the consumer is not the direct caller?
+
+```typescript
+// Producer yields faster than consumer processes
+for await (const item of stream) {
+    await slowOperation(item);  // Blocks here
+}
+```
+
+If `slowOperation` is async, the loop pauses, which naturally applies backpressure. But if operations are dispatched to a queue:
+
+```typescript
+for await (const item of stream) {
+    queue.add(() => slowOperation(item));  // Non-blocking
+}
+```
+
+The queue fills unbounded. "Natural backpressure" doesn't apply. Should Nucleus detect this pattern and warn?
+
+**Backpressure bypass**: What if user code manually calls `poll()` in a tight loop, ignoring `.pending`? The watermark system is advisory, not enforced. Malicious or buggy code can OOM the system. Is this acceptable (user error), or should there be hard limits?
+
 ---
 
 ## Error Handling
@@ -506,11 +729,21 @@ ex solum.legens("missing.txt") pro chunk {
 2. Define `OpStream<T>` interface per target
 3. Implement basic `Executor` with `run()` and `collect()`
 
+**Phase 1 Concerns**:
+- **Preamble explosion**: Each target needs its own preamble. Maintaining 5 copies of Responsum definition risks divergence. Consider codegen from a single source of truth.
+- **Testing across targets**: Protocol semantics must be identical. How do we validate this? Cross-target integration tests? Formal specification?
+- **Responsum size**: For Zig, a `union(enum)` with `.err` containing strings may be large. Stack vs heap allocation trade-off affects every operation.
+
 ### Phase 2: TypeScript Runtime
 
 1. Use native `AsyncIterable<Responsum<T>>` for OpStream
 2. Implement `run()`, `collect()` as async functions
 3. Wire solum/caelum handlers using Node.js APIs
+
+**Phase 2 Concerns**:
+- **Node.js vs Bun APIs**: The doc says "using Node.js APIs" but the project uses Bun. Are Node APIs sufficient, or do Bun-specific APIs offer performance wins (e.g., `Bun.file()` vs `fs.readFile`)?
+- **Error translation**: Node.js errors (e.g., `ENOENT`) must be translated to Responsum `.err` format. What's the canonical mapping? Some errors have structured data (errno codes, syscall names). Do we preserve this?
+- **Stream abort handling**: If user breaks from `for await` loop, the stream should clean up. Does `AsyncIterable` finalization handle this, or do we need explicit `.return()` calls?
 
 ### Phase 3: Zig Runtime
 
@@ -521,17 +754,32 @@ ex solum.legens("missing.txt") pro chunk {
 5. Implement solum handlers using `std.fs`
 6. Implement caelum handlers using `std.http`
 
+**Phase 3 Concerns**:
+- **Zig stdlib volatility**: Zig 0.15 just overhauled I/O APIs ("Writergate"). If Phase 3 starts on Zig 0.15 but Zig 0.16 changes APIs again, handlers need rewriting. Mitigation: Wrap Zig APIs in a stable internal interface.
+- **Allocator propagation**: Every handler needs an allocator. Tracking allocators through deeply nested calls is error-prone. Should `ExecutorContext` embed a standard allocator (e.g., arena per request)?
+- **Blocking I/O performance**: Phase 3 intentionally uses blocking I/O. This means `wait_for_io()` is a no-op, and `poll()` never returns `.pending`. This defeats the async model. Is this acceptable for initial implementation? Or should Phase 3 and 4 be merged?
+
 ### Phase 4: Async I/O (Zig)
 
 1. Integrate io_uring or epoll for non-blocking I/O
 2. Implement proper `.pending` handling with I/O multiplexing
 3. Add request correlation for concurrent operations
 
+**Phase 4 Concerns**:
+- **Library choice**: `io_uring` (Linux-only, newest, fastest) vs `epoll` (Linux-only, older, compatible) vs `libxev` (cross-platform, external dep) vs `std.io.poll` (cross-platform, limited). Each has trade-offs. Which aligns with Faber's goals (portability vs performance)?
+- **Completion queue management**: io_uring uses submission/completion queue rings. Mapping completions back to futures requires request IDs. This is where "Request Correlation" comes in, but the design is vague. Need concrete data structures.
+- **Error handling in event loop**: If `io_uring_wait_cqe()` returns an error, what happens to in-flight futures? Do they all return `.err`? Or do we panic? Or silently retry?
+
 ### Phase 5: Other Targets
 
 1. Python — Similar to TypeScript (native async)
 2. Rust — State machines like Zig, or native async
 3. C++ — Coroutines (C++20) or callback-based
+
+**Phase 5 Concerns**:
+- **Python GIL**: Native async in Python still contends with GIL for CPU work. Nucleus can't fix this. Should Faber expose multi-process parallelism for Python (via `multiprocessing`), or is that out of scope?
+- **Rust borrow checker vs state machines**: Generated Rust state machines must satisfy borrow checker. Captured variables may need explicit lifetimes. Rust's async ecosystem (Tokio, async-std) has mature state machine generation. Can we leverage `async-trait` or similar, or do we fully DIY?
+- **C++20 coroutine support**: Not all compilers support C++20 coroutines (older GCC/Clang, MSVC). Do we require C++20, or provide fallback (callback-based, worse UX)?
 
 ---
 
@@ -737,6 +985,62 @@ const FetchFuture = struct {
     }
 };
 ```
+
+### State Machine Generation Concerns
+
+**Inner future lifetime**: In the example above, `inner: *caelum.PeteStream` is a pointer. Where is the inner future allocated? Options:
+- Stack allocation (but then pointer is invalid after function returns)
+- Heap allocation (but who owns it? Need allocator threading)
+- Inline the inner future struct (but then state size explodes)
+
+This is the "nested composition" problem from `zig-async.md` section "Open Questions". The document shows pointers but doesn't specify allocation strategy.
+
+**State transition atomicity**: If `poll()` modifies `self.state` and then calls inner `poll()`, but inner `poll()` panics or returns an error, the state is left in an intermediate position. Is this safe? Can we recover? Or should state transitions happen atomically (old state preserved until new state is fully computed)?
+
+**Mutable variables across suspend points**: The example only shows `fixum` (const) variables. What if the code mutates a variable after a suspend?
+
+```fab
+functio example() fiet textus {
+    varia x = 0
+    fixum resp = cede fetch()
+    x = x + 1  # mutation after suspend
+    redde textatum(x)
+}
+```
+
+The state struct must capture `x` by value in `awaiting_fetch`. After resume, `x = x + 1` must write back to the struct. This is complex. Does the compiler:
+- Emit explicit write-back code?
+- Reject mutable locals across suspends?
+- Capture mutable locals by pointer (requires allocator)?
+
+This is mentioned in `zig-async.md` "Open Questions" but not resolved here.
+
+**Multiple suspend points in same scope**: Consider:
+
+```fab
+functio multi() fiet textus {
+    fixum a = cede fetchA()
+    fixum b = cede fetchB()
+    redde a + b
+}
+```
+
+This requires three states: `start`, `awaiting_a`, `awaiting_b`. The `awaiting_b` state must capture both `a` (completed) and the inner future for `fetchB()`. State structs grow with each suspend point in the same scope.
+
+**Control flow suspend points**: What if `cede` appears inside a loop or conditional?
+
+```fab
+functio loop_fetch() fiet lista<textus> {
+    varia results = []
+    ex urls pro url {
+        fixum resp = cede fetch(url)  # suspend inside loop
+        results.adde(resp)
+    }
+    redde results
+}
+```
+
+The state machine must capture loop iteration state (`url` iterator position, `results` accumulator). This is significantly more complex than linear suspend points.
 
 **Subsidia structure:**
 
@@ -1382,22 +1686,145 @@ But this adds API surface. The primary recommendation is: accept the allocator p
 ## Open Questions
 
 1. **Error context enrichment** — Should `.err` include stack trace? Performance vs debuggability.
+   - **Additional context**: For Zig targets without native error unwinding, stack traces would require storing frame pointers or using Debug builds. This conflicts with release build performance goals.
+   - **Cross-target consideration**: TypeScript/Python have native stack traces. How do we unify error reporting across targets while respecting their different capabilities?
+   - **Responsum size impact**: Including stack traces in `.err` would bloat every Responsum instance, even when errors don't occur.
 
 2. **Streaming timeout** — Per-operation or global? Syntax for specifying?
+   - **Grammar question**: Should timeout be a verb modifier? `functio leget(...) fiet tempore 5000 textus`? Or an executor configuration?
+   - **Timeout granularity**: File operations may need shorter timeouts (seconds) while network operations need longer (minutes). Database queries may need statement-specific timeouts (hours for analytics).
+   - **Backpressure interaction**: How does timeout interact with backpressure watermarks? If producer is paused due to high water, does the timeout still tick?
 
 3. **Future size threshold** — 256 bytes is arbitrary. Profile real-world futures.
+   - **Target differences**: Zig/Rust/C++ have value semantics and stack allocation. TS/Python use references. The threshold may need to be per-target.
+   - **Composition effects**: Nested futures (one `fiet` calling another `fiet`) multiply state size. A 200-byte outer future containing a 200-byte inner future = 400 bytes, exceeding threshold.
+   - **Measurement approach**: Should size be measured in bytes or by "number of captured variables"? The latter is more consistent across targets.
 
 4. **Cross-target ID consistency** — TS uses UUID, Zig uses counter. Acceptable divergence?
+   - **Distributed tracing**: If Faber code makes cross-service calls, request IDs must be compatible. UUID is standard for distributed systems. Counter is local-only.
+   - **ID exhaustion**: 64-bit counter at 1M requests/sec = 584,942 years. Practically infinite. But what if multiple executors run concurrently? Need per-executor ID namespacing.
+   - **Serialization**: UUID is 128 bits but often formatted as 36-character string. Counter is 8 bytes numeric. Protocol compatibility concern for cross-language IPC.
 
 5. **Partial error semantics** — Consumer sees 100 items then `.err`. How to handle?
+   - **Transaction-like operations**: Should there be a way to signal "discard all previous items" when terminal error occurs? Or is that the consumer's responsibility?
+   - **Partial success reporting**: Should `.err` include metadata about how many items succeeded before failure? E.g., `.err { code, message, items_delivered: 100 }`?
+   - **Retry logic**: If a stream fails midway, can it be retried from the last successful item? Or does the entire stream restart? This affects cursor/iterator semantics.
 
 6. **Convenience wrappers** — Is `legeBrevis` worth the API surface, or just accept allocator params?
+   - **Discovery burden**: Adding special-case wrappers means users must know which variant to use. `legeBrevis` vs `lege` — when do you pick which?
+   - **Allocator hygiene**: Temporary allocator wrapper makes allocation invisible, which violates Zig's explicit allocation principle. Hidden allocations are a source of bugs.
+   - **Alternative approach**: Could the compiler auto-inject a temporary allocator for `lege` when used in contexts where allocation doesn't escape? This keeps the API simple while maintaining performance.
+
+---
+
+## Integration with `ad` Dispatch
+
+The `ad.md` design document describes a universal dispatch mechanism for syscalls. Nucleus runtime is the execution layer beneath `ad`. Key integration points:
+
+### Target Resolution
+
+`ad` patterns (e.g., `"solum:lege"`, `"https://..."`) must map to Nucleus handlers. The syscall table is compile-time for native targets (Zig, Rust, C++), runtime for dynamic targets (TS, Python). Questions:
+
+**Pattern matching complexity**: If users can register custom patterns (e.g., `"myproto://*"`), who validates them? Compiler or runtime?
+- Compile-time: Safer, but limits dynamic loading of handlers
+- Runtime: Flexible, but bad patterns discovered at runtime, not compile-time
+
+**Namespace collisions**: What if two packages register handlers for the same pattern? Example:
+- Package A: `"postgres://*"` → handler A
+- Package B: `"postgres://*"` → handler B
+
+First-registered wins? Explicit priority? Compile error?
+
+### Arrow vs Verb Binding Interaction
+
+The `ad` statement supports both arrow (`->`) and verb (`fiet`) binding. Nucleus only provides protocol-based execution. Clarifications needed:
+
+```fab
+# Arrow binding on Zig target
+ad "solum:lege" ("file.txt") -> textus pro content { ... }
+```
+
+On Zig, this should be a compile error (P192), but `ad.md` says "Arrow bypasses protocol, native targets compile error". Is this:
+- Caught at semantic analysis (before codegen)?
+- Caught at codegen (Zig generator throws error)?
+- Allowed to pass through and fail at Zig compile step (bad UX)?
+
+**Performance escape hatch on TS/Python**: If arrow binding bypasses Nucleus, does it also bypass:
+- Backpressure enforcement?
+- Request correlation IDs?
+- Observability hooks (logging, tracing)?
+
+This needs explicit documentation. Arrow is "fast but opaque", verb is "observable but overhead".
+
+### Syscall Handler Signatures
+
+`ad` allows arbitrary arguments: `ad "solum:lege" (path, flags, mode)`. Nucleus handlers have fixed signatures: `solum.lege(textus path) -> textus`. Mismatch resolution:
+
+- Does the dispatcher validate argument count/types at compile-time?
+- Does `ad` support overloading (same name, different arg shapes)?
+- If a handler takes optional args, does `ad` support: `ad "solum:lege" (path)` vs `ad "solum:lege" (path, encoding)`?
+
+**Type inference from syscall table**: The `ad.md` doc says "type annotation is optional if syscall table defines return type". This requires:
+- Compile-time access to handler signatures (easy for stdlib, hard for external packages)
+- Export of type metadata from compiled libraries (Zig/Rust don't have runtime reflection)
+- Fallback to `ignotum` if type is unknowable (loses type safety)
+
+### Error Handling Interaction
+
+Both `ad` and Nucleus use errors-as-values. But `ad` allows `cape` blocks:
+
+```fab
+ad "solum:lege" ("missing.txt") fiet textus pro content {
+    scribe content
+} cape err {
+    scribe "Failed: " + err.message
+}
+```
+
+Does the `cape` block:
+- Catch `.err` variants from Responsum (Nucleus-level error)?
+- Catch Faber `iace` errors (user-level error)?
+- Both?
+
+If both, what's the precedence? If Nucleus returns `.err { code: "ENOENT", ... }` and handler also does `iace CustomError`, which `cape` block catches which error?
+
+### Streaming via `ad`
+
+The `ad.md` doc shows `fient` for streaming:
+
+```fab
+ad "wss://stream.example.com/events" () fient Event pro event {
+    scribe event.data
+}
+```
+
+This is `cursor<Event>` underneath. But the syntax suggests `event` is bound once per iteration. Clarifications:
+
+- Is `fient` binding sugar for `ex...pro` loop over cursor?
+- Does the block execute once per `.item`, or once total with `event` being a cursor?
+- If error occurs midstream (`.err` after 100 `.item`s), does `cape` block have access to partial results?
+
+### Concurrent Operations via `ad`
+
+Nucleus supports request correlation for concurrent ops. Does `ad` expose this?
+
+```fab
+# Can I launch two requests concurrently?
+ad "caelum:pete" (url1) fiet Response pro r1 { ... }
+ad "caelum:pete" (url2) fiet Response pro r2 { ... }
+```
+
+If both are in the same function, does Nucleus:
+- Execute them sequentially (blocking on first before starting second)?
+- Execute them concurrently (submit both, poll both)?
+
+If concurrent, how does the user `cede` both and wait for whichever completes first? Needs explicit syntax or helper.
 
 ---
 
 ## References
 
-- `ad.md` — Dispatch syntax design
+- `ad.md` — Dispatch syntax design (integration with Nucleus)
 - `zig-async.md` — Zig-specific state machine details
 - `flumina.md` — Original Responsum protocol (TypeScript)
 - `two-pass.md` — Semantic analysis for liveness
