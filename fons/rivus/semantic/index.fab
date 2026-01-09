@@ -6,7 +6,7 @@ ex "./resolvitor" importa Resolvitor
 ex "./nucleus" importa Analyzator, SemanticResultatum, novumAnalyzator
 ex "./typi" importa SemanticTypus, IGNOTUM, VACUUM, functioTypus, usitatumTypus
 ex "./scopus" importa Symbolum, SymbolumSpecies
-ex "./modulus" importa estLocaleImportum, estNormaImportum, resolveModulum, ModulusExportum
+ex "./modulus" importa estLocaleImportum, estNormaImportum, resolveModulum, ModulusResolutum, ModulusExportum
 ex "./expressia/index" importa resolveExpressia
 ex "./sententia/index" importa analyzeSententia
 ex "../ast/radix" importa Programma
