@@ -29,7 +29,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: norma-generated
-      - run: find . -name "norma-registry.gen.*" -type f
+      - run: cp faber/codegen/norma-registry.gen.ts fons/faber/codegen/ && cp rivus/codegen/norma-registry.gen.fab fons/rivus/codegen/
       - run: bun run build:faber
       - uses: actions/upload-artifact@v4
         with:
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: norma-generated
-          path: .
+      - run: cp faber/codegen/norma-registry.gen.ts fons/faber/codegen/ && cp rivus/codegen/norma-registry.gen.fab fons/rivus/codegen/
       - run: bun run build:rivus
       - uses: actions/upload-artifact@v4
         with:
