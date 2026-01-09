@@ -741,12 +741,11 @@ genus Lexor {
                 }
             }
 
-            # ---- Less than: < or << or <= ----
+            # ---- Less than: < or <= ----
+            # NOTE: << is NOT tokenized as a shift operator.
+            # Use sinistratum keyword for left shift operations.
             casu "<" {
-                si ego.specta(0) == "<" {
-                    ego.procede()
-                    ego.addeSymbolum(SymbolumGenus.MinorBis, "<<", loc)        # left shift
-                } sin ego.specta(0) == "=" {
+                si ego.specta(0) == "=" {
                     ego.procede()
                     ego.addeSymbolum(SymbolumGenus.MinorAequum, "<=", loc)     # less or equal
                 } secus {
@@ -754,16 +753,12 @@ genus Lexor {
                 }
             }
 
-            # ---- Greater than: > or >> or >>> or >= ----
+            # ---- Greater than: > or >= ----
+            # NOTE: >> and >>> are NOT tokenized as shift operators.
+            # This allows closing angle brackets in nested generics (e.g., lista<tabula<textus>>>)
+            # to be parsed correctly. Use dextratum keyword for right shift operations.
             casu ">" {
-                si ego.specta(0) == ">" et ego.specta(1) == ">" {
-                    ego.procede()
-                    ego.procede()
-                    ego.addeSymbolum(SymbolumGenus.MaiorTer, ">>>", loc)       # unsigned right shift
-                } sin ego.specta(0) == ">" {
-                    ego.procede()
-                    ego.addeSymbolum(SymbolumGenus.MaiorBis, ">>", loc)        # right shift
-                } sin ego.specta(0) == "=" {
+                si ego.specta(0) == "=" {
                     ego.procede()
                     ego.addeSymbolum(SymbolumGenus.MaiorAequum, ">=", loc)     # greater or equal
                 } secus {
