@@ -375,7 +375,7 @@ function extractGenusExport(stmt: GenusDeclaration, ctx: ModuleTypeContext): Mod
  * fails because the return type can't be resolved.
  */
 function extractPactumExport(stmt: PactumDeclaration, ctx: ModuleTypeContext): ModuleExport {
-    const methods = new Map<string, SemanticType>();
+    const methods = new Map<string, FunctionType>();
 
     for (const method of stmt.methods) {
         const paramTypes = method.params.map(p =>
