@@ -16,20 +16,20 @@ functio mappaNomenTypi(textus nomen, CppGenerator g) -> textus {
         # Primitives
         casu "textus" {
             g.addeInclude("string")
-            reddit "std::string"
+            redde "std::string"
         }
         casu "numerus" {
             g.addeInclude("cstdint")
-            reddit "int64_t"
+            redde "int64_t"
         }
         casu "fractus" reddit "double"
         casu "decimus" {
             g.addeInclude("cstdint")
-            reddit "long double"
+            redde "long double"
         }
         casu "magnus" {
             g.addeInclude("cstdint")
-            reddit "__int128"
+            redde "__int128"
         }
         casu "bivalens" reddit "bool"
         casu "nihil" reddit "nullptr_t"
@@ -40,13 +40,13 @@ functio mappaNomenTypi(textus nomen, CppGenerator g) -> textus {
         casu "octeti" {
             g.addeInclude("cstdint")
             g.addeInclude("vector")
-            reddit "std::vector<uint8_t>"
+            redde "std::vector<uint8_t>"
         }
 
         # Error
         casu "erratum" {
             g.addeInclude("stdexcept")
-            reddit "std::runtime_error"
+            redde "std::runtime_error"
         }
 
         # Object/unknown
