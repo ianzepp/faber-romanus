@@ -1,7 +1,9 @@
 /**
  * Faber Code Generator - BinaryExpression
  *
- * STYLE: Uses && and || (canonical), not et/aut
+ * BUG: Outputs operators as-is from AST. Should map to Faber canonical forms:
+ *   && -> et, || -> aut, ! -> non
+ * See issue #81 for full fab codegen fixes needed.
  */
 
 import type { BinaryExpression } from '../../../parser/ast';
