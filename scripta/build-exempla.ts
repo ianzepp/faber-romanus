@@ -102,14 +102,14 @@ async function compileExempla(compiler: Compiler, targets: Target[]): Promise<{ 
 
             try {
                 await mkdir(outDir, { recursive: true });
-                const source = await Bun.file(fabPath).text();
 
                 let result;
                 if (compiler === 'faber') {
-                    // faber: pipe source to stdin, use - as file arg
-                    result = await $`echo ${source} | ${compilerBin} compile - -t ${target}`.quiet();
+                    // faber: use file path for proper module resolution
+                    result = await $`${compilerBin} compile ${fabPath} -t ${target}`.quiet();
                 } else {
-                    // rivus/artifex: first line is path, rest is source
+                    // rivus/artifex: stdin with path on first line
+                    const source = await Bun.file(fabPath).text();
                     const input = `${fabPath}\n${source}`;
                     result = await $`echo ${input} | ${compilerBin}`.quiet();
                 }
