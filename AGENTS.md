@@ -210,11 +210,32 @@ bun test                              # Run all tests (primary compiler)
 bun test -t "pattern"                 # Filter tests
 bun test --coverage                   # With coverage
 bun run test:rivus                    # Run tests against bootstrap compiler
+bun run test:report                   # Run tests with DB tracking + feature matrix
+bun run test:report -- --compiler faber --targets ts,py
+bun run test:report -- --verify       # With target verification (compile/run)
+bun run test:report -- --feature si   # Filter by feature name
 bun run lint                          # Lint TS source (fons/faber)
 bun run lint:fix                      # Lint with auto-fix
 bun run sanity                        # Verify test coverage
-bun run trial                         # Run LLM learnability trials
 ```
+
+**Test Reports (`test:report`)**
+
+Runs the test harness with SQLite recording and generates a feature support matrix showing pass/fail status for each feature across all targets. The database is recreated on each run (not for long-term tracking, just result summarization).
+
+Output includes:
+- Feature matrix showing ✓ (all pass), ✗ (all fail), or `n/m` (partial pass) per target
+- Total counts at bottom
+- List of failed tests with error messages
+
+Available options (via `--`):
+- `--compiler <faber|rivus|artifex>` - Which compiler to test (default: faber)
+- `--targets <ts,py,cpp,rs,zig>` - Comma-separated target list (default: all)
+- `--verify` - Compile and execute generated code (slower but thorough)
+- `--feature <pattern>` - Filter tests by feature name
+- `--verbose` / `-v` - Show detailed progress
+
+Database location: `opus/proba/results.db` (recreated each run)
 
 ### Build
 
