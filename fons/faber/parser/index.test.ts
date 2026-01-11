@@ -758,19 +758,19 @@ describe('parser', () => {
         });
 
         test('left shift', () => {
-            const { program } = parseCode('a << 2');
+            const { program } = parseCode('a sinistratum 2');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe('BinaryExpression');
-            expect(expr.operator).toBe('<<');
+            expect(expr.type).toBe('ShiftExpression');
+            expect(expr.direction).toBe('sinistratum');
         });
 
         test('right shift', () => {
-            const { program } = parseCode('a >> 2');
+            const { program } = parseCode('a dextratum 2');
             const expr = (program!.body[0] as any).expression;
 
-            expect(expr.type).toBe('BinaryExpression');
-            expect(expr.operator).toBe('>>');
+            expect(expr.type).toBe('ShiftExpression');
+            expect(expr.direction).toBe('dextratum');
         });
 
         test('bitwise precedence: & binds tighter than |', () => {
@@ -782,13 +782,14 @@ describe('parser', () => {
             expect(expr.right.operator).toBe('&');
         });
 
-        test('bitwise precedence: << binds tighter than &', () => {
-            const { program } = parseCode('a & b << 2');
+        test('bitwise precedence: sinistratum binds tighter than &', () => {
+            const { program } = parseCode('a & b sinistratum 2');
             const expr = (program!.body[0] as any).expression;
 
             // Should parse as: a & (b << 2)
             expect(expr.operator).toBe('&');
-            expect(expr.right.operator).toBe('<<');
+            expect(expr.right.type).toBe('ShiftExpression');
+            expect(expr.right.direction).toBe('sinistratum');
         });
 
         test('bitwise precedence: bitwise binds tighter than comparison', () => {
