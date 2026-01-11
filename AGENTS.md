@@ -111,6 +111,7 @@ Options:
 | `augur` | Forward consequence analyst (traces forward) |
 | `galen` | Test diagnostician (classifies failures) |
 | `titus` | TypeScript error fixer (root causes, not suppressions) |
+| `opifex` | Issue worker (fixes well-defined GitHub issues from analysis to PR) |
 
 ### Project Agents (`agents/`)
 
