@@ -169,7 +169,7 @@ export function getNormaReceiverCollectionsForMethod(target: string, method: str
  */
 export function applyNormaModuleCall(target: string, module: string, func: string, args: string[]): string | undefined {
     const translation = getNormaTranslation(target, module, func);
-    if (!translation?.template || !translation?.params) {
+    if (!translation?.template) {
         return undefined;
     }
 
