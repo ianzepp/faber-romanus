@@ -23,6 +23,7 @@ ordo SemanticErrorCodice {
     ModuleNotFound          # S012: Cannot find module
     CircularImport          # S013: Circular import detected
     ModuleParseError        # S014: Failed to parse module
+    MissingFunctionBody     # S016: Function has no body (not @ externa)
 }
 
 # ============================================================================
@@ -163,6 +164,15 @@ functio moduleParseError(textus path) -> SemanticErrorNuntius {
     redde {
         textus: scriptum("Failed to parse module '§'", path),
         auxilium: "Fix the syntax errors in the imported module before importing it."
+    } qua SemanticErrorNuntius
+}
+
+# Missing function body error
+@ publica
+functio missingFunctionBodyError(textus nomen) -> SemanticErrorNuntius {
+    redde {
+        textus: scriptum("Function '§' has no body", nomen),
+        auxilium: "Regular functions require a body. Use '@ externa' annotation for external declarations."
     } qua SemanticErrorNuntius
 }
 
