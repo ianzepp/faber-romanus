@@ -9,7 +9,7 @@ ex "../typi" importa functioTypus, usitatumTypus, genusTypus, pactumTypus, ordoT
 ex "../typi" importa formaTypum, assignabileAd
 ex "../scopus" importa Symbolum, SymbolumSpecies, ScopusSpecies, quaereSymbolumLocale
 ex "../nucleus" importa estGenericusTypus
-ex "../errores" importa noTypeOrInitializerError, typeMismatchError, awaitOutsideAsyncError
+ex "../errores" importa noTypeOrInitializerError, typeMismatchError, awaitOutsideAsyncError, missingFunctionBodyError
 ex "../../ast/sententia" importa Sententia, VariaGenus
 ex "../../ast/typus" importa TypusAnnotatio, TypusParametrum
 
@@ -167,6 +167,12 @@ functio analyzeFunctioDeclaratio(Resolvitor r, Sententia functioStmt) -> vacuum 
                     mutabilis: falsum,
                     locus: f.locus
                 } qua Symbolum)
+            }
+
+            # Check for missing body (functions must have body unless @ externa or abstract)
+            si nihil f.corpus et non f.externa et non f.abstracta {
+                fixum err = missingFunctionBodyError(f.nomen)
+                a.error(err.textus, f.locus)
             }
 
             # Analyze body in new scope

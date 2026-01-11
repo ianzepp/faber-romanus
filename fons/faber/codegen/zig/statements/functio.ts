@@ -15,10 +15,19 @@
 
 import type { FunctioDeclaration, BlockStatement, Statement, TypeParameterDeclaration } from '../../../parser/ast';
 import type { ZigGenerator } from '../generator';
-import { isAsyncFromAnnotations } from '../../types';
+import { isAsyncFromAnnotations, isExternaFromAnnotations } from '../../types';
 
 export function genFunctioDeclaration(node: FunctioDeclaration, g: ZigGenerator): string {
     const name = node.name.name;
+
+    // External declarations use Zig's 'extern fn' syntax
+    if (isExternaFromAnnotations(node.annotations)) {
+        const typeParams = node.typeParams?.map(tp => genTypeParameter(tp)) ?? [];
+        const regularParams = node.params.map(p => g.genParameter(p));
+        const allParams = [...typeParams, ...regularParams].join(', ');
+        const returnType = node.returnType ? g.genType(node.returnType) : 'void';
+        return `${g.ind()}extern fn ${name}(${allParams}) ${returnType};`;
+    }
 
     // EDGE: Abstract methods have no body - Zig doesn't support abstract methods
     if (!node.body) {

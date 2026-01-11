@@ -18,6 +18,7 @@
 
 import type { GenusDeclaration, FieldDeclaration, FunctioDeclaration } from '../../../parser/ast';
 import type { ZigGenerator } from '../generator';
+import { isExternaFromAnnotations } from '../../types';
 
 /** Collection type names that require allocators */
 const COLLECTION_TYPES = ['lista', 'tabula', 'copia'];
@@ -168,6 +169,11 @@ function genStructInit(node: GenusDeclaration, g: ZigGenerator, needsAlloc: bool
  *   -> fn creo(self: *Self) void { if (self.aetas < 0) { self.aetas = 0; } }
  */
 function genCreoMethod(node: FunctioDeclaration, g: ZigGenerator, needsAlloc: boolean): string {
+    // EDGE: External declarations are not allowed as constructors (creo must have a body)
+    if (isExternaFromAnnotations(node.annotations)) {
+        throw new Error('External declarations (@ externa) not supported for constructors');
+    }
+
     // EDGE: Abstract methods have no body - Zig doesn't support abstract methods
     if (!node.body) {
         throw new Error('Abstract methods not supported for Zig target');
@@ -209,6 +215,11 @@ function genCreoMethod(node: FunctioDeclaration, g: ZigGenerator, needsAlloc: bo
  * EDGE: anytype is not valid as a return type in Zig.
  */
 function genStructMethod(node: FunctioDeclaration, g: ZigGenerator, needsAlloc: boolean): string {
+    // EDGE: External declarations are not allowed as methods (methods must have a body)
+    if (isExternaFromAnnotations(node.annotations)) {
+        throw new Error('External declarations (@ externa) not supported for methods');
+    }
+
     // EDGE: Abstract methods have no body - Zig doesn't support abstract methods
     if (!node.body) {
         throw new Error('Abstract methods not supported for Zig target');
