@@ -81,7 +81,6 @@ consilia/               # Design documents ("consilia" = plans/advice)
 ├── archived/           # Superseded or rejected proposals
 └── cleanup/            # Refactoring notes
 
-probationes/            # LLM research harness (learnability trials)
 scripta/                # Build and utility scripts
 editors/                # Editor integrations (syntax highlighting, etc.)
 archivum/               # Historical/archived materials

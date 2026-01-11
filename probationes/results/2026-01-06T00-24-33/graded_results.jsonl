@@ -1,1 +1,0 @@
-{"timestamp":"2026-01-06T00:24:34.516Z","run_id":"2026-01-06T00-24-33","framework_version":"1.1","git_sha":"517dd4f","task_id":"ts_to_faber_const","model":"codestral","n_shot":3,"dialect":"latin","context":"grammar-only","level_a":true,"level_b":true,"level_c":true,"correct":true}

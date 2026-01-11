@@ -23,7 +23,7 @@ const languages: SupportLanguage[] = [
         name: 'Faber Romanus',
         parsers: ['faber'],
         extensions: ['.fab'],
-        vscodeLanguageIds: ['faber-romanus'],
+        vscodeLanguageIds: ['faber'],
     },
 ];
 

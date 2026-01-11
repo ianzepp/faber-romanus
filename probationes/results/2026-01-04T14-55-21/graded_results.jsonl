@@ -1,6 +1,0 @@
-{"timestamp":"2026-01-04T14:55:22.232Z","run_id":"2026-01-04T14-55-21","task_id":"translate_simple_var","model":"llama-3.2-1b","n_shot":1,"dialect":"latin","context":"examples-only","correct":true}
-{"timestamp":"2026-01-04T14:55:22.549Z","run_id":"2026-01-04T14-55-21","task_id":"translate_mutable_var","model":"llama-3.2-1b","n_shot":1,"dialect":"latin","context":"examples-only","correct":false,"error_type":"wrong_output","notes":"Expected: varia count = 0, Got: fixum count = 0"}
-{"timestamp":"2026-01-04T14:55:22.936Z","run_id":"2026-01-04T14-55-21","task_id":"translate_string_var","model":"llama-3.2-1b","n_shot":1,"dialect":"latin","context":"examples-only","correct":true}
-{"timestamp":"2026-01-04T14:55:23.250Z","run_id":"2026-01-04T14-55-21","task_id":"predict_simple_output","model":"llama-3.2-1b","n_shot":1,"dialect":"latin","context":"examples-only","correct":false,"error_type":"wrong_output"}
-{"timestamp":"2026-01-04T14:55:23.610Z","run_id":"2026-01-04T14-55-21","task_id":"complete_return_statement","model":"llama-3.2-1b","n_shot":1,"dialect":"latin","context":"examples-only","correct":false,"error_type":"wrong_output"}
-{"timestamp":"2026-01-04T14:55:23.961Z","run_id":"2026-01-04T14-55-21","task_id":"complete_variable_declaration","model":"llama-3.2-1b","n_shot":1,"dialect":"latin","context":"examples-only","correct":false,"error_type":"wrong_output"}

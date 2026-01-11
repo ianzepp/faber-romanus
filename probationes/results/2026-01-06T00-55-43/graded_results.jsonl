@@ -1,1 +1,0 @@
-{"timestamp":"2026-01-06T00:55:46.945Z","run_id":"2026-01-06T00-55-43","framework_version":"1.2","git_sha":"58a8d15","task_id":"complex_ts_to_faber_nested_if","model":"gpt-4o","n_shot":3,"dialect":"latin","context":"grammar-only","level_a":true,"level_b":true,"level_c":true,"correct":true}

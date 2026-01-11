@@ -1,1 +1,0 @@
-{"timestamp":"2026-01-04T14:57:08.992Z","run_id":"2026-01-04T14-57-05","task_id":"translate_app_faber_to_ts","model":"llama-3.2-1b","n_shot":0,"dialect":"latin","context":"complete","correct":false,"error_type":"wrong_output","notes":"Application translation mismatch"}

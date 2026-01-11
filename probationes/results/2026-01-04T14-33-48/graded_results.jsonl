@@ -1,6 +1,0 @@
-{"timestamp":"2026-01-04T14:33:48.942Z","run_id":"2026-01-04T14-33-48","task_id":"translate_simple_var","model":"gpt-3.5-turbo","n_shot":0,"dialect":"latin","context":"minimal","correct":true}
-{"timestamp":"2026-01-04T14:33:49.283Z","run_id":"2026-01-04T14-33-48","task_id":"translate_mutable_var","model":"gpt-3.5-turbo","n_shot":0,"dialect":"latin","context":"minimal","correct":true}
-{"timestamp":"2026-01-04T14:33:49.585Z","run_id":"2026-01-04T14-33-48","task_id":"translate_string_var","model":"gpt-3.5-turbo","n_shot":0,"dialect":"latin","context":"minimal","correct":false,"error_type":"wrong_output","notes":"Expected: fixum name = \"Alice\", Got: fixum nomen = \"Alice\""}
-{"timestamp":"2026-01-04T14:33:49.854Z","run_id":"2026-01-04T14-33-48","task_id":"predict_simple_output","model":"gpt-3.5-turbo","n_shot":0,"dialect":"latin","context":"minimal","correct":true}
-{"timestamp":"2026-01-04T14:33:50.265Z","run_id":"2026-01-04T14-33-48","task_id":"complete_return_statement","model":"gpt-3.5-turbo","n_shot":0,"dialect":"latin","context":"minimal","correct":false,"error_type":"wrong_output"}
-{"timestamp":"2026-01-04T14:33:50.564Z","run_id":"2026-01-04T14-33-48","task_id":"complete_variable_declaration","model":"gpt-3.5-turbo","n_shot":0,"dialect":"latin","context":"minimal","correct":false,"error_type":"wrong_output"}

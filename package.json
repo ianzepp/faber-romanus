@@ -1,5 +1,5 @@
 {
-    "name": "faber-romanus",
+    "name": "faber",
     "version": "0.7.0",
     "description": "A Latin-to-JavaScript transpiler - The Roman Craftsman",
     "module": "index.ts",
@@ -31,10 +31,7 @@
         "test:rivus": "bun test fons/proba/rivus.test.ts --timeout 5000",
         "typecheck": "./scripta/typecheck",
         "use": "./scripta/use",
-        "verify:exempla": "bun ./scripta/verify-exempla.ts",
-        "trial": "bun run probationes/harness/runner.ts",
-        "trial:pipeline": "bun run probationes/harness/pipeline-runner.ts",
-        "trial:db": "bun run probationes/harness/db.ts"
+        "verify:exempla": "bun ./scripta/verify-exempla.ts"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",

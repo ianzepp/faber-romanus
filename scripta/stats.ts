@@ -97,10 +97,6 @@ async function gatherStats(): Promise<Stat[]> {
     const examplesLines = parseInt(examplesResult.match(/(\d+)/)?.[1] || '0', 10);
     const examplesFiles = await $`find exempla -name "*.fab" | wc -l`.text();
 
-    // Count research harness
-    const researchResult = await $`find probationes -name "*.ts" -exec wc -l {} + 2>/dev/null | tail -1`.text();
-    const researchLines = parseInt(researchResult.match(/(\d+)/)?.[1] || '0', 10);
-
     // Count targets
     const targetsResult = await $`find fons/faber/codegen -maxdepth 1 -type d ! -name codegen | wc -l`.text();
     const numTargets = parseInt(targetsResult.trim(), 10);
@@ -153,12 +149,6 @@ async function gatherStats(): Promise<Stat[]> {
             lines: examplesLines,
             files: parseInt(examplesFiles.trim(), 10),
             description: 'Sample Faber programs',
-        },
-        {
-            component: '**Research**',
-            lines: researchLines,
-            files: '—',
-            description: 'LLM learnability harness',
         },
     ];
 

@@ -489,7 +489,7 @@ subsidia/zig/
     ```zig
     .dependencies = .{
         .faber = .{
-            .url = "https://github.com/ianzepp/faber-romanus/archive/v1.0.0.tar.gz",
+            .url = "https://github.com/ianzepp/faber/archive/v1.0.0.tar.gz",
             .hash = "...",
         },
     },
@@ -508,7 +508,7 @@ subsidia/zig/
 - [ ] Test with Zig 0.11+ (module flag syntax may vary)
 - [ ] Document package installation for end users
 
-**Note:** Zig packages are decentralized (URL-based, no registry account needed). The faber-romanus repo itself can serve as the package source.
+**Note:** Zig packages are decentralized (URL-based, no registry account needed). The faber repo itself can serve as the package source.
 
 ## Related Documents
 

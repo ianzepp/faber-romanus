@@ -43,7 +43,7 @@ The workflow: LLM drafts Faber → Human approves → Compiler emits production 
 
 ## Research & Evidence
 
-The [probationes](probationes/) research harness tests Faber's learnability with reproducible evaluation: falsifiable claims, controlled comparisons, automated grading.
+The [faber-trials](https://github.com/ianzepp/faber-trials) research harness tests Faber's learnability with reproducible evaluation: falsifiable claims, controlled comparisons, automated grading.
 
 ### Trial Results (Framework 1.1)
 
@@ -70,7 +70,7 @@ Top performers with grammar-only context:
 
 **Open questions**: Do Latin keywords help, or is it just the regular structure? (Faber-English ablation planned.) How do error rates compare for Faber→Zig vs direct Zig generation?
 
-See [probationes/docs/framework-1.1-results.md](probationes/docs/framework-1.1-results.md) for methodology, or [probationes/thesis.md](probationes/thesis.md) for the research strategy.
+See [faber-trials/docs/framework-1.1-results.md](https://github.com/ianzepp/faber-trials/blob/main/docs/framework-1.1-results.md) for methodology, or [faber-trials/thesis.md](https://github.com/ianzepp/faber-trials/blob/main/thesis.md) for the research strategy.
 
 ## Principles
 

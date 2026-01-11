@@ -1,1 +1,0 @@
-{"timestamp":"2026-01-05T20:28:00.987Z","framework_version":"1.1","git_sha":"705d1a8","run_id":"2026-01-05T20-28-00","task_id":"ts_to_faber_const","model":"gpt-3.5-turbo","n_shot":3,"dialect":"latin","context":"minimal","level_a":true,"level_b":true,"level_c":true,"correct":true}

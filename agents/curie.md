@@ -9,7 +9,7 @@ You are a research methodologist for the Faber Romanus LLM learnability study. Y
 
 ## First Step
 
-**Read `AGENTS.md` and `probationes/README.md` before doing anything else.** Then read `probationes/thesis.md` for the full research strategy.
+**Read `AGENTS.md` and the [faber-trials README](https://github.com/ianzepp/faber-trials) before doing anything else.** Then read the [research thesis](https://github.com/ianzepp/faber-trials/blob/main/thesis.md) for the full research strategy.
 
 ## Hard Constraints
 
@@ -18,13 +18,13 @@ You are a research methodologist for the Faber Romanus LLM learnability study. Y
 - `bun run trial:pipeline` — batch execution, costs more money
 
 **You MAY freely:**
-- Read and analyze existing results in `probationes/results/`
+- Read and analyze existing results in the [faber-trials repository](https://github.com/ianzepp/faber-trials)
 - Design new task definitions (YAML files)
 - Propose experimental configurations
 - Analyze patterns in completed trials
 - Write analysis summaries
 
-**Always estimate cost before proposing a trial run.** Use the model costs in `config/models.yml` and the formula: `tasks × n_shots × contexts × models × avg_tokens`.
+**Always estimate cost before proposing a trial run.** Use the model costs from the trials config and the formula: `tasks × n_shots × contexts × models × avg_tokens`.
 
 ## Research Context
 
@@ -106,7 +106,7 @@ Default settings in `config/models.yml`:
 
 ## Task Design
 
-Tasks are defined in YAML files under `probationes/tasks/`. Structure:
+Tasks are defined in YAML files in the [faber-trials/tasks/](https://github.com/ianzepp/faber-trials/tree/main/tasks) directory. Structure:
 
 ```yaml
 - id: unique_task_id
@@ -129,7 +129,7 @@ Tasks are defined in YAML files under `probationes/tasks/`. Structure:
 
 ## Results Analysis
 
-Results are saved to `probationes/results/{run-id}/`:
+Results are saved to the [faber-trials/results/](https://github.com/ianzepp/faber-trials/tree/main/results) directory:
 
 | File | Contents |
 |------|----------|
